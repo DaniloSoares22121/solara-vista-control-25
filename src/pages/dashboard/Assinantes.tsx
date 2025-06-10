@@ -8,12 +8,11 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/co
 import { Search, Plus, Filter, User, Users, MapPin, Activity, Download, Loader2 } from 'lucide-react';
 import { useSubscribers } from '@/hooks/useSubscribers';
 import NovoAssinante from './NovoAssinante';
-import { SubscriberFormData } from '@/types/subscriber';
 
 const Assinantes = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const { subscribers, loading, createSubscriber } = useSubscribers();
+  const { subscribers, loading } = useSubscribers();
 
   const handleOpenModal = () => {
     setIsModalOpen(true);
@@ -21,15 +20,6 @@ const Assinantes = () => {
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
-  };
-
-  const handleSubscriberCreated = async (data: SubscriberFormData) => {
-    try {
-      await createSubscriber(data);
-      handleCloseModal();
-    } catch (error) {
-      console.error('Erro ao criar assinante:', error);
-    }
   };
 
   // Filtrar assinantes baseado no termo de busca
@@ -255,7 +245,7 @@ const Assinantes = () => {
           <SheetHeader className="sr-only">
             <SheetTitle>Novo Assinante</SheetTitle>
           </SheetHeader>
-          <NovoAssinante onClose={handleCloseModal} onSubmit={handleSubscriberCreated} />
+          <NovoAssinante onClose={handleCloseModal} />
         </SheetContent>
       </Sheet>
     </DashboardLayout>
@@ -263,3 +253,5 @@ const Assinantes = () => {
 };
 
 export default Assinantes;
+
+</edits_to_apply>
