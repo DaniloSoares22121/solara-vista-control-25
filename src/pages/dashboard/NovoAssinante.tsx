@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -147,31 +146,39 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
 
   const handleInputChange = (section: string, field: string, value: any) => {
     setFormData(prev => {
-      const currentSection = prev[section as keyof typeof prev] || {};
-      return {
-        ...prev,
-        [section]: {
-          ...currentSection,
-          [field]: value
-        }
-      };
+      const currentSection = prev[section as keyof typeof prev];
+      if (typeof currentSection === 'object' && currentSection !== null) {
+        return {
+          ...prev,
+          [section]: {
+            ...currentSection,
+            [field]: value
+          }
+        };
+      }
+      return prev;
     });
   };
 
   const handleNestedInputChange = (section: string, subsection: string, field: string, value: any) => {
     setFormData(prev => {
-      const currentSection = prev[section as keyof typeof prev] || {};
-      const currentSubsection = (currentSection as any)[subsection] || {};
-      return {
-        ...prev,
-        [section]: {
-          ...currentSection,
-          [subsection]: {
-            ...currentSubsection,
-            [field]: value
-          }
+      const currentSection = prev[section as keyof typeof prev];
+      if (typeof currentSection === 'object' && currentSection !== null) {
+        const currentSubsection = (currentSection as any)[subsection];
+        if (typeof currentSubsection === 'object' && currentSubsection !== null) {
+          return {
+            ...prev,
+            [section]: {
+              ...currentSection,
+              [subsection]: {
+                ...currentSubsection,
+                [field]: value
+              }
+            }
+          };
         }
-      };
+      }
+      return prev;
     });
   };
 
