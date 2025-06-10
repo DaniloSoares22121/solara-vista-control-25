@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -11,7 +10,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { 
   ChevronLeft, 
@@ -131,9 +129,9 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
   const subscriberType = form.watch('subscriber.type');
 
   return (
-    <div className="h-full flex flex-col bg-background">
+    <div className="h-screen flex flex-col bg-background">
       {/* Header with Progress Bar */}
-      <div className="border-b border-border bg-card p-6">
+      <div className="flex-shrink-0 border-b border-border bg-card p-6">
         <div className="mb-4">
           <h2 className="text-2xl font-bold text-foreground">Novo Assinante</h2>
           <p className="text-muted-foreground">Preencha os dados para cadastrar um novo assinante</p>
@@ -165,8 +163,8 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
         </div>
       </div>
 
-      {/* Scrollable Content */}
-      <ScrollArea className="flex-1">
+      {/* Scrollable Content Area */}
+      <div className="flex-1 overflow-y-auto">
         <div className="p-6">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -619,10 +617,10 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
             </form>
           </Form>
         </div>
-      </ScrollArea>
+      </div>
 
       {/* Fixed Footer with Navigation */}
-      <div className="border-t border-border bg-card p-6">
+      <div className="flex-shrink-0 border-t border-border bg-card p-6">
         <div className="flex justify-between items-center">
           <div className="flex gap-3">
             {currentStep > 1 && (
