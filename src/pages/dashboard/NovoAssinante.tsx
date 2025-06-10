@@ -1103,8 +1103,14 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
                         energyAccount: {
                           ...prev.energyAccount,
                           newTitularity: {
-                            ...prev.energyAccount.newTitularity!,
-                            cpfCnpj: formatCpfCnpj(e.target.value)
+                            type: prev.energyAccount.newTitularity?.type || 'fisica',
+                            cpfCnpj: formatCpfCnpj(e.target.value),
+                            name: prev.energyAccount.newTitularity?.name || '',
+                            dataNascimento: prev.energyAccount.newTitularity?.dataNascimento || '',
+                            uc: prev.energyAccount.newTitularity?.uc || '',
+                            numeroParceiroUC: prev.energyAccount.newTitularity?.numeroParceiroUC || '',
+                            trocaConcluida: prev.energyAccount.newTitularity?.trocaConcluida || false,
+                            dataTroca: prev.energyAccount.newTitularity?.dataTroca || '',
                           }
                         }
                       }))}
@@ -1121,8 +1127,14 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
                         energyAccount: {
                           ...prev.energyAccount,
                           newTitularity: {
-                            ...prev.energyAccount.newTitularity!,
-                            name: e.target.value
+                            type: prev.energyAccount.newTitularity?.type || 'fisica',
+                            cpfCnpj: prev.energyAccount.newTitularity?.cpfCnpj || '',
+                            name: e.target.value,
+                            dataNascimento: prev.energyAccount.newTitularity?.dataNascimento || '',
+                            uc: prev.energyAccount.newTitularity?.uc || '',
+                            numeroParceiroUC: prev.energyAccount.newTitularity?.numeroParceiroUC || '',
+                            trocaConcluida: prev.energyAccount.newTitularity?.trocaConcluida || false,
+                            dataTroca: prev.energyAccount.newTitularity?.dataTroca || '',
                           }
                         }
                       }))}
@@ -1142,8 +1154,14 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
                         energyAccount: {
                           ...prev.energyAccount,
                           newTitularity: {
-                            ...prev.energyAccount.newTitularity!,
-                            dataNascimento: e.target.value
+                            type: prev.energyAccount.newTitularity?.type || 'fisica',
+                            cpfCnpj: prev.energyAccount.newTitularity?.cpfCnpj || '',
+                            name: prev.energyAccount.newTitularity?.name || '',
+                            dataNascimento: e.target.value,
+                            uc: prev.energyAccount.newTitularity?.uc || '',
+                            numeroParceiroUC: prev.energyAccount.newTitularity?.numeroParceiroUC || '',
+                            trocaConcluida: prev.energyAccount.newTitularity?.trocaConcluida || false,
+                            dataTroca: prev.energyAccount.newTitularity?.dataTroca || '',
                           }
                         }
                       }))}
@@ -1162,8 +1180,14 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
                         energyAccount: {
                           ...prev.energyAccount,
                           newTitularity: {
-                            ...prev.energyAccount.newTitularity!,
-                            uc: e.target.value
+                            type: prev.energyAccount.newTitularity?.type || 'fisica',
+                            cpfCnpj: prev.energyAccount.newTitularity?.cpfCnpj || '',
+                            name: prev.energyAccount.newTitularity?.name || '',
+                            dataNascimento: prev.energyAccount.newTitularity?.dataNascimento || '',
+                            uc: e.target.value,
+                            numeroParceiroUC: prev.energyAccount.newTitularity?.numeroParceiroUC || '',
+                            trocaConcluida: prev.energyAccount.newTitularity?.trocaConcluida || false,
+                            dataTroca: prev.energyAccount.newTitularity?.dataTroca || '',
                           }
                         }
                       }))}
@@ -1179,8 +1203,14 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
                         energyAccount: {
                           ...prev.energyAccount,
                           newTitularity: {
-                            ...prev.energyAccount.newTitularity!,
-                            numeroParceiroUC: e.target.value
+                            type: prev.energyAccount.newTitularity?.type || 'fisica',
+                            cpfCnpj: prev.energyAccount.newTitularity?.cpfCnpj || '',
+                            name: prev.energyAccount.newTitularity?.name || '',
+                            dataNascimento: prev.energyAccount.newTitularity?.dataNascimento || '',
+                            uc: prev.energyAccount.newTitularity?.uc || '',
+                            numeroParceiroUC: e.target.value,
+                            trocaConcluida: prev.energyAccount.newTitularity?.trocaConcluida || false,
+                            dataTroca: prev.energyAccount.newTitularity?.dataTroca || '',
                           }
                         }
                       }))}
@@ -1197,8 +1227,14 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
                       energyAccount: {
                         ...prev.energyAccount,
                         newTitularity: {
-                          ...prev.energyAccount.newTitularity!,
-                          trocaConcluida: checked
+                          type: prev.energyAccount.newTitularity?.type || 'fisica',
+                          cpfCnpj: prev.energyAccount.newTitularity?.cpfCnpj || '',
+                          name: prev.energyAccount.newTitularity?.name || '',
+                          dataNascimento: prev.energyAccount.newTitularity?.dataNascimento || '',
+                          uc: prev.energyAccount.newTitularity?.uc || '',
+                          numeroParceiroUC: prev.energyAccount.newTitularity?.numeroParceiroUC || '',
+                          trocaConcluida: checked,
+                          dataTroca: prev.energyAccount.newTitularity?.dataTroca || '',
                         }
                       }
                     }))}
@@ -1219,8 +1255,14 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
                           energyAccount: {
                             ...prev.energyAccount,
                             newTitularity: {
-                              ...prev.energyAccount.newTitularity!,
-                              dataTroca: e.target.value
+                              type: prev.energyAccount.newTitularity?.type || 'fisica',
+                              cpfCnpj: prev.energyAccount.newTitularity?.cpfCnpj || '',
+                              name: prev.energyAccount.newTitularity?.name || '',
+                              dataNascimento: prev.energyAccount.newTitularity?.dataNascimento || '',
+                              uc: prev.energyAccount.newTitularity?.uc || '',
+                              numeroParceiroUC: prev.energyAccount.newTitularity?.numeroParceiroUC || '',
+                              trocaConcluida: prev.energyAccount.newTitularity?.trocaConcluida || false,
+                              dataTroca: e.target.value,
                             }
                           }
                         }))}
