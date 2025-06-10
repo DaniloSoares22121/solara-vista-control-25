@@ -1,4 +1,3 @@
-
 import DashboardLayout from '@/components/DashboardLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -239,14 +238,14 @@ const Whatsapp = () => {
                   <h4 className="font-medium mb-2">🔔 Lembrete de Vencimento</h4>
                   <p className="text-sm text-gray-600">Para faturas que vencem em 3 dias</p>
                   <div className="mt-2 text-xs bg-gray-100 p-2 rounded">
-                    "Sua fatura de R$ {valor} vence em 3 dias. Pague pelo PIX e ganhe desconto!"
+                    "Sua fatura de R$ [VALOR] vence em 3 dias. Pague pelo PIX e ganhe desconto!"
                   </div>
                 </div>
                 <div className="p-4 border rounded-lg">
                   <h4 className="font-medium mb-2">⚠️ Fatura Vencida</h4>
                   <p className="text-sm text-gray-600">Para faturas em atraso</p>
                   <div className="mt-2 text-xs bg-gray-100 p-2 rounded">
-                    "Sua fatura de R$ {valor} está vencida. Regularize para manter seu desconto."
+                    "Sua fatura de R$ [VALOR] está vencida. Regularize para manter seu desconto."
                   </div>
                 </div>
               </div>
@@ -255,14 +254,14 @@ const Whatsapp = () => {
                   <h4 className="font-medium mb-2">✅ Pagamento Confirmado</h4>
                   <p className="text-sm text-gray-600">Confirmação de recebimento</p>
                   <div className="mt-2 text-xs bg-gray-100 p-2 rounded">
-                    "Pagamento de R$ {valor} confirmado! Obrigado por estar conosco."
+                    "Pagamento de R$ [VALOR] confirmado! Obrigado por estar conosco."
                   </div>
                 </div>
                 <div className="p-4 border rounded-lg">
                   <h4 className="font-medium mb-2">📊 Relatório Mensal</h4>
                   <p className="text-sm text-gray-600">Resumo do consumo do mês</p>
                   <div className="mt-2 text-xs bg-gray-100 p-2 rounded">
-                    "Seu consumo em {mes}: {kwh} kWh. Economia de R$ {economia} com energia solar!"
+                    "Seu consumo em [MÊS]: [KWH] kWh. Economia de R$ [ECONOMIA] com energia solar!"
                   </div>
                 </div>
               </div>
