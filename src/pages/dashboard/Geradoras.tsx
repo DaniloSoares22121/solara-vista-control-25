@@ -15,7 +15,6 @@ const Geradoras = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedGenerator, setSelectedGenerator] = useState<any>(null);
   const [showDetails, setShowDetails] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
   const { generators, loading, refreshGenerators, deleteGenerator } = useGenerators();
 
   const handleOpenModal = () => {
@@ -24,7 +23,6 @@ const Geradoras = () => {
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
-    setIsEditing(false);
     setSelectedGenerator(null);
     refreshGenerators(); // Recarregar dados após fechar modal
   };
@@ -36,7 +34,6 @@ const Geradoras = () => {
 
   const handleEdit = () => {
     setShowDetails(false);
-    setIsEditing(true);
     setIsModalOpen(true);
   };
 
@@ -248,16 +245,13 @@ const Geradoras = () => {
         )}
       </div>
 
-      {/* Sheet for New/Edit Generator */}
+      {/* Sheet for New Generator */}
       <Sheet open={isModalOpen} onOpenChange={setIsModalOpen}>
         <SheetContent side="right" className="w-full sm:max-w-7xl p-0 overflow-hidden">
           <SheetHeader className="sr-only">
-            <SheetTitle>{isEditing ? 'Editar Geradora' : 'Nova Geradora'}</SheetTitle>
+            <SheetTitle>Nova Geradora</SheetTitle>
           </SheetHeader>
-          <NovaGeradora 
-            onClose={handleCloseModal} 
-            editData={isEditing ? selectedGenerator : undefined}
-          />
+          <NovaGeradora onClose={handleCloseModal} />
         </SheetContent>
       </Sheet>
 
