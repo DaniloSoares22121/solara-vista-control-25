@@ -57,13 +57,12 @@ interface NovoAssinanteProps {
 }
 
 const steps = [
-  { id: 'concessionaria', title: 'Concessionária', description: 'Seleção da concessionária' },
-  { id: 'assinante', title: 'Assinante', description: 'Dados do assinante' },
-  { id: 'conta', title: 'Conta Energia', description: 'Informações da conta' },
-  { id: 'plano', title: 'Plano', description: 'Contratação do plano' },
-  { id: 'detalhes', title: 'Detalhes', description: 'Detalhes do plano' },
-  { id: 'notificacoes', title: 'Notificações', description: 'Configurações de mensagens' },
-  { id: 'anexos', title: 'Anexos', description: 'Documentos necessários' },
+  { id: 'assinante', title: 'Dados Gerais', description: 'Concessionária e dados do assinante' },
+  { id: 'conta', title: 'Conta de Energia', description: 'Informações da unidade consumidora' },
+  { id: 'plano', title: 'Plano Contratado', description: 'Modalidade e contratação' },
+  { id: 'detalhes', title: 'Detalhes do Plano', description: 'Configurações específicas' },
+  { id: 'notificacoes', title: 'Notificações', description: 'WhatsApp e e-mail' },
+  { id: 'anexos', title: 'Documentos', description: 'Upload de arquivos' },
 ];
 
 const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
@@ -198,13 +197,12 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
 
   const validateCurrentStep = async () => {
     const fieldsToValidate: Record<number, string[]> = {
-      0: ['concessionaria'],
-      1: ['subscriber.type', 'subscriber.cpfCnpj', 'subscriber.numeroParceiroNegocio', 'subscriber.name', 'subscriber.telefone', 'subscriber.email'],
-      2: ['energyAccount.originalAccount.type', 'energyAccount.originalAccount.cpfCnpj', 'energyAccount.originalAccount.name', 'energyAccount.originalAccount.uc', 'energyAccount.originalAccount.numeroParceiroUC'],
-      3: ['planContract.modalidadeCompensacao', 'planContract.dataAdesao', 'planContract.kwhVendedor', 'planContract.kwhContratado', 'planContract.faixaConsumo', 'planContract.fidelidade'],
-      4: [], // Detalhes do plano - sem validação obrigatória
-      5: [], // Notificações - sem validação obrigatória
-      6: [], // Anexos - sem validação obrigatória
+      0: ['concessionaria', 'subscriber.type', 'subscriber.cpfCnpj', 'subscriber.numeroParceiroNegocio', 'subscriber.name', 'subscriber.telefone', 'subscriber.email'],
+      1: ['energyAccount.originalAccount.type', 'energyAccount.originalAccount.cpfCnpj', 'energyAccount.originalAccount.name', 'energyAccount.originalAccount.uc', 'energyAccount.originalAccount.numeroParceiroUC'],
+      2: ['planContract.modalidadeCompensacao', 'planContract.dataAdesao', 'planContract.kwhVendedor', 'planContract.kwhContratado', 'planContract.faixaConsumo', 'planContract.fidelidade'],
+      3: [], // Detalhes do plano - sem validação obrigatória
+      4: [], // Notificações - sem validação obrigatória
+      5: [], // Anexos - sem validação obrigatória
     };
 
     const fields = fieldsToValidate[currentStep] || [];
@@ -266,12 +264,17 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
   const renderCurrentStepContent = () => {
     switch (currentStep) {
       case 0:
-        return <ConcessionariaForm form={form} />;
-      case 1:
         return (
-          <>
-            <TipoAssinanteForm form={form} />
-            <div className="mt-8">
+          <div className="space-y-8">
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-lg border border-blue-200">
+              <ConcessionariaForm form={form} />
+            </div>
+            
+            <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-6 rounded-lg border border-green-200">
+              <TipoAssinanteForm form={form} />
+            </div>
+
+            <div className="bg-white p-6 rounded-lg border-2 border-gray-100 shadow-sm">
               {tipoAssinante === 'fisica' ? (
                 <DadosPessoaFisicaForm 
                   form={form} 
@@ -286,18 +289,38 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
                 />
               )}
             </div>
-          </>
+          </div>
+        );
+      case 1:
+        return (
+          <div className="bg-white p-6 rounded-lg border-2 border-gray-100 shadow-sm">
+            <ContaEnergiaForm form={form} />
+          </div>
         );
       case 2:
-        return <ContaEnergiaForm form={form} />;
+        return (
+          <div className="bg-white p-6 rounded-lg border-2 border-gray-100 shadow-sm">
+            <PlanoContratadoForm form={form} />
+          </div>
+        );
       case 3:
-        return <PlanoContratadoForm form={form} />;
+        return (
+          <div className="bg-white p-6 rounded-lg border-2 border-gray-100 shadow-sm">
+            <DetalhesPlanoForm form={form} />
+          </div>
+        );
       case 4:
-        return <DetalhesPlanoForm form={form} />;
+        return (
+          <div className="bg-white p-6 rounded-lg border-2 border-gray-100 shadow-sm">
+            <NotificacoesForm form={form} />
+          </div>
+        );
       case 5:
-        return <NotificacoesForm form={form} />;
-      case 6:
-        return <AnexosForm form={form} />;
+        return (
+          <div className="bg-white p-6 rounded-lg border-2 border-gray-100 shadow-sm">
+            <AnexosForm form={form} />
+          </div>
+        );
       default:
         return null;
     }
@@ -308,96 +331,109 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
 
   return (
     <FormProvider {...form}>
-      <div className="h-full flex flex-col bg-gradient-to-br from-gray-50 to-white">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
         {/* Header */}
-        <div className="flex-shrink-0 bg-white border-b border-gray-200 px-6 py-4">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center space-x-4">
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={onClose}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Voltar
-              </Button>
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">Novo Assinante</h1>
-                <p className="text-sm text-gray-600">Cadastre um novo cliente de energia por UC</p>
+        <div className="bg-white/80 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-10">
+          <div className="max-w-7xl mx-auto px-6 py-6">
+            <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center space-x-4">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={onClose}
+                  className="text-gray-600 hover:text-gray-800 hover:bg-gray-100"
+                >
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Voltar
+                </Button>
+                <div>
+                  <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                    Novo Assinante
+                  </h1>
+                  <p className="text-gray-600 mt-1">Cadastre um novo cliente de energia por UC</p>
+                </div>
+              </div>
+              
+              <div className="flex items-center space-x-2 text-sm text-gray-500">
+                <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full font-medium">
+                  Etapa {currentStep + 1} de {steps.length}
+                </span>
               </div>
             </div>
-          </div>
 
-          {/* Stepper */}
-          <div className="max-w-4xl mx-auto">
+            {/* Stepper */}
             <Stepper
               steps={steps}
               currentStep={currentStep}
               onStepClick={handleStepClick}
+              className="max-w-5xl mx-auto"
             />
           </div>
         </div>
 
         {/* Form Content */}
-        <div className="flex-1 overflow-y-auto p-6">
-          <div className="max-w-4xl mx-auto">
-            <Card className="shadow-lg">
-              <CardContent className="p-8">
-                <div className="min-h-[500px]">
-                  {renderCurrentStepContent()}
-                </div>
-              </CardContent>
-            </Card>
+        <div className="max-w-6xl mx-auto px-6 py-8">
+          <div className="mb-6">
+            <h2 className="text-2xl font-semibold text-gray-800 mb-2">
+              {steps[currentStep].title}
+            </h2>
+            <p className="text-gray-600">
+              {steps[currentStep].description}
+            </p>
           </div>
-        </div>
 
-        {/* Footer Navigation */}
-        <div className="flex-shrink-0 bg-white border-t border-gray-200 px-6 py-4">
-          <div className="max-w-4xl mx-auto flex justify-between items-center">
-            <div>
-              {!isFirstStep && (
-                <Button 
-                  variant="outline" 
-                  onClick={handlePrevious}
-                  className="flex items-center"
-                >
-                  <ChevronLeft className="w-4 h-4 mr-2" />
-                  Anterior
-                </Button>
-              )}
-            </div>
+          <div className="min-h-[600px] mb-8">
+            {renderCurrentStepContent()}
+          </div>
 
-            <div className="flex space-x-3">
-              {!isLastStep ? (
-                <Button 
-                  onClick={handleNext}
-                  className="bg-blue-600 hover:bg-blue-700 flex items-center"
-                  size="lg"
-                >
-                  Próximo
-                  <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
-              ) : (
-                <Button 
-                  onClick={handleSubmit} 
-                  disabled={loading}
-                  className="bg-green-600 hover:bg-green-700"
-                  size="lg"
-                >
-                  {loading ? (
-                    <>
-                      <span className="animate-spin mr-2">⏳</span>
-                      Salvando...
-                    </>
-                  ) : (
-                    <>
-                      <Save className="w-4 h-4 mr-2" />
-                      Cadastrar Assinante
-                    </>
-                  )}
-                </Button>
-              )}
+          {/* Footer Navigation */}
+          <div className="bg-white/90 backdrop-blur-sm border border-gray-200 rounded-xl p-6 shadow-lg">
+            <div className="flex justify-between items-center">
+              <div>
+                {!isFirstStep && (
+                  <Button 
+                    variant="outline" 
+                    onClick={handlePrevious}
+                    className="flex items-center hover:bg-gray-50"
+                    size="lg"
+                  >
+                    <ChevronLeft className="w-4 h-4 mr-2" />
+                    Anterior
+                  </Button>
+                )}
+              </div>
+
+              <div className="flex space-x-4">
+                {!isLastStep ? (
+                  <Button 
+                    onClick={handleNext}
+                    className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 flex items-center"
+                    size="lg"
+                  >
+                    Próximo
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
+                ) : (
+                  <Button 
+                    onClick={handleSubmit} 
+                    disabled={loading}
+                    className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+                    size="lg"
+                  >
+                    {loading ? (
+                      <>
+                        <span className="animate-spin mr-2">⏳</span>
+                        Salvando...
+                      </>
+                    ) : (
+                      <>
+                        <Save className="w-4 h-4 mr-2" />
+                        Cadastrar Assinante
+                      </>
+                    )}
+                  </Button>
+                )}
+              </div>
             </div>
           </div>
         </div>
