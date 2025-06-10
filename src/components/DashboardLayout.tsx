@@ -33,6 +33,13 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
     }
   };
 
+  const getUserDisplayName = () => {
+    if (currentUser?.user_metadata?.full_name) {
+      return currentUser.user_metadata.full_name;
+    }
+    return currentUser?.email || 'Usuário';
+  };
+
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-gradient-to-br from-gray-50 via-green-50/30 to-white">
@@ -57,7 +64,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
                     <User className="w-4 h-4 text-white" />
                   </div>
                   <span className="text-gray-700 font-medium text-sm">
-                    {currentUser?.displayName || currentUser?.email}
+                    {getUserDisplayName()}
                   </span>
                 </div>
                 <Button

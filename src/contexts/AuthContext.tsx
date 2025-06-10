@@ -1,17 +1,11 @@
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { 
-  User, 
-  signInWithEmailAndPassword, 
-  createUserWithEmailAndPassword,
-  signOut,
-  onAuthStateChanged,
-  updateProfile
-} from 'firebase/auth';
-import { auth } from '@/lib/firebase';
+import { User, Session } from '@supabase/supabase-js';
+import { supabase } from '@/integrations/supabase/client';
 
 interface AuthContextType {
   currentUser: User | null;
+  session: Session | null;
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, name: string) => Promise<void>;
   logout: () => Promise<void>;
@@ -34,33 +28,81 @@ interface AuthProviderProps {
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
   const register = async (email: string, password: string, name: string) => {
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    await updateProfile(userCredential.user, { displayName: name });
+    console.log('🔐 [AUTH] Registering user:', email);
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          full_name: name
+        }
+      }
+    });
+    
+    if (error) {
+      console.error('❌ [AUTH] Registration error:', error);
+      throw error;
+    }
+    
+    console.log('✅ [AUTH] User registered successfully:', data);
   };
 
   const login = async (email: string, password: string) => {
-    await signInWithEmailAndPassword(auth, email, password);
+    console.log('🔐 [AUTH] Logging in user:', email);
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password
+    });
+    
+    if (error) {
+      console.error('❌ [AUTH] Login error:', error);
+      throw error;
+    }
+    
+    console.log('✅ [AUTH] User logged in successfully:', data);
   };
 
   const logout = async () => {
-    await signOut(auth);
+    console.log('🔐 [AUTH] Logging out user');
+    const { error } = await supabase.auth.signOut();
+    
+    if (error) {
+      console.error('❌ [AUTH] Logout error:', error);
+      throw error;
+    }
+    
+    console.log('✅ [AUTH] User logged out successfully');
   };
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      console.log('🔐 [AUTH] Auth state changed:', user ? `User: ${user.email}` : 'No user');
-      setCurrentUser(user);
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log('🔐 [AUTH] Initial session:', session ? `User: ${session.user.email}` : 'No session');
+      setSession(session);
+      setCurrentUser(session?.user ?? null);
       setLoading(false);
     });
 
-    return unsubscribe;
+    // Listen for auth changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      console.log('🔐 [AUTH] Auth state changed:', session ? `User: ${session.user.email}` : 'No user');
+      setSession(session);
+      setCurrentUser(session?.user ?? null);
+      setLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   const value = {
     currentUser,
+    session,
     login,
     register,
     logout,

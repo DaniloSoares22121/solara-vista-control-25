@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { subscriberService } from '@/services/subscriberService';
+import { supabaseSubscriberService } from '@/services/supabaseSubscriberService';
 import { SubscriberFormData } from '@/types/subscriber';
 import { toast } from 'sonner';
 
@@ -14,7 +14,7 @@ export const useSubscribers = () => {
     setError(null);
     try {
       console.log('🔄 [HOOK] Carregando assinantes...');
-      const data = await subscriberService.getSubscribers();
+      const data = await supabaseSubscriberService.getSubscribers();
       console.log('✅ [HOOK] Assinantes carregados:', data);
       setSubscribers(data);
     } catch (err) {
@@ -31,16 +31,16 @@ export const useSubscribers = () => {
       console.log('🚀 [HOOK] Iniciando criação de assinante...');
       console.log('📊 [HOOK] Dados recebidos:', JSON.stringify(data, null, 2));
       
-      const id = await subscriberService.createSubscriber(data);
+      const id = await supabaseSubscriberService.createSubscriber(data);
       
       console.log('✅ [HOOK] Assinante criado com ID:', id);
       
-      // Verificar se realmente foi criado recarregando a lista
+      // Recarregar lista para verificar
       console.log('🔄 [HOOK] Recarregando lista para verificar...');
       await loadSubscribers();
       
       // Verificar se o novo assinante aparece na lista
-      const updatedSubscribers = await subscriberService.getSubscribers();
+      const updatedSubscribers = await supabaseSubscriberService.getSubscribers();
       const newSubscriber = updatedSubscribers.find(sub => sub.id === id);
       
       if (newSubscriber) {
@@ -56,7 +56,6 @@ export const useSubscribers = () => {
     } catch (err) {
       console.error('❌ [HOOK] Erro ao cadastrar assinante:', err);
       
-      // Mostrar erro mais específico
       let errorMessage = 'Erro ao cadastrar assinante';
       if (err?.message) {
         errorMessage += `: ${err.message}`;
@@ -72,7 +71,7 @@ export const useSubscribers = () => {
   const updateSubscriber = async (id: string, data: Partial<SubscriberFormData>) => {
     setLoading(true);
     try {
-      await subscriberService.updateSubscriber(id, data);
+      await supabaseSubscriberService.updateSubscriber(id, data);
       toast.success('Assinante atualizado com sucesso!');
       await loadSubscribers(); // Recarrega a lista
     } catch (err) {
@@ -87,7 +86,7 @@ export const useSubscribers = () => {
   const deleteSubscriber = async (id: string) => {
     setLoading(true);
     try {
-      await subscriberService.deleteSubscriber(id);
+      await supabaseSubscriberService.deleteSubscriber(id);
       toast.success('Assinante removido com sucesso!');
       await loadSubscribers(); // Recarrega a lista
     } catch (err) {
