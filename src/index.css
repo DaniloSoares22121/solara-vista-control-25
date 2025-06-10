@@ -46,12 +46,12 @@
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
 
-    /* Solar energy theme colors */
-    --solar-gold: 45 96% 64%;
-    --solar-orange: 25 95% 53%;
-    --solar-blue: 213 94% 68%;
-    --solar-green: 142 76% 36%;
-    --solar-yellow: 54 91% 75%;
+    /* Solar energy theme colors - Verde e Branco */
+    --solar-green-primary: 142 76% 36%;
+    --solar-green-light: 142 69% 58%;
+    --solar-green-dark: 142 84% 26%;
+    --solar-white: 0 0% 100%;
+    --solar-green-soft: 142 30% 85%;
   }
 
   .dark {
@@ -97,7 +97,7 @@
 
 @layer utilities {
   .solar-gradient {
-    background: linear-gradient(135deg, hsl(var(--solar-gold)) 0%, hsl(var(--solar-orange)) 35%, hsl(var(--solar-blue)) 100%);
+    background: linear-gradient(135deg, hsl(var(--solar-green-primary)) 0%, hsl(var(--solar-green-light)) 35%, hsl(var(--solar-green-dark)) 100%);
   }
   
   .solar-card-gradient {
@@ -106,14 +106,14 @@
   }
   
   .solar-text-gradient {
-    background: linear-gradient(135deg, hsl(var(--solar-gold)) 0%, hsl(var(--solar-orange)) 100%);
+    background: linear-gradient(135deg, hsl(var(--solar-green-light)) 0%, hsl(var(--solar-green-primary)) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
 
   .solar-glow {
-    box-shadow: 0 0 50px rgba(251, 191, 36, 0.3);
+    box-shadow: 0 0 50px rgba(34, 197, 94, 0.3);
   }
 
   .floating-animation {
@@ -135,10 +135,10 @@
 
   @keyframes pulse-glow {
     0%, 100% {
-      box-shadow: 0 0 20px rgba(251, 191, 36, 0.4);
+      box-shadow: 0 0 20px rgba(34, 197, 94, 0.4);
     }
     50% {
-      box-shadow: 0 0 40px rgba(251, 191, 36, 0.8);
+      box-shadow: 0 0 40px rgba(34, 197, 94, 0.8);
     }
   }
 }

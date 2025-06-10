@@ -13,7 +13,7 @@ const SolarHeroSection = () => {
       ></div>
       
       {/* Gradient Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-br from-yellow-400/80 via-orange-500/70 to-blue-600/80"></div>
+      <div className="absolute inset-0 bg-gradient-to-br from-green-500/80 via-green-600/70 to-green-800/80"></div>
       
       {/* Floating Elements */}
       <div className="absolute top-20 left-10 floating-animation">
@@ -39,7 +39,7 @@ const SolarHeroSection = () => {
             <h1 className="text-5xl font-bold leading-tight">
               Energia Solar
               <br />
-              <span className="text-yellow-200">Inteligente</span>
+              <span className="text-green-200">Inteligente</span>
             </h1>
             <p className="text-xl text-white/90 leading-relaxed max-w-md">
               Gerencie sua usina solar com tecnologia avançada e monitore sua produção em tempo real.
@@ -73,11 +73,11 @@ const SolarHeroSection = () => {
           {/* Stats */}
           <div className="grid grid-cols-2 gap-6 pt-8">
             <div className="text-center">
-              <div className="text-3xl font-bold text-yellow-200">98%</div>
+              <div className="text-3xl font-bold text-green-200">98%</div>
               <div className="text-sm text-white/80">Eficiência</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-yellow-200">24/7</div>
+              <div className="text-3xl font-bold text-green-200">24/7</div>
               <div className="text-sm text-white/80">Monitoramento</div>
             </div>
           </div>

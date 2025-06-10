@@ -48,7 +48,7 @@ const LoginForm = () => {
                 placeholder="seu@email.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="pl-12 h-14 text-lg border-2 border-gray-200 focus:border-yellow-400 transition-colors rounded-xl"
+                className="pl-12 h-14 text-lg border-2 border-gray-200 focus:border-green-500 transition-colors rounded-xl"
                 required
               />
             </div>
@@ -66,7 +66,7 @@ const LoginForm = () => {
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="pl-12 h-14 text-lg border-2 border-gray-200 focus:border-yellow-400 transition-colors rounded-xl"
+                className="pl-12 h-14 text-lg border-2 border-gray-200 focus:border-green-500 transition-colors rounded-xl"
                 required
               />
             </div>
@@ -74,10 +74,10 @@ const LoginForm = () => {
 
           <div className="flex items-center justify-between">
             <label className="flex items-center space-x-3 cursor-pointer">
-              <input type="checkbox" className="rounded border-gray-300 text-yellow-500 focus:ring-yellow-400" />
+              <input type="checkbox" className="rounded border-gray-300 text-green-500 focus:ring-green-400" />
               <span className="text-gray-600 font-medium">Lembrar-me</span>
             </label>
-            <a href="#" className="text-yellow-600 hover:text-yellow-700 font-semibold transition-colors">
+            <a href="#" className="text-green-600 hover:text-green-700 font-semibold transition-colors">
               Esqueceu a senha?
             </a>
           </div>
@@ -94,7 +94,7 @@ const LoginForm = () => {
           <div className="text-center pt-6">
             <p className="text-gray-600">
               Não tem uma conta?{" "}
-              <a href="#" className="text-yellow-600 hover:text-yellow-700 font-semibold transition-colors">
+              <a href="#" className="text-green-600 hover:text-green-700 font-semibold transition-colors">
                 Cadastre-se aqui
               </a>
             </p>
