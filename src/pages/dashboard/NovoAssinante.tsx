@@ -539,229 +539,230 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
               </>
             )}
 
-          <Separator className="my-6" />
-          <h3 className="font-semibold text-gray-700">Endereço Principal</h3>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <Label className="text-sm font-medium text-gray-700">CEP</Label>
-              <Input
-                className="h-11"
-                value={formData.subscriber.address.cep}
-                onChange={(e) => handleCepChange(e.target.value, 'subscriber')}
-                placeholder="00000-000"
-                disabled={cepLoading}
-              />
-            </div>
-            <div className="md:col-span-2">
-              <Label className="text-sm font-medium text-gray-700">Endereço</Label>
-              <Input
-                className="h-11"
-                value={formData.subscriber.address.endereco}
-                onChange={(e) => setFormData(prev => ({
-                  ...prev,
-                  subscriber: {
-                    ...prev.subscriber,
-                    address: { ...prev.subscriber.address, endereco: e.target.value }
-                  }
-                }))}
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <Label className="text-sm font-medium text-gray-700">Número</Label>
-              <Input
-                className="h-11"
-                value={formData.subscriber.address.numero}
-                onChange={(e) => setFormData(prev => ({
-                  ...prev,
-                  subscriber: {
-                    ...prev.subscriber,
-                    address: { ...prev.subscriber.address, numero: e.target.value }
-                  }
-                }))}
-              />
-            </div>
-            <div>
-              <Label className="text-sm font-medium text-gray-700">Complemento</Label>
-              <Input
-                className="h-11"
-                value={formData.subscriber.address.complemento}
-                onChange={(e) => setFormData(prev => ({
-                  ...prev,
-                  subscriber: {
-                    ...prev.subscriber,
-                    address: { ...prev.subscriber.address, complemento: e.target.value }
-                  }
-                }))}
-              />
-            </div>
-            <div>
-              <Label className="text-sm font-medium text-gray-700">Bairro</Label>
-              <Input
-                className="h-11"
-                value={formData.subscriber.address.bairro}
-                onChange={(e) => setFormData(prev => ({
-                  ...prev,
-                  subscriber: {
-                    ...prev.subscriber,
-                    address: { ...prev.subscriber.address, bairro: e.target.value }
-                  }
-                }))}
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label className="text-sm font-medium text-gray-700">Cidade</Label>
-              <Input
-                className="h-11"
-                value={formData.subscriber.address.cidade}
-                onChange={(e) => setFormData(prev => ({
-                  ...prev,
-                  subscriber: {
-                    ...prev.subscriber,
-                    address: { ...prev.subscriber.address, cidade: e.target.value }
-                  }
-                }))}
-              />
-            </div>
-            <div>
-              <Label className="text-sm font-medium text-gray-700">Estado</Label>
-              <Input
-                className="h-11"
-                value={formData.subscriber.address.estado}
-                onChange={(e) => setFormData(prev => ({
-                  ...prev,
-                  subscriber: {
-                    ...prev.subscriber,
-                    address: { ...prev.subscriber.address, estado: e.target.value }
-                  }
-                }))}
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label className="text-sm font-medium text-gray-700">Telefone</Label>
-              <Input
-                className="h-11"
-                value={formData.subscriber.telefone}
-                onChange={(e) => setFormData(prev => ({
-                  ...prev,
-                  subscriber: { ...prev.subscriber, telefone: formatPhone(e.target.value) }
-                }))}
-                placeholder="(00) 00000-0000"
-              />
-            </div>
-            <div>
-              <Label className="text-sm font-medium text-gray-700">E-mail</Label>
-              <Input
-                type="email"
-                className="h-11"
-                value={formData.subscriber.email}
-                onChange={(e) => setFormData(prev => ({
-                  ...prev,
-                  subscriber: { ...prev.subscriber, email: e.target.value }
-                }))}
-              />
-            </div>
-          </div>
-
-          <div>
-            <Label className="text-sm font-medium text-gray-700">Observações</Label>
-            <Textarea
-              value={formData.subscriber.observacoes}
-              onChange={(e) => setFormData(prev => ({
-                ...prev,
-                subscriber: { ...prev.subscriber, observacoes: e.target.value }
-              }))}
-              rows={3}
-              className="resize-none"
-            />
-          </div>
-
-          <Separator className="my-6" />
-          <div className="flex items-center justify-between">
-            <h3 className="font-semibold text-gray-700">Contatos Adicionais para Cobrança</h3>
-            <Button onClick={addContact} size="sm" variant="outline" className="h-9">
-              <Plus className="w-4 h-4 mr-2" />
-              Adicionar
-            </Button>
-          </div>
-
-          {formData.subscriber.contacts.map((contact, index) => (
-            <div key={contact.id} className="p-4 border border-gray-200 rounded-lg space-y-3 bg-gray-50">
-              <div className="flex items-center justify-between">
-                <h4 className="font-medium text-gray-900">Contato {index + 1}</h4>
-                {formData.subscriber.contacts.length > 1 && (
-                  <Button
-                    onClick={() => removeContact(contact.id)}
-                    size="sm"
-                    variant="ghost"
-                    className="h-8 w-8 p-0 text-gray-400 hover:text-red-500"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
-                )}
+            <Separator className="my-6" />
+            <h3 className="font-semibold text-gray-700">Endereço Principal</h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <Label className="text-sm font-medium text-gray-700">CEP</Label>
+                <Input
+                  className="h-11"
+                  value={formData.subscriber.address.cep}
+                  onChange={(e) => handleCepChange(e.target.value, 'subscriber')}
+                  placeholder="00000-000"
+                  disabled={cepLoading}
+                />
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <Label className="text-sm font-medium text-gray-700">Nome</Label>
-                  <Input
-                    className="h-11"
-                    value={contact.name}
-                    onChange={(e) => {
-                      const updatedContacts = formData.subscriber.contacts.map(c =>
-                        c.id === contact.id ? { ...c, name: e.target.value } : c
-                      );
-                      setFormData(prev => ({
-                        ...prev,
-                        subscriber: { ...prev.subscriber, contacts: updatedContacts }
-                      }));
-                    }}
-                  />
-                </div>
-                <div>
-                  <Label className="text-sm font-medium text-gray-700">Telefone</Label>
-                  <Input
-                    className="h-11"
-                    value={contact.phone}
-                    onChange={(e) => {
-                      const updatedContacts = formData.subscriber.contacts.map(c =>
-                        c.id === contact.id ? { ...c, phone: formatPhone(e.target.value) } : c
-                      );
-                      setFormData(prev => ({
-                        ...prev,
-                        subscriber: { ...prev.subscriber, contacts: updatedContacts }
-                      }));
-                    }}
-                    placeholder="(00) 00000-0000"
-                  />
-                </div>
-                <div>
-                  <Label className="text-sm font-medium text-gray-700">Função</Label>
-                  <Input
-                    className="h-11"
-                    value={contact.role}
-                    onChange={(e) => {
-                      const updatedContacts = formData.subscriber.contacts.map(c =>
-                        c.id === contact.id ? { ...c, role: e.target.value } : c
-                      );
-                      setFormData(prev => ({
-                        ...prev,
-                        subscriber: { ...prev.subscriber, contacts: updatedContacts }
-                      }));
-                    }}
-                  />
-                </div>
+              <div className="md:col-span-2">
+                <Label className="text-sm font-medium text-gray-700">Endereço</Label>
+                <Input
+                  className="h-11"
+                  value={formData.subscriber.address.endereco}
+                  onChange={(e) => setFormData(prev => ({
+                    ...prev,
+                    subscriber: {
+                      ...prev.subscriber,
+                      address: { ...prev.subscriber.address, endereco: e.target.value }
+                    }
+                  }))}
+                />
               </div>
             </div>
-          ))}
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <Label className="text-sm font-medium text-gray-700">Número</Label>
+                <Input
+                  className="h-11"
+                  value={formData.subscriber.address.numero}
+                  onChange={(e) => setFormData(prev => ({
+                    ...prev,
+                    subscriber: {
+                      ...prev.subscriber,
+                      address: { ...prev.subscriber.address, numero: e.target.value }
+                    }
+                  }))}
+                />
+              </div>
+              <div>
+                <Label className="text-sm font-medium text-gray-700">Complemento</Label>
+                <Input
+                  className="h-11"
+                  value={formData.subscriber.address.complemento}
+                  onChange={(e) => setFormData(prev => ({
+                    ...prev,
+                    subscriber: {
+                      ...prev.subscriber,
+                      address: { ...prev.subscriber.address, complemento: e.target.value }
+                    }
+                  }))}
+                />
+              </div>
+              <div>
+                <Label className="text-sm font-medium text-gray-700">Bairro</Label>
+                <Input
+                  className="h-11"
+                  value={formData.subscriber.address.bairro}
+                  onChange={(e) => setFormData(prev => ({
+                    ...prev,
+                    subscriber: {
+                      ...prev.subscriber,
+                      address: { ...prev.subscriber.address, bairro: e.target.value }
+                    }
+                  }))}
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label className="text-sm font-medium text-gray-700">Cidade</Label>
+                <Input
+                  className="h-11"
+                  value={formData.subscriber.address.cidade}
+                  onChange={(e) => setFormData(prev => ({
+                    ...prev,
+                    subscriber: {
+                      ...prev.subscriber,
+                      address: { ...prev.subscriber.address, cidade: e.target.value }
+                    }
+                  }))}
+                />
+              </div>
+              <div>
+                <Label className="text-sm font-medium text-gray-700">Estado</Label>
+                <Input
+                  className="h-11"
+                  value={formData.subscriber.address.estado}
+                  onChange={(e) => setFormData(prev => ({
+                    ...prev,
+                    subscriber: {
+                      ...prev.subscriber,
+                      address: { ...prev.subscriber.address, estado: e.target.value }
+                    }
+                  }))}
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label className="text-sm font-medium text-gray-700">Telefone</Label>
+                <Input
+                  className="h-11"
+                  value={formData.subscriber.telefone}
+                  onChange={(e) => setFormData(prev => ({
+                    ...prev,
+                    subscriber: { ...prev.subscriber, telefone: formatPhone(e.target.value) }
+                  }))}
+                  placeholder="(00) 00000-0000"
+                />
+              </div>
+              <div>
+                <Label className="text-sm font-medium text-gray-700">E-mail</Label>
+                <Input
+                  type="email"
+                  className="h-11"
+                  value={formData.subscriber.email}
+                  onChange={(e) => setFormData(prev => ({
+                    ...prev,
+                    subscriber: { ...prev.subscriber, email: e.target.value }
+                  }))}
+                />
+              </div>
+            </div>
+
+            <div>
+              <Label className="text-sm font-medium text-gray-700">Observações</Label>
+              <Textarea
+                value={formData.subscriber.observacoes}
+                onChange={(e) => setFormData(prev => ({
+                  ...prev,
+                  subscriber: { ...prev.subscriber, observacoes: e.target.value }
+                }))}
+                rows={3}
+                className="resize-none"
+              />
+            </div>
+
+            <Separator className="my-6" />
+            <div className="flex items-center justify-between">
+              <h3 className="font-semibold text-gray-700">Contatos Adicionais para Cobrança</h3>
+              <Button onClick={addContact} size="sm" variant="outline" className="h-9">
+                <Plus className="w-4 h-4 mr-2" />
+                Adicionar
+              </Button>
+            </div>
+
+            {formData.subscriber.contacts.map((contact, index) => (
+              <div key={contact.id} className="p-4 border border-gray-200 rounded-lg space-y-3 bg-gray-50">
+                <div className="flex items-center justify-between">
+                  <h4 className="font-medium text-gray-900">Contato {index + 1}</h4>
+                  {formData.subscriber.contacts.length > 1 && (
+                    <Button
+                      onClick={() => removeContact(contact.id)}
+                      size="sm"
+                      variant="ghost"
+                      className="h-8 w-8 p-0 text-gray-400 hover:text-red-500"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  )}
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <Label className="text-sm font-medium text-gray-700">Nome</Label>
+                    <Input
+                      className="h-11"
+                      value={contact.name}
+                      onChange={(e) => {
+                        const updatedContacts = formData.subscriber.contacts.map(c =>
+                          c.id === contact.id ? { ...c, name: e.target.value } : c
+                        );
+                        setFormData(prev => ({
+                          ...prev,
+                          subscriber: { ...prev.subscriber, contacts: updatedContacts }
+                        }));
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-700">Telefone</Label>
+                    <Input
+                      className="h-11"
+                      value={contact.phone}
+                      onChange={(e) => {
+                        const updatedContacts = formData.subscriber.contacts.map(c =>
+                          c.id === contact.id ? { ...c, phone: formatPhone(e.target.value) } : c
+                        );
+                        setFormData(prev => ({
+                          ...prev,
+                          subscriber: { ...prev.subscriber, contacts: updatedContacts }
+                        }));
+                      }}
+                      placeholder="(00) 00000-0000"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-700">Função</Label>
+                    <Input
+                      className="h-11"
+                      value={contact.role}
+                      onChange={(e) => {
+                        const updatedContacts = formData.subscriber.contacts.map(c =>
+                          c.id === contact.id ? { ...c, role: e.target.value } : c
+                        );
+                        setFormData(prev => ({
+                          ...prev,
+                          subscriber: { ...prev.subscriber, contacts: updatedContacts }
+                        }));
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </CardContent>
       </Card>
     </div>
