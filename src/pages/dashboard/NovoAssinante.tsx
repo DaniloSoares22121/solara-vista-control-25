@@ -15,7 +15,11 @@ import { SubscriberFormData } from '@/types/subscriber';
 import { useCepLookup } from '@/hooks/useCepLookup';
 import PlanTable from '@/components/forms/PlanTable';
 
-const NovoAssinante = () => {
+interface NovoAssinanteProps {
+  onClose?: () => void;
+}
+
+const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
   const [currentStep, setCurrentStep] = useState(1);
   const { lookupCep, loading: cepLoading } = useCepLookup();
   
@@ -269,13 +273,16 @@ const NovoAssinante = () => {
   const handleSubmit = () => {
     console.log('Form Data:', formData);
     toast.success('Assinante cadastrado com sucesso!');
+    if (onClose) {
+      onClose();
+    }
   };
 
   const renderStep1 = () => (
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle className="text-green-600">Dados do Assinante</CardTitle>
+          <CardTitle className="text-green-600">Informações Pessoais do Assinante</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
@@ -506,9 +513,7 @@ const NovoAssinante = () => {
           )}
 
           <Separator />
-          <h3 className="font-semibold text-gray-700">
-            {formData.subscriber.type === 'fisica' ? 'Endereço' : 'Endereço da Empresa'}
-          </h3>
+          <h3 className="font-semibold text-gray-700">Endereço Principal</h3>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
@@ -645,7 +650,7 @@ const NovoAssinante = () => {
 
           <Separator />
           <div className="flex items-center justify-between">
-            <h3 className="font-semibold text-gray-700">Contatos para Cobrança</h3>
+            <h3 className="font-semibold text-gray-700">Contatos Adicionais para Cobrança</h3>
             <Button onClick={addContact} size="sm" variant="outline">
               <Plus className="w-4 h-4 mr-2" />
               Adicionar Contato
@@ -972,29 +977,18 @@ const NovoAssinante = () => {
             <Switch
               id="troca-titularidade"
               checked={formData.energyAccount.realizarTrocaTitularidade}
-              onCheckedChange={(checked) => {
-                setFormData(prev => ({
-                  ...prev,
-                  energyAccount: {
-                    ...prev.energyAccount,
-                    realizarTrocaTitularidade: checked,
-                    newTitularity: checked ? {
-                      type: 'fisica',
-                      cpfCnpj: '',
-                      name: '',
-                      dataNascimento: '',
-                      uc: '',
-                      numeroParceiroUC: '',
-                      trocaConcluida: false
-                    } : undefined
-                  }
-                }));
-              }}
+              onCheckedChange={(checked) => setFormData(prev => ({
+                ...prev,
+                energyAccount: {
+                  ...prev.energyAccount,
+                  realizarTrocaTitularidade: checked
+                }
+              }))}
             />
             <Label htmlFor="troca-titularidade">Realizará Troca de Titularidade?</Label>
           </div>
 
-          {formData.energyAccount.realizarTrocaTitularidade && formData.energyAccount.newTitularity && (
+          {formData.energyAccount.realizarTrocaTitularidade && (
             <Card>
               <CardHeader>
                 <CardTitle className="text-sm">Nova Titularidade da Conta de Energia</CardTitle>
@@ -1003,15 +997,21 @@ const NovoAssinante = () => {
                 <div>
                   <Label>Tipo</Label>
                   <RadioGroup 
-                    value={formData.energyAccount.newTitularity.type} 
+                    value={formData.energyAccount.newTitularity?.type || 'fisica'} 
                     onValueChange={(value) => setFormData(prev => ({
                       ...prev,
                       energyAccount: {
                         ...prev.energyAccount,
-                        newTitularity: prev.energyAccount.newTitularity ? {
-                          ...prev.energyAccount.newTitularity,
-                          type: value as 'fisica' | 'juridica'
-                        } : undefined
+                        newTitularity: {
+                          type: value as 'fisica' | 'juridica',
+                          cpfCnpj: prev.energyAccount.newTitularity?.cpfCnpj || '',
+                          name: prev.energyAccount.newTitularity?.name || '',
+                          dataNascimento: prev.energyAccount.newTitularity?.dataNascimento || '',
+                          uc: prev.energyAccount.newTitularity?.uc || '',
+                          numeroParceiroUC: prev.energyAccount.newTitularity?.numeroParceiroUC || '',
+                          trocaConcluida: prev.energyAccount.newTitularity?.trocaConcluida || false,
+                          dataTroca: prev.energyAccount.newTitularity?.dataTroca || '',
+                        }
                       }
                     }))}
                     className="flex space-x-4"
@@ -1029,53 +1029,73 @@ const NovoAssinante = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label>{formData.energyAccount.newTitularity.type === 'fisica' ? 'CPF' : 'CNPJ'}</Label>
+                    <Label>{formData.energyAccount.newTitularity?.type === 'fisica' ? 'CPF' : 'CNPJ'}</Label>
                     <Input
-                      value={formData.energyAccount.newTitularity.cpfCnpj}
+                      value={formData.energyAccount.newTitularity?.cpfCnpj || ''}
                       onChange={(e) => setFormData(prev => ({
                         ...prev,
                         energyAccount: {
                           ...prev.energyAccount,
-                          newTitularity: prev.energyAccount.newTitularity ? {
-                            ...prev.energyAccount.newTitularity,
+                          newTitularity: {
+                            ...prev.energyAccount.newTitularity!,
                             cpfCnpj: formatCpfCnpj(e.target.value)
-                          } : undefined
+                          }
                         }
                       }))}
-                      placeholder={formData.energyAccount.newTitularity.type === 'fisica' ? '000.000.000-00' : '00.000.000/0000-00'}
+                      placeholder={formData.energyAccount.newTitularity?.type === 'fisica' ? '000.000.000-00' : '00.000.000/0000-00'}
                     />
                   </div>
                   <div>
                     <Label>Nome</Label>
                     <Input
-                      value={formData.energyAccount.newTitularity.name}
+                      value={formData.energyAccount.newTitularity?.name || ''}
                       onChange={(e) => setFormData(prev => ({
                         ...prev,
                         energyAccount: {
                           ...prev.energyAccount,
-                          newTitularity: prev.energyAccount.newTitularity ? {
-                            ...prev.energyAccount.newTitularity,
+                          newTitularity: {
+                            ...prev.energyAccount.newTitularity!,
                             name: e.target.value
-                          } : undefined
+                          }
                         }
                       }))}
                     />
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {formData.energyAccount.newTitularity?.type === 'fisica' && (
                   <div>
-                    <Label>UC</Label>
+                    <Label>Data de Nascimento</Label>
                     <Input
-                      value={formData.energyAccount.newTitularity.uc}
+                      type="date"
+                      value={formData.energyAccount.newTitularity?.dataNascimento || ''}
                       onChange={(e) => setFormData(prev => ({
                         ...prev,
                         energyAccount: {
                           ...prev.energyAccount,
-                          newTitularity: prev.energyAccount.newTitularity ? {
-                            ...prev.energyAccount.newTitularity,
+                          newTitularity: {
+                            ...prev.energyAccount.newTitularity!,
+                            dataNascimento: e.target.value
+                          }
+                        }
+                      }))}
+                    />
+                  </div>
+                )}
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label>UC</Label>
+                    <Input
+                      value={formData.energyAccount.newTitularity?.uc || ''}
+                      onChange={(e) => setFormData(prev => ({
+                        ...prev,
+                        energyAccount: {
+                          ...prev.energyAccount,
+                          newTitularity: {
+                            ...prev.energyAccount.newTitularity!,
                             uc: e.target.value
-                          } : undefined
+                          }
                         }
                       }))}
                     />
@@ -1083,15 +1103,15 @@ const NovoAssinante = () => {
                   <div>
                     <Label>Número do Parceiro UC</Label>
                     <Input
-                      value={formData.energyAccount.newTitularity.numeroParceiroUC}
+                      value={formData.energyAccount.newTitularity?.numeroParceiroUC || ''}
                       onChange={(e) => setFormData(prev => ({
                         ...prev,
                         energyAccount: {
                           ...prev.energyAccount,
-                          newTitularity: prev.energyAccount.newTitularity ? {
-                            ...prev.energyAccount.newTitularity,
+                          newTitularity: {
+                            ...prev.energyAccount.newTitularity!,
                             numeroParceiroUC: e.target.value
-                          } : undefined
+                          }
                         }
                       }))}
                     />
@@ -1101,36 +1121,36 @@ const NovoAssinante = () => {
                 <div className="flex items-center space-x-2">
                   <Switch
                     id="troca-concluida"
-                    checked={formData.energyAccount.newTitularity.trocaConcluida}
+                    checked={formData.energyAccount.newTitularity?.trocaConcluida || false}
                     onCheckedChange={(checked) => setFormData(prev => ({
                       ...prev,
                       energyAccount: {
                         ...prev.energyAccount,
-                        newTitularity: prev.energyAccount.newTitularity ? {
-                          ...prev.energyAccount.newTitularity,
+                        newTitularity: {
+                          ...prev.energyAccount.newTitularity!,
                           trocaConcluida: checked
-                        } : undefined
+                        }
                       }
                     }))}
                   />
                   <Label htmlFor="troca-concluida">Troca de Titularidade Concluída</Label>
                 </div>
 
-                {formData.energyAccount.newTitularity.trocaConcluida && (
+                {formData.energyAccount.newTitularity?.trocaConcluida && (
                   <>
                     <div>
                       <Label>Data da Troca</Label>
                       <Input
                         type="date"
-                        value={formData.energyAccount.newTitularity.dataTroca || ''}
+                        value={formData.energyAccount.newTitularity?.dataTroca || ''}
                         onChange={(e) => setFormData(prev => ({
                           ...prev,
                           energyAccount: {
                             ...prev.energyAccount,
-                            newTitularity: prev.energyAccount.newTitularity ? {
-                              ...prev.energyAccount.newTitularity,
+                            newTitularity: {
+                              ...prev.energyAccount.newTitularity!,
                               dataTroca: e.target.value
-                            } : undefined
+                            }
                           }
                         }))}
                       />
