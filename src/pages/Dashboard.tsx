@@ -1,7 +1,7 @@
 
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { Sun, LogOut, User, Menu } from 'lucide-react';
+import { Sun, LogOut, User } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from '@/components/ui/use-toast';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
@@ -30,13 +30,15 @@ const Dashboard = () => {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen w-full bg-gradient-to-br from-gray-50 via-green-50/30 to-white">
-        {/* Header */}
-        <header className="bg-white/95 backdrop-blur-sm shadow-sm border-b border-gray-200/50 sticky top-0 z-50">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center h-16">
+      <div className="min-h-screen flex w-full bg-gradient-to-br from-gray-50 via-green-50/30 to-white">
+        <AppSidebar />
+        
+        <div className="flex-1 flex flex-col">
+          {/* Header */}
+          <header className="bg-white/95 backdrop-blur-sm shadow-sm border-b border-gray-200/50 sticky top-0 z-40">
+            <div className="flex items-center justify-between h-16 px-6">
               <div className="flex items-center space-x-4">
-                <SidebarTrigger className="p-2 hover:bg-green-50 rounded-lg transition-colors duration-200" />
+                <SidebarTrigger className="p-2 hover:bg-green-50 rounded-lg transition-colors duration-200 lg:hidden" />
                 <div className="flex items-center space-x-3">
                   <div className="w-10 h-10 solar-gradient rounded-xl flex items-center justify-center shadow-lg">
                     <Sun className="w-6 h-6 text-white" />
@@ -66,12 +68,8 @@ const Dashboard = () => {
                 </Button>
               </div>
             </div>
-          </div>
-        </header>
+          </header>
 
-        <div className="flex w-full">
-          <AppSidebar />
-          
           {/* Main Content */}
           <main className="flex-1 p-8">
             <div className="max-w-7xl mx-auto">
@@ -95,7 +93,6 @@ const Dashboard = () => {
                     o gerenciamento dos seus projetos.
                   </p>
                   <div className="inline-flex items-center space-x-2 text-green-600 font-semibold">
-                    <Menu className="w-5 h-5" />
                     <span>Selecione uma opção no menu lateral para começar</span>
                   </div>
                 </div>

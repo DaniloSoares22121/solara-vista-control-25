@@ -1,5 +1,5 @@
 
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import { 
   LayoutDashboard, 
   Zap, 
@@ -9,7 +9,9 @@ import {
   FileText, 
   FileCheck, 
   Receipt, 
-  MessageCircle 
+  MessageCircle,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import {
   Sidebar,
@@ -36,22 +38,40 @@ const menuItems = [
 ];
 
 export function AppSidebar() {
-  const { state } = useSidebar();
-  const location = useLocation();
-  const currentPath = location.pathname;
-
-  const isActive = (path: string) => currentPath === path;
+  const { state, toggleSidebar } = useSidebar();
   const isCollapsed = state === 'collapsed';
 
   return (
-    <Sidebar className={isCollapsed ? 'w-16' : 'w-64'} collapsible="icon">
-      <SidebarContent className="bg-white border-r border-gray-200 shadow-lg">
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-gray-600 font-semibold px-4 py-3 text-sm uppercase tracking-wide">
-            {!isCollapsed && 'Menu Principal'}
-          </SidebarGroupLabel>
+    <Sidebar 
+      className="border-r border-green-200 bg-white shadow-lg" 
+      collapsible="icon"
+    >
+      <SidebarContent className="bg-white">
+        {/* Header com botão de toggle */}
+        <div className="flex items-center justify-between p-4 border-b border-green-100">
+          {!isCollapsed && (
+            <h2 className="text-lg font-bold text-green-800">Menu</h2>
+          )}
+          <button
+            onClick={toggleSidebar}
+            className="p-2 rounded-lg hover:bg-green-50 text-green-600 transition-all duration-200"
+          >
+            {isCollapsed ? (
+              <ChevronRight className="w-5 h-5" />
+            ) : (
+              <ChevronLeft className="w-5 h-5" />
+            )}
+          </button>
+        </div>
+
+        <SidebarGroup className="py-4">
+          {!isCollapsed && (
+            <SidebarGroupLabel className="px-4 py-2 text-xs font-semibold text-green-600 uppercase tracking-wider">
+              Navegação
+            </SidebarGroupLabel>
+          )}
           <SidebarGroupContent>
-            <SidebarMenu className="space-y-2 px-3">
+            <SidebarMenu className="px-3 space-y-1">
               {menuItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
@@ -59,16 +79,17 @@ export function AppSidebar() {
                       to={item.url}
                       end
                       className={({ isActive }) => 
-                        `flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 group ${
+                        `flex items-center gap-3 px-3 py-3 rounded-lg transition-all duration-200 group ${
                           isActive 
-                            ? 'solar-gradient text-white shadow-lg transform scale-105' 
-                            : 'text-gray-600 hover:bg-gradient-to-r hover:from-green-50 hover:to-green-100 hover:text-green-700 hover:shadow-md hover:scale-102'
-                        }`
+                            ? 'bg-green-500 text-white shadow-md' 
+                            : 'text-gray-700 hover:bg-green-50 hover:text-green-700'
+                        } ${isCollapsed ? 'justify-center' : ''}`
                       }
+                      title={isCollapsed ? item.title : undefined}
                     >
-                      <item.icon className={`w-5 h-5 flex-shrink-0 transition-transform duration-200 ${isCollapsed ? 'mx-auto' : ''}`} />
+                      <item.icon className="w-5 h-5 flex-shrink-0" />
                       {!isCollapsed && (
-                        <span className="font-medium text-sm tracking-wide group-hover:translate-x-1 transition-transform duration-200">
+                        <span className="font-medium text-sm">
                           {item.title}
                         </span>
                       )}
