@@ -8,9 +8,11 @@ import { Badge } from '@/components/ui/badge';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Zap, Plus, Search, RefreshCw, Filter, MapPin, Activity } from 'lucide-react';
 import NovaGeradora from './NovaGeradora';
+import { useGenerators } from '@/hooks/useGenerators';
 
 const Geradoras = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const { generators, loading, refreshGenerators } = useGenerators();
 
   const handleOpenModal = () => {
     setIsModalOpen(true);
@@ -18,7 +20,16 @@ const Geradoras = () => {
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
+    refreshGenerators(); // Recarregar dados após fechar modal
   };
+
+  const activeGenerators = generators.filter(g => g.status === 'active').length;
+  const totalCapacity = generators.reduce((total, generator) => {
+    const plants = generator.plants || [];
+    return total + plants.reduce((plantTotal: number, plant: any) => {
+      return plantTotal + (plant.potenciaTotalUsina || 0);
+    }, 0);
+  }, 0);
 
   return (
     <DashboardLayout>
@@ -58,7 +69,7 @@ const Geradoras = () => {
               </div>
             </CardHeader>
             <CardContent className="pt-0">
-              <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">0</div>
+              <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">{generators.length}</div>
               <p className="text-xs sm:text-sm text-gray-500">Unidades cadastradas</p>
             </CardContent>
           </Card>
@@ -73,7 +84,7 @@ const Geradoras = () => {
               </div>
             </CardHeader>
             <CardContent className="pt-0">
-              <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">0</div>
+              <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">{activeGenerators}</div>
               <p className="text-xs sm:text-sm text-gray-500">Em funcionamento</p>
             </CardContent>
           </Card>
@@ -88,7 +99,7 @@ const Geradoras = () => {
               </div>
             </CardHeader>
             <CardContent className="pt-0">
-              <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">0 kWp</div>
+              <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">{totalCapacity.toFixed(1)} kWp</div>
               <p className="text-xs sm:text-sm text-gray-500">Potência instalada</p>
             </CardContent>
           </Card>
@@ -112,8 +123,13 @@ const Geradoras = () => {
                   Filtros
                 </Button>
                 
-                <Button variant="outline" className="flex-1 sm:flex-none h-10 sm:h-12 px-3 sm:px-6 border-gray-200 hover:bg-gray-50 text-sm">
-                  <RefreshCw className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                <Button 
+                  variant="outline" 
+                  className="flex-1 sm:flex-none h-10 sm:h-12 px-3 sm:px-6 border-gray-200 hover:bg-gray-50 text-sm"
+                  onClick={refreshGenerators}
+                  disabled={loading}
+                >
+                  <RefreshCw className={`w-4 h-4 sm:w-5 sm:h-5 mr-2 ${loading ? 'animate-spin' : ''}`} />
                   Atualizar
                 </Button>
               </div>
@@ -121,40 +137,76 @@ const Geradoras = () => {
           </CardContent>
         </Card>
 
-        {/* Enhanced Empty State */}
-        <Card className="border-0 shadow-lg bg-white">
-          <CardContent className="flex flex-col items-center justify-center py-12 sm:py-20 px-4">
-            <div className="relative mb-6 sm:mb-8">
-              <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-green-100 to-green-200 rounded-full flex items-center justify-center">
-                <Zap className="w-10 h-10 sm:w-12 sm:h-12 text-green-600" />
+        {/* Lista de Geradoras ou Estado Vazio */}
+        {generators.length === 0 ? (
+          <Card className="border-0 shadow-lg bg-white">
+            <CardContent className="flex flex-col items-center justify-center py-12 sm:py-20 px-4">
+              <div className="relative mb-6 sm:mb-8">
+                <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-green-100 to-green-200 rounded-full flex items-center justify-center">
+                  <Zap className="w-10 h-10 sm:w-12 sm:h-12 text-green-600" />
+                </div>
+                <div className="absolute -top-2 -right-2">
+                  <Badge variant="secondary" className="bg-green-100 text-green-700 border-green-200 text-xs">
+                    Novo
+                  </Badge>
+                </div>
               </div>
-              <div className="absolute -top-2 -right-2">
-                <Badge variant="secondary" className="bg-green-100 text-green-700 border-green-200 text-xs">
-                  Novo
-                </Badge>
-              </div>
-            </div>
-            
-            <div className="text-center space-y-3 sm:space-y-4 max-w-md">
-              <h3 className="text-xl sm:text-2xl font-bold text-gray-900">
-                Nenhuma geradora encontrada
-              </h3>
-              <p className="text-gray-500 leading-relaxed text-sm sm:text-base">
-                Comece adicionando sua primeira geradora para monitorar a produção de energia e gerenciar seus assinantes.
-              </p>
               
-              <div className="pt-2 sm:pt-4">
-                <Button 
-                  onClick={handleOpenModal}
-                  className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white shadow-lg px-6 sm:px-8 py-2 sm:py-3 text-sm sm:text-base"
-                >
-                  <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                  Adicionar Primeira Geradora
-                </Button>
+              <div className="text-center space-y-3 sm:space-y-4 max-w-md">
+                <h3 className="text-xl sm:text-2xl font-bold text-gray-900">
+                  Nenhuma geradora encontrada
+                </h3>
+                <p className="text-gray-500 leading-relaxed text-sm sm:text-base">
+                  Comece adicionando sua primeira geradora para monitorar a produção de energia e gerenciar seus assinantes.
+                </p>
+                
+                <div className="pt-2 sm:pt-4">
+                  <Button 
+                    onClick={handleOpenModal}
+                    className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white shadow-lg px-6 sm:px-8 py-2 sm:py-3 text-sm sm:text-base"
+                  >
+                    <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                    Adicionar Primeira Geradora
+                  </Button>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {generators.map((generator) => (
+              <Card key={generator.id} className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 bg-white">
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-lg font-bold text-gray-900">
+                      {generator.owner?.name || 'Geradora'}
+                    </CardTitle>
+                    <Badge className={`${generator.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+                      {generator.status === 'active' ? 'Ativa' : 'Inativa'}
+                    </Badge>
+                  </div>
+                  <p className="text-sm text-gray-600">{generator.concessionaria}</p>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Usinas:</span>
+                      <span className="font-medium">{generator.plants?.length || 0}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Capacidade:</span>
+                      <span className="font-medium">
+                        {generator.plants?.reduce((total: number, plant: any) => {
+                          return total + (plant.potenciaTotalUsina || 0);
+                        }, 0).toFixed(1)} kWp
+                      </span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Sheet for New Generator */}
@@ -162,7 +214,7 @@ const Geradoras = () => {
         <SheetContent side="right" className="w-full sm:max-w-7xl p-0 overflow-hidden">
           <SheetHeader className="sr-only">
             <SheetTitle>Nova Geradora</SheetTitle>
-          </SheetHeader>
+          </ShHeader>
           <NovaGeradora onClose={handleCloseModal} />
         </SheetContent>
       </Sheet>

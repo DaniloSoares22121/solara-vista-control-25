@@ -9,6 +9,51 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      generators: {
+        Row: {
+          administrator: Json | null
+          attachments: Json | null
+          concessionaria: string
+          created_at: string
+          distributor_login: Json
+          id: string
+          owner: Json
+          payment_data: Json
+          plants: Json
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          administrator?: Json | null
+          attachments?: Json | null
+          concessionaria: string
+          created_at?: string
+          distributor_login: Json
+          id?: string
+          owner: Json
+          payment_data: Json
+          plants: Json
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          administrator?: Json | null
+          attachments?: Json | null
+          concessionaria?: string
+          created_at?: string
+          distributor_login?: Json
+          id?: string
+          owner?: Json
+          payment_data?: Json
+          plants?: Json
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       solar_access_logs: {
         Row: {
           action: string
