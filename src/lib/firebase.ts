@@ -1,7 +1,7 @@
 
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
+import { getFirestore, connectFirestoreEmulator, enableNetwork } from 'firebase/firestore';
 
 const firebaseConfig = {
   apiKey: "AIzaSyCt9p-B3TVgWjt4SNcKGQi_Q1qH9r5lR2Q",
@@ -12,15 +12,27 @@ const firebaseConfig = {
   appId: "1:194945466085:web:03d11460c2980f36a7de0c"
 };
 
-console.log('🔥 Inicializando Firebase...');
-console.log('⚙️ Config:', firebaseConfig);
+console.log('🔥 [FIREBASE] Inicializando Firebase...');
+console.log('⚙️ [FIREBASE] Config:', firebaseConfig);
 
 const app = initializeApp(firebaseConfig);
-export const auth = getAuth(app);
-export const db = getFirestore(app);
+console.log('✅ [FIREBASE] App inicializado:', app);
 
-console.log('✅ Firebase inicializado');
-console.log('🔐 Auth instance:', auth);
-console.log('🗄️ Firestore instance:', db);
+export const auth = getAuth(app);
+console.log('🔐 [FIREBASE] Auth instance criada:', auth);
+
+export const db = getFirestore(app);
+console.log('🗄️ [FIREBASE] Firestore instance criada:', db);
+
+// Verificar se está conectado
+enableNetwork(db)
+  .then(() => {
+    console.log('✅ [FIREBASE] Firestore conectado com sucesso!');
+  })
+  .catch((error) => {
+    console.error('❌ [FIREBASE] Erro ao conectar Firestore:', error);
+  });
+
+console.log('✅ [FIREBASE] Firebase totalmente inicializado');
 
 export default app;

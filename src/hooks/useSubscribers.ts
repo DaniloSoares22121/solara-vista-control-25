@@ -13,12 +13,12 @@ export const useSubscribers = () => {
     setLoading(true);
     setError(null);
     try {
-      console.log('🔄 Carregando assinantes...');
+      console.log('🔄 [HOOK] Carregando assinantes...');
       const data = await subscriberService.getSubscribers();
-      console.log('✅ Assinantes carregados:', data);
+      console.log('✅ [HOOK] Assinantes carregados:', data);
       setSubscribers(data);
     } catch (err) {
-      console.error('❌ Erro ao carregar assinantes:', err);
+      console.error('❌ [HOOK] Erro ao carregar assinantes:', err);
       setError('Erro ao carregar assinantes');
     } finally {
       setLoading(false);
@@ -28,20 +28,33 @@ export const useSubscribers = () => {
   const createSubscriber = async (data: SubscriberFormData) => {
     setLoading(true);
     try {
-      console.log('🚀 Hook: Iniciando criação de assinante...');
-      console.log('📊 Hook: Dados recebidos:', data);
+      console.log('🚀 [HOOK] Iniciando criação de assinante...');
+      console.log('📊 [HOOK] Dados recebidos:', JSON.stringify(data, null, 2));
       
       const id = await subscriberService.createSubscriber(data);
       
-      console.log('✅ Hook: Assinante criado com ID:', id);
-      toast.success('Assinante cadastrado com sucesso!');
+      console.log('✅ [HOOK] Assinante criado com ID:', id);
       
-      console.log('🔄 Hook: Recarregando lista...');
-      await loadSubscribers(); // Recarrega a lista
+      // Verificar se realmente foi criado recarregando a lista
+      console.log('🔄 [HOOK] Recarregando lista para verificar...');
+      await loadSubscribers();
+      
+      // Verificar se o novo assinante aparece na lista
+      const updatedSubscribers = await subscriberService.getSubscribers();
+      const newSubscriber = updatedSubscribers.find(sub => sub.id === id);
+      
+      if (newSubscriber) {
+        console.log('✅ [HOOK] Assinante confirmado na lista:', newSubscriber);
+        toast.success('Assinante cadastrado com sucesso!');
+      } else {
+        console.error('❌ [HOOK] Assinante não encontrado na lista após criação!');
+        toast.error('Erro: Assinante não foi salvo corretamente');
+        throw new Error('Assinante não foi salvo corretamente');
+      }
       
       return id;
     } catch (err) {
-      console.error('❌ Hook: Erro ao cadastrar assinante:', err);
+      console.error('❌ [HOOK] Erro ao cadastrar assinante:', err);
       
       // Mostrar erro mais específico
       let errorMessage = 'Erro ao cadastrar assinante';

@@ -1,4 +1,3 @@
-
 import { collection, addDoc, getDocs, doc, updateDoc, deleteDoc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { SubscriberFormData } from '@/types/subscriber';
@@ -9,67 +8,108 @@ export const subscriberService = {
   // Criar novo assinante
   async createSubscriber(data: SubscriberFormData): Promise<string> {
     try {
-      console.log('🚀 Iniciando criação de assinante...');
-      console.log('📊 Dados recebidos:', data);
-      console.log('🔥 Firebase DB instance:', db);
-      console.log('📁 Collection name:', COLLECTION_NAME);
-
-      // Verificar se o db está conectado
+      console.log('🚀 [SERVICE] Iniciando criação de assinante...');
+      console.log('📊 [SERVICE] Dados recebidos:', JSON.stringify(data, null, 2));
+      
+      // Verificar se o Firebase está inicializado
+      console.log('🔥 [SERVICE] Verificando Firebase DB:', db);
+      console.log('🔥 [SERVICE] DB app:', db.app);
+      console.log('🔥 [SERVICE] DB type:', db.type);
+      
       if (!db) {
+        console.error('❌ [SERVICE] Firebase database não está inicializada');
         throw new Error('Firebase database não está inicializada');
       }
 
+      // Preparar dados para salvar
       const docData = {
         ...data,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
         status: 'active'
       };
 
-      console.log('📝 Dados que serão salvos:', docData);
+      console.log('📝 [SERVICE] Dados preparados para salvar:', JSON.stringify(docData, null, 2));
+      console.log('📁 [SERVICE] Collection name:', COLLECTION_NAME);
 
-      const docRef = await addDoc(collection(db, COLLECTION_NAME), docData);
+      // Tentar criar a referência da coleção
+      console.log('🔗 [SERVICE] Criando referência da coleção...');
+      const collectionRef = collection(db, COLLECTION_NAME);
+      console.log('✅ [SERVICE] Referência da coleção criada:', collectionRef);
+
+      // Tentar adicionar o documento
+      console.log('💾 [SERVICE] Tentando adicionar documento ao Firestore...');
+      const docRef = await addDoc(collectionRef, docData);
       
-      console.log('✅ Assinante criado com sucesso! ID:', docRef.id);
-      console.log('🔗 Document reference:', docRef);
+      console.log('✅ [SERVICE] Documento adicionado com sucesso!');
+      console.log('🆔 [SERVICE] ID do documento:', docRef.id);
+      console.log('🔗 [SERVICE] Referência completa do documento:', docRef);
+      console.log('📍 [SERVICE] Path do documento:', docRef.path);
+      
+      // Verificar se o documento foi realmente criado
+      console.log('🔍 [SERVICE] Verificando se o documento foi criado...');
+      const createdDoc = await getDoc(docRef);
+      if (createdDoc.exists()) {
+        console.log('✅ [SERVICE] Documento confirmado no Firestore!');
+        console.log('📄 [SERVICE] Dados do documento criado:', createdDoc.data());
+      } else {
+        console.error('❌ [SERVICE] Documento não foi encontrado após criação!');
+        throw new Error('Documento não foi criado corretamente');
+      }
       
       return docRef.id;
     } catch (error) {
-      console.error('❌ Erro detalhado ao criar assinante:');
-      console.error('Error name:', error?.name);
-      console.error('Error message:', error?.message);
-      console.error('Error code:', error?.code);
-      console.error('Full error:', error);
-      console.error('Stack trace:', error?.stack);
-      throw error;
+      console.error('❌ [SERVICE] ERRO DETALHADO ao criar assinante:');
+      console.error('❌ [SERVICE] Error name:', error?.name);
+      console.error('❌ [SERVICE] Error message:', error?.message);
+      console.error('❌ [SERVICE] Error code:', error?.code);
+      console.error('❌ [SERVICE] Error stack:', error?.stack);
+      console.error('❌ [SERVICE] Full error object:', error);
+      
+      // Re-throw com uma mensagem mais específica
+      if (error?.code) {
+        throw new Error(`Firebase Error (${error.code}): ${error.message}`);
+      } else if (error?.message) {
+        throw new Error(`Erro ao salvar: ${error.message}`);
+      } else {
+        throw new Error('Erro desconhecido ao salvar no Firebase');
+      }
     }
   },
 
   // Buscar todos os assinantes
   async getSubscribers(): Promise<(SubscriberFormData & { id: string })[]> {
     try {
-      console.log('🔍 Buscando assinantes...');
+      console.log('🔍 [SERVICE] Buscando assinantes...');
       
       if (!db) {
         throw new Error('Firebase database não está inicializada');
       }
 
-      const querySnapshot = await getDocs(collection(db, COLLECTION_NAME));
+      const collectionRef = collection(db, COLLECTION_NAME);
+      console.log('📁 [SERVICE] Referência da coleção para busca:', collectionRef);
+      
+      const querySnapshot = await getDocs(collectionRef);
+      console.log('📊 [SERVICE] QuerySnapshot recebido:', querySnapshot);
+      console.log('📊 [SERVICE] Número de documentos:', querySnapshot.size);
+      console.log('📊 [SERVICE] QuerySnapshot vazio?', querySnapshot.empty);
+      
       const subscribers: (SubscriberFormData & { id: string })[] = [];
       
       querySnapshot.forEach((doc) => {
-        console.log('📄 Documento encontrado:', doc.id, doc.data());
+        console.log('📄 [SERVICE] Documento encontrado - ID:', doc.id);
+        console.log('📄 [SERVICE] Documento encontrado - Data:', doc.data());
         subscribers.push({
           id: doc.id,
           ...doc.data() as SubscriberFormData
         });
       });
       
-      console.log('✅ Assinantes encontrados:', subscribers.length);
+      console.log('✅ [SERVICE] Total de assinantes encontrados:', subscribers.length);
+      console.log('✅ [SERVICE] Lista completa:', subscribers);
       return subscribers;
     } catch (error) {
-      console.error('❌ Erro ao buscar assinantes:');
-      console.error('Error details:', error);
+      console.error('❌ [SERVICE] Erro ao buscar assinantes:', error);
       throw error;
     }
   },
