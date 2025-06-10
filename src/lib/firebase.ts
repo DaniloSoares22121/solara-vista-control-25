@@ -1,0 +1,16 @@
+
+import { initializeApp } from 'firebase/app';
+import { getAuth } from 'firebase/auth';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCt9p-B3TVgWjt4SNcKGQi_Q1qH9r5lR2Q",
+  authDomain: "solar-220.firebaseapp.com",
+  projectId: "solar-220",
+  storageBucket: "solar-220.firebasestorage.app",
+  messagingSenderId: "194945466085",
+  appId: "1:194945466085:web:03d11460c2980f36a7de0c"
+};
+
+const app = initializeApp(firebaseConfig);
+export const auth = getAuth(app);
+export default app;
