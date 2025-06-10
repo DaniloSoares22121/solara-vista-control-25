@@ -5,9 +5,18 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
+import ProtectedRoute from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
+import Geradoras from "./pages/dashboard/Geradoras";
+import Assinantes from "./pages/dashboard/Assinantes";
+import Rateio from "./pages/dashboard/Rateio";
+import Representantes from "./pages/dashboard/Representantes";
+import FaturaUnica from "./pages/dashboard/FaturaUnica";
+import FaturaValidacao from "./pages/dashboard/FaturaValidacao";
+import FaturasEmitidas from "./pages/dashboard/FaturasEmitidas";
+import Whatsapp from "./pages/dashboard/Whatsapp";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -22,7 +31,51 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/register" element={<Register />} />
-            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/dashboard" element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="/dashboard/geradoras" element={
+              <ProtectedRoute>
+                <Geradoras />
+              </ProtectedRoute>
+            } />
+            <Route path="/dashboard/assinantes" element={
+              <ProtectedRoute>
+                <Assinantes />
+              </ProtectedRoute>
+            } />
+            <Route path="/dashboard/rateio" element={
+              <ProtectedRoute>
+                <Rateio />
+              </ProtectedRoute>
+            } />
+            <Route path="/dashboard/representantes" element={
+              <ProtectedRoute>
+                <Representantes />
+              </ProtectedRoute>
+            } />
+            <Route path="/dashboard/fatura-unica" element={
+              <ProtectedRoute>
+                <FaturaUnica />
+              </ProtectedRoute>
+            } />
+            <Route path="/dashboard/fatura-validacao" element={
+              <ProtectedRoute>
+                <FaturaValidacao />
+              </ProtectedRoute>
+            } />
+            <Route path="/dashboard/faturas-emitidas" element={
+              <ProtectedRoute>
+                <FaturasEmitidas />
+              </ProtectedRoute>
+            } />
+            <Route path="/dashboard/whatsapp" element={
+              <ProtectedRoute>
+                <Whatsapp />
+              </ProtectedRoute>
+            } />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
