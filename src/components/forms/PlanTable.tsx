@@ -587,5 +587,3 @@ const PlanTable = ({ selectedPlan, fidelidade, anosFidelidade, onPlanChange }: P
 };
 
 export default PlanTable;
-
-</initial_code>
