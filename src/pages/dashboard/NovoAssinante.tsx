@@ -13,6 +13,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Switch } from '@/components/ui/switch';
 import { 
   ChevronLeft, 
   ChevronRight, 
@@ -29,11 +30,14 @@ import {
   Phone,
   Mail,
   Calendar,
-  FileCheck
+  FileCheck,
+  Settings,
+  Bell
 } from 'lucide-react';
-import AddressForm from '@/components/forms/AddressForm';
 import ContactsForm from '@/components/forms/ContactsForm';
+import PlanTable from '@/components/forms/PlanTable';
 import { SubscriberFormData, Contact } from '@/types/subscriber';
+import { useCepLookup } from '@/hooks/useCepLookup';
 
 const subscriberFormSchema = z.object({
   concessionaria: z.string().min(1, 'Selecione uma concessionária'),
@@ -72,7 +76,7 @@ interface NovoAssinanteProps {
   onClose?: () => void;
 }
 
-// Função para aplicar máscara de CPF
+// Máscaras
 const applyCpfMask = (value: string) => {
   return value
     .replace(/\D/g, '')
@@ -82,7 +86,6 @@ const applyCpfMask = (value: string) => {
     .replace(/(-\d{2})\d+?$/, '$1');
 };
 
-// Função para aplicar máscara de CNPJ
 const applyCnpjMask = (value: string) => {
   return value
     .replace(/\D/g, '')
@@ -93,7 +96,6 @@ const applyCnpjMask = (value: string) => {
     .replace(/(-\d{2})\d+?$/, '$1');
 };
 
-// Função para aplicar máscara de telefone
 const applyPhoneMask = (value: string) => {
   return value
     .replace(/\D/g, '')
@@ -103,7 +105,6 @@ const applyPhoneMask = (value: string) => {
     .replace(/(-\d{4})\d+?$/, '$1');
 };
 
-// Função para aplicar máscara de CEP
 const applyCepMask = (value: string) => {
   return value
     .replace(/\D/g, '')
@@ -114,8 +115,9 @@ const applyCepMask = (value: string) => {
 const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [contacts, setContacts] = useState<Contact[]>([]);
+  const { lookupCep, loading: cepLoading } = useCepLookup();
 
-  const totalSteps = 7;
+  const totalSteps = 10;
 
   const form = useForm<SubscriberFormData>({
     resolver: zodResolver(subscriberFormSchema),
@@ -145,6 +147,63 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
         observacoes: '',
         contacts: [],
       },
+      energyAccount: {
+        originalAccount: {
+          type: 'fisica',
+          cpfCnpj: '',
+          name: '',
+          dataNascimento: '',
+          uc: '',
+          numeroParceiroUC: '',
+          address: {
+            cep: '',
+            endereco: '',
+            numero: '',
+            complemento: '',
+            bairro: '',
+            cidade: '',
+            estado: '',
+          },
+        },
+        realizarTrocaTitularidade: false,
+      },
+      planContract: {
+        modalidadeCompensacao: 'autoconsumo',
+        dataAdesao: '',
+        kwhVendedor: 0,
+        kwhContratado: 0,
+        faixaConsumo: '400-599',
+        fidelidade: 'sem',
+        desconto: 13,
+      },
+      planDetails: {
+        clientePagaPisCofins: true,
+        clientePagaFioB: false,
+        adicionarValorDistribuidora: false,
+        assinanteIsento: false,
+      },
+      notifications: {
+        whatsappFaturas: true,
+        whatsappPagamento: false,
+        notifications: {
+          criarCobranca: { whatsapp: true, email: true },
+          alteracaoValor: { whatsapp: true, email: true },
+          vencimento1Dia: { whatsapp: true, email: true },
+          vencimentoHoje: { whatsapp: true, email: true },
+        },
+        overdueNotifications: {
+          day1: { whatsapp: true, email: true },
+          day3: { whatsapp: true, email: true },
+          day5: { whatsapp: true, email: true },
+          day7: { whatsapp: true, email: true },
+          day15: { whatsapp: true, email: true },
+          day20: { whatsapp: true, email: true },
+          day25: { whatsapp: true, email: true },
+          day30: { whatsapp: true, email: true },
+          after30: { whatsapp: true, email: true },
+        },
+      },
+      attachments: {},
     },
   });
 
@@ -163,22 +222,37 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
     }
   };
 
+  const handleCepLookup = async (cep: string, prefix: string) => {
+    if (cep.length === 9) {
+      const addressData = await lookupCep(cep);
+      if (addressData) {
+        form.setValue(`${prefix}.endereco` as any, addressData.endereco);
+        form.setValue(`${prefix}.bairro` as any, addressData.bairro);
+        form.setValue(`${prefix}.cidade` as any, addressData.cidade);
+        form.setValue(`${prefix}.estado` as any, addressData.estado);
+        if (addressData.complemento) {
+          form.setValue(`${prefix}.complemento` as any, addressData.complemento);
+        }
+      }
+    }
+  };
+
   const steps = [
     { id: 1, label: 'Dados Pessoais', icon: User, color: 'from-green-500 to-green-600' },
     { id: 2, label: 'Endereço Principal', icon: MapPin, color: 'from-green-500 to-green-600' },
-    { id: 3, label: 'Endereço de Instalação', icon: Building, color: 'from-green-500 to-green-600' },
+    { id: 3, label: 'Administrador PJ', icon: Building, color: 'from-green-500 to-green-600' },
     { id: 4, label: 'Contatos', icon: MessageSquare, color: 'from-green-500 to-green-600' },
-    { id: 5, label: 'Informações Bancárias', icon: CreditCard, color: 'from-green-500 to-green-600' },
-    { id: 6, label: 'Documentos', icon: FileText, color: 'from-green-500 to-green-600' },
-    { id: 7, label: 'Confirmação', icon: Check, color: 'from-green-500 to-green-600' },
+    { id: 5, label: 'Conta Original', icon: Zap, color: 'from-green-500 to-green-600' },
+    { id: 6, label: 'Nova Titularidade', icon: FileText, color: 'from-green-500 to-green-600' },
+    { id: 7, label: 'Plano Escolhido', icon: CreditCard, color: 'from-green-500 to-green-600' },
+    { id: 8, label: 'Detalhes do Plano', icon: Settings, color: 'from-green-500 to-green-600' },
+    { id: 9, label: 'Notificações', icon: Bell, color: 'from-green-500 to-green-600' },
+    { id: 10, label: 'Documentos', icon: FileCheck, color: 'from-green-500 to-green-600' },
   ];
 
   const subscriberType = form.watch('subscriber.type');
-  const concessionaria = form.watch('concessionaria');
+  const realizarTroca = form.watch('energyAccount.realizarTrocaTitularidade');
   const currentStepData = steps[currentStep - 1];
-
-  // Dados do assinante para preencher automaticamente os dados da conta de energia
-  const subscriberData = form.watch('subscriber');
 
   return (
     <div className="h-full flex flex-col bg-gradient-to-br from-slate-50 to-green-50/30">
@@ -255,7 +329,7 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
                       <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-green-600 rounded-lg flex items-center justify-center">
                         <User className="w-4 h-4 text-white" />
                       </div>
-                      Informações Pessoais
+                      Informações Pessoais do Assinante
                       <Badge variant="outline" className="ml-auto text-green-600 border-green-200 bg-green-50">
                         Obrigatório
                       </Badge>
@@ -273,7 +347,7 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
                               <Building className="w-5 h-5 text-green-600" />
                               Concessionária de Energia *
                             </FormLabel>
-                            <Select onValueChange={field.onChange} value={field.value} disabled>
+                            <Select onValueChange={field.onChange} value={field.value}>
                               <FormControl>
                                 <SelectTrigger className="h-12 border-green-300 focus:border-green-500 focus:ring-green-500/20 bg-white rounded-lg">
                                   <SelectValue placeholder="Selecione a concessionária de energia" />
@@ -296,7 +370,7 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
                         name="subscriber.type"
                         render={({ field }) => (
                           <FormItem className="space-y-4">
-                            <FormLabel className="text-base font-semibold text-gray-800">Tipo de Pessoa *</FormLabel>
+                            <FormLabel className="text-base font-semibold text-gray-800">Tipo de Assinante *</FormLabel>
                             <RadioGroup defaultValue={field.value} onValueChange={field.onChange} className="flex gap-6">
                               <FormItem className="flex items-center space-x-3 space-y-0 p-4 border border-green-300 rounded-lg hover:border-green-400 transition-colors bg-white">
                                 <FormControl>
@@ -443,7 +517,7 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
                                 <FormItem>
                                   <FormLabel className="text-sm font-semibold text-gray-700 flex items-center gap-2">
                                     <Calendar className="w-4 h-4 text-green-500" />
-                                    Data de Nascimento
+                                    Data de Nascimento *
                                   </FormLabel>
                                   <FormControl>
                                     <Input 
@@ -462,7 +536,7 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
                               name="subscriber.estadoCivil"
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel className="text-sm font-semibold text-gray-700">Estado Civil</FormLabel>
+                                  <FormLabel className="text-sm font-semibold text-gray-700">Estado Civil *</FormLabel>
                                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                                     <FormControl>
                                       <SelectTrigger className="h-12 border-gray-300 focus:border-green-500 focus:ring-green-500/20 bg-white rounded-lg">
@@ -486,7 +560,7 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
                               name="subscriber.profissao"
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel className="text-sm font-semibold text-gray-700">Profissão</FormLabel>
+                                  <FormLabel className="text-sm font-semibold text-gray-700">Profissão *</FormLabel>
                                   <FormControl>
                                     <Input 
                                       placeholder="Profissão" 
@@ -553,46 +627,251 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
                       <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-green-600 rounded-lg flex items-center justify-center">
                         <MapPin className="w-4 h-4 text-white" />
                       </div>
-                      Endereço Principal
+                      Endereço Principal do Assinante
                       <Badge variant="outline" className="ml-auto text-green-600 border-green-200 bg-green-50">
                         Obrigatório
                       </Badge>
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="p-8">
-                    <AddressForm form={form} prefix="subscriber.address" />
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                      <div className="lg:col-span-2">
+                        <FormField
+                          control={form.control}
+                          name="subscriber.address.cep"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-sm font-semibold text-gray-700">CEP *</FormLabel>
+                              <FormControl>
+                                <Input 
+                                  placeholder="00000-000" 
+                                  className="h-12 border-gray-300 focus:border-green-500 focus:ring-green-500/20 bg-white rounded-lg"
+                                  {...field}
+                                  onChange={(e) => {
+                                    const maskedValue = applyCepMask(e.target.value);
+                                    field.onChange(maskedValue);
+                                    handleCepLookup(maskedValue, 'subscriber.address');
+                                  }}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                              {cepLoading && <p className="text-sm text-green-600">Buscando CEP...</p>}
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                      
+                      <FormField
+                        control={form.control}
+                        name="subscriber.address.endereco"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-sm font-semibold text-gray-700">Endereço *</FormLabel>
+                            <FormControl>
+                              <Input 
+                                placeholder="Rua, avenida..." 
+                                className="h-12 border-gray-300 focus:border-green-500 focus:ring-green-500/20 bg-white rounded-lg"
+                                {...field} 
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="subscriber.address.numero"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-sm font-semibold text-gray-700">Número *</FormLabel>
+                            <FormControl>
+                              <Input 
+                                placeholder="123" 
+                                className="h-12 border-gray-300 focus:border-green-500 focus:ring-green-500/20 bg-white rounded-lg"
+                                {...field} 
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="subscriber.address.complemento"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-sm font-semibold text-gray-700">Complemento</FormLabel>
+                            <FormControl>
+                              <Input 
+                                placeholder="Apt, Bloco..." 
+                                className="h-12 border-gray-300 focus:border-green-500 focus:ring-green-500/20 bg-white rounded-lg"
+                                {...field} 
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="subscriber.address.bairro"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-sm font-semibold text-gray-700">Bairro *</FormLabel>
+                            <FormControl>
+                              <Input 
+                                placeholder="Bairro" 
+                                className="h-12 border-gray-300 focus:border-green-500 focus:ring-green-500/20 bg-white rounded-lg"
+                                {...field} 
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="subscriber.address.cidade"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-sm font-semibold text-gray-700">Cidade *</FormLabel>
+                            <FormControl>
+                              <Input 
+                                placeholder="Cidade" 
+                                className="h-12 border-gray-300 focus:border-green-500 focus:ring-green-500/20 bg-white rounded-lg"
+                                {...field} 
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="subscriber.address.estado"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-sm font-semibold text-gray-700">Estado *</FormLabel>
+                            <FormControl>
+                              <Input 
+                                placeholder="Estado" 
+                                className="h-12 border-gray-300 focus:border-green-500 focus:ring-green-500/20 bg-white rounded-lg"
+                                {...field} 
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
                   </CardContent>
                 </Card>
               )}
 
-              {/* Step 3 - Endereço de Instalação */}
-              {currentStep === 3 && (
+              {/* Step 3 - Administrador PJ (só aparece se for PJ) */}
+              {currentStep === 3 && subscriberType === 'juridica' && (
                 <Card className="border-0 shadow-lg bg-white">
-                  <CardHeader className="bg-gradient-to-r from-gray-50 to-green-50/50 border-b border-gray-200 rounded-t-xl">
+                  <CardHeader className="bg-gradient-to-r from-gray-50 to-blue-50/50 border-b border-gray-200 rounded-t-xl">
                     <CardTitle className="flex items-center gap-3 text-gray-800">
-                      <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-green-600 rounded-lg flex items-center justify-center">
+                      <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
                         <Building className="w-4 h-4 text-white" />
                       </div>
-                      Endereço de Instalação
-                      <Badge variant="outline" className="ml-auto text-green-600 border-green-200 bg-green-50">
-                        Opcional
+                      Dados do Administrador da Pessoa Jurídica
+                      <Badge variant="outline" className="ml-auto text-blue-600 border-blue-200 bg-blue-50">
+                        Obrigatório para PJ
                       </Badge>
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="p-8">
-                    <div className="mb-6 p-4 bg-gradient-to-r from-green-50/80 to-green-100/50 rounded-lg border border-green-200/50">
-                      <p className="text-sm text-green-700 font-medium flex items-center gap-2">
-                        <Building className="w-4 h-4" />
-                        Mesmo endereço principal ou diferente?
-                      </p>
-                      <p className="text-xs text-green-600 mt-1">
-                        Se for o mesmo endereço, você pode pular esta etapa.
-                      </p>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                      <div className="space-y-6">
+                        <div>
+                          <Label className="text-sm font-semibold text-gray-700">CPF do Administrador *</Label>
+                          <Input placeholder="000.000.000-00" className="mt-2 h-12 border-gray-300 focus:border-blue-500 focus:ring-blue-500/20 bg-white rounded-lg" />
+                        </div>
+                        <div>
+                          <Label className="text-sm font-semibold text-gray-700">Nome do Administrador *</Label>
+                          <Input placeholder="Nome completo" className="mt-2 h-12 border-gray-300 focus:border-blue-500 focus:ring-blue-500/20 bg-white rounded-lg" />
+                        </div>
+                        <div>
+                          <Label className="text-sm font-semibold text-gray-700">Data de Nascimento *</Label>
+                          <Input type="date" className="mt-2 h-12 border-gray-300 focus:border-blue-500 focus:ring-blue-500/20 bg-white rounded-lg" />
+                        </div>
+                        <div>
+                          <Label className="text-sm font-semibold text-gray-700">Estado Civil *</Label>
+                          <Select>
+                            <SelectTrigger className="mt-2 h-12 border-gray-300 focus:border-blue-500 focus:ring-blue-500/20 bg-white rounded-lg">
+                              <SelectValue placeholder="Selecione" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="solteiro">Solteiro(a)</SelectItem>
+                              <SelectItem value="casado">Casado(a)</SelectItem>
+                              <SelectItem value="divorciado">Divorciado(a)</SelectItem>
+                              <SelectItem value="viuvo">Viúvo(a)</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                      <div className="space-y-6">
+                        <div>
+                          <Label className="text-sm font-semibold text-gray-700">Profissão *</Label>
+                          <Input placeholder="Profissão" className="mt-2 h-12 border-gray-300 focus:border-blue-500 focus:ring-blue-500/20 bg-white rounded-lg" />
+                        </div>
+                        <div>
+                          <Label className="text-sm font-semibold text-gray-700">Telefone *</Label>
+                          <Input placeholder="(00) 00000-0000" className="mt-2 h-12 border-gray-300 focus:border-blue-500 focus:ring-blue-500/20 bg-white rounded-lg" />
+                        </div>
+                        <div>
+                          <Label className="text-sm font-semibold text-gray-700">E-mail *</Label>
+                          <Input placeholder="email@example.com" className="mt-2 h-12 border-gray-300 focus:border-blue-500 focus:ring-blue-500/20 bg-white rounded-lg" />
+                        </div>
+                      </div>
                     </div>
-                    <AddressForm form={form} prefix="subscriber.address" />
+                    
+                    <div className="mt-8">
+                      <h4 className="text-lg font-semibold text-gray-800 mb-4">Endereço Residencial do Administrador</h4>
+                      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div>
+                          <Label className="text-sm font-semibold text-gray-700">CEP Residencial *</Label>
+                          <Input placeholder="00000-000" className="mt-2 h-12 border-gray-300 focus:border-blue-500 focus:ring-blue-500/20 bg-white rounded-lg" />
+                        </div>
+                        <div>
+                          <Label className="text-sm font-semibold text-gray-700">Endereço Residencial *</Label>
+                          <Input placeholder="Rua, avenida..." className="mt-2 h-12 border-gray-300 focus:border-blue-500 focus:ring-blue-500/20 bg-white rounded-lg" />
+                        </div>
+                        <div>
+                          <Label className="text-sm font-semibold text-gray-700">Número *</Label>
+                          <Input placeholder="123" className="mt-2 h-12 border-gray-300 focus:border-blue-500 focus:ring-blue-500/20 bg-white rounded-lg" />
+                        </div>
+                        <div>
+                          <Label className="text-sm font-semibold text-gray-700">Complemento</Label>
+                          <Input placeholder="Apt, Bloco..." className="mt-2 h-12 border-gray-300 focus:border-blue-500 focus:ring-blue-500/20 bg-white rounded-lg" />
+                        </div>
+                        <div>
+                          <Label className="text-sm font-semibold text-gray-700">Bairro *</Label>
+                          <Input placeholder="Bairro" className="mt-2 h-12 border-gray-300 focus:border-blue-500 focus:ring-blue-500/20 bg-white rounded-lg" />
+                        </div>
+                        <div>
+                          <Label className="text-sm font-semibold text-gray-700">Cidade *</Label>
+                          <Input placeholder="Cidade" className="mt-2 h-12 border-gray-300 focus:border-blue-500 focus:ring-blue-500/20 bg-white rounded-lg" />
+                        </div>
+                        <div>
+                          <Label className="text-sm font-semibold text-gray-700">Estado *</Label>
+                          <Input placeholder="Estado" className="mt-2 h-12 border-gray-300 focus:border-blue-500 focus:ring-blue-500/20 bg-white rounded-lg" />
+                        </div>
+                      </div>
+                    </div>
                   </CardContent>
                 </Card>
               )}
+
+              {/* Se for Pessoa Física, pula o step 3 */}
+              {currentStep === 3 && subscriberType === 'fisica' && nextStep()}
 
               {/* Step 4 - Contatos */}
               {currentStep === 4 && (
@@ -602,71 +881,123 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
                       <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-green-600 rounded-lg flex items-center justify-center">
                         <MessageSquare className="w-4 h-4 text-white" />
                       </div>
-                      Contatos Adicionais
+                      Contatos Adicionais para Cobrança
                       <Badge variant="outline" className="ml-auto text-green-600 border-green-200 bg-green-50">
                         Opcional
                       </Badge>
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="p-8">
+                    <div className="mb-6 p-4 bg-green-50/50 rounded-lg border border-green-200/50">
+                      <p className="text-sm text-green-700 font-medium">
+                        Adicione contatos que serão acionados caso o assinante principal não efetue o pagamento.
+                      </p>
+                    </div>
                     <ContactsForm contacts={contacts} onChange={setContacts} />
                   </CardContent>
                 </Card>
               )}
 
-              {/* Step 5 - Informações Bancárias */}
+              {/* Step 5 - Conta Original */}
               {currentStep === 5 && (
                 <Card className="border-0 shadow-lg bg-white">
-                  <CardHeader className="bg-gradient-to-r from-gray-50 to-green-50/50 border-b border-gray-200 rounded-t-xl">
+                  <CardHeader className="bg-gradient-to-r from-gray-50 to-yellow-50/50 border-b border-gray-200 rounded-t-xl">
                     <CardTitle className="flex items-center gap-3 text-gray-800">
-                      <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-green-600 rounded-lg flex items-center justify-center">
-                        <CreditCard className="w-4 h-4 text-white" />
+                      <div className="w-8 h-8 bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-lg flex items-center justify-center">
+                        <Zap className="w-4 h-4 text-white" />
                       </div>
-                      Informações Bancárias
-                      <Badge variant="outline" className="ml-auto text-green-600 border-green-200 bg-green-50">
-                        Futuro
+                      Cadastro Original da Conta de Energia
+                      <Badge variant="outline" className="ml-auto text-yellow-600 border-yellow-200 bg-yellow-50">
+                        Obrigatório
                       </Badge>
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="p-8">
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                      <div className="lg:col-span-2 mb-6">
-                        <div className="p-6 bg-gradient-to-r from-green-50/80 to-green-100/50 rounded-lg border border-green-200/50">
-                          <p className="text-sm text-green-700 font-medium flex items-center gap-2">
-                            <CreditCard className="w-4 h-4" />
-                            Informações bancárias para débito automático
-                          </p>
-                          <p className="text-xs text-green-600 mt-1">
-                            Estas informações serão utilizadas para configurar o débito automático no futuro.
-                          </p>
+                    <div className="space-y-6">
+                      {/* Tipo da conta original */}
+                      <div className="p-4 bg-yellow-50/50 rounded-lg border border-yellow-200/50">
+                        <Label className="text-base font-semibold text-gray-800 mb-4 block">Tipo de Pessoa na Conta de Energia *</Label>
+                        <RadioGroup defaultValue="fisica" className="flex gap-6">
+                          <div className="flex items-center space-x-3 space-y-0 p-4 border border-yellow-300 rounded-lg hover:border-yellow-400 transition-colors bg-white">
+                            <RadioGroupItem value="fisica" id="original-fisica" className="border-yellow-500 text-yellow-600" />
+                            <Label htmlFor="original-fisica" className="font-medium text-gray-700 cursor-pointer">Pessoa Física</Label>
+                          </div>
+                          <div className="flex items-center space-x-3 space-y-0 p-4 border border-yellow-300 rounded-lg hover:border-yellow-400 transition-colors bg-white">
+                            <RadioGroupItem value="juridica" id="original-juridica" className="border-yellow-500 text-yellow-600" />
+                            <Label htmlFor="original-juridica" className="font-medium text-gray-700 cursor-pointer">Pessoa Jurídica</Label>
+                          </div>
+                        </RadioGroup>
+                      </div>
+
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div className="space-y-6">
+                          <div>
+                            <Label className="text-sm font-semibold text-gray-700">CPF/CNPJ na Conta de Energia *</Label>
+                            <Input placeholder="000.000.000-00 ou 00.000.000/0000-00" className="mt-2 h-12 border-gray-300 focus:border-yellow-500 focus:ring-yellow-500/20 bg-white rounded-lg" />
+                          </div>
+                          <div>
+                            <Label className="text-sm font-semibold text-gray-700">Nome/Empresa na Conta de Energia *</Label>
+                            <Input placeholder="Nome ou razão social" className="mt-2 h-12 border-gray-300 focus:border-yellow-500 focus:ring-yellow-500/20 bg-white rounded-lg" />
+                          </div>
+                          <div>
+                            <Label className="text-sm font-semibold text-gray-700">Data de Nascimento (se PF)</Label>
+                            <Input type="date" className="mt-2 h-12 border-gray-300 focus:border-yellow-500 focus:ring-yellow-500/20 bg-white rounded-lg" />
+                          </div>
+                          <div>
+                            <Label className="text-sm font-semibold text-gray-700">UC - Unidade Consumidora *</Label>
+                            <Input placeholder="Número da UC" className="mt-2 h-12 border-gray-300 focus:border-yellow-500 focus:ring-yellow-500/20 bg-white rounded-lg" />
+                          </div>
+                          <div>
+                            <Label className="text-sm font-semibold text-gray-700">Número do Parceiro UC *</Label>
+                            <Input placeholder="Número do parceiro" className="mt-2 h-12 border-gray-300 focus:border-yellow-500 focus:ring-yellow-500/20 bg-white rounded-lg" />
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-6">
+                          <div>
+                            <Label className="text-sm font-semibold text-gray-700">CEP da Instalação *</Label>
+                            <Input placeholder="00000-000" className="mt-2 h-12 border-gray-300 focus:border-yellow-500 focus:ring-yellow-500/20 bg-white rounded-lg" />
+                          </div>
+                          <div>
+                            <Label className="text-sm font-semibold text-gray-700">Endereço da Instalação *</Label>
+                            <Input placeholder="Rua, avenida..." className="mt-2 h-12 border-gray-300 focus:border-yellow-500 focus:ring-yellow-500/20 bg-white rounded-lg" />
+                          </div>
+                          <div>
+                            <Label className="text-sm font-semibold text-gray-700">Número *</Label>
+                            <Input placeholder="123" className="mt-2 h-12 border-gray-300 focus:border-yellow-500 focus:ring-yellow-500/20 bg-white rounded-lg" />
+                          </div>
+                          <div>
+                            <Label className="text-sm font-semibold text-gray-700">Complemento</Label>
+                            <Input placeholder="Apt, Bloco..." className="mt-2 h-12 border-gray-300 focus:border-yellow-500 focus:ring-yellow-500/20 bg-white rounded-lg" />
+                          </div>
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <Label className="text-sm font-semibold text-gray-700">Bairro *</Label>
+                              <Input placeholder="Bairro" className="mt-2 h-12 border-gray-300 focus:border-yellow-500 focus:ring-yellow-500/20 bg-white rounded-lg" />
+                            </div>
+                            <div>
+                              <Label className="text-sm font-semibold text-gray-700">Cidade *</Label>
+                              <Input placeholder="Cidade" className="mt-2 h-12 border-gray-300 focus:border-yellow-500 focus:ring-yellow-500/20 bg-white rounded-lg" />
+                            </div>
+                          </div>
+                          <div>
+                            <Label className="text-sm font-semibold text-gray-700">Estado *</Label>
+                            <Input placeholder="Estado" className="mt-2 h-12 border-gray-300 focus:border-yellow-500 focus:ring-yellow-500/20 bg-white rounded-lg" />
+                          </div>
                         </div>
                       </div>
-                      <div className="space-y-6">
-                        <div>
-                          <Label className="text-sm font-semibold text-gray-700">Banco</Label>
-                          <Input placeholder="Nome do banco" className="mt-2 h-12 border-gray-300 focus:border-green-500 focus:ring-green-500/20 bg-white rounded-lg" />
-                        </div>
-                        <div>
-                          <Label className="text-sm font-semibold text-gray-700">Agência</Label>
-                          <Input placeholder="Número da agência" className="mt-2 h-12 border-gray-300 focus:border-green-500 focus:ring-green-500/20 bg-white rounded-lg" />
-                        </div>
-                      </div>
-                      <div className="space-y-6">
-                        <div>
-                          <Label className="text-sm font-semibold text-gray-700">Conta</Label>
-                          <Input placeholder="Número da conta" className="mt-2 h-12 border-gray-300 focus:border-green-500 focus:ring-green-500/20 bg-white rounded-lg" />
-                        </div>
-                        <div>
-                          <Label className="text-sm font-semibold text-gray-700">Tipo de Conta</Label>
-                          <Select>
-                            <SelectTrigger className="mt-2 h-12 border-gray-300 focus:border-green-500 focus:ring-green-500/20 bg-white rounded-lg">
-                              <SelectValue placeholder="Selecione o tipo" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="corrente">Conta Corrente</SelectItem>
-                              <SelectItem value="poupanca">Conta Poupança</SelectItem>
-                            </SelectContent>
-                          </Select>
+
+                      {/* Pergunta sobre troca de titularidade */}
+                      <div className="p-6 bg-blue-50/30 rounded-lg border border-blue-200/50 mt-8">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <Label className="text-base font-semibold text-gray-800">Realizará Troca de Titularidade?</Label>
+                            <p className="text-sm text-gray-600 mt-1">Se sim, será necessário informar os dados da nova titularidade no próximo passo.</p>
+                          </div>
+                          <div className="flex gap-4">
+                            <Button variant="outline" className="px-6">Não</Button>
+                            <Button className="px-6 bg-blue-600 hover:bg-blue-700">Sim</Button>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -674,15 +1005,326 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
                 </Card>
               )}
 
-              {/* Step 6 - Documentos */}
-              {currentStep === 6 && (
+              {/* Step 6 - Nova Titularidade (só aparece se marcou sim) */}
+              {currentStep === 6 && realizarTroca && (
+                <Card className="border-0 shadow-lg bg-white">
+                  <CardHeader className="bg-gradient-to-r from-gray-50 to-purple-50/50 border-b border-gray-200 rounded-t-xl">
+                    <CardTitle className="flex items-center gap-3 text-gray-800">
+                      <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg flex items-center justify-center">
+                        <FileText className="w-4 h-4 text-white" />
+                      </div>
+                      Nova Titularidade da Conta de Energia
+                      <Badge variant="outline" className="ml-auto text-purple-600 border-purple-200 bg-purple-50">
+                        Obrigatório se troca
+                      </Badge>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-8">
+                    <div className="space-y-6">
+                      {/* Tipo da nova titularidade */}
+                      <div className="p-4 bg-purple-50/50 rounded-lg border border-purple-200/50">
+                        <Label className="text-base font-semibold text-gray-800 mb-4 block">Tipo de Pessoa para Nova Titularidade *</Label>
+                        <RadioGroup defaultValue="fisica" className="flex gap-6">
+                          <div className="flex items-center space-x-3 space-y-0 p-4 border border-purple-300 rounded-lg hover:border-purple-400 transition-colors bg-white">
+                            <RadioGroupItem value="fisica" id="new-fisica" className="border-purple-500 text-purple-600" />
+                            <Label htmlFor="new-fisica" className="font-medium text-gray-700 cursor-pointer">Pessoa Física</Label>
+                          </div>
+                          <div className="flex items-center space-x-3 space-y-0 p-4 border border-purple-300 rounded-lg hover:border-purple-400 transition-colors bg-white">
+                            <RadioGroupItem value="juridica" id="new-juridica" className="border-purple-500 text-purple-600" />
+                            <Label htmlFor="new-juridica" className="font-medium text-gray-700 cursor-pointer">Pessoa Jurídica</Label>
+                          </div>
+                        </RadioGroup>
+                      </div>
+
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div className="space-y-6">
+                          <div>
+                            <Label className="text-sm font-semibold text-gray-700">CPF/CNPJ Nova Titularidade *</Label>
+                            <Input placeholder="000.000.000-00 ou 00.000.000/0000-00" className="mt-2 h-12 border-gray-300 focus:border-purple-500 focus:ring-purple-500/20 bg-white rounded-lg" />
+                          </div>
+                          <div>
+                            <Label className="text-sm font-semibold text-gray-700">Nome/Empresa Nova Titularidade *</Label>
+                            <Input placeholder="Nome ou razão social" className="mt-2 h-12 border-gray-300 focus:border-purple-500 focus:ring-purple-500/20 bg-white rounded-lg" />
+                          </div>
+                          <div>
+                            <Label className="text-sm font-semibold text-gray-700">Data de Nascimento (se PF)</Label>
+                            <Input type="date" className="mt-2 h-12 border-gray-300 focus:border-purple-500 focus:ring-purple-500/20 bg-white rounded-lg" />
+                          </div>
+                          <div>
+                            <Label className="text-sm font-semibold text-gray-700">UC - Unidade Consumidora</Label>
+                            <Input placeholder="Mesmo UC da conta original" disabled className="mt-2 h-12 border-gray-200 bg-gray-50 rounded-lg" />
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-6">
+                          <div>
+                            <Label className="text-sm font-semibold text-gray-700">Número do Parceiro UC *</Label>
+                            <Input placeholder="Número do parceiro" className="mt-2 h-12 border-gray-300 focus:border-purple-500 focus:ring-purple-500/20 bg-white rounded-lg" />
+                          </div>
+                          
+                          {/* Status da troca */}
+                          <div className="p-4 bg-gray-50 rounded-lg border">
+                            <div className="flex items-center justify-between mb-4">
+                              <Label className="text-sm font-semibold text-gray-700">Troca de Titularidade Concluída?</Label>
+                              <Switch />
+                            </div>
+                            <div className="space-y-4">
+                              <div>
+                                <Label className="text-sm text-gray-600">Data da Conclusão</Label>
+                                <Input type="date" className="mt-1 h-10 border-gray-300 focus:border-purple-500 focus:ring-purple-500/20 bg-white rounded-lg" />
+                              </div>
+                              <div>
+                                <Label className="text-sm text-gray-600">Protocolo de Troca de Titularidade</Label>
+                                <Button variant="outline" className="w-full mt-1 h-10 border-dashed border-2 hover:border-purple-300 hover:bg-purple-50/50">
+                                  <Upload className="w-4 h-4 mr-2" />
+                                  Anexar Protocolo
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Se não vai fazer troca, pula o step 6 */}
+              {currentStep === 6 && !realizarTroca && nextStep()}
+
+              {/* Step 7 - Plano Escolhido */}
+              {currentStep === 7 && (
                 <Card className="border-0 shadow-lg bg-white">
                   <CardHeader className="bg-gradient-to-r from-gray-50 to-green-50/50 border-b border-gray-200 rounded-t-xl">
                     <CardTitle className="flex items-center gap-3 text-gray-800">
                       <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-green-600 rounded-lg flex items-center justify-center">
-                        <FileText className="w-4 h-4 text-white" />
+                        <CreditCard className="w-4 h-4 text-white" />
                       </div>
-                      Documentos Necessários
+                      Contratação do Plano Escolhido
+                      <Badge variant="outline" className="ml-auto text-green-600 border-green-200 bg-green-50">
+                        Obrigatório
+                      </Badge>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-8">
+                    <div className="space-y-8">
+                      {/* Informações básicas do plano */}
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div className="space-y-6">
+                          <div>
+                            <Label className="text-sm font-semibold text-gray-700">Modalidade de Compensação *</Label>
+                            <Select defaultValue="autoconsumo">
+                              <SelectTrigger className="mt-2 h-12 border-gray-300 focus:border-green-500 focus:ring-green-500/20 bg-white rounded-lg">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="autoconsumo">AutoConsumo</SelectItem>
+                                <SelectItem value="geracaoCompartilhada">Geração Compartilhada</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div>
+                            <Label className="text-sm font-semibold text-gray-700">Data de Adesão *</Label>
+                            <Input type="date" className="mt-2 h-12 border-gray-300 focus:border-green-500 focus:ring-green-500/20 bg-white rounded-lg" />
+                          </div>
+                        </div>
+                        <div className="space-y-6">
+                          <div>
+                            <Label className="text-sm font-semibold text-gray-700">kWh Vendedor Informou *</Label>
+                            <Input type="number" placeholder="0" className="mt-2 h-12 border-gray-300 focus:border-green-500 focus:ring-green-500/20 bg-white rounded-lg" />
+                          </div>
+                          <div>
+                            <Label className="text-sm font-semibold text-gray-700">kWh Contratado (Gestor) *</Label>
+                            <Input type="number" placeholder="0" className="mt-2 h-12 border-gray-300 focus:border-green-500 focus:ring-green-500/20 bg-white rounded-lg" />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Tabela interativa de planos */}
+                      <PlanTable 
+                        selectedPlan={form.watch('planContract.faixaConsumo')}
+                        fidelidade={form.watch('planContract.fidelidade')}
+                        anosFidelidade={form.watch('planContract.anosFidelidade')}
+                        onPlanChange={(faixaConsumo, fidelidade, anos, desconto) => {
+                          form.setValue('planContract.faixaConsumo', faixaConsumo as any);
+                          form.setValue('planContract.fidelidade', fidelidade);
+                          form.setValue('planContract.anosFidelidade', anos);
+                          form.setValue('planContract.desconto', desconto || 0);
+                        }}
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Step 8 - Detalhes do Plano */}
+              {currentStep === 8 && (
+                <Card className="border-0 shadow-lg bg-white">
+                  <CardHeader className="bg-gradient-to-r from-gray-50 to-blue-50/50 border-b border-gray-200 rounded-t-xl">
+                    <CardTitle className="flex items-center gap-3 text-gray-800">
+                      <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
+                        <Settings className="w-4 h-4 text-white" />
+                      </div>
+                      Detalhes do Plano
+                      <Badge variant="outline" className="ml-auto text-blue-600 border-blue-200 bg-blue-50">
+                        Configurações
+                      </Badge>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-8">
+                    <div className="space-y-6">
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div className="space-y-6">
+                          <div className="flex items-center justify-between p-4 border rounded-lg">
+                            <div>
+                              <Label className="text-sm font-semibold text-gray-700">Cliente Paga PIS e COFINS</Label>
+                              <p className="text-xs text-gray-500">Tributos federais sobre energia</p>
+                            </div>
+                            <Switch defaultChecked />
+                          </div>
+                          
+                          <div className="flex items-center justify-between p-4 border rounded-lg">
+                            <div>
+                              <Label className="text-sm font-semibold text-gray-700">Cliente Paga Fio B</Label>
+                              <p className="text-xs text-gray-500">Taxa de distribuição</p>
+                            </div>
+                            <Switch />
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-6">
+                          <div className="flex items-center justify-between p-4 border rounded-lg">
+                            <div>
+                              <Label className="text-sm font-semibold text-gray-700">Adicionar Valor da Distribuidora na Fatura</Label>
+                              <p className="text-xs text-gray-500">Incluir taxas da distribuidora</p>
+                            </div>
+                            <Switch />
+                          </div>
+                          
+                          <div className="flex items-center justify-between p-4 border rounded-lg">
+                            <div>
+                              <Label className="text-sm font-semibold text-gray-700">Assinante ISENTO de pagamento das Faturas</Label>
+                              <p className="text-xs text-gray-500">Cliente não paga faturas de energia</p>
+                            </div>
+                            <Switch />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Step 9 - Notificações */}
+              {currentStep === 9 && (
+                <Card className="border-0 shadow-lg bg-white">
+                  <CardHeader className="bg-gradient-to-r from-gray-50 to-green-50/50 border-b border-gray-200 rounded-t-xl">
+                    <CardTitle className="flex items-center gap-3 text-gray-800">
+                      <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-green-600 rounded-lg flex items-center justify-center">
+                        <Bell className="w-4 h-4 text-white" />
+                      </div>
+                      Cadência de Mensagens (WhatsApp e E-Mail)
+                      <Badge variant="outline" className="ml-auto text-green-600 border-green-200 bg-green-50">
+                        Configurações
+                      </Badge>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-8">
+                    <div className="space-y-8">
+                      {/* Configurações gerais */}
+                      <div className="p-6 bg-green-50/30 rounded-lg border border-green-200/50">
+                        <h4 className="text-lg font-semibold text-gray-800 mb-4">Configurações Gerais</h4>
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                          <div className="flex items-center justify-between p-4 border rounded-lg bg-white">
+                            <div>
+                              <Label className="text-sm font-semibold text-gray-700">Enviar por WhatsApp Faturas de Energia</Label>
+                              <p className="text-xs text-gray-500">Envio automático das faturas</p>
+                            </div>
+                            <Switch defaultChecked />
+                          </div>
+                          
+                          <div className="flex items-center justify-between p-4 border rounded-lg bg-white">
+                            <div>
+                              <Label className="text-sm font-semibold text-gray-700">Informar por WhatsApp Pagamento Recebido</Label>
+                              <p className="text-xs text-gray-500">Confirmação de pagamentos</p>
+                            </div>
+                            <Switch />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Notificações antes do vencimento */}
+                      <div className="p-6 bg-blue-50/30 rounded-lg border border-blue-200/50">
+                        <h4 className="text-lg font-semibold text-gray-800 mb-4">Notificações Antes do Vencimento</h4>
+                        <div className="space-y-4">
+                          {[
+                            { key: 'criarCobranca', label: 'Ao Criar Nova Cobrança' },
+                            { key: 'alteracaoValor', label: 'Alteração de Valor ou Data de Vencimento' },
+                            { key: 'vencimento1Dia', label: 'Aviso do Vencimento 1 Dia Antes' },
+                            { key: 'vencimentoHoje', label: 'Aviso do Vencimento Hoje' },
+                          ].map((item) => (
+                            <div key={item.key} className="grid grid-cols-1 lg:grid-cols-3 gap-4 p-4 border rounded-lg bg-white">
+                              <div className="flex items-center">
+                                <Label className="text-sm font-medium text-gray-700">{item.label}</Label>
+                              </div>
+                              <div className="flex items-center justify-between">
+                                <Label className="text-xs text-gray-500">WhatsApp</Label>
+                                <Switch defaultChecked />
+                              </div>
+                              <div className="flex items-center justify-between">
+                                <Label className="text-xs text-gray-500">E-Mail</Label>
+                                <Switch defaultChecked />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Notificações de cobranças vencidas */}
+                      <div className="p-6 bg-red-50/30 rounded-lg border border-red-200/50">
+                        <h4 className="text-lg font-semibold text-gray-800 mb-4">Notificações de Cobranças Vencidas</h4>
+                        <div className="space-y-4">
+                          {[
+                            { key: 'day1', label: 'Aviso Cobrança Vencida a 1 dia' },
+                            { key: 'day3', label: 'Aviso Cobrança Vencida 3 dias' },
+                            { key: 'day5', label: 'Aviso Cobrança Vencida 5 dias' },
+                            { key: 'day7', label: 'Aviso Cobrança Vencida 7 dias' },
+                            { key: 'day15', label: 'Aviso Cobrança Vencida 15 dias' },
+                            { key: 'day20', label: 'Aviso Cobrança Vencida 20 dias' },
+                            { key: 'day25', label: 'Aviso Cobrança Vencida 25 dias' },
+                            { key: 'day30', label: 'Aviso Cobrança Vencida 30 dias' },
+                            { key: 'after30', label: 'Aviso Cobrança Vencida após 30 dias (5 em 5 dias)' },
+                          ].map((item) => (
+                            <div key={item.key} className="grid grid-cols-1 lg:grid-cols-3 gap-4 p-4 border rounded-lg bg-white">
+                              <div className="flex items-center">
+                                <Label className="text-sm font-medium text-gray-700">{item.label}</Label>
+                              </div>
+                              <div className="flex items-center justify-between">
+                                <Label className="text-xs text-gray-500">WhatsApp</Label>
+                                <Switch defaultChecked />
+                              </div>
+                              <div className="flex items-center justify-between">
+                                <Label className="text-xs text-gray-500">E-Mail</Label>
+                                <Switch defaultChecked />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Step 10 - Documentos */}
+              {currentStep === 10 && (
+                <Card className="border-0 shadow-lg bg-white">
+                  <CardHeader className="bg-gradient-to-r from-gray-50 to-green-50/50 border-b border-gray-200 rounded-t-xl">
+                    <CardTitle className="flex items-center gap-3 text-gray-800">
+                      <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-green-600 rounded-lg flex items-center justify-center">
+                        <FileCheck className="w-4 h-4 text-white" />
+                      </div>
+                      Anexos - Documentos Necessários
                       <Badge variant="outline" className="ml-auto text-green-600 border-green-200 bg-green-50">
                         Obrigatório
                       </Badge>
@@ -702,190 +1344,52 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
                         </div>
                       </div>
                       
-                      {/* Seção de dados da conta de energia preenchidos automaticamente */}
-                      <div className="lg:col-span-2 mb-6">
-                        <div className="p-6 bg-blue-50/50 rounded-lg border border-blue-200/50">
-                          <h4 className="font-semibold text-blue-800 mb-4 flex items-center gap-2">
-                            <Zap className="w-5 h-5" />
-                            Dados da Conta de Energia
-                          </h4>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                            <div>
-                              <span className="text-blue-600 font-medium">Nome do Titular:</span>
-                              <p className="text-blue-800">{subscriberData.name || 'Não informado'}</p>
-                            </div>
-                            <div>
-                              <span className="text-blue-600 font-medium">{subscriberType === 'fisica' ? 'CPF:' : 'CNPJ:'}</span>
-                              <p className="text-blue-800">{subscriberData.cpfCnpj || 'Não informado'}</p>
-                            </div>
-                            <div>
-                              <span className="text-blue-600 font-medium">Telefone:</span>
-                              <p className="text-blue-800">{subscriberData.telefone || 'Não informado'}</p>
-                            </div>
-                            <div>
-                              <span className="text-blue-600 font-medium">E-mail:</span>
-                              <p className="text-blue-800">{subscriberData.email || 'Não informado'}</p>
-                            </div>
-                            <div className="md:col-span-2">
-                              <span className="text-blue-600 font-medium">Endereço:</span>
-                              <p className="text-blue-800">
-                                {subscriberData.address?.endereco && subscriberData.address?.numero 
-                                  ? `${subscriberData.address.endereco}, ${subscriberData.address.numero} - ${subscriberData.address.bairro}, ${subscriberData.address.cidade}/${subscriberData.address.estado}`
-                                  : 'Não informado'}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
                       <div className="space-y-4">
                         <Button variant="outline" className="w-full justify-start h-16 border-dashed border-2 hover:border-green-300 hover:bg-green-50/50 rounded-lg border-gray-300">
                           <Upload className="w-5 h-5 mr-3 text-green-600" />
                           <div className="text-left">
-                            <div className="font-medium text-gray-800">Contrato do Assinante</div>
-                            <div className="text-xs text-gray-500">Documento principal</div>
+                            <div className="font-medium text-gray-800">Contrato do Assinante *</div>
+                            <div className="text-xs text-gray-500">Documento principal assinado</div>
                           </div>
                         </Button>
+                        
                         <Button variant="outline" className="w-full justify-start h-16 border-dashed border-2 hover:border-green-300 hover:bg-green-50/50 rounded-lg border-gray-300">
                           <Upload className="w-5 h-5 mr-3 text-green-600" />
                           <div className="text-left">
-                            <div className="font-medium text-gray-800">CNH/RG do Titular</div>
+                            <div className="font-medium text-gray-800">CNH/RG do Titular *</div>
                             <div className="text-xs text-gray-500">Documento de identificação</div>
                           </div>
                         </Button>
+                        
                         <Button variant="outline" className="w-full justify-start h-16 border-dashed border-2 hover:border-green-300 hover:bg-green-50/50 rounded-lg border-gray-300">
                           <Upload className="w-5 h-5 mr-3 text-green-600" />
                           <div className="text-left">
-                            <div className="font-medium text-gray-800">Conta de Energia</div>
-                            <div className="text-xs text-gray-500">Fatura recente</div>
+                            <div className="font-medium text-gray-800">Conta de Energia *</div>
+                            <div className="text-xs text-gray-500">Fatura recente da UC</div>
                           </div>
                         </Button>
                       </div>
+                      
                       <div className="space-y-4">
                         {subscriberType === 'juridica' && (
                           <Button variant="outline" className="w-full justify-start h-16 border-dashed border-2 hover:border-green-300 hover:bg-green-50/50 rounded-lg border-gray-300">
                             <Upload className="w-5 h-5 mr-3 text-green-600" />
                             <div className="text-left">
-                              <div className="font-medium text-gray-800">Contrato Social</div>
+                              <div className="font-medium text-gray-800">Contrato Social *</div>
                               <div className="text-xs text-gray-500">Documento da empresa</div>
                             </div>
                           </Button>
                         )}
-                        <Button variant="outline" className="w-full justify-start h-16 border-dashed border-2 hover:border-green-300 hover:bg-green-50/50 rounded-lg border-gray-300">
-                          <Upload className="w-5 h-5 mr-3 text-green-600" />
-                          <div className="text-left">
-                            <div className="font-medium text-gray-800">Procuração</div>
-                            <div className="text-xs text-gray-500">Se necessário</div>
-                          </div>
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-
-              {/* Step 7 - Confirmação */}
-              {currentStep === 7 && (
-                <Card className="border-0 shadow-lg bg-white">
-                  <CardHeader className="bg-gradient-to-r from-gray-50 to-green-50/50 border-b border-gray-200 rounded-t-xl">
-                    <CardTitle className="flex items-center gap-3 text-gray-800">
-                      <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-green-600 rounded-lg flex items-center justify-center">
-                        <Check className="w-4 h-4 text-white" />
-                      </div>
-                      Confirmação dos Dados
-                      <Badge variant="outline" className="ml-auto text-green-600 border-green-200 bg-green-50">
-                        Revisão
-                      </Badge>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="p-8">
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                      <div className="space-y-6">
-                        <div className="p-6 border border-gray-200 rounded-lg bg-gradient-to-br from-gray-50/50 to-white">
-                          <h4 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                            <User className="w-5 h-5 text-green-600" />
-                            Dados do Assinante
-                          </h4>
-                          <div className="space-y-3">
-                            <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                              <span className="text-sm text-gray-600">Nome:</span>
-                              <span className="text-sm font-medium text-gray-800">{form.getValues('subscriber.name')}</span>
-                            </div>
-                            <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                              <span className="text-sm text-gray-600">Tipo:</span>
-                              <Badge variant="secondary" className="bg-green-100 text-green-700">
-                                {form.getValues('subscriber.type') === 'fisica' ? 'Pessoa Física' : 'Pessoa Jurídica'}
-                              </Badge>
-                            </div>
-                            <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                              <span className="text-sm text-gray-600">Email:</span>
-                              <span className="text-sm font-medium text-gray-800">{form.getValues('subscriber.email')}</span>
-                            </div>
-                            <div className="flex justify-between items-center py-2">
-                              <span className="text-sm text-gray-600">Telefone:</span>
-                              <span className="text-sm font-medium text-gray-800">{form.getValues('subscriber.telefone')}</span>
-                            </div>
-                          </div>
-                        </div>
                         
-                        <div className="p-6 border border-gray-200 rounded-lg bg-gradient-to-br from-gray-50/50 to-white">
-                          <h4 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                            <MapPin className="w-5 h-5 text-green-600" />
-                            Endereço Principal
-                          </h4>
-                          <div className="space-y-2">
-                            <p className="text-sm text-gray-600">
-                              <span className="font-medium">{form.getValues('subscriber.address.endereco')}, {form.getValues('subscriber.address.numero')}</span>
-                            </p>
-                            <p className="text-sm text-gray-600">
-                              {form.getValues('subscriber.address.bairro')} - {form.getValues('subscriber.address.cidade')}
-                            </p>
-                            <p className="text-sm text-gray-600">
-                              {form.getValues('subscriber.address.estado')} - CEP: {form.getValues('subscriber.address.cep')}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="space-y-6">
-                        {contacts.length > 0 && (
-                          <div className="p-6 border border-gray-200 rounded-lg bg-gradient-to-br from-gray-50/50 to-white">
-                            <h4 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                              <MessageSquare className="w-5 h-5 text-green-600" />
-                              Contatos Adicionais
-                            </h4>
-                            <div className="space-y-3">
-                              {contacts.map((contact) => (
-                                <div key={contact.id} className="p-3 bg-white rounded-lg border border-gray-100">
-                                  <p className="text-sm font-medium text-gray-800">{contact.name}</p>
-                                  <p className="text-sm text-gray-600">{contact.phone}</p>
-                                  <Badge variant="outline" className="text-xs mt-1 border-green-200 text-green-600">
-                                    {contact.role}
-                                  </Badge>
-                                </div>
-                              ))}
+                        {realizarTroca && (
+                          <Button variant="outline" className="w-full justify-start h-16 border-dashed border-2 hover:border-green-300 hover:bg-green-50/50 rounded-lg border-gray-300">
+                            <Upload className="w-5 h-5 mr-3 text-green-600" />
+                            <div className="text-left">
+                              <div className="font-medium text-gray-800">Procuração *</div>
+                              <div className="text-xs text-gray-500">Para troca de titularidade</div>
                             </div>
-                          </div>
+                          </Button>
                         )}
-                        
-                        <div className="p-6 bg-gradient-to-r from-green-50/80 to-green-100/50 border border-green-200/50 rounded-lg">
-                          <div className="flex items-center gap-3 mb-3">
-                            <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-green-600 rounded-full flex items-center justify-center">
-                              <Check className="w-5 h-5 text-white" />
-                            </div>
-                            <div>
-                              <p className="text-sm text-green-700 font-semibold">
-                                Dados verificados com sucesso!
-                              </p>
-                              <p className="text-xs text-green-600">
-                                Todas as informações estão corretas
-                              </p>
-                            </div>
-                          </div>
-                          <p className="text-xs text-green-600 mt-3 p-3 bg-white/50 rounded-lg">
-                            ✓ Clique em "Finalizar Cadastro" para salvar o assinante no sistema
-                          </p>
-                        </div>
                       </div>
                     </div>
                   </CardContent>

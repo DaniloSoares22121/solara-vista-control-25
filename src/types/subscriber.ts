@@ -44,16 +44,32 @@ export interface AdministratorData {
   email: string;
 }
 
-export interface EnergyAccount {
-  originalAccount: PersonData;
+export interface OriginalEnergyAccount {
+  type: 'fisica' | 'juridica';
+  cpfCnpj: string;
+  name: string;
+  dataNascimento?: string;
   uc: string;
   numeroParceiroUC: string;
+  address: Address;
+}
+
+export interface NewTitularity {
+  type: 'fisica' | 'juridica';
+  cpfCnpj: string;
+  name: string;
+  dataNascimento?: string;
+  uc: string;
+  numeroParceiroUC: string;
+  trocaConcluida: boolean;
+  dataTroca?: string;
+  protocoloAnexo?: File;
+}
+
+export interface EnergyAccount {
+  originalAccount: OriginalEnergyAccount;
   realizarTrocaTitularidade: boolean;
-  newTitularity?: PersonData & {
-    trocaConcluida: boolean;
-    dataTroca?: string;
-    protocoloAnexo?: File;
-  };
+  newTitularity?: NewTitularity;
 }
 
 export interface PlanContract {
