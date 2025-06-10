@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -236,28 +235,68 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
 
   const handleSubmit = async () => {
     try {
+      console.log('📝 [NOVO_ASSINANTE] Iniciando submissão do formulário...');
+      
+      // Validar formulário
       const isValid = await form.trigger();
       if (!isValid) {
+        console.error('❌ [NOVO_ASSINANTE] Formulário inválido');
         toast.error('Por favor, preencha todos os campos obrigatórios');
         return;
       }
 
+      console.log('✅ [NOVO_ASSINANTE] Formulário válido, obtendo dados...');
+
       // Sync UC for new titularity
       const formData = form.getValues();
+      
+      console.log('📊 [NOVO_ASSINANTE] Dados do formulário obtidos:', JSON.stringify(formData, null, 2));
+      
       if (formData.energyAccount.realizarTrocaTitularidade && formData.energyAccount.newTitularity) {
         formData.energyAccount.newTitularity.uc = formData.energyAccount.originalAccount.uc;
         form.setValue('energyAccount.newTitularity.uc', formData.energyAccount.originalAccount.uc);
+        console.log('🔄 [NOVO_ASSINANTE] UC sincronizada para nova titularidade');
       }
 
-      console.log('📝 [FORM] Dados do formulário:', JSON.stringify(formData, null, 2));
+      // Validações adicionais
+      if (!formData.subscriber?.name?.trim()) {
+        toast.error('Nome do assinante é obrigatório');
+        return;
+      }
+
+      if (!formData.subscriber?.cpfCnpj?.trim()) {
+        toast.error('CPF/CNPJ é obrigatório');
+        return;
+      }
+
+      if (!formData.energyAccount?.originalAccount?.uc?.trim()) {
+        toast.error('UC é obrigatória');
+        return;
+      }
+
+      console.log('✅ [NOVO_ASSINANTE] Validações passaram, criando assinante...');
       
-      await createSubscriber(formData);
+      const id = await createSubscriber(formData);
+      
+      console.log('✅ [NOVO_ASSINANTE] Assinante criado com sucesso, ID:', id);
       
       toast.success('Assinante cadastrado com sucesso!');
       onClose();
-    } catch (error) {
-      console.error('❌ [FORM] Erro ao cadastrar assinante:', error);
-      toast.error('Erro ao cadastrar assinante. Tente novamente.');
+    } catch (error: any) {
+      console.error('❌ [NOVO_ASSINANTE] Erro detalhado ao cadastrar assinante:', error);
+      console.error('❌ [NOVO_ASSINANTE] Tipo do erro:', typeof error);
+      console.error('❌ [NOVO_ASSINANTE] Stack:', error?.stack);
+      
+      let errorMessage = 'Erro ao cadastrar assinante. Tente novamente.';
+      
+      if (error?.message) {
+        errorMessage = `Erro: ${error.message}`;
+      } else if (typeof error === 'string') {
+        errorMessage = `Erro: ${error}`;
+      }
+      
+      console.error('❌ [NOVO_ASSINANTE] Mensagem final:', errorMessage);
+      toast.error(errorMessage);
     }
   };
 

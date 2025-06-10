@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { SubscriberFormData } from '@/types/subscriber';
 
@@ -11,30 +10,56 @@ export const supabaseSubscriberService = {
       console.log('🚀 [SUPABASE_SERVICE] Iniciando criação de assinante...');
       console.log('📊 [SUPABASE_SERVICE] Dados recebidos:', JSON.stringify(data, null, 2));
       
-      // Obter o usuário atual
-      const { data: { user } } = await supabase.auth.getUser();
+      // Verificar se o usuário está autenticado
+      console.log('🔐 [SUPABASE_SERVICE] Verificando autenticação...');
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      
+      if (authError) {
+        console.error('❌ [SUPABASE_SERVICE] Erro de autenticação:', authError);
+        throw new Error(`Erro de autenticação: ${authError.message}`);
+      }
+      
       if (!user) {
+        console.error('❌ [SUPABASE_SERVICE] Usuário não autenticado');
         throw new Error('Usuário não autenticado');
       }
+      
+      console.log('✅ [SUPABASE_SERVICE] Usuário autenticado:', user.id);
 
-      // Preparar dados para salvar (convertendo File objects para strings/base64 se necessário)
+      // Preparar dados para salvar
+      console.log('📝 [SUPABASE_SERVICE] Preparando dados para salvar...');
       const docData = {
         user_id: user.id,
-        concessionaria: data.concessionaria,
-        subscriber: data.subscriber,
+        concessionaria: data.concessionaria || null,
+        subscriber: data.subscriber || null,
         administrator: data.administrator || null,
-        energy_account: data.energyAccount,
-        plan_contract: data.planContract,
-        plan_details: data.planDetails,
-        notifications: data.notifications,
+        energy_account: data.energyAccount || null,
+        plan_contract: data.planContract || null,
+        plan_details: data.planDetails || null,
+        notifications: data.notifications || null,
         attachments: data.attachments || null,
         status: 'active'
       };
 
       console.log('📝 [SUPABASE_SERVICE] Dados preparados para salvar:', JSON.stringify(docData, null, 2));
 
-      // Inserir no Supabase usando inserção direta
-      const { data: insertedData, error } = await (supabase as any)
+      // Verificar se a tabela existe
+      console.log('🔍 [SUPABASE_SERVICE] Verificando se a tabela existe...');
+      const { data: tableCheck, error: tableError } = await supabase
+        .from(COLLECTION_NAME)
+        .select('id')
+        .limit(1);
+      
+      if (tableError) {
+        console.error('❌ [SUPABASE_SERVICE] Erro ao verificar tabela:', tableError);
+        throw new Error(`Tabela não existe ou não tem permissão: ${tableError.message}`);
+      }
+      
+      console.log('✅ [SUPABASE_SERVICE] Tabela acessível');
+
+      // Inserir no Supabase
+      console.log('💾 [SUPABASE_SERVICE] Inserindo dados...');
+      const { data: insertedData, error } = await supabase
         .from(COLLECTION_NAME)
         .insert([docData])
         .select('id')
@@ -42,7 +67,18 @@ export const supabaseSubscriberService = {
       
       if (error) {
         console.error('❌ [SUPABASE_SERVICE] Erro ao inserir:', error);
-        throw error;
+        console.error('❌ [SUPABASE_SERVICE] Detalhes do erro:', {
+          code: error.code,
+          message: error.message,
+          details: error.details,
+          hint: error.hint
+        });
+        throw new Error(`Erro ao salvar: ${error.message}`);
+      }
+
+      if (!insertedData || !insertedData.id) {
+        console.error('❌ [SUPABASE_SERVICE] Dados inseridos não retornaram ID');
+        throw new Error('Erro: Dados não foram salvos corretamente');
       }
 
       console.log('✅ [SUPABASE_SERVICE] Documento inserido com sucesso!');
@@ -51,7 +87,14 @@ export const supabaseSubscriberService = {
       return insertedData.id;
     } catch (error) {
       console.error('❌ [SUPABASE_SERVICE] ERRO DETALHADO ao criar assinante:', error);
-      throw new Error(`Erro ao salvar no Supabase: ${error.message}`);
+      console.error('❌ [SUPABASE_SERVICE] Stack trace:', error.stack);
+      
+      // Re-throw with more specific message
+      if (error.message) {
+        throw new Error(`Erro ao salvar no Supabase: ${error.message}`);
+      } else {
+        throw new Error(`Erro desconhecido ao salvar no Supabase: ${JSON.stringify(error)}`);
+      }
     }
   },
 

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabaseSubscriberService } from '@/services/supabaseSubscriberService';
 import { SubscriberFormData } from '@/types/subscriber';
@@ -27,42 +26,59 @@ export const useSubscribers = () => {
 
   const createSubscriber = async (data: SubscriberFormData) => {
     setLoading(true);
+    setError(null);
+    
     try {
       console.log('🚀 [HOOK] Iniciando criação de assinante...');
-      console.log('📊 [HOOK] Dados recebidos:', JSON.stringify(data, null, 2));
+      console.log('📊 [HOOK] Dados recebidos no hook:', JSON.stringify(data, null, 2));
+      
+      // Validar dados básicos antes de enviar
+      if (!data.subscriber?.name) {
+        throw new Error('Nome do assinante é obrigatório');
+      }
+      
+      if (!data.subscriber?.cpfCnpj) {
+        throw new Error('CPF/CNPJ é obrigatório');
+      }
+      
+      if (!data.energyAccount?.originalAccount?.uc) {
+        throw new Error('UC é obrigatória');
+      }
+      
+      console.log('✅ [HOOK] Validação básica passou');
       
       const id = await supabaseSubscriberService.createSubscriber(data);
       
       console.log('✅ [HOOK] Assinante criado com ID:', id);
       
-      // Recarregar lista para verificar
-      console.log('🔄 [HOOK] Recarregando lista para verificar...');
+      // Recarregar lista
+      console.log('🔄 [HOOK] Recarregando lista...');
       await loadSubscribers();
       
-      // Verificar se o novo assinante aparece na lista
-      const updatedSubscribers = await supabaseSubscriberService.getSubscribers();
-      const newSubscriber = updatedSubscribers.find(sub => sub.id === id);
-      
-      if (newSubscriber) {
-        console.log('✅ [HOOK] Assinante confirmado na lista:', newSubscriber);
-        toast.success('Assinante cadastrado com sucesso!');
-      } else {
-        console.error('❌ [HOOK] Assinante não encontrado na lista após criação!');
-        toast.error('Erro: Assinante não foi salvo corretamente');
-        throw new Error('Assinante não foi salvo corretamente');
-      }
+      console.log('✅ [HOOK] Lista recarregada com sucesso');
       
       return id;
-    } catch (err) {
-      console.error('❌ [HOOK] Erro ao cadastrar assinante:', err);
+    } catch (err: any) {
+      console.error('❌ [HOOK] Erro completo ao cadastrar assinante:', err);
+      console.error('❌ [HOOK] Tipo do erro:', typeof err);
+      console.error('❌ [HOOK] Mensagem do erro:', err?.message);
+      console.error('❌ [HOOK] Stack do erro:', err?.stack);
       
-      let errorMessage = 'Erro ao cadastrar assinante';
+      let errorMessage = 'Erro desconhecido ao cadastrar assinante';
+      
       if (err?.message) {
-        errorMessage += `: ${err.message}`;
+        errorMessage = err.message;
+      } else if (typeof err === 'string') {
+        errorMessage = err;
+      } else if (err?.error?.message) {
+        errorMessage = err.error.message;
       }
       
-      toast.error(errorMessage);
-      throw err;
+      console.error('❌ [HOOK] Mensagem final do erro:', errorMessage);
+      setError(errorMessage);
+      
+      // Não mostrar toast aqui, deixar o componente decidir
+      throw new Error(errorMessage);
     } finally {
       setLoading(false);
     }
