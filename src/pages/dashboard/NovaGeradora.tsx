@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -8,6 +7,8 @@ import { Form } from '@/components/ui/form';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { useGenerators } from '@/hooks/useGenerators';
 import GeneratorConcessionariaForm from '@/components/forms/GeneratorConcessionariaForm';
 import GeneratorOwnerTypeForm from '@/components/forms/GeneratorOwnerTypeForm';
 import GeneratorOwnerDataForm from '@/components/forms/GeneratorOwnerDataForm';
@@ -78,7 +79,10 @@ interface NovaGeradoraProps {
 
 const NovaGeradora = ({ onClose }: NovaGeradoraProps) => {
   const [currentStep, setCurrentStep] = useState(1);
+  const [saving, setSaving] = useState(false);
   const totalSteps = 5;
+  const { toast } = useToast();
+  const { createGenerator } = useGenerators();
 
   const form = useForm<GeneratorFormData>({
     resolver: zodResolver(generatorSchema),
@@ -151,10 +155,28 @@ const NovaGeradora = ({ onClose }: NovaGeradoraProps) => {
     },
   ];
 
-  const onSubmit = (data: GeneratorFormData) => {
-    console.log('Generator data:', data);
-    // TODO: Implementar salvamento no banco
-    onClose();
+  const onSubmit = async (data: GeneratorFormData) => {
+    console.log('📝 Dados do formulário:', data);
+    setSaving(true);
+    
+    try {
+      await createGenerator(data);
+      toast({
+        title: "Sucesso!",
+        description: "Geradora cadastrada com sucesso.",
+        variant: "default",
+      });
+      onClose();
+    } catch (error) {
+      console.error('❌ Erro ao salvar geradora:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao salvar geradora. Tente novamente.",
+        variant: "destructive",
+      });
+    } finally {
+      setSaving(false);
+    }
   };
 
   const nextStep = () => {
@@ -377,7 +399,7 @@ const NovaGeradora = ({ onClose }: NovaGeradoraProps) => {
             type="button"
             variant="outline"
             onClick={prevStep}
-            disabled={currentStep === 1}
+            disabled={currentStep === 1 || saving}
             className="flex items-center gap-2"
           >
             <ChevronLeft className="w-4 h-4" />
@@ -389,6 +411,7 @@ const NovaGeradora = ({ onClose }: NovaGeradoraProps) => {
               type="button"
               variant="outline"
               onClick={() => form.reset()}
+              disabled={saving}
             >
               Limpar
             </Button>
@@ -397,16 +420,16 @@ const NovaGeradora = ({ onClose }: NovaGeradoraProps) => {
               <Button
                 type="submit"
                 onClick={form.handleSubmit(onSubmit)}
-                disabled={!canProceed()}
+                disabled={!canProceed() || saving}
                 className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white"
               >
-                Salvar Geradora
+                {saving ? 'Salvando...' : 'Salvar Geradora'}
               </Button>
             ) : (
               <Button
                 type="button"
                 onClick={nextStep}
-                disabled={!canProceed()}
+                disabled={!canProceed() || saving}
                 className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white flex items-center gap-2"
               >
                 Próximo

@@ -1,4 +1,3 @@
-
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -125,7 +124,7 @@ const PlantForm = ({ form, plantIndex, onRemove, canRemove }: PlantFormProps) =>
   const ownerType = form.watch(`plants.${plantIndex}.ownerType`);
   const potenciaModulo = form.watch(`plants.${plantIndex}.potenciaModulo`);
   const quantidadeModulos = form.watch(`plants.${plantIndex}.quantidadeModulos`);
-  const inversores = form.watch(`plants.${plantIndex}.inversores`);
+  const inversores = form.watch(`plants.${plantIndex}.inversores`) || [];
 
   // Calcular potência total da usina
   useEffect(() => {
@@ -135,12 +134,17 @@ const PlantForm = ({ form, plantIndex, onRemove, canRemove }: PlantFormProps) =>
     }
   }, [potenciaModulo, quantidadeModulos, form, plantIndex]);
 
-  // Calcular potência total dos inversores
+  // Calcular potência total dos inversores - CORRIGIDO
   useEffect(() => {
+    console.log('🔧 Calculando potência total dos inversores:', inversores);
     if (inversores && inversores.length > 0) {
-      const potenciaTotal = inversores.reduce((total, inv) => {
-        return total + (inv.potencia * inv.quantidade);
-      }, 0);
+      let potenciaTotal = 0;
+      inversores.forEach((inv) => {
+        if (inv.potencia && inv.quantidade) {
+          potenciaTotal += inv.potencia * inv.quantidade;
+        }
+      });
+      console.log('✅ Potência total calculada:', potenciaTotal);
       form.setValue(`plants.${plantIndex}.potenciaTotalInversores`, potenciaTotal);
     }
   }, [inversores, form, plantIndex]);
@@ -541,7 +545,7 @@ const PlantForm = ({ form, plantIndex, onRemove, canRemove }: PlantFormProps) =>
           </div>
         </div>
 
-        {/* Inversores */}
+        {/* Inversores - CORRIGIDO */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h4 className="font-medium text-gray-900 border-b pb-2">Inversores</h4>
@@ -584,7 +588,10 @@ const PlantForm = ({ form, plantIndex, onRemove, canRemove }: PlantFormProps) =>
                         step="0.1"
                         placeholder="50" 
                         {...field} 
-                        onChange={(e) => field.onChange(Number(e.target.value))}
+                        onChange={(e) => {
+                          const value = parseFloat(e.target.value) || 0;
+                          field.onChange(value);
+                        }}
                       />
                     </FormControl>
                     <FormMessage />
@@ -603,7 +610,10 @@ const PlantForm = ({ form, plantIndex, onRemove, canRemove }: PlantFormProps) =>
                         type="number" 
                         placeholder="2" 
                         {...field} 
-                        onChange={(e) => field.onChange(Number(e.target.value))}
+                        onChange={(e) => {
+                          const value = parseInt(e.target.value) || 0;
+                          field.onChange(value);
+                        }}
                       />
                     </FormControl>
                     <FormMessage />
@@ -717,3 +727,5 @@ const PlantForm = ({ form, plantIndex, onRemove, canRemove }: PlantFormProps) =>
 };
 
 export default GeneratorPlantsForm;
+
+</edits_to_apply>
