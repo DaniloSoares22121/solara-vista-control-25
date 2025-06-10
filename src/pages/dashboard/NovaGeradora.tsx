@@ -12,6 +12,10 @@ import GeneratorConcessionariaForm from '@/components/forms/GeneratorConcessiona
 import GeneratorOwnerTypeForm from '@/components/forms/GeneratorOwnerTypeForm';
 import GeneratorOwnerDataForm from '@/components/forms/GeneratorOwnerDataForm';
 import GeneratorAdministratorForm from '@/components/forms/GeneratorAdministratorForm';
+import GeneratorPlantsForm from '@/components/forms/GeneratorPlantsForm';
+import GeneratorDistributorLoginForm from '@/components/forms/GeneratorDistributorLoginForm';
+import GeneratorPaymentForm from '@/components/forms/GeneratorPaymentForm';
+import GeneratorAttachmentsForm from '@/components/forms/GeneratorAttachmentsForm';
 import { GeneratorFormData } from '@/types/generator';
 
 const generatorSchema = z.object({
@@ -53,17 +57,17 @@ const generatorSchema = z.object({
     telefone: z.string(),
     email: z.string(),
   }).optional(),
-  plants: z.array(z.any()).default([]),
+  plants: z.array(z.any()).min(1, 'Cadastre pelo menos uma usina'),
   distributorLogin: z.object({
-    uc: z.string(),
-    cpfCnpj: z.string(),
+    uc: z.string().min(1, 'UC é obrigatória'),
+    cpfCnpj: z.string().min(1, 'CPF/CNPJ é obrigatório'),
     dataNascimento: z.string().optional(),
   }),
   paymentData: z.object({
-    banco: z.string(),
-    agencia: z.string(),
-    conta: z.string(),
-    pix: z.string(),
+    banco: z.string().min(1, 'Banco é obrigatório'),
+    agencia: z.string().min(1, 'Agência é obrigatória'),
+    conta: z.string().min(1, 'Conta é obrigatória'),
+    pix: z.string().optional(),
   }),
   attachments: z.object({}).default({}),
 });
@@ -74,7 +78,7 @@ interface NovaGeradoraProps {
 
 const NovaGeradora = ({ onClose }: NovaGeradoraProps) => {
   const [currentStep, setCurrentStep] = useState(1);
-  const totalSteps = 4;
+  const totalSteps = 5;
 
   const form = useForm<GeneratorFormData>({
     resolver: zodResolver(generatorSchema),
@@ -132,11 +136,16 @@ const NovaGeradora = ({ onClose }: NovaGeradoraProps) => {
     },
     { 
       number: 3, 
-      title: 'Login e Pagamento', 
-      description: 'Credenciais e dados bancários' 
+      title: 'Login da Distribuidora', 
+      description: 'Credenciais de acesso à distribuidora' 
     },
     { 
       number: 4, 
+      title: 'Dados para Recebimento', 
+      description: 'Informações bancárias e PIX' 
+    },
+    { 
+      number: 5, 
       title: 'Anexos', 
       description: 'Documentos e contratos' 
     },
@@ -276,26 +285,22 @@ const NovaGeradora = ({ onClose }: NovaGeradoraProps) => {
                   </CardHeader>
                   
                   <CardContent className="p-6">
-                    <div className="text-center py-12">
-                      <p className="text-gray-500">
-                        Formulário de dados das usinas será implementado aqui
-                      </p>
-                    </div>
+                    <GeneratorPlantsForm form={form} />
                   </CardContent>
                 </Card>
               )}
 
-              {/* Step 3: Login e Pagamento */}
+              {/* Step 3: Login da Distribuidora */}
               {currentStep === 3 && (
                 <Card className="border-0 shadow-lg">
                   <CardHeader className="bg-gradient-to-r from-purple-50 to-purple-100 border-b">
                     <div className="flex items-center justify-between">
                       <div>
                         <CardTitle className="text-xl text-purple-800">
-                          Login e Pagamento
+                          Login da Distribuidora
                         </CardTitle>
                         <p className="text-purple-600 mt-1">
-                          Credenciais da distribuidora e dados de recebimento
+                          Credenciais de acesso à distribuidora
                         </p>
                       </div>
                       <Badge className="bg-purple-100 text-purple-800 border-purple-200">
@@ -305,17 +310,38 @@ const NovaGeradora = ({ onClose }: NovaGeradoraProps) => {
                   </CardHeader>
                   
                   <CardContent className="p-6">
-                    <div className="text-center py-12">
-                      <p className="text-gray-500">
-                        Formulário de login e pagamento será implementado aqui
-                      </p>
-                    </div>
+                    <GeneratorDistributorLoginForm form={form} />
                   </CardContent>
                 </Card>
               )}
 
-              {/* Step 4: Anexos */}
+              {/* Step 4: Dados para Recebimento */}
               {currentStep === 4 && (
+                <Card className="border-0 shadow-lg">
+                  <CardHeader className="bg-gradient-to-r from-green-50 to-green-100 border-b">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <CardTitle className="text-xl text-green-800">
+                          Dados para Recebimento
+                        </CardTitle>
+                        <p className="text-green-600 mt-1">
+                          Informações bancárias e chave PIX
+                        </p>
+                      </div>
+                      <Badge className="bg-green-100 text-green-800 border-green-200">
+                        Passo 4 de {totalSteps}
+                      </Badge>
+                    </div>
+                  </CardHeader>
+                  
+                  <CardContent className="p-6">
+                    <GeneratorPaymentForm form={form} />
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Step 5: Anexos */}
+              {currentStep === 5 && (
                 <Card className="border-0 shadow-lg">
                   <CardHeader className="bg-gradient-to-r from-amber-50 to-amber-100 border-b">
                     <div className="flex items-center justify-between">
@@ -328,17 +354,13 @@ const NovaGeradora = ({ onClose }: NovaGeradoraProps) => {
                         </p>
                       </div>
                       <Badge className="bg-amber-100 text-amber-800 border-amber-200">
-                        Passo 4 de {totalSteps}
+                        Passo 5 de {totalSteps}
                       </Badge>
                     </div>
                   </CardHeader>
                   
                   <CardContent className="p-6">
-                    <div className="text-center py-12">
-                      <p className="text-gray-500">
-                        Formulário de anexos será implementado aqui
-                      </p>
-                    </div>
+                    <GeneratorAttachmentsForm form={form} />
                   </CardContent>
                 </Card>
               )}

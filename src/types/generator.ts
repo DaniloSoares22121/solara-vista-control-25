@@ -53,6 +53,7 @@ export interface PlantData {
   ownerCpfCnpj: string;
   ownerName: string;
   ownerDataNascimento?: string;
+  ownerNumeroParceiroNegocio: string;
   address: Address;
   contacts: Contact[];
   observacoes: string;
