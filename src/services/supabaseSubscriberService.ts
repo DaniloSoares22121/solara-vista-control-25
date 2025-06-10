@@ -33,36 +33,22 @@ export const supabaseSubscriberService = {
 
       console.log('📝 [SUPABASE_SERVICE] Dados preparados para salvar:', JSON.stringify(docData, null, 2));
 
-      // Inserir no Supabase usando query SQL direta para contornar problema de tipos
-      const { data: insertedData, error } = await supabase
-        .rpc('create_subscriber', {
-          subscriber_data: JSON.stringify(docData)
-        });
+      // Inserir no Supabase usando inserção direta
+      const { data: insertedData, error } = await (supabase as any)
+        .from(COLLECTION_NAME)
+        .insert([docData])
+        .select('id')
+        .single();
       
       if (error) {
         console.error('❌ [SUPABASE_SERVICE] Erro ao inserir:', error);
-        
-        // Fallback: tentar inserção direta
-        const { data: fallbackData, error: fallbackError } = await (supabase as any)
-          .from(COLLECTION_NAME)
-          .insert([docData])
-          .select('id')
-          .single();
-        
-        if (fallbackError) {
-          console.error('❌ [SUPABASE_SERVICE] Erro no fallback:', fallbackError);
-          throw fallbackError;
-        }
-        
-        console.log('✅ [SUPABASE_SERVICE] Documento inserido com fallback!');
-        console.log('🆔 [SUPABASE_SERVICE] ID do documento:', fallbackData.id);
-        return fallbackData.id;
+        throw error;
       }
 
       console.log('✅ [SUPABASE_SERVICE] Documento inserido com sucesso!');
-      console.log('🆔 [SUPABASE_SERVICE] ID do documento:', insertedData);
+      console.log('🆔 [SUPABASE_SERVICE] ID do documento:', insertedData.id);
       
-      return insertedData;
+      return insertedData.id;
     } catch (error) {
       console.error('❌ [SUPABASE_SERVICE] ERRO DETALHADO ao criar assinante:', error);
       throw new Error(`Erro ao salvar no Supabase: ${error.message}`);
