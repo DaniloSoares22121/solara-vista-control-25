@@ -42,20 +42,20 @@ export function AppSidebar() {
   const isCollapsed = state === 'collapsed';
 
   return (
-    <Sidebar className="bg-green-600" collapsible="icon">
+    <Sidebar className="bg-green-600 border-none" collapsible="icon">
       <div className="h-full bg-green-600">
         <SidebarContent className="bg-green-600">
-          {/* Header com botão de toggle */}
-          <div className="flex items-center justify-between p-4 border-b border-green-500">
+          {/* Header com logo e botão de toggle */}
+          <div className="flex items-center justify-between p-6 border-b border-green-500/30">
             {!isCollapsed && (
-              <h2 className="text-xl font-bold text-white">
+              <h2 className="text-2xl font-bold text-white">
                 SolarControl
               </h2>
             )}
             
             <button
               onClick={toggleSidebar}
-              className="p-2 rounded-lg bg-green-700 hover:bg-green-800 text-white transition-colors"
+              className="p-2.5 rounded-lg bg-green-700/50 hover:bg-green-700 text-white transition-all duration-200 shadow-lg hover:shadow-xl"
             >
               {isCollapsed ? (
                 <ChevronRight className="w-5 h-5" />
@@ -66,15 +66,15 @@ export function AppSidebar() {
           </div>
 
           {/* Menu de navegação */}
-          <SidebarGroup className="p-2">
+          <SidebarGroup className="p-4">
             {!isCollapsed && (
-              <SidebarGroupLabel className="text-green-100 px-4 py-2 text-sm font-medium">
+              <SidebarGroupLabel className="text-green-100 px-3 py-2 text-sm font-semibold uppercase tracking-wide">
                 Navegação
               </SidebarGroupLabel>
             )}
             
             <SidebarGroupContent>
-              <SidebarMenu className="space-y-1">
+              <SidebarMenu className="space-y-2 mt-2">
                 {menuItems.map((item) => (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton asChild size="lg">
@@ -82,16 +82,16 @@ export function AppSidebar() {
                         to={item.url}
                         end
                         className={({ isActive }) => 
-                          `flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                          `flex items-center gap-4 px-4 py-4 rounded-xl transition-all duration-200 group ${
                             isActive 
-                              ? 'bg-green-700 text-white' 
-                              : 'text-green-100 hover:bg-green-700 hover:text-white'
+                              ? 'bg-green-700 text-white shadow-lg transform scale-[1.02]' 
+                              : 'text-white hover:bg-green-700/70 hover:text-white hover:transform hover:scale-[1.01]'
                           } ${isCollapsed ? 'justify-center px-3' : ''}`
                         }
                       >
-                        <item.icon className="w-5 h-5 flex-shrink-0" />
+                        <item.icon className="w-6 h-6 flex-shrink-0" />
                         {!isCollapsed && (
-                          <span className="font-medium">{item.title}</span>
+                          <span className="font-medium text-base">{item.title}</span>
                         )}
                       </NavLink>
                     </SidebarMenuButton>
@@ -102,20 +102,20 @@ export function AppSidebar() {
           </SidebarGroup>
           
           {/* Footer com status */}
-          <div className="mt-auto p-4 border-t border-green-500">
+          <div className="mt-auto p-6 border-t border-green-500/30">
             {!isCollapsed ? (
-              <div className="bg-green-700 rounded-lg p-3">
+              <div className="bg-green-700/50 rounded-xl p-4 shadow-inner">
                 <div className="flex items-center space-x-3">
-                  <div className="w-3 h-3 bg-green-300 rounded-full"></div>
+                  <div className="w-3 h-3 bg-green-300 rounded-full animate-pulse shadow-lg"></div>
                   <div>
-                    <p className="text-white text-sm font-medium">Sistema Online</p>
+                    <p className="text-white text-sm font-semibold">Sistema Online</p>
                     <p className="text-green-100 text-xs">Todos os serviços ativos</p>
                   </div>
                 </div>
               </div>
             ) : (
               <div className="flex justify-center">
-                <div className="w-3 h-3 bg-green-300 rounded-full"></div>
+                <div className="w-3 h-3 bg-green-300 rounded-full animate-pulse shadow-lg"></div>
               </div>
             )}
           </div>
