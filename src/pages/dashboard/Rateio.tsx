@@ -1,15 +1,18 @@
 
+import { useState } from 'react';
 import DashboardLayout from '@/components/DashboardLayout';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, Users, Calculator, History, Zap, Check, X, Plus, Eye, FileText, AlertTriangle } from 'lucide-react';
-import { useState } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
 import { useRateio } from '@/hooks/useRateio';
-import { RateioData, RateioSubscriber } from '@/types/rateio';
+import { RateioSubscriber } from '@/types/rateio';
+import { Search, Users, Calculator, History, Upload, FileText, CheckCircle, AlertCircle, Percent, ArrowUpDown } from 'lucide-react';
 import { toast } from 'sonner';
 
 const Rateio = () => {
@@ -27,10 +30,10 @@ const Rateio = () => {
     loading
   } = useRateio();
 
-  const [searchGenerator, setSearchGenerator] = useState('');
+  const [searchGeneratorConsulta, setSearchGeneratorConsulta] = useState('');
+  const [searchGeneratorCadastro, setSearchGeneratorCadastro] = useState('');
+  const [searchGeneratorHistorico, setSearchGeneratorHistorico] = useState('');
   const [searchSubscriber, setSearchSubscriber] = useState('');
-  const [searchHistoryGenerator, setSearchHistoryGenerator] = useState('');
-  const [confirmSubscriber, setConfirmSubscriber] = useState(false);
   const [rateioType, setRateioType] = useState<'percentage' | 'priority'>('percentage');
   const [rateioDate, setRateioDate] = useState({
     day: new Date().getDate(),
@@ -38,603 +41,429 @@ const Rateio = () => {
     year: new Date().getFullYear()
   });
   const [expectedGeneration, setExpectedGeneration] = useState(0);
-  const [editableSubscribers, setEditableSubscribers] = useState<RateioSubscriber[]>([]);
-  const [showCreateRateio, setShowCreateRateio] = useState(false);
-  const [historyGenerator, setHistoryGenerator] = useState<any>(null);
-  const [selectedRateioHistory, setSelectedRateioHistory] = useState<RateioData | null>(null);
+  const [editedSubscribers, setEditedSubscribers] = useState<RateioSubscriber[]>([]);
+  const [showTypeDialog, setShowTypeDialog] = useState(false);
+  const [showSubscriberConfirm, setShowSubscriberConfirm] = useState(false);
+  const [attachmentUrl, setAttachmentUrl] = useState('');
 
-  // Filtrar geradoras para busca
-  const filteredGenerators = generators.filter(g => 
-    g.owner?.name?.toLowerCase().includes(searchGenerator.toLowerCase()) ||
-    g.plants?.some((p: any) => p.uc?.includes(searchGenerator))
+  // Filtrar geradoras
+  const filteredGeneratorsConsulta = generators.filter(g => 
+    g.owner?.name?.toLowerCase().includes(searchGeneratorConsulta.toLowerCase()) ||
+    g.plants?.[0]?.apelido?.toLowerCase().includes(searchGeneratorConsulta.toLowerCase())
   );
 
-  // Filtrar assinantes para busca
+  const filteredGeneratorsCadastro = generators.filter(g => 
+    g.owner?.name?.toLowerCase().includes(searchGeneratorCadastro.toLowerCase()) ||
+    g.plants?.[0]?.apelido?.toLowerCase().includes(searchGeneratorCadastro.toLowerCase())
+  );
+
+  const filteredGeneratorsHistorico = generators.filter(g => 
+    g.owner?.name?.toLowerCase().includes(searchGeneratorHistorico.toLowerCase()) ||
+    g.plants?.[0]?.apelido?.toLowerCase().includes(searchGeneratorHistorico.toLowerCase())
+  );
+
+  // Filtrar assinantes
   const filteredSubscribers = subscribers.filter(s =>
     s.subscriber?.name?.toLowerCase().includes(searchSubscriber.toLowerCase()) ||
     s.energyAccount?.originalAccount?.uc?.includes(searchSubscriber)
   );
 
-  // Filtrar geradoras para histórico
-  const filteredHistoryGenerators = generators.filter(g => 
-    g.owner?.name?.toLowerCase().includes(searchHistoryGenerator.toLowerCase()) ||
-    g.plants?.some((p: any) => p.uc?.includes(searchHistoryGenerator))
-  );
-
-  // Função para confirmar assinante
-  const handleConfirmSubscriber = (confirm: boolean) => {
-    setConfirmSubscriber(confirm);
-    if (confirm && selectedSubscriber) {
-      // Adicionar assinante à lista editável se não existir
-      const existingSubscriber = editableSubscribers.find(s => s.id === selectedSubscriber.id);
-      if (!existingSubscriber) {
-        const newSubscriber = {
-          ...selectedSubscriber,
-          percentage: rateioType === 'percentage' ? 0 : undefined,
-          priority: rateioType === 'priority' ? editableSubscribers.length + 1 : undefined
-        };
-        setEditableSubscribers(prev => [...prev, newSubscriber]);
-      }
+  const handleGeneratorSelect = (generatorId: string, tab: string) => {
+    const generator = selectGenerator(generatorId);
+    if (generator && tab === 'cadastro') {
+      setExpectedGeneration(generator.generation);
+      setEditedSubscribers([]);
     }
   };
 
-  // Função para atualizar porcentagem/prioridade
-  const updateSubscriberValue = (subscriberId: string, field: 'percentage' | 'priority', value: number) => {
-    setEditableSubscribers(prev => prev.map(sub => 
-      sub.id === subscriberId 
-        ? { ...sub, [field]: value }
-        : sub
-    ));
+  const handleSubscriberSelect = (subscriberId: string) => {
+    selectSubscriber(subscriberId);
+    setShowSubscriberConfirm(true);
   };
 
-  // Função para salvar rateio
-  const handleSaveRateio = async () => {
-    if (!selectedGenerator || editableSubscribers.length === 0) {
-      toast.error('Selecione uma geradora e adicione pelo menos um assinante');
+  const confirmSubscriber = () => {
+    if (selectedSubscriber && selectedGenerator) {
+      setShowSubscriberConfirm(false);
+      setShowTypeDialog(true);
+    }
+  };
+
+  const startRateio = () => {
+    if (selectedGenerator) {
+      const currentSubscribers = [...subscribersByGenerator];
+      if (selectedSubscriber) {
+        const newSubscriber = {
+          ...selectedSubscriber,
+          percentage: rateioType === 'percentage' ? 0 : undefined,
+          priority: rateioType === 'priority' ? currentSubscribers.length + 1 : undefined
+        };
+        currentSubscribers.push(newSubscriber);
+      }
+      setEditedSubscribers(currentSubscribers);
+      setShowTypeDialog(false);
+    }
+  };
+
+  const updateSubscriberValue = (index: number, field: 'percentage' | 'priority', value: number) => {
+    const updated = [...editedSubscribers];
+    updated[index] = { ...updated[index], [field]: value };
+    setEditedSubscribers(updated);
+  };
+
+  const saveRateio = async () => {
+    if (!selectedGenerator || editedSubscribers.length === 0) {
+      toast.error('Selecione uma geradora e adicione assinantes');
       return;
     }
 
     try {
-      const rateioData: RateioData = {
+      const rateioData = {
         generatorId: selectedGenerator.id,
         generator: selectedGenerator,
         type: rateioType,
         date: rateioDate,
         expectedGeneration,
-        subscribers: editableSubscribers
+        subscribers: editedSubscribers,
+        attachmentUrl
       };
 
       await createRateio(rateioData);
-      
-      // Reset form
       resetSelections();
-      setEditableSubscribers([]);
-      setConfirmSubscriber(false);
-      setShowCreateRateio(false);
-      
+      setEditedSubscribers([]);
+      setAttachmentUrl('');
+      toast.success('Rateio salvo com sucesso!');
     } catch (error) {
-      // Error is handled in the hook
+      // Erro já tratado no hook
     }
   };
 
-  // Calcular total de porcentagem
-  const totalPercentage = editableSubscribers.reduce((sum, sub) => sum + (sub.percentage || 0), 0);
+  const validatePercentages = () => {
+    const total = editedSubscribers.reduce((sum, sub) => sum + (sub.percentage || 0), 0);
+    return Math.abs(total - 100) < 0.01;
+  };
+
+  const validatePriorities = () => {
+    const priorities = editedSubscribers.map(sub => sub.priority).filter(p => p !== undefined);
+    const uniquePriorities = new Set(priorities);
+    if (priorities.length !== uniquePriorities.size) return false;
+    
+    const sortedPriorities = [...priorities].sort((a, b) => a! - b!);
+    for (let i = 0; i < sortedPriorities.length; i++) {
+      if (sortedPriorities[i] !== i + 1) return false;
+    }
+    return true;
+  };
+
+  const isValidRateio = rateioType === 'percentage' ? validatePercentages() : validatePriorities();
 
   return (
     <DashboardLayout>
-      <div className="space-y-6 p-4 sm:p-6">
+      <div className="space-y-6 p-6">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Gestão de Rateio</h1>
-            <p className="text-gray-600 mt-1 text-sm sm:text-base">Gerencie a distribuição de energia entre geradoras e assinantes.</p>
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+            <Calculator className="w-6 h-6 text-white" />
           </div>
-          
-          <div className="w-10 h-10 sm:w-12 sm:h-12 bg-green-100 rounded-xl flex items-center justify-center">
-            <Calculator className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Rateio de Energia</h1>
+            <p className="text-gray-600">Gerencie a distribuição de energia entre assinantes</p>
           </div>
         </div>
 
-        {/* Tabs */}
-        <Tabs defaultValue="assinantes" className="w-full">
-          <TabsList className="grid w-full grid-cols-1 sm:grid-cols-3 bg-white rounded-xl border border-gray-200 p-1 gap-1 sm:gap-0">
-            <TabsTrigger 
-              value="assinantes" 
-              className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm text-xs sm:text-sm p-2 sm:p-3"
-            >
-              <Users className="w-3 h-3 sm:w-4 sm:h-4" />
-              <span className="hidden sm:inline">Assinantes por Geradora</span>
-              <span className="sm:hidden">Assinantes</span>
+        <Tabs defaultValue="consulta" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="consulta" className="flex items-center gap-2">
+              <Users className="w-4 h-4" />
+              Assinantes por Geradora
             </TabsTrigger>
-            <TabsTrigger 
-              value="cadastrar" 
-              className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm text-xs sm:text-sm p-2 sm:p-3"
-            >
-              <Calculator className="w-3 h-3 sm:w-4 sm:h-4" />
-              <span className="hidden sm:inline">Cadastrar Rateio</span>
-              <span className="sm:hidden">Cadastrar</span>
+            <TabsTrigger value="cadastro" className="flex items-center gap-2">
+              <Calculator className="w-4 h-4" />
+              Cadastrar Rateio
             </TabsTrigger>
-            <TabsTrigger 
-              value="historico" 
-              className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm text-xs sm:text-sm p-2 sm:p-3"
-            >
-              <History className="w-3 h-3 sm:w-4 sm:h-4" />
-              <span className="hidden sm:inline">Histórico de Rateios</span>
-              <span className="sm:hidden">Histórico</span>
+            <TabsTrigger value="historico" className="flex items-center gap-2">
+              <History className="w-4 h-4" />
+              Histórico de Rateios
             </TabsTrigger>
           </TabsList>
 
-          {/* Tab 1: Assinantes por Geradora */}
-          <TabsContent value="assinantes" className="mt-6">
-            <Card className="border-gray-200">
+          {/* Aba Consulta */}
+          <TabsContent value="consulta" className="space-y-6">
+            <Card>
               <CardHeader>
-                <CardTitle className="text-lg sm:text-xl">Consultar Assinantes por Geradora</CardTitle>
-                <CardDescription className="text-sm">
-                  Selecione uma geradora para visualizar os assinantes vinculados.
-                </CardDescription>
+                <CardTitle className="flex items-center gap-2">
+                  <Users className="w-5 h-5" />
+                  Consultar Assinantes por Geradora
+                </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                  <Input 
-                    placeholder="Buscar geradora por nome ou UC..."
-                    className="pl-10 bg-gray-50 border-gray-200 h-10 sm:h-12 text-sm"
-                    value={searchGenerator}
-                    onChange={(e) => setSearchGenerator(e.target.value)}
-                  />
+              <CardContent className="space-y-4">
+                <div className="flex gap-4">
+                  <div className="flex-1">
+                    <Label>Buscar Geradora</Label>
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                      <Input
+                        placeholder="Digite o nome ou apelido da geradora..."
+                        value={searchGeneratorConsulta}
+                        onChange={(e) => setSearchGeneratorConsulta(e.target.value)}
+                        className="pl-10"
+                      />
+                    </div>
+                  </div>
                 </div>
 
-                {/* Lista de Geradoras */}
-                {searchGenerator && (
-                  <div className="space-y-3">
-                    {filteredGenerators.map((generator) => (
-                      <Card 
-                        key={generator.id} 
-                        className="cursor-pointer hover:shadow-md transition-shadow border-gray-200"
-                        onClick={() => selectGenerator(generator.id)}
-                      >
-                        <CardContent className="p-4">
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <h3 className="font-medium text-gray-900">
-                                {generator.plants?.[0]?.apelido || generator.owner?.name || 'Geradora'}
-                              </h3>
-                              <p className="text-sm text-gray-600">UC: {generator.plants?.[0]?.uc || 'N/A'}</p>
-                            </div>
-                            <Badge variant="outline" className="text-green-600 border-green-300">
-                              {generator.plants?.[0]?.geracaoProjetada || 0} kWh
-                            </Badge>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                )}
+                {/* Lista de Geradoras para Consulta */}
+                <div className="space-y-2 max-h-40 overflow-y-auto">
+                  {filteredGeneratorsConsulta.map((generator) => (
+                    <div
+                      key={generator.id}
+                      className="p-3 border rounded-lg cursor-pointer hover:bg-gray-50"
+                      onClick={() => handleGeneratorSelect(generator.id, 'consulta')}
+                    >
+                      <div className="font-medium">
+                        {generator.plants?.[0]?.apelido || generator.owner?.name}
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        UC: {generator.plants?.[0]?.uc} | Geração: {generator.plants?.[0]?.geracaoProjetada} kWh
+                      </div>
+                    </div>
+                  ))}
+                </div>
 
                 {/* Informações da Geradora Selecionada */}
                 {selectedGenerator && (
-                  <div className="space-y-4">
-                    <Card className="bg-green-50 border-green-200">
-                      <CardContent className="p-4">
-                        <div className="flex items-center gap-3 mb-3">
-                          <Zap className="w-5 h-5 text-green-600" />
-                          <h3 className="font-medium text-gray-900">Geradora Selecionada</h3>
-                        </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
-                          <div>
-                            <span className="text-gray-600">Apelido:</span>
-                            <p className="font-medium">{selectedGenerator.nickname}</p>
-                          </div>
-                          <div>
-                            <span className="text-gray-600">UC:</span>
-                            <p className="font-medium">{selectedGenerator.uc}</p>
-                          </div>
-                          <div>
-                            <span className="text-gray-600">Geração:</span>
-                            <p className="font-medium">{selectedGenerator.generation} kWh</p>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
+                  <div className="bg-blue-50 p-4 rounded-lg">
+                    <h3 className="font-semibold text-blue-900">Geradora Selecionada</h3>
+                    <div className="grid grid-cols-3 gap-4 mt-2">
+                      <div>
+                        <span className="text-sm text-blue-600">Apelido:</span>
+                        <p className="font-medium">{selectedGenerator.nickname}</p>
+                      </div>
+                      <div>
+                        <span className="text-sm text-blue-600">UC:</span>
+                        <p className="font-medium">{selectedGenerator.uc}</p>
+                      </div>
+                      <div>
+                        <span className="text-sm text-blue-600">Geração:</span>
+                        <p className="font-medium">{selectedGenerator.generation} kWh</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
-                    {/* Lista de Assinantes */}
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="text-base">Assinantes Vinculados</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        {subscribersByGenerator.length === 0 ? (
-                          <div className="text-center py-8">
-                            <Users className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-                            <p className="text-gray-500">Nenhum assinante vinculado a esta geradora</p>
-                          </div>
-                        ) : (
-                          <div className="overflow-x-auto">
-                            <table className="w-full text-sm">
-                              <thead>
-                                <tr className="border-b border-gray-200">
-                                  <th className="text-left py-2 text-gray-600">Nome</th>
-                                  <th className="text-left py-2 text-gray-600">UC</th>
-                                  <th className="text-left py-2 text-gray-600">Consumo Contratado</th>
-                                  <th className="text-left py-2 text-gray-600">Crédito Acumulado</th>
-                                  <th className="text-left py-2 text-gray-600">Percentual</th>
-                                  <th className="text-left py-2 text-gray-600">Última Fatura</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {subscribersByGenerator.map((subscriber) => (
-                                  <tr key={subscriber.id} className="border-b border-gray-100">
-                                    <td className="py-3 font-medium">{subscriber.name}</td>
-                                    <td className="py-3">{subscriber.uc}</td>
-                                    <td className="py-3">{subscriber.contractedConsumption} kWh</td>
-                                    <td className="py-3">{subscriber.accumulatedCredit} kWh</td>
-                                    <td className="py-3">{subscriber.percentage}%</td>
-                                    <td className="py-3">{subscriber.lastInvoice}</td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          </div>
-                        )}
-                      </CardContent>
-                    </Card>
+                {/* Lista de Assinantes */}
+                {subscribersByGenerator.length > 0 && (
+                  <div>
+                    <h3 className="text-lg font-semibold mb-4">Assinantes Cadastrados</h3>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Nome</TableHead>
+                          <TableHead>UC</TableHead>
+                          <TableHead>Consumo Contratado</TableHead>
+                          <TableHead>Crédito Acumulado</TableHead>
+                          <TableHead>Percentual/Prioridade</TableHead>
+                          <TableHead>Última Fatura</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {subscribersByGenerator.map((subscriber) => (
+                          <TableRow key={subscriber.id}>
+                            <TableCell className="font-medium">{subscriber.name}</TableCell>
+                            <TableCell>{subscriber.uc}</TableCell>
+                            <TableCell>{subscriber.contractedConsumption.toLocaleString()} kWh/mês</TableCell>
+                            <TableCell>{subscriber.accumulatedCredit} kWh</TableCell>
+                            <TableCell>
+                              {subscriber.percentage ? `${subscriber.percentage}%` : `Prioridade ${subscriber.priority}`}
+                            </TableCell>
+                            <TableCell>{subscriber.lastInvoice}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
                   </div>
                 )}
               </CardContent>
             </Card>
           </TabsContent>
 
-          {/* Tab 2: Cadastrar Rateio */}
-          <TabsContent value="cadastrar" className="mt-6">
-            <Card className="border-gray-200">
+          {/* Aba Cadastro */}
+          <TabsContent value="cadastro" className="space-y-6">
+            <Card>
               <CardHeader>
-                <CardTitle className="text-xl sm:text-2xl">Cadastrar Novo Rateio</CardTitle>
-                <CardDescription className="text-sm">
-                  Configure a distribuição de energia entre assinantes
-                </CardDescription>
+                <CardTitle className="flex items-center gap-2">
+                  <Calculator className="w-5 h-5" />
+                  Cadastrar Novo Rateio
+                </CardTitle>
               </CardHeader>
-              
               <CardContent className="space-y-6">
-                {/* Seleção de Geradora */}
-                {!selectedGenerator && (
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-medium">1. Selecionar Geradora</h3>
-                    <div className="relative">
+                {/* Seleção da Geradora */}
+                <div>
+                  <Label>Selecionar Geradora</Label>
+                  <div className="relative mb-4">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                    <Input
+                      placeholder="Digite o nome ou apelido da geradora..."
+                      value={searchGeneratorCadastro}
+                      onChange={(e) => setSearchGeneratorCadastro(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
+
+                  {/* Lista de Geradoras - SEMPRE VISÍVEL */}
+                  <div className="space-y-2 max-h-40 overflow-y-auto border rounded-lg p-2">
+                    {filteredGeneratorsCadastro.length === 0 ? (
+                      <p className="text-gray-500 text-center py-4">Nenhuma geradora encontrada</p>
+                    ) : (
+                      filteredGeneratorsCadastro.map((generator) => (
+                        <div
+                          key={generator.id}
+                          className={`p-3 border rounded-lg cursor-pointer transition-colors ${
+                            selectedGenerator?.id === generator.id 
+                              ? 'bg-blue-100 border-blue-300' 
+                              : 'hover:bg-gray-50'
+                          }`}
+                          onClick={() => handleGeneratorSelect(generator.id, 'cadastro')}
+                        >
+                          <div className="font-medium">
+                            {generator.plants?.[0]?.apelido || generator.owner?.name}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            UC: {generator.plants?.[0]?.uc} | Geração: {generator.plants?.[0]?.geracaoProjetada} kWh
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+
+                {/* Informações da Geradora Selecionada */}
+                {selectedGenerator && (
+                  <div className="bg-blue-50 p-4 rounded-lg">
+                    <h3 className="font-semibold text-blue-900">Geradora Selecionada</h3>
+                    <div className="grid grid-cols-3 gap-4 mt-2">
+                      <div>
+                        <span className="text-sm text-blue-600">Apelido:</span>
+                        <p className="font-medium">{selectedGenerator.nickname}</p>
+                      </div>
+                      <div>
+                        <span className="text-sm text-blue-600">UC:</span>
+                        <p className="font-medium">{selectedGenerator.uc}</p>
+                      </div>
+                      <div>
+                        <span className="text-sm text-blue-600">Geração:</span>
+                        <p className="font-medium">{selectedGenerator.generation} kWh</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Seleção do Assinante */}
+                {selectedGenerator && (
+                  <div>
+                    <Label>Selecionar Assinante</Label>
+                    <div className="relative mb-4">
                       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                      <Input 
-                        placeholder="Buscar geradora por nome ou UC..."
-                        className="pl-10 bg-white border-gray-300 h-12 text-sm"
-                        value={searchGenerator}
-                        onChange={(e) => setSearchGenerator(e.target.value)}
+                      <Input
+                        placeholder="Digite o nome ou UC do assinante..."
+                        value={searchSubscriber}
+                        onChange={(e) => setSearchSubscriber(e.target.value)}
+                        className="pl-10"
                       />
                     </div>
 
-                    {searchGenerator && (
-                      <div className="space-y-3">
-                        {filteredGenerators.map((generator) => (
-                          <Card 
-                            key={generator.id} 
-                            className="cursor-pointer hover:shadow-md transition-shadow"
-                            onClick={() => {
-                              selectGenerator(generator.id);
-                              setExpectedGeneration(generator.plants?.[0]?.geracaoProjetada || 0);
-                            }}
-                          >
-                            <CardContent className="p-4">
-                              <div className="flex items-center justify-between">
-                                <div>
-                                  <h3 className="font-medium">
-                                    {generator.plants?.[0]?.apelido || generator.owner?.name}
-                                  </h3>
-                                  <p className="text-sm text-gray-600">UC: {generator.plants?.[0]?.uc}</p>
-                                </div>
-                                <Badge variant="outline" className="text-green-600">
-                                  {generator.plants?.[0]?.geracaoProjetada} kWh
-                                </Badge>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        ))}
-                      </div>
-                    )}
+                    <div className="space-y-2 max-h-40 overflow-y-auto">
+                      {filteredSubscribers.map((subscriber) => (
+                        <div
+                          key={subscriber.id}
+                          className="p-3 border rounded-lg cursor-pointer hover:bg-gray-50"
+                          onClick={() => handleSubscriberSelect(subscriber.id)}
+                        >
+                          <div className="font-medium">{subscriber.subscriber?.name}</div>
+                          <div className="text-sm text-gray-500">
+                            UC: {subscriber.energyAccount?.originalAccount?.uc} | 
+                            Consumo: {subscriber.planContract?.kwhContratado} kWh/mês
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
 
-                {/* Informações da Geradora e Seleção de Assinante */}
-                {selectedGenerator && !showCreateRateio && (
-                  <div className="space-y-6">
-                    {/* Informações da Geradora */}
-                    <Card className="bg-green-50 border-green-200">
-                      <CardContent className="p-4">
-                        <div className="flex items-center gap-3 mb-3">
-                          <Zap className="w-5 h-5 text-green-600" />
-                          <h3 className="font-medium">Geradora Selecionada</h3>
-                        </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
-                          <div>
-                            <span className="text-gray-600">Apelido:</span>
-                            <p className="font-medium">{selectedGenerator.nickname}</p>
-                          </div>
-                          <div>
-                            <span className="text-gray-600">UC:</span>
-                            <p className="font-medium">{selectedGenerator.uc}</p>
-                          </div>
-                          <div>
-                            <span className="text-gray-600">Geração:</span>
-                            <p className="font-medium">{selectedGenerator.generation} kWh</p>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-
-                    {/* Seleção de Assinante */}
-                    <div className="space-y-4">
-                      <h3 className="text-lg font-medium">2. Selecionar Assinante</h3>
-                      <div className="relative">
-                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                        <Input 
-                          placeholder="Buscar assinante por nome ou UC..."
-                          className="pl-10 bg-white border-gray-300 h-12 text-sm"
-                          value={searchSubscriber}
-                          onChange={(e) => setSearchSubscriber(e.target.value)}
-                        />
+                {/* Lista de Edição dos Assinantes */}
+                {editedSubscribers.length > 0 && (
+                  <div>
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-lg font-semibold">Configurar Rateio</h3>
+                      <div className="flex items-center gap-2">
+                        {rateioType === 'percentage' ? (
+                          <Badge variant={isValidRateio ? "default" : "destructive"}>
+                            <Percent className="w-3 h-3 mr-1" />
+                            {isValidRateio ? "100%" : "Ajustar %"}
+                          </Badge>
+                        ) : (
+                          <Badge variant={isValidRateio ? "default" : "destructive"}>
+                            <ArrowUpDown className="w-3 h-3 mr-1" />
+                            {isValidRateio ? "Sequencial" : "Ajustar prioridades"}
+                          </Badge>
+                        )}
                       </div>
-
-                      {searchSubscriber && (
-                        <div className="space-y-3">
-                          {filteredSubscribers.map((subscriber) => (
-                            <Card 
-                              key={subscriber.id} 
-                              className="cursor-pointer hover:shadow-md transition-shadow"
-                              onClick={() => selectSubscriber(subscriber.id)}
-                            >
-                              <CardContent className="p-4">
-                                <div className="flex items-center justify-between">
-                                  <div>
-                                    <h3 className="font-medium">{subscriber.subscriber?.name}</h3>
-                                    <p className="text-sm text-gray-600">
-                                      UC: {subscriber.energyAccount?.originalAccount?.uc}
-                                    </p>
-                                  </div>
-                                  <Badge variant="outline">
-                                    {subscriber.planContract?.kwhContratado} kWh/mês
-                                  </Badge>
-                                </div>
-                              </CardContent>
-                            </Card>
-                          ))}
-                        </div>
-                      )}
                     </div>
 
-                    {/* Confirmação do Assinante */}
-                    {selectedSubscriber && !confirmSubscriber && (
-                      <Card className="bg-blue-50 border-blue-200">
-                        <CardContent className="p-4">
-                          <div className="flex items-center gap-3 mb-3">
-                            <Users className="w-5 h-5 text-blue-600" />
-                            <h3 className="font-medium">Confirmar Assinante</h3>
-                          </div>
-                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm mb-4">
-                            <div>
-                              <span className="text-gray-600">Nome:</span>
-                              <p className="font-medium">{selectedSubscriber.name}</p>
-                            </div>
-                            <div>
-                              <span className="text-gray-600">UC:</span>
-                              <p className="font-medium">{selectedSubscriber.uc}</p>
-                            </div>
-                            <div>
-                              <span className="text-gray-600">Consumo Contratado:</span>
-                              <p className="font-medium">{selectedSubscriber.contractedConsumption} kWh</p>
-                            </div>
-                          </div>
-                          <div className="flex gap-3">
-                            <Button 
-                              onClick={() => handleConfirmSubscriber(true)}
-                              className="bg-green-600 hover:bg-green-700"
-                            >
-                              <Check className="w-4 h-4 mr-2" />
-                              Sim, confirmar
-                            </Button>
-                            <Button 
-                              variant="outline"
-                              onClick={() => handleConfirmSubscriber(false)}
-                            >
-                              <X className="w-4 h-4 mr-2" />
-                              Não, escolher outro
-                            </Button>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    )}
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Nome</TableHead>
+                          <TableHead>UC</TableHead>
+                          <TableHead>Consumo</TableHead>
+                          <TableHead>Crédito</TableHead>
+                          <TableHead className="bg-yellow-100">
+                            {rateioType === 'percentage' ? 'Percentual' : 'Prioridade'}
+                          </TableHead>
+                          <TableHead>Última Fatura</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {editedSubscribers.map((subscriber, index) => (
+                          <TableRow key={subscriber.id}>
+                            <TableCell className="font-medium">{subscriber.name}</TableCell>
+                            <TableCell>{subscriber.uc}</TableCell>
+                            <TableCell>{subscriber.contractedConsumption.toLocaleString()} kWh</TableCell>
+                            <TableCell>{subscriber.accumulatedCredit} kWh</TableCell>
+                            <TableCell className="bg-yellow-50">
+                              <Input
+                                type="number"
+                                value={rateioType === 'percentage' ? subscriber.percentage || 0 : subscriber.priority || 1}
+                                onChange={(e) => updateSubscriberValue(
+                                  index, 
+                                  rateioType === 'percentage' ? 'percentage' : 'priority', 
+                                  Number(e.target.value)
+                                )}
+                                className="w-20"
+                                min={rateioType === 'percentage' ? 0 : 1}
+                                max={rateioType === 'percentage' ? 100 : editedSubscribers.length}
+                                step={rateioType === 'percentage' ? 0.01 : 1}
+                              />
+                            </TableCell>
+                            <TableCell>{subscriber.lastInvoice}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
 
-                    {/* Botão para prosseguir */}
-                    {confirmSubscriber && (
-                      <div className="flex justify-end">
-                        <Button 
-                          onClick={() => setShowCreateRateio(true)}
-                          className="bg-blue-600 hover:bg-blue-700"
-                        >
-                          Prosseguir para Configuração
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* Configuração do Rateio */}
-                {showCreateRateio && selectedGenerator && (
-                  <div className="space-y-6">
-                    {/* Configurações do Rateio */}
-                    <Card className="bg-yellow-50 border-yellow-200">
-                      <CardContent className="p-4">
-                        <h3 className="font-medium mb-4">Configurações do Rateio</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                          <div>
-                            <label className="block text-sm font-medium mb-2">Tipo de Rateio</label>
-                            <Select value={rateioType} onValueChange={(value: 'percentage' | 'priority') => setRateioType(value)}>
-                              <SelectTrigger>
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="percentage">Porcentagem</SelectItem>
-                                <SelectItem value="priority">Prioridade</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium mb-2">Dia</label>
-                            <Input 
-                              type="number" 
-                              min="1" 
-                              max="31"
-                              value={rateioDate.day}
-                              onChange={(e) => setRateioDate(prev => ({...prev, day: Number(e.target.value)}))}
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium mb-2">Mês</label>
-                            <Input 
-                              type="number" 
-                              min="1" 
-                              max="12"
-                              value={rateioDate.month}
-                              onChange={(e) => setRateioDate(prev => ({...prev, month: Number(e.target.value)}))}
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium mb-2">Ano</label>
-                            <Input 
-                              type="number" 
-                              min="2024"
-                              value={rateioDate.year}
-                              onChange={(e) => setRateioDate(prev => ({...prev, year: Number(e.target.value)}))}
-                            />
-                          </div>
-                        </div>
-                        <div className="mt-4">
-                          <label className="block text-sm font-medium mb-2">Geração Esperada (kWh)</label>
-                          <Input 
-                            type="number"
-                            value={expectedGeneration}
-                            onChange={(e) => setExpectedGeneration(Number(e.target.value))}
-                          />
-                        </div>
-                      </CardContent>
-                    </Card>
-
-                    {/* Lista de Assinantes para Edição */}
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="flex items-center justify-between">
-                          <span>Assinantes do Rateio</span>
-                          {rateioType === 'percentage' && (
-                            <Badge 
-                              variant={Math.abs(totalPercentage - 100) < 0.01 ? "default" : "destructive"}
-                              className="ml-2"
-                            >
-                              Total: {totalPercentage.toFixed(1)}%
-                            </Badge>
-                          )}
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        {editableSubscribers.length === 0 ? (
-                          <div className="text-center py-8">
-                            <Users className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-                            <p className="text-gray-500">Nenhum assinante adicionado ao rateio</p>
-                          </div>
-                        ) : (
-                          <div className="overflow-x-auto">
-                            <table className="w-full text-sm">
-                              <thead>
-                                <tr className="border-b border-gray-200">
-                                  <th className="text-left py-2">Nome</th>
-                                  <th className="text-left py-2">UC</th>
-                                  <th className="text-left py-2">Consumo</th>
-                                  <th className="text-left py-2">Crédito</th>
-                                  <th className="text-left py-2">
-                                    {rateioType === 'percentage' ? 'Percentual' : 'Prioridade'}
-                                  </th>
-                                  <th className="text-left py-2">Última Fatura</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {editableSubscribers.map((subscriber) => (
-                                  <tr key={subscriber.id} className="border-b border-gray-100">
-                                    <td className="py-3 font-medium">{subscriber.name}</td>
-                                    <td className="py-3">{subscriber.uc}</td>
-                                    <td className="py-3">{subscriber.contractedConsumption} kWh</td>
-                                    <td className="py-3">{subscriber.accumulatedCredit} kWh</td>
-                                    <td className="py-3">
-                                      <Input
-                                        type="number"
-                                        className="w-20 bg-yellow-50 border-yellow-300"
-                                        value={rateioType === 'percentage' ? subscriber.percentage : subscriber.priority}
-                                        onChange={(e) => updateSubscriberValue(
-                                          subscriber.id, 
-                                          rateioType, 
-                                          Number(e.target.value)
-                                        )}
-                                        min={rateioType === 'percentage' ? 0 : 1}
-                                        max={rateioType === 'percentage' ? 100 : editableSubscribers.length}
-                                      />
-                                    </td>
-                                    <td className="py-3">{subscriber.lastInvoice || 'N/A'}</td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          </div>
-                        )}
-
-                        {/* Validações */}
-                        {editableSubscribers.length > 0 && (
-                          <div className="mt-4 space-y-2">
-                            {rateioType === 'percentage' && Math.abs(totalPercentage - 100) > 0.01 && (
-                              <div className="flex items-center gap-2 text-red-600 text-sm">
-                                <AlertTriangle className="w-4 h-4" />
-                                <span>A soma das porcentagens deve ser igual a 100%</span>
-                              </div>
-                            )}
-                            {rateioType === 'priority' && (() => {
-                              const priorities = editableSubscribers.map(s => s.priority).filter(p => p !== undefined);
-                              const uniquePriorities = new Set(priorities);
-                              const sortedPriorities = [...priorities].sort((a, b) => a! - b!);
-                              const hasSequentialPriorities = sortedPriorities.every((p, i) => p === i + 1);
-                              
-                              return priorities.length !== uniquePriorities.size || !hasSequentialPriorities;
-                            })() && (
-                              <div className="flex items-center gap-2 text-red-600 text-sm">
-                                <AlertTriangle className="w-4 h-4" />
-                                <span>As prioridades devem ser únicas e em sequência (1, 2, 3, ...)</span>
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </CardContent>
-                    </Card>
-
-                    {/* Ações */}
-                    <div className="flex justify-between">
+                    <div className="flex justify-end gap-4 mt-6">
                       <Button 
-                        variant="outline"
-                        onClick={() => {
-                          setShowCreateRateio(false);
-                          setEditableSubscribers([]);
-                          setConfirmSubscriber(false);
-                        }}
-                      >
-                        <X className="w-4 h-4 mr-2" />
-                        Cancelar
-                      </Button>
-                      <Button 
-                        onClick={handleSaveRateio}
-                        disabled={loading || editableSubscribers.length === 0}
+                        onClick={saveRateio} 
+                        disabled={!isValidRateio || loading}
                         className="bg-green-600 hover:bg-green-700"
                       >
-                        {loading ? 'Salvando...' : 'Salvar Rateio'}
+                        {loading ? (
+                          "Salvando..."
+                        ) : (
+                          <>
+                            <CheckCircle className="w-4 h-4 mr-2" />
+                            Salvar Rateio
+                          </>
+                        )}
                       </Button>
                     </div>
                   </div>
@@ -643,181 +472,130 @@ const Rateio = () => {
             </Card>
           </TabsContent>
 
-          {/* Tab 3: Histórico de Rateios */}
-          <TabsContent value="historico" className="mt-6">
-            <Card className="border-gray-200">
+          {/* Aba Histórico */}
+          <TabsContent value="historico" className="space-y-6">
+            <Card>
               <CardHeader>
-                <div className="flex items-center gap-2">
-                  <History className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
-                  <CardTitle className="text-lg sm:text-xl">Histórico de Rateios</CardTitle>
-                </div>
-                <CardDescription className="text-sm">
-                  Consulte os rateios realizados anteriormente para uma geradora.
-                </CardDescription>
+                <CardTitle className="flex items-center gap-2">
+                  <History className="w-5 h-5" />
+                  Histórico de Rateios
+                </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-6">
-                <div>
-                  <h3 className="font-medium text-gray-900 mb-3 text-sm sm:text-base">Selecionar Geradora</h3>
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                    <Input 
-                      placeholder="Buscar geradora por nome ou UC..."
-                      className="pl-10 bg-gray-50 border-gray-200 h-10 sm:h-12 text-sm"
-                      value={searchHistoryGenerator}
-                      onChange={(e) => setSearchHistoryGenerator(e.target.value)}
-                    />
-                  </div>
-                </div>
-
-                {/* Lista de Geradoras para Histórico */}
-                {searchHistoryGenerator && (
-                  <div className="space-y-3">
-                    {filteredHistoryGenerators.map((generator) => (
-                      <Card 
-                        key={generator.id} 
-                        className="cursor-pointer hover:shadow-md transition-shadow"
-                        onClick={() => setHistoryGenerator(generator)}
-                      >
-                        <CardContent className="p-4">
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <h3 className="font-medium">
-                                {generator.plants?.[0]?.apelido || generator.owner?.name}
-                              </h3>
-                              <p className="text-sm text-gray-600">UC: {generator.plants?.[0]?.uc}</p>
-                            </div>
-                            <Badge variant="outline" className="text-green-600">
-                              {generator.plants?.[0]?.geracaoProjetada} kWh
-                            </Badge>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                )}
-
-                {/* Histórico da Geradora Selecionada */}
-                {historyGenerator && (
-                  <div className="space-y-4">
-                    <Card className="bg-purple-50 border-purple-200">
-                      <CardContent className="p-4">
-                        <div className="flex items-center gap-3 mb-3">
-                          <Zap className="w-5 h-5 text-purple-600" />
-                          <h3 className="font-medium">Geradora Selecionada</h3>
-                        </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
-                          <div>
-                            <span className="text-gray-600">Apelido:</span>
-                            <p className="font-medium">{historyGenerator.plants?.[0]?.apelido || historyGenerator.owner?.name}</p>
-                          </div>
-                          <div>
-                            <span className="text-gray-600">UC:</span>
-                            <p className="font-medium">{historyGenerator.plants?.[0]?.uc}</p>
-                          </div>
-                          <div>
-                            <span className="text-gray-600">Geração:</span>
-                            <p className="font-medium">{historyGenerator.plants?.[0]?.geracaoProjetada} kWh</p>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-
-                    {/* Lista de Rateios */}
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="text-base">Rateios Realizados</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        {getRateiosByGenerator(historyGenerator.id).length === 0 ? (
-                          <div className="text-center py-8">
-                            <History className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-                            <p className="text-gray-500">Nenhum rateio encontrado para esta geradora</p>
-                          </div>
-                        ) : (
-                          <div className="space-y-3">
-                            {getRateiosByGenerator(historyGenerator.id).map((rateio) => (
-                              <Card 
-                                key={rateio.id} 
-                                className="cursor-pointer hover:shadow-md transition-shadow"
-                                onClick={() => setSelectedRateioHistory(rateio)}
-                              >
-                                <CardContent className="p-4">
-                                  <div className="flex items-center justify-between">
-                                    <div>
-                                      <h3 className="font-medium">
-                                        {String(rateio.date.day).padStart(2, '0')}/{String(rateio.date.month).padStart(2, '0')}/{rateio.date.year}
-                                      </h3>
-                                      <p className="text-sm text-gray-600">
-                                        {rateio.type === 'percentage' ? 'Por Porcentagem' : 'Por Prioridade'} • {rateio.subscribers.length} assinantes
-                                      </p>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                      <Badge variant="outline">{rateio.expectedGeneration} kWh</Badge>
-                                      <Eye className="w-4 h-4 text-gray-400" />
-                                    </div>
-                                  </div>
-                                </CardContent>
-                              </Card>
-                            ))}
-                          </div>
-                        )}
-                      </CardContent>
-                    </Card>
-
-                    {/* Detalhes do Rateio Selecionado */}
-                    {selectedRateioHistory && (
-                      <Card>
-                        <CardHeader>
-                          <div className="flex items-center justify-between">
-                            <CardTitle className="text-base">
-                              Rateio de {String(selectedRateioHistory.date.day).padStart(2, '0')}/{String(selectedRateioHistory.date.month).padStart(2, '0')}/{selectedRateioHistory.date.year}
-                            </CardTitle>
-                            <Button variant="outline" size="sm">
-                              <FileText className="w-4 h-4 mr-2" />
-                              Anexar Formulário
-                            </Button>
-                          </div>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="overflow-x-auto">
-                            <table className="w-full text-sm">
-                              <thead>
-                                <tr className="border-b border-gray-200">
-                                  <th className="text-left py-2">Nome</th>
-                                  <th className="text-left py-2">UC</th>
-                                  <th className="text-left py-2">Consumo</th>
-                                  <th className="text-left py-2">Crédito</th>
-                                  <th className="text-left py-2">
-                                    {selectedRateioHistory.type === 'percentage' ? 'Percentual' : 'Prioridade'}
-                                  </th>
-                                  <th className="text-left py-2">Última Fatura</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {selectedRateioHistory.subscribers.map((subscriber) => (
-                                  <tr key={subscriber.id} className="border-b border-gray-100">
-                                    <td className="py-3 font-medium">{subscriber.name}</td>
-                                    <td className="py-3">{subscriber.uc}</td>
-                                    <td className="py-3">{subscriber.contractedConsumption} kWh</td>
-                                    <td className="py-3">{subscriber.accumulatedCredit} kWh</td>
-                                    <td className="py-3">
-                                      {selectedRateioHistory.type === 'percentage' ? `${subscriber.percentage}%` : subscriber.priority}
-                                    </td>
-                                    <td className="py-3">{subscriber.lastInvoice || 'N/A'}</td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    )}
-                  </div>
-                )}
+              <CardContent>
+                <p className="text-gray-500 text-center py-8">
+                  Funcionalidade em desenvolvimento...
+                </p>
               </CardContent>
             </Card>
           </TabsContent>
         </Tabs>
+
+        {/* Dialog de Confirmação do Assinante */}
+        <Dialog open={showSubscriberConfirm} onOpenChange={setShowSubscriberConfirm}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Confirmar Assinante</DialogTitle>
+            </DialogHeader>
+            {selectedSubscriber && (
+              <div className="space-y-4">
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h3 className="font-semibold mb-2">Dados do Assinante:</h3>
+                  <div className="space-y-1">
+                    <p><strong>Nome:</strong> {selectedSubscriber.name}</p>
+                    <p><strong>UC:</strong> {selectedSubscriber.uc}</p>
+                    <p><strong>Consumo Contratado:</strong> {selectedSubscriber.contractedConsumption} kWh/mês</p>
+                  </div>
+                </div>
+                <div className="flex justify-end gap-4">
+                  <Button variant="outline" onClick={() => setShowSubscriberConfirm(false)}>
+                    Não
+                  </Button>
+                  <Button onClick={confirmSubscriber}>
+                    Sim, Confirmar
+                  </Button>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+
+        {/* Dialog de Tipo de Rateio */}
+        <Dialog open={showTypeDialog} onOpenChange={setShowTypeDialog}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Configurar Novo Rateio</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-6">
+              <div>
+                <Label className="text-base font-medium">Tipo de Rateio</Label>
+                <Select value={rateioType} onValueChange={(value: 'percentage' | 'priority') => setRateioType(value)}>
+                  <SelectTrigger className="mt-2">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="percentage">Por Porcentagem</SelectItem>
+                    <SelectItem value="priority">Por Prioridade</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label className="text-base font-medium">Data do Rateio</Label>
+                <div className="grid grid-cols-3 gap-2 mt-2">
+                  <div>
+                    <Label className="text-sm">Dia</Label>
+                    <Input
+                      type="number"
+                      value={rateioDate.day}
+                      onChange={(e) => setRateioDate(prev => ({...prev, day: Number(e.target.value)}))}
+                      min={1}
+                      max={31}
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-sm">Mês</Label>
+                    <Input
+                      type="number"
+                      value={rateioDate.month}
+                      onChange={(e) => setRateioDate(prev => ({...prev, month: Number(e.target.value)}))}
+                      min={1}
+                      max={12}
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-sm">Ano</Label>
+                    <Input
+                      type="number"
+                      value={rateioDate.year}
+                      onChange={(e) => setRateioDate(prev => ({...prev, year: Number(e.target.value)}))}
+                      min={2020}
+                      max={2030}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <Label className="text-base font-medium">Geração Esperada (kWh)</Label>
+                <Input
+                  type="number"
+                  value={expectedGeneration}
+                  onChange={(e) => setExpectedGeneration(Number(e.target.value))}
+                  className="mt-2"
+                />
+              </div>
+
+              <div className="flex justify-end gap-4">
+                <Button variant="outline" onClick={() => setShowTypeDialog(false)}>
+                  Cancelar
+                </Button>
+                <Button onClick={startRateio}>
+                  Iniciar Rateio
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </DashboardLayout>
   );
