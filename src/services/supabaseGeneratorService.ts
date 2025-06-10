@@ -13,19 +13,21 @@ export const supabaseGeneratorService = {
         throw new Error('Usuário não autenticado');
       }
 
+      const generatorData = {
+        user_id: user.user.id,
+        concessionaria: data.concessionaria,
+        owner: data.owner,
+        administrator: data.administrator,
+        plants: data.plants,
+        distributor_login: data.distributorLogin,
+        payment_data: data.paymentData,
+        attachments: data.attachments,
+        status: 'active'
+      };
+
       const { data: result, error } = await supabase
         .from('generators')
-        .insert({
-          user_id: user.user.id,
-          concessionaria: data.concessionaria,
-          owner: data.owner,
-          administrator: data.administrator,
-          plants: data.plants,
-          distributor_login: data.distributorLogin,
-          payment_data: data.paymentData,
-          attachments: data.attachments,
-          status: 'active'
-        })
+        .insert(generatorData)
         .select()
         .single();
 
