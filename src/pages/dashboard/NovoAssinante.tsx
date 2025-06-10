@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -11,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { 
   ChevronLeft, 
   ChevronRight, 
@@ -123,13 +125,13 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
   };
 
   const steps = [
-    { id: 1, label: 'Dados Pessoais', icon: User, color: 'from-blue-500 to-blue-600' },
-    { id: 2, label: 'Endereço Principal', icon: MapPin, color: 'from-blue-500 to-blue-600' },
-    { id: 3, label: 'Endereço de Instalação', icon: Building, color: 'from-blue-500 to-blue-600' },
-    { id: 4, label: 'Contatos', icon: MessageSquare, color: 'from-blue-500 to-blue-600' },
-    { id: 5, label: 'Informações Bancárias', icon: CreditCard, color: 'from-blue-500 to-blue-600' },
-    { id: 6, label: 'Documentos', icon: FileText, color: 'from-blue-500 to-blue-600' },
-    { id: 7, label: 'Confirmação', icon: Check, color: 'from-blue-500 to-blue-600' },
+    { id: 1, label: 'Dados Pessoais', icon: User, color: 'from-green-500 to-green-600' },
+    { id: 2, label: 'Endereço Principal', icon: MapPin, color: 'from-green-500 to-green-600' },
+    { id: 3, label: 'Endereço de Instalação', icon: Building, color: 'from-green-500 to-green-600' },
+    { id: 4, label: 'Contatos', icon: MessageSquare, color: 'from-green-500 to-green-600' },
+    { id: 5, label: 'Informações Bancárias', icon: CreditCard, color: 'from-green-500 to-green-600' },
+    { id: 6, label: 'Documentos', icon: FileText, color: 'from-green-500 to-green-600' },
+    { id: 7, label: 'Confirmação', icon: Check, color: 'from-green-500 to-green-600' },
   ];
 
   const subscriberType = form.watch('subscriber.type');
@@ -137,9 +139,9 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
   const currentStepData = steps[currentStep - 1];
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 to-blue-50/30">
-      {/* Header with Progress */}
-      <div className="flex-shrink-0 bg-white border-b border-gray-200 shadow-sm sticky top-0 z-10">
+    <div className="h-full flex flex-col bg-gradient-to-br from-slate-50 to-green-50/30">
+      {/* Fixed Header */}
+      <div className="flex-shrink-0 bg-white border-b border-gray-200 shadow-sm">
         <div className="flex items-center justify-between p-6">
           <div className="flex items-center gap-4">
             <div className={`w-12 h-12 bg-gradient-to-r ${currentStepData.color} rounded-xl flex items-center justify-center shadow-lg`}>
@@ -171,7 +173,7 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
                   currentStep > step.id 
                     ? 'bg-gradient-to-r from-green-500 to-green-600 text-white shadow-lg' 
                     : currentStep === step.id
-                    ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg ring-4 ring-blue-100'
+                    ? 'bg-gradient-to-r from-green-500 to-green-600 text-white shadow-lg ring-4 ring-green-100'
                     : 'bg-gray-200 text-gray-400'
                 }`}>
                   {currentStep > step.id ? (
@@ -191,47 +193,47 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
             ))}
           </div>
           <div className="text-center">
-            <Badge variant="secondary" className="bg-blue-100 text-blue-700 border-0 px-4 py-1.5">
+            <Badge variant="secondary" className="bg-green-100 text-green-700 border-0 px-4 py-1.5">
               Passo {currentStep} de {totalSteps} • {currentStepData.label}
             </Badge>
           </div>
         </div>
       </div>
 
-      {/* Content Area */}
-      <div className="flex-1 overflow-y-auto">
-        <div className="max-w-6xl mx-auto p-6 pb-8">
+      {/* Scrollable Content Area */}
+      <ScrollArea className="flex-1">
+        <div className="max-w-6xl mx-auto p-6 pb-32">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
               {/* Step 1 - Dados Pessoais */}
               {currentStep === 1 && (
                 <Card className="border-0 shadow-lg bg-white">
-                  <CardHeader className="bg-gradient-to-r from-slate-50 to-blue-50/50 border-b border-gray-200 rounded-t-xl">
+                  <CardHeader className="bg-gradient-to-r from-slate-50 to-green-50/50 border-b border-gray-200 rounded-t-xl">
                     <CardTitle className="flex items-center gap-3 text-gray-800">
-                      <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
+                      <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-green-600 rounded-lg flex items-center justify-center">
                         <User className="w-4 h-4 text-white" />
                       </div>
                       Informações Pessoais
-                      <Badge variant="outline" className="ml-auto text-blue-600 border-blue-200 bg-blue-50">
+                      <Badge variant="outline" className="ml-auto text-green-600 border-green-200 bg-green-50">
                         Obrigatório
                       </Badge>
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="p-8 space-y-8">
                     {/* Concessionária */}
-                    <div className="p-6 bg-blue-50/30 rounded-lg border border-blue-200/50">
+                    <div className="p-6 bg-green-50/30 rounded-lg border border-green-200/50">
                       <FormField
                         control={form.control}
                         name="concessionaria"
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel className="text-base font-semibold text-gray-800 flex items-center gap-2">
-                              <Building className="w-5 h-5 text-blue-600" />
+                              <Building className="w-5 h-5 text-green-600" />
                               Concessionária de Energia *
                             </FormLabel>
                             <Select onValueChange={field.onChange} defaultValue={field.value}>
                               <FormControl>
-                                <SelectTrigger className="h-12 border-blue-300 focus:border-blue-500 focus:ring-blue-500/20 bg-white rounded-lg">
+                                <SelectTrigger className="h-12 border-green-300 focus:border-green-500 focus:ring-green-500/20 bg-white rounded-lg">
                                   <SelectValue placeholder="Selecione a concessionária de energia" />
                                 </SelectTrigger>
                               </FormControl>
@@ -257,15 +259,15 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
                             <FormItem className="space-y-4">
                               <FormLabel className="text-base font-semibold text-gray-800">Tipo de Pessoa *</FormLabel>
                               <RadioGroup defaultValue={field.value} onValueChange={field.onChange} className="flex gap-6">
-                                <FormItem className="flex items-center space-x-3 space-y-0 p-4 border border-slate-300 rounded-lg hover:border-slate-400 transition-colors bg-white">
+                                <FormItem className="flex items-center space-x-3 space-y-0 p-4 border border-green-300 rounded-lg hover:border-green-400 transition-colors bg-white">
                                   <FormControl>
-                                    <RadioGroupItem value="fisica" id="fisica" className="border-slate-500 text-slate-600" />
+                                    <RadioGroupItem value="fisica" id="fisica" className="border-green-500 text-green-600" />
                                   </FormControl>
                                   <FormLabel htmlFor="fisica" className="font-medium text-gray-700 cursor-pointer">Pessoa Física</FormLabel>
                                 </FormItem>
-                                <FormItem className="flex items-center space-x-3 space-y-0 p-4 border border-slate-300 rounded-lg hover:border-slate-400 transition-colors bg-white">
+                                <FormItem className="flex items-center space-x-3 space-y-0 p-4 border border-green-300 rounded-lg hover:border-green-400 transition-colors bg-white">
                                   <FormControl>
-                                    <RadioGroupItem value="juridica" id="juridica" className="border-slate-500 text-slate-600" />
+                                    <RadioGroupItem value="juridica" id="juridica" className="border-green-500 text-green-600" />
                                   </FormControl>
                                   <FormLabel htmlFor="juridica" className="font-medium text-gray-700 cursor-pointer">Pessoa Jurídica</FormLabel>
                                 </FormItem>
@@ -293,7 +295,7 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
                                 <FormControl>
                                   <Input 
                                     placeholder={subscriberType === 'fisica' ? '000.000.000-00' : '00.000.000/0000-00'} 
-                                    className="h-12 border-gray-300 focus:border-blue-500 focus:ring-blue-500/20 bg-white rounded-lg"
+                                    className="h-12 border-gray-300 focus:border-green-500 focus:ring-green-500/20 bg-white rounded-lg"
                                     {...field} 
                                   />
                                 </FormControl>
@@ -311,7 +313,7 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
                                 <FormControl>
                                   <Input 
                                     placeholder="Número do parceiro de negócio" 
-                                    className="h-12 border-gray-300 focus:border-blue-500 focus:ring-blue-500/20 bg-white rounded-lg"
+                                    className="h-12 border-gray-300 focus:border-green-500 focus:ring-green-500/20 bg-white rounded-lg"
                                     {...field} 
                                   />
                                 </FormControl>
@@ -331,7 +333,7 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
                                 <FormControl>
                                   <Input 
                                     placeholder={subscriberType === 'fisica' ? 'Nome completo' : 'Razão social da empresa'} 
-                                    className="h-12 border-gray-300 focus:border-blue-500 focus:ring-blue-500/20 bg-white rounded-lg"
+                                    className="h-12 border-gray-300 focus:border-green-500 focus:ring-green-500/20 bg-white rounded-lg"
                                     {...field} 
                                   />
                                 </FormControl>
@@ -350,7 +352,7 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
                                   <FormControl>
                                     <Input 
                                       placeholder="Nome fantasia" 
-                                      className="h-12 border-gray-300 focus:border-blue-500 focus:ring-blue-500/20 bg-white rounded-lg"
+                                      className="h-12 border-gray-300 focus:border-green-500 focus:ring-green-500/20 bg-white rounded-lg"
                                       {...field} 
                                     />
                                   </FormControl>
@@ -366,13 +368,13 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
                             render={({ field }) => (
                               <FormItem>
                                 <FormLabel className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                                  <Phone className="w-4 h-4 text-blue-500" />
+                                  <Phone className="w-4 h-4 text-green-500" />
                                   Telefone *
                                 </FormLabel>
                                 <FormControl>
                                   <Input 
                                     placeholder="(00) 00000-0000" 
-                                    className="h-12 border-gray-300 focus:border-blue-500 focus:ring-blue-500/20 bg-white rounded-lg"
+                                    className="h-12 border-gray-300 focus:border-green-500 focus:ring-green-500/20 bg-white rounded-lg"
                                     {...field} 
                                   />
                                 </FormControl>
@@ -392,13 +394,13 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
                                 render={({ field }) => (
                                   <FormItem>
                                     <FormLabel className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                                      <Calendar className="w-4 h-4 text-blue-500" />
+                                      <Calendar className="w-4 h-4 text-green-500" />
                                       Data de Nascimento
                                     </FormLabel>
                                     <FormControl>
                                       <Input 
                                         type="date" 
-                                        className="h-12 border-gray-300 focus:border-blue-500 focus:ring-blue-500/20 bg-white rounded-lg"
+                                        className="h-12 border-gray-300 focus:border-green-500 focus:ring-green-500/20 bg-white rounded-lg"
                                         {...field} 
                                       />
                                     </FormControl>
@@ -415,7 +417,7 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
                                     <FormLabel className="text-sm font-semibold text-gray-700">Estado Civil</FormLabel>
                                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                                       <FormControl>
-                                        <SelectTrigger className="h-12 border-gray-300 focus:border-blue-500 focus:ring-blue-500/20 bg-white rounded-lg">
+                                        <SelectTrigger className="h-12 border-gray-300 focus:border-green-500 focus:ring-green-500/20 bg-white rounded-lg">
                                           <SelectValue placeholder="Selecione o estado civil" />
                                         </SelectTrigger>
                                       </FormControl>
@@ -440,7 +442,7 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
                                     <FormControl>
                                       <Input 
                                         placeholder="Profissão" 
-                                        className="h-12 border-gray-300 focus:border-blue-500 focus:ring-blue-500/20 bg-white rounded-lg"
+                                        className="h-12 border-gray-300 focus:border-green-500 focus:ring-green-500/20 bg-white rounded-lg"
                                         {...field} 
                                       />
                                     </FormControl>
@@ -457,13 +459,13 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
                             render={({ field }) => (
                               <FormItem>
                                 <FormLabel className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                                  <Mail className="w-4 h-4 text-blue-500" />
+                                  <Mail className="w-4 h-4 text-green-500" />
                                   E-mail *
                                 </FormLabel>
                                 <FormControl>
                                   <Input 
                                     placeholder="email@example.com" 
-                                    className="h-12 border-gray-300 focus:border-blue-500 focus:ring-blue-500/20 bg-white rounded-lg"
+                                    className="h-12 border-gray-300 focus:border-green-500 focus:ring-green-500/20 bg-white rounded-lg"
                                     {...field} 
                                   />
                                 </FormControl>
@@ -481,7 +483,7 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
                                 <FormControl>
                                   <Textarea 
                                     placeholder="Observações adicionais" 
-                                    className="min-h-[120px] border-gray-300 focus:border-blue-500 focus:ring-blue-500/20 resize-none bg-white rounded-lg"
+                                    className="min-h-[120px] border-gray-300 focus:border-green-500 focus:ring-green-500/20 resize-none bg-white rounded-lg"
                                     {...field} 
                                   />
                                 </FormControl>
@@ -499,13 +501,13 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
               {/* Step 2 - Endereço Principal */}
               {currentStep === 2 && (
                 <Card className="border-0 shadow-lg bg-white">
-                  <CardHeader className="bg-gradient-to-r from-gray-50 to-blue-50/50 border-b border-gray-200 rounded-t-xl">
+                  <CardHeader className="bg-gradient-to-r from-gray-50 to-green-50/50 border-b border-gray-200 rounded-t-xl">
                     <CardTitle className="flex items-center gap-3 text-gray-800">
-                      <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
+                      <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-green-600 rounded-lg flex items-center justify-center">
                         <MapPin className="w-4 h-4 text-white" />
                       </div>
                       Endereço Principal
-                      <Badge variant="outline" className="ml-auto text-blue-600 border-blue-200 bg-blue-50">
+                      <Badge variant="outline" className="ml-auto text-green-600 border-green-200 bg-green-50">
                         Obrigatório
                       </Badge>
                     </CardTitle>
@@ -519,24 +521,24 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
               {/* Step 3 - Endereço de Instalação */}
               {currentStep === 3 && (
                 <Card className="border-0 shadow-lg bg-white">
-                  <CardHeader className="bg-gradient-to-r from-gray-50 to-blue-50/50 border-b border-gray-200 rounded-t-xl">
+                  <CardHeader className="bg-gradient-to-r from-gray-50 to-green-50/50 border-b border-gray-200 rounded-t-xl">
                     <CardTitle className="flex items-center gap-3 text-gray-800">
-                      <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
+                      <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-green-600 rounded-lg flex items-center justify-center">
                         <Building className="w-4 h-4 text-white" />
                       </div>
                       Endereço de Instalação
-                      <Badge variant="outline" className="ml-auto text-blue-600 border-blue-200 bg-blue-50">
+                      <Badge variant="outline" className="ml-auto text-green-600 border-green-200 bg-green-50">
                         Opcional
                       </Badge>
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="p-8">
-                    <div className="mb-6 p-4 bg-gradient-to-r from-blue-50/80 to-blue-100/50 rounded-lg border border-blue-200/50">
-                      <p className="text-sm text-blue-700 font-medium flex items-center gap-2">
+                    <div className="mb-6 p-4 bg-gradient-to-r from-green-50/80 to-green-100/50 rounded-lg border border-green-200/50">
+                      <p className="text-sm text-green-700 font-medium flex items-center gap-2">
                         <Building className="w-4 h-4" />
                         Mesmo endereço principal ou diferente?
                       </p>
-                      <p className="text-xs text-blue-600 mt-1">
+                      <p className="text-xs text-green-600 mt-1">
                         Se for o mesmo endereço, você pode pular esta etapa.
                       </p>
                     </div>
@@ -548,13 +550,13 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
               {/* Step 4 - Contatos */}
               {currentStep === 4 && (
                 <Card className="border-0 shadow-lg bg-white">
-                  <CardHeader className="bg-gradient-to-r from-gray-50 to-blue-50/50 border-b border-gray-200 rounded-t-xl">
+                  <CardHeader className="bg-gradient-to-r from-gray-50 to-green-50/50 border-b border-gray-200 rounded-t-xl">
                     <CardTitle className="flex items-center gap-3 text-gray-800">
-                      <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
+                      <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-green-600 rounded-lg flex items-center justify-center">
                         <MessageSquare className="w-4 h-4 text-white" />
                       </div>
                       Contatos Adicionais
-                      <Badge variant="outline" className="ml-auto text-blue-600 border-blue-200 bg-blue-50">
+                      <Badge variant="outline" className="ml-auto text-green-600 border-green-200 bg-green-50">
                         Opcional
                       </Badge>
                     </CardTitle>
@@ -568,13 +570,13 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
               {/* Step 5 - Informações Bancárias */}
               {currentStep === 5 && (
                 <Card className="border-0 shadow-lg bg-white">
-                  <CardHeader className="bg-gradient-to-r from-gray-50 to-blue-50/50 border-b border-gray-200 rounded-t-xl">
+                  <CardHeader className="bg-gradient-to-r from-gray-50 to-green-50/50 border-b border-gray-200 rounded-t-xl">
                     <CardTitle className="flex items-center gap-3 text-gray-800">
-                      <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
+                      <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-green-600 rounded-lg flex items-center justify-center">
                         <CreditCard className="w-4 h-4 text-white" />
                       </div>
                       Informações Bancárias
-                      <Badge variant="outline" className="ml-auto text-blue-600 border-blue-200 bg-blue-50">
+                      <Badge variant="outline" className="ml-auto text-green-600 border-green-200 bg-green-50">
                         Futuro
                       </Badge>
                     </CardTitle>
@@ -582,12 +584,12 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
                   <CardContent className="p-8">
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                       <div className="lg:col-span-2 mb-6">
-                        <div className="p-6 bg-gradient-to-r from-blue-50/80 to-blue-100/50 rounded-lg border border-blue-200/50">
-                          <p className="text-sm text-blue-700 font-medium flex items-center gap-2">
+                        <div className="p-6 bg-gradient-to-r from-green-50/80 to-green-100/50 rounded-lg border border-green-200/50">
+                          <p className="text-sm text-green-700 font-medium flex items-center gap-2">
                             <CreditCard className="w-4 h-4" />
                             Informações bancárias para débito automático
                           </p>
-                          <p className="text-xs text-blue-600 mt-1">
+                          <p className="text-xs text-green-600 mt-1">
                             Estas informações serão utilizadas para configurar o débito automático no futuro.
                           </p>
                         </div>
@@ -595,22 +597,22 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
                       <div className="space-y-6">
                         <div>
                           <Label className="text-sm font-semibold text-gray-700">Banco</Label>
-                          <Input placeholder="Nome do banco" className="mt-2 h-12 border-gray-300 focus:border-blue-500 focus:ring-blue-500/20 bg-white rounded-lg" />
+                          <Input placeholder="Nome do banco" className="mt-2 h-12 border-gray-300 focus:border-green-500 focus:ring-green-500/20 bg-white rounded-lg" />
                         </div>
                         <div>
                           <Label className="text-sm font-semibold text-gray-700">Agência</Label>
-                          <Input placeholder="Número da agência" className="mt-2 h-12 border-gray-300 focus:border-blue-500 focus:ring-blue-500/20 bg-white rounded-lg" />
+                          <Input placeholder="Número da agência" className="mt-2 h-12 border-gray-300 focus:border-green-500 focus:ring-green-500/20 bg-white rounded-lg" />
                         </div>
                       </div>
                       <div className="space-y-6">
                         <div>
                           <Label className="text-sm font-semibold text-gray-700">Conta</Label>
-                          <Input placeholder="Número da conta" className="mt-2 h-12 border-gray-300 focus:border-blue-500 focus:ring-blue-500/20 bg-white rounded-lg" />
+                          <Input placeholder="Número da conta" className="mt-2 h-12 border-gray-300 focus:border-green-500 focus:ring-green-500/20 bg-white rounded-lg" />
                         </div>
                         <div>
                           <Label className="text-sm font-semibold text-gray-700">Tipo de Conta</Label>
                           <Select>
-                            <SelectTrigger className="mt-2 h-12 border-gray-300 focus:border-blue-500 focus:ring-blue-500/20 bg-white rounded-lg">
+                            <SelectTrigger className="mt-2 h-12 border-gray-300 focus:border-green-500 focus:ring-green-500/20 bg-white rounded-lg">
                               <SelectValue placeholder="Selecione o tipo" />
                             </SelectTrigger>
                             <SelectContent>
@@ -628,13 +630,13 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
               {/* Step 6 - Documentos */}
               {currentStep === 6 && (
                 <Card className="border-0 shadow-lg bg-white">
-                  <CardHeader className="bg-gradient-to-r from-gray-50 to-blue-50/50 border-b border-gray-200 rounded-t-xl">
+                  <CardHeader className="bg-gradient-to-r from-gray-50 to-green-50/50 border-b border-gray-200 rounded-t-xl">
                     <CardTitle className="flex items-center gap-3 text-gray-800">
-                      <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
+                      <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-green-600 rounded-lg flex items-center justify-center">
                         <FileText className="w-4 h-4 text-white" />
                       </div>
                       Documentos Necessários
-                      <Badge variant="outline" className="ml-auto text-blue-600 border-blue-200 bg-blue-50">
+                      <Badge variant="outline" className="ml-auto text-green-600 border-green-200 bg-green-50">
                         Obrigatório
                       </Badge>
                     </CardTitle>
@@ -642,33 +644,33 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
                   <CardContent className="p-8">
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                       <div className="lg:col-span-2 mb-6">
-                        <div className="p-6 bg-gradient-to-r from-blue-50/80 to-blue-100/50 rounded-lg border border-blue-200/50">
-                          <p className="text-sm text-blue-700 font-medium flex items-center gap-2">
+                        <div className="p-6 bg-gradient-to-r from-green-50/80 to-green-100/50 rounded-lg border border-green-200/50">
+                          <p className="text-sm text-green-700 font-medium flex items-center gap-2">
                             <FileCheck className="w-4 h-4" />
                             Envie os documentos necessários para a ativação
                           </p>
-                          <p className="text-xs text-blue-600 mt-1">
+                          <p className="text-xs text-green-600 mt-1">
                             Arquivos aceitos: PDF, JPG, PNG (máx. 5MB cada)
                           </p>
                         </div>
                       </div>
                       <div className="space-y-4">
-                        <Button variant="outline" className="w-full justify-start h-16 border-dashed border-2 hover:border-blue-300 hover:bg-blue-50/50 rounded-lg border-gray-300">
-                          <Upload className="w-5 h-5 mr-3 text-blue-600" />
+                        <Button variant="outline" className="w-full justify-start h-16 border-dashed border-2 hover:border-green-300 hover:bg-green-50/50 rounded-lg border-gray-300">
+                          <Upload className="w-5 h-5 mr-3 text-green-600" />
                           <div className="text-left">
                             <div className="font-medium text-gray-800">Contrato do Assinante</div>
                             <div className="text-xs text-gray-500">Documento principal</div>
                           </div>
                         </Button>
-                        <Button variant="outline" className="w-full justify-start h-16 border-dashed border-2 hover:border-blue-300 hover:bg-blue-50/50 rounded-lg border-gray-300">
-                          <Upload className="w-5 h-5 mr-3 text-blue-600" />
+                        <Button variant="outline" className="w-full justify-start h-16 border-dashed border-2 hover:border-green-300 hover:bg-green-50/50 rounded-lg border-gray-300">
+                          <Upload className="w-5 h-5 mr-3 text-green-600" />
                           <div className="text-left">
                             <div className="font-medium text-gray-800">CNH/RG do Titular</div>
                             <div className="text-xs text-gray-500">Documento de identificação</div>
                           </div>
                         </Button>
-                        <Button variant="outline" className="w-full justify-start h-16 border-dashed border-2 hover:border-blue-300 hover:bg-blue-50/50 rounded-lg border-gray-300">
-                          <Upload className="w-5 h-5 mr-3 text-blue-600" />
+                        <Button variant="outline" className="w-full justify-start h-16 border-dashed border-2 hover:border-green-300 hover:bg-green-50/50 rounded-lg border-gray-300">
+                          <Upload className="w-5 h-5 mr-3 text-green-600" />
                           <div className="text-left">
                             <div className="font-medium text-gray-800">Conta de Energia</div>
                             <div className="text-xs text-gray-500">Fatura recente</div>
@@ -677,16 +679,16 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
                       </div>
                       <div className="space-y-4">
                         {subscriberType === 'juridica' && (
-                          <Button variant="outline" className="w-full justify-start h-16 border-dashed border-2 hover:border-blue-300 hover:bg-blue-50/50 rounded-lg border-gray-300">
-                            <Upload className="w-5 h-5 mr-3 text-blue-600" />
+                          <Button variant="outline" className="w-full justify-start h-16 border-dashed border-2 hover:border-green-300 hover:bg-green-50/50 rounded-lg border-gray-300">
+                            <Upload className="w-5 h-5 mr-3 text-green-600" />
                             <div className="text-left">
                               <div className="font-medium text-gray-800">Contrato Social</div>
                               <div className="text-xs text-gray-500">Documento da empresa</div>
                             </div>
                           </Button>
                         )}
-                        <Button variant="outline" className="w-full justify-start h-16 border-dashed border-2 hover:border-blue-300 hover:bg-blue-50/50 rounded-lg border-gray-300">
-                          <Upload className="w-5 h-5 mr-3 text-blue-600" />
+                        <Button variant="outline" className="w-full justify-start h-16 border-dashed border-2 hover:border-green-300 hover:bg-green-50/50 rounded-lg border-gray-300">
+                          <Upload className="w-5 h-5 mr-3 text-green-600" />
                           <div className="text-left">
                             <div className="font-medium text-gray-800">Procuração</div>
                             <div className="text-xs text-gray-500">Se necessário</div>
@@ -701,13 +703,13 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
               {/* Step 7 - Confirmação */}
               {currentStep === 7 && (
                 <Card className="border-0 shadow-lg bg-white">
-                  <CardHeader className="bg-gradient-to-r from-gray-50 to-blue-50/50 border-b border-gray-200 rounded-t-xl">
+                  <CardHeader className="bg-gradient-to-r from-gray-50 to-green-50/50 border-b border-gray-200 rounded-t-xl">
                     <CardTitle className="flex items-center gap-3 text-gray-800">
-                      <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
+                      <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-green-600 rounded-lg flex items-center justify-center">
                         <Check className="w-4 h-4 text-white" />
                       </div>
                       Confirmação dos Dados
-                      <Badge variant="outline" className="ml-auto text-blue-600 border-blue-200 bg-blue-50">
+                      <Badge variant="outline" className="ml-auto text-green-600 border-green-200 bg-green-50">
                         Revisão
                       </Badge>
                     </CardTitle>
@@ -717,7 +719,7 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
                       <div className="space-y-6">
                         <div className="p-6 border border-gray-200 rounded-lg bg-gradient-to-br from-gray-50/50 to-white">
                           <h4 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                            <User className="w-5 h-5 text-blue-600" />
+                            <User className="w-5 h-5 text-green-600" />
                             Dados do Assinante
                           </h4>
                           <div className="space-y-3">
@@ -727,7 +729,7 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
                             </div>
                             <div className="flex justify-between items-center py-2 border-b border-gray-100">
                               <span className="text-sm text-gray-600">Tipo:</span>
-                              <Badge variant="secondary" className="bg-blue-100 text-blue-700">
+                              <Badge variant="secondary" className="bg-green-100 text-green-700">
                                 {form.getValues('subscriber.type') === 'fisica' ? 'Pessoa Física' : 'Pessoa Jurídica'}
                               </Badge>
                             </div>
@@ -744,7 +746,7 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
                         
                         <div className="p-6 border border-gray-200 rounded-lg bg-gradient-to-br from-gray-50/50 to-white">
                           <h4 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                            <MapPin className="w-5 h-5 text-blue-600" />
+                            <MapPin className="w-5 h-5 text-green-600" />
                             Endereço Principal
                           </h4>
                           <div className="space-y-2">
@@ -765,7 +767,7 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
                         {contacts.length > 0 && (
                           <div className="p-6 border border-gray-200 rounded-lg bg-gradient-to-br from-gray-50/50 to-white">
                             <h4 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                              <MessageSquare className="w-5 h-5 text-blue-600" />
+                              <MessageSquare className="w-5 h-5 text-green-600" />
                               Contatos Adicionais
                             </h4>
                             <div className="space-y-3">
@@ -773,7 +775,7 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
                                 <div key={contact.id} className="p-3 bg-white rounded-lg border border-gray-100">
                                   <p className="text-sm font-medium text-gray-800">{contact.name}</p>
                                   <p className="text-sm text-gray-600">{contact.phone}</p>
-                                  <Badge variant="outline" className="text-xs mt-1 border-blue-200 text-blue-600">
+                                  <Badge variant="outline" className="text-xs mt-1 border-green-200 text-green-600">
                                     {contact.role}
                                   </Badge>
                                 </div>
@@ -782,21 +784,21 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
                           </div>
                         )}
                         
-                        <div className="p-6 bg-gradient-to-r from-blue-50/80 to-blue-100/50 border border-blue-200/50 rounded-lg">
+                        <div className="p-6 bg-gradient-to-r from-green-50/80 to-green-100/50 border border-green-200/50 rounded-lg">
                           <div className="flex items-center gap-3 mb-3">
                             <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-green-600 rounded-full flex items-center justify-center">
                               <Check className="w-5 h-5 text-white" />
                             </div>
                             <div>
-                              <p className="text-sm text-blue-700 font-semibold">
+                              <p className="text-sm text-green-700 font-semibold">
                                 Dados verificados com sucesso!
                               </p>
-                              <p className="text-xs text-blue-600">
+                              <p className="text-xs text-green-600">
                                 Todas as informações estão corretas
                               </p>
                             </div>
                           </div>
-                          <p className="text-xs text-blue-600 mt-3 p-3 bg-white/50 rounded-lg">
+                          <p className="text-xs text-green-600 mt-3 p-3 bg-white/50 rounded-lg">
                             ✓ Clique em "Finalizar Cadastro" para salvar o assinante no sistema
                           </p>
                         </div>
@@ -808,7 +810,7 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
             </form>
           </Form>
         </div>
-      </div>
+      </ScrollArea>
 
       {/* Fixed Footer */}
       <div className="flex-shrink-0 border-t border-gray-200 bg-white shadow-lg">
@@ -843,7 +845,7 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
                 <Button 
                   type="button" 
                   onClick={nextStep}
-                  className="px-8 h-12 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-lg hover:shadow-xl transition-all duration-200 rounded-lg"
+                  className="px-8 h-12 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white shadow-lg hover:shadow-xl transition-all duration-200 rounded-lg"
                 >
                   Próximo
                   <ChevronRight className="w-4 h-4 ml-2" />
