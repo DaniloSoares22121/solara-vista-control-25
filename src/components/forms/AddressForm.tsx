@@ -1,7 +1,10 @@
 
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { MaskedInput } from '@/components/ui/masked-input';
 import { UseFormReturn } from 'react-hook-form';
+import { useCepLookup } from '@/hooks/useCepLookup';
+import { useEffect } from 'react';
 
 interface AddressFormProps {
   form: UseFormReturn<any>;
@@ -10,6 +13,29 @@ interface AddressFormProps {
 }
 
 const AddressForm = ({ form, prefix, title }: AddressFormProps) => {
+  const { lookupCep, loading } = useCepLookup();
+  const cep = form.watch(`${prefix}.cep`);
+
+  useEffect(() => {
+    const handleCepLookup = async () => {
+      if (cep && cep.replace(/\D/g, '').length === 8) {
+        try {
+          const addressData = await lookupCep(cep.replace(/\D/g, ''));
+          if (addressData) {
+            form.setValue(`${prefix}.endereco`, addressData.logradouro || '');
+            form.setValue(`${prefix}.bairro`, addressData.bairro || '');
+            form.setValue(`${prefix}.cidade`, addressData.localidade || '');
+            form.setValue(`${prefix}.estado`, addressData.uf || '');
+          }
+        } catch (error) {
+          console.error('Erro ao buscar CEP:', error);
+        }
+      }
+    };
+
+    handleCepLookup();
+  }, [cep, lookupCep, form, prefix]);
+
   return (
     <div className="space-y-4">
       {title && <h4 className="font-medium text-gray-900">{title}</h4>}
@@ -22,7 +48,12 @@ const AddressForm = ({ form, prefix, title }: AddressFormProps) => {
             <FormItem>
               <FormLabel>CEP</FormLabel>
               <FormControl>
-                <Input placeholder="00000-000" {...field} />
+                <MaskedInput 
+                  {...field} 
+                  mask="99999-999" 
+                  placeholder="00000-000"
+                  disabled={loading}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>

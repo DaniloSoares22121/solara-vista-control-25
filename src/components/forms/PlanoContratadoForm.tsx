@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { UseFormReturn } from 'react-hook-form';
 import { Card, CardContent } from '@/components/ui/card';
+import DiscountTable from './DiscountTable';
 
 interface PlanoContratadoFormProps {
   form: UseFormReturn<any>;
@@ -14,6 +15,7 @@ interface PlanoContratadoFormProps {
 const PlanoContratadoForm = ({ form }: PlanoContratadoFormProps) => {
   const faixaConsumo = form.watch('planContract.faixaConsumo');
   const fidelidade = form.watch('planContract.fidelidade');
+  const anosFidelidade = form.watch('planContract.anosFidelidade');
 
   const getDescontoOptions = () => {
     const options = {
@@ -206,6 +208,12 @@ const PlanoContratadoForm = ({ form }: PlanoContratadoFormProps) => {
           </CardContent>
         </Card>
       )}
+
+      <DiscountTable 
+        faixaConsumo={faixaConsumo}
+        fidelidade={fidelidade}
+        anosFidelidade={anosFidelidade}
+      />
     </div>
   );
 };
