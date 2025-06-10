@@ -1,22 +1,18 @@
 
 import LoginForm from "@/components/LoginForm";
-import SolarBackground from "@/components/SolarBackground";
+import SolarHeroSection from "@/components/SolarHeroSection";
 
 const Index = () => {
   return (
-    <div className="min-h-screen relative flex items-center justify-center p-4">
-      <SolarBackground />
+    <div className="min-h-screen flex">
+      {/* Left Column - Solar Hero Image */}
+      <SolarHeroSection />
       
-      {/* Main Content */}
-      <div className="relative z-10 w-full max-w-md">
-        <LoginForm />
-      </div>
-      
-      {/* Footer */}
-      <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 z-10">
-        <p className="text-white/80 text-sm text-center">
-          © 2024 SolarControl - Energia Limpa para um Futuro Sustentável
-        </p>
+      {/* Right Column - Login Form */}
+      <div className="flex-1 flex items-center justify-center p-8 bg-gradient-to-br from-gray-50 to-white">
+        <div className="w-full max-w-md">
+          <LoginForm />
+        </div>
       </div>
     </div>
   );
