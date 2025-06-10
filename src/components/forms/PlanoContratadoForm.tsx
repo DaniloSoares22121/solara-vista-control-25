@@ -17,7 +17,15 @@ const PlanoContratadoForm = ({ form }: PlanoContratadoFormProps) => {
   const fidelidade = form.watch('planContract.fidelidade');
   const anosFidelidade = form.watch('planContract.anosFidelidade');
 
-  const [customDiscountRates, setCustomDiscountRates] = useState<any>(null);
+  const [customDiscountRates, setCustomDiscountRates] = useState<{
+    [key: string]: {
+      sem: number;
+      com: {
+        '1': number;
+        '2': number;
+      };
+    };
+  } | null>(null);
 
   const getDescontoOptions = () => {
     const baseOptions = {

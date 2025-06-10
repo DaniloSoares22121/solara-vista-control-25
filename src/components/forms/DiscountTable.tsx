@@ -4,12 +4,22 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { useState } from 'react';
 
+interface DiscountRates {
+  [key: string]: {
+    sem: number;
+    com: {
+      '1': number;
+      '2': number;
+    };
+  };
+}
+
 interface DiscountTableProps {
   faixaConsumo: string;
   fidelidade: string;
   anosFidelidade?: string;
-  discountRates?: any;
-  onDiscountChange?: (newRates: any) => void;
+  discountRates?: DiscountRates;
+  onDiscountChange?: (newRates: DiscountRates) => void;
 }
 
 const DiscountTable = ({ 
@@ -22,7 +32,7 @@ const DiscountTable = ({
   const [editingCell, setEditingCell] = useState<string | null>(null);
   const [tempValue, setTempValue] = useState<string>('');
 
-  const defaultRates = {
+  const defaultRates: DiscountRates = {
     '400-599': { sem: 13, com: { '1': 15, '2': 20 } },
     '600-1099': { sem: 15, com: { '1': 18, '2': 20 } },
     '1100-3099': { sem: 18, com: { '1': 20, '2': 22 } },
@@ -64,11 +74,13 @@ const DiscountTable = ({
     const cellId = `${faixa}-${type}`;
     setEditingCell(cellId);
     
-    let currentValue;
+    const faixaData = rates[faixa];
+    let currentValue: number;
+    
     if (type === 'sem') {
-      currentValue = rates[faixa].sem;
+      currentValue = faixaData.sem;
     } else {
-      currentValue = rates[faixa].com[type];
+      currentValue = faixaData.com[type as '1' | '2'];
     }
     setTempValue(currentValue.toString());
   };
@@ -85,7 +97,7 @@ const DiscountTable = ({
       if (type === 'sem') {
         newRates[faixa].sem = newValue;
       } else {
-        newRates[faixa].com[type] = newValue;
+        newRates[faixa].com[type as '1' | '2'] = newValue;
       }
       
       if (onDiscountChange) {
