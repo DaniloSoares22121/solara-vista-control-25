@@ -1,6 +1,7 @@
 
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { MaskedInput } from '@/components/ui/masked-input';
 import { Textarea } from '@/components/ui/textarea';
 import { UseFormReturn } from 'react-hook-form';
 import AddressForm from './AddressForm';
@@ -26,7 +27,11 @@ const DadosPessoaJuridicaForm = ({ form, contacts, onContactsChange }: DadosPess
             <FormItem>
               <FormLabel>CNPJ *</FormLabel>
               <FormControl>
-                <Input {...field} placeholder="00.000.000/0000-00" />
+                <MaskedInput 
+                  {...field} 
+                  mask="99.999.999/9999-99" 
+                  placeholder="00.000.000/0000-00" 
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -82,7 +87,11 @@ const DadosPessoaJuridicaForm = ({ form, contacts, onContactsChange }: DadosPess
             <FormItem>
               <FormLabel>Telefone da empresa *</FormLabel>
               <FormControl>
-                <Input {...field} placeholder="(00) 00000-0000" />
+                <MaskedInput 
+                  {...field} 
+                  mask="(99) 99999-9999" 
+                  placeholder="(00) 00000-0000" 
+                />
               </FormControl>
               <FormMessage />
             </FormItem>

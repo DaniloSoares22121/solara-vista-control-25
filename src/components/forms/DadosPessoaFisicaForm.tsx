@@ -1,6 +1,7 @@
 
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { MaskedInput } from '@/components/ui/masked-input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { UseFormReturn } from 'react-hook-form';
@@ -24,9 +25,13 @@ const DadosPessoaFisicaForm = ({ form, contacts, onContactsChange }: DadosPessoa
           name="subscriber.cpfCnpj"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>CPF (somente números) *</FormLabel>
+              <FormLabel>CPF *</FormLabel>
               <FormControl>
-                <Input {...field} placeholder="00000000000" />
+                <MaskedInput 
+                  {...field} 
+                  mask="999.999.999-99" 
+                  placeholder="000.000.000-00" 
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -120,7 +125,11 @@ const DadosPessoaFisicaForm = ({ form, contacts, onContactsChange }: DadosPessoa
             <FormItem>
               <FormLabel>Telefone *</FormLabel>
               <FormControl>
-                <Input {...field} placeholder="(00) 00000-0000" />
+                <MaskedInput 
+                  {...field} 
+                  mask="(99) 99999-9999" 
+                  placeholder="(00) 00000-0000" 
+                />
               </FormControl>
               <FormMessage />
             </FormItem>

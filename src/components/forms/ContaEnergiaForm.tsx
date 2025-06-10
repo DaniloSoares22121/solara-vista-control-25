@@ -1,10 +1,12 @@
 
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { MaskedInput } from '@/components/ui/masked-input';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { UseFormReturn } from 'react-hook-form';
+import { useEffect } from 'react';
 import AddressForm from './AddressForm';
 import NovaTitularidadeForm from './NovaTitularidadeForm';
 
@@ -14,6 +16,46 @@ interface ContaEnergiaFormProps {
 
 const ContaEnergiaForm = ({ form }: ContaEnergiaFormProps) => {
   const realizarTroca = form.watch('energyAccount.realizarTrocaTitularidade');
+  const tipoContaOriginal = form.watch('energyAccount.originalAccount.type');
+  
+  // Dados do assinante para pré-preenchimento
+  const tipoAssinante = form.watch('subscriber.type');
+  const cpfCnpjAssinante = form.watch('subscriber.cpfCnpj');
+  const nomeAssinante = form.watch('subscriber.name');
+  const razaoSocialAssinante = form.watch('subscriber.razaoSocial');
+  const dataNascimentoAssinante = form.watch('subscriber.dataNascimento');
+  const numeroParceiroAssinante = form.watch('subscriber.numeroParceiroNegocio');
+
+  // Pré-preencher dados automaticamente quando o tipo da conta mudar
+  useEffect(() => {
+    if (tipoContaOriginal && tipoAssinante) {
+      // Definir o tipo da conta igual ao tipo do assinante por padrão
+      if (!form.getValues('energyAccount.originalAccount.type')) {
+        form.setValue('energyAccount.originalAccount.type', tipoAssinante);
+      }
+      
+      // Pré-preencher CPF/CNPJ
+      if (cpfCnpjAssinante && !form.getValues('energyAccount.originalAccount.cpfCnpj')) {
+        form.setValue('energyAccount.originalAccount.cpfCnpj', cpfCnpjAssinante);
+      }
+      
+      // Pré-preencher nome
+      const nomeParaPreencher = tipoAssinante === 'fisica' ? nomeAssinante : razaoSocialAssinante;
+      if (nomeParaPreencher && !form.getValues('energyAccount.originalAccount.name')) {
+        form.setValue('energyAccount.originalAccount.name', nomeParaPreencher);
+      }
+      
+      // Pré-preencher data de nascimento (apenas para PF)
+      if (tipoAssinante === 'fisica' && dataNascimentoAssinante && !form.getValues('energyAccount.originalAccount.dataNascimento')) {
+        form.setValue('energyAccount.originalAccount.dataNascimento', dataNascimentoAssinante);
+      }
+      
+      // Pré-preencher número do parceiro
+      if (numeroParceiroAssinante && !form.getValues('energyAccount.originalAccount.numeroParceiroUC')) {
+        form.setValue('energyAccount.originalAccount.numeroParceiroUC', numeroParceiroAssinante);
+      }
+    }
+  }, [tipoContaOriginal, tipoAssinante, cpfCnpjAssinante, nomeAssinante, razaoSocialAssinante, dataNascimentoAssinante, numeroParceiroAssinante, form]);
 
   return (
     <div className="space-y-6">
@@ -55,9 +97,23 @@ const ContaEnergiaForm = ({ form }: ContaEnergiaFormProps) => {
             name="energyAccount.originalAccount.cpfCnpj"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>CPF ou CNPJ na Conta de Energia *</FormLabel>
+                <FormLabel>
+                  {tipoContaOriginal === 'fisica' ? 'CPF' : 'CNPJ'} na Conta de Energia *
+                </FormLabel>
                 <FormControl>
-                  <Input {...field} placeholder="Digite o CPF ou CNPJ" />
+                  {tipoContaOriginal === 'fisica' ? (
+                    <MaskedInput 
+                      {...field} 
+                      mask="999.999.999-99" 
+                      placeholder="000.000.000-00" 
+                    />
+                  ) : (
+                    <MaskedInput 
+                      {...field} 
+                      mask="99.999.999/9999-99" 
+                      placeholder="00.000.000/0000-00" 
+                    />
+                  )}
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -69,16 +125,21 @@ const ContaEnergiaForm = ({ form }: ContaEnergiaFormProps) => {
             name="energyAccount.originalAccount.name"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Nome da PF ou Empresa na Conta *</FormLabel>
+                <FormLabel>
+                  {tipoContaOriginal === 'fisica' ? 'Nome da Pessoa Física' : 'Razão Social'} na Conta *
+                </FormLabel>
                 <FormControl>
-                  <Input {...field} placeholder="Digite o nome" />
+                  <Input 
+                    {...field} 
+                    placeholder={tipoContaOriginal === 'fisica' ? 'Digite o nome' : 'Digite a razão social'} 
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
 
-          {form.watch('energyAccount.originalAccount.type') === 'fisica' && (
+          {tipoContaOriginal === 'fisica' && (
             <FormField
               control={form.control}
               name="energyAccount.originalAccount.dataNascimento"
