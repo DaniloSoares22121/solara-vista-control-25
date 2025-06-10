@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -141,24 +142,34 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
     <div className="h-full flex flex-col bg-gradient-to-br from-slate-50 to-green-50/30">
       {/* Fixed Header */}
       <div className="flex-shrink-0 bg-white border-b border-gray-200 shadow-sm">
-        <div className="flex items-center justify-between p-4 sm:p-6">
-          <div className="flex items-center gap-3 sm:gap-4">
-            <div className={`w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r ${currentStepData.color} rounded-xl flex items-center justify-center shadow-lg`}>
-              <currentStepData.icon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+        <div className="flex items-center justify-between p-6">
+          <div className="flex items-center gap-4">
+            <div className={`w-12 h-12 bg-gradient-to-r ${currentStepData.color} rounded-xl flex items-center justify-center shadow-lg`}>
+              <currentStepData.icon className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Passo {currentStep}</h2>
+              <h2 className="text-2xl font-bold text-gray-900">Novo Assinante</h2>
               <p className="text-sm text-gray-600 font-medium">{currentStepData.label}</p>
             </div>
           </div>
+          {onClose && (
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={onClose} 
+              className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-xl h-10 w-10"
+            >
+              <X className="w-5 h-5" />
+            </Button>
+          )}
         </div>
         
         {/* Progress Bar */}
-        <div className="px-4 sm:px-6 pb-4 sm:pb-6">
-          <div className="flex items-center justify-between mb-4 overflow-x-auto">
+        <div className="px-6 pb-6">
+          <div className="flex items-center justify-between mb-4">
             {steps.map((step, index) => (
-              <div key={step.id} className="flex items-center flex-shrink-0">
-                <div className={`relative flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full transition-all duration-300 ${
+              <div key={step.id} className="flex items-center">
+                <div className={`relative flex items-center justify-center w-10 h-10 rounded-full transition-all duration-300 ${
                   currentStep > step.id 
                     ? 'bg-gradient-to-r from-green-500 to-green-600 text-white shadow-lg' 
                     : currentStep === step.id
@@ -166,13 +177,13 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
                     : 'bg-gray-200 text-gray-400'
                 }`}>
                   {currentStep > step.id ? (
-                    <Check className="w-4 h-4 sm:w-5 sm:h-5" />
+                    <Check className="w-5 h-5" />
                   ) : (
-                    <step.icon className="w-3 h-3 sm:w-4 sm:h-4" />
+                    <step.icon className="w-4 h-4" />
                   )}
                 </div>
                 {index < steps.length - 1 && (
-                  <div className={`w-8 sm:w-16 h-1 mx-1 sm:mx-2 rounded-full transition-all duration-300 ${
+                  <div className={`w-16 h-1 mx-2 rounded-full transition-all duration-300 ${
                     currentStep > step.id 
                       ? 'bg-gradient-to-r from-green-500 to-green-600' 
                       : 'bg-gray-300'
@@ -182,7 +193,7 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
             ))}
           </div>
           <div className="text-center">
-            <Badge variant="secondary" className="bg-green-100 text-green-700 border-0 px-3 sm:px-4 py-1 sm:py-1.5 text-xs sm:text-sm">
+            <Badge variant="secondary" className="bg-green-100 text-green-700 border-0 px-4 py-1.5">
               Passo {currentStep} de {totalSteps} • {currentStepData.label}
             </Badge>
           </div>
@@ -190,10 +201,10 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
       </div>
 
       {/* Scrollable Content Area */}
-      <ScrollArea className="flex-1 h-full">
-        <div className="p-4 sm:p-6 pb-32">
+      <ScrollArea className="flex-1">
+        <div className="max-w-6xl mx-auto p-6 pb-32">
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 sm:space-y-8">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
               {/* Step 1 - Dados Pessoais */}
               {currentStep === 1 && (
                 <Card className="border-0 shadow-lg bg-white">
@@ -803,18 +814,18 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
 
       {/* Fixed Footer */}
       <div className="flex-shrink-0 border-t border-gray-200 bg-white shadow-lg">
-        <div className="p-4 sm:p-6">
-          <div className="flex justify-between items-center gap-3">
-            <div className="flex gap-2 sm:gap-3">
+        <div className="max-w-6xl mx-auto p-6">
+          <div className="flex justify-between items-center">
+            <div className="flex gap-3">
               {currentStep > 1 && (
                 <Button 
                   type="button" 
                   variant="outline" 
                   onClick={prevStep} 
-                  className="px-4 sm:px-6 h-10 sm:h-12 border-gray-300 hover:bg-gray-50 rounded-lg text-gray-700 text-sm"
+                  className="px-6 h-12 border-gray-300 hover:bg-gray-50 rounded-lg text-gray-700"
                 >
-                  <ChevronLeft className="w-4 h-4 mr-1 sm:mr-2" />
-                  <span className="hidden sm:inline">Anterior</span>
+                  <ChevronLeft className="w-4 h-4 mr-2" />
+                  Anterior
                 </Button>
               )}
               {onClose && (
@@ -822,33 +833,31 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
                   type="button" 
                   variant="ghost" 
                   onClick={onClose} 
-                  className="px-4 sm:px-6 h-10 sm:h-12 text-gray-600 hover:bg-gray-100 rounded-lg text-sm"
+                  className="px-6 h-12 text-gray-600 hover:bg-gray-100 rounded-lg"
                 >
                   Cancelar
                 </Button>
               )}
             </div>
             
-            <div className="flex gap-2 sm:gap-3">
+            <div className="flex gap-3">
               {currentStep < totalSteps ? (
                 <Button 
                   type="button" 
                   onClick={nextStep}
-                  className="px-6 sm:px-8 h-10 sm:h-12 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white shadow-lg hover:shadow-xl transition-all duration-200 rounded-lg text-sm"
+                  className="px-8 h-12 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white shadow-lg hover:shadow-xl transition-all duration-200 rounded-lg"
                 >
-                  <span className="hidden sm:inline">Próximo</span>
-                  <span className="sm:hidden">Próximo</span>
-                  <ChevronRight className="w-4 h-4 ml-1 sm:ml-2" />
+                  Próximo
+                  <ChevronRight className="w-4 h-4 ml-2" />
                 </Button>
               ) : (
                 <Button 
                   type="submit" 
                   onClick={form.handleSubmit(onSubmit)}
-                  className="px-6 sm:px-8 h-10 sm:h-12 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white shadow-lg hover:shadow-xl transition-all duration-200 rounded-lg text-sm"
+                  className="px-8 h-12 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white shadow-lg hover:shadow-xl transition-all duration-200 rounded-lg"
                 >
-                  <Check className="w-4 h-4 mr-1 sm:mr-2" />
-                  <span className="hidden sm:inline">Finalizar Cadastro</span>
-                  <span className="sm:hidden">Finalizar</span>
+                  <Check className="w-4 h-4 mr-2" />
+                  Finalizar Cadastro
                 </Button>
               )}
             </div>
@@ -860,5 +869,3 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
 };
 
 export default NovoAssinante;
-
-</edits_to_apply>

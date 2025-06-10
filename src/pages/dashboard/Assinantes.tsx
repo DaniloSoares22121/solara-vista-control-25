@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Search, Plus, Filter, User, Users, MapPin, Activity, Download } from 'lucide-react';
 import NovoAssinante from './NovoAssinante';
 
@@ -42,29 +42,13 @@ const Assinantes = () => {
               <Download className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
               Exportar
             </Button>
-            <Sheet open={isModalOpen} onOpenChange={setIsModalOpen}>
-              <SheetTrigger asChild>
-                <Button 
-                  onClick={handleOpenModal}
-                  className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-lg hover:shadow-xl transition-all duration-200 px-4 sm:px-6 py-2 sm:py-3 text-sm"
-                >
-                  <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                  Novo Assinante
-                </Button>
-              </SheetTrigger>
-              <SheetContent className="w-full sm:max-w-[100vw] p-0 overflow-hidden">
-                <div className="h-full flex flex-col">
-                  <SheetHeader className="p-6 border-b border-gray-200 flex-shrink-0">
-                    <SheetTitle className="text-2xl font-bold text-gray-900">
-                      Novo Assinante
-                    </SheetTitle>
-                  </SheetHeader>
-                  <div className="flex-1 overflow-hidden">
-                    <NovoAssinante onClose={handleCloseModal} />
-                  </div>
-                </div>
-              </SheetContent>
-            </Sheet>
+            <Button 
+              onClick={handleOpenModal}
+              className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-lg hover:shadow-xl transition-all duration-200 px-4 sm:px-6 py-2 sm:py-3 text-sm"
+            >
+              <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+              Novo Assinante
+            </Button>
           </div>
         </div>
 
@@ -190,6 +174,20 @@ const Assinantes = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Modal for New Subscriber */}
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden p-0">
+          <DialogHeader className="p-6 pb-0">
+            <DialogTitle className="text-2xl font-bold text-gray-900">
+              Novo Assinante
+            </DialogTitle>
+          </DialogHeader>
+          <div className="overflow-y-auto px-6 pb-6">
+            <NovoAssinante onClose={handleCloseModal} />
+          </div>
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 };
