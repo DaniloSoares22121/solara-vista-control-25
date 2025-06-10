@@ -27,18 +27,18 @@ export const supabaseSubscriberService = {
       
       console.log('✅ [SUPABASE_SERVICE] Usuário autenticado:', user.id);
 
-      // Preparar dados para salvar
+      // Preparar dados para salvar - convertendo para JSON
       console.log('📝 [SUPABASE_SERVICE] Preparando dados para salvar...');
       const docData = {
         user_id: user.id,
         concessionaria: data.concessionaria || null,
-        subscriber: data.subscriber || null,
-        administrator: data.administrator || null,
-        energy_account: data.energyAccount || null,
-        plan_contract: data.planContract || null,
-        plan_details: data.planDetails || null,
-        notifications: data.notifications || null,
-        attachments: data.attachments || null,
+        subscriber: data.subscriber ? JSON.parse(JSON.stringify(data.subscriber)) : null,
+        administrator: data.administrator ? JSON.parse(JSON.stringify(data.administrator)) : null,
+        energy_account: data.energyAccount ? JSON.parse(JSON.stringify(data.energyAccount)) : null,
+        plan_contract: data.planContract ? JSON.parse(JSON.stringify(data.planContract)) : null,
+        plan_details: data.planDetails ? JSON.parse(JSON.stringify(data.planDetails)) : null,
+        notifications: data.notifications ? JSON.parse(JSON.stringify(data.notifications)) : null,
+        attachments: data.attachments ? JSON.parse(JSON.stringify(data.attachments)) : null,
         status: 'active'
       };
 
@@ -48,7 +48,7 @@ export const supabaseSubscriberService = {
       console.log('💾 [SUPABASE_SERVICE] Inserindo dados...');
       const { data: insertedData, error } = await supabase
         .from(COLLECTION_NAME)
-        .insert([docData])
+        .insert(docData)
         .select('id')
         .single();
       
@@ -107,13 +107,13 @@ export const supabaseSubscriberService = {
       const transformedData = (data || []).map((item: any) => ({
         id: item.id,
         concessionaria: item.concessionaria,
-        subscriber: item.subscriber,
-        administrator: item.administrator,
-        energyAccount: item.energy_account,
-        planContract: item.plan_contract,
-        planDetails: item.plan_details,
-        notifications: item.notifications,
-        attachments: item.attachments || {}
+        subscriber: item.subscriber as any,
+        administrator: item.administrator as any,
+        energyAccount: item.energy_account as any,
+        planContract: item.plan_contract as any,
+        planDetails: item.plan_details as any,
+        notifications: item.notifications as any,
+        attachments: (item.attachments as any) || {}
       }));
       
       return transformedData;
@@ -143,13 +143,13 @@ export const supabaseSubscriberService = {
       return {
         id: data.id,
         concessionaria: data.concessionaria,
-        subscriber: data.subscriber,
-        administrator: data.administrator,
-        energyAccount: data.energy_account,
-        planContract: data.plan_contract,
-        planDetails: data.plan_details,
-        notifications: data.notifications,
-        attachments: data.attachments || {}
+        subscriber: data.subscriber as any,
+        administrator: data.administrator as any,
+        energyAccount: data.energy_account as any,
+        planContract: data.plan_contract as any,
+        planDetails: data.plan_details as any,
+        notifications: data.notifications as any,
+        attachments: (data.attachments as any) || {}
       };
     } catch (error) {
       console.error('Erro ao buscar assinante:', error);
@@ -164,13 +164,13 @@ export const supabaseSubscriberService = {
       const updateData: any = {};
       
       if (data.concessionaria) updateData.concessionaria = data.concessionaria;
-      if (data.subscriber) updateData.subscriber = data.subscriber;
-      if (data.administrator) updateData.administrator = data.administrator;
-      if (data.energyAccount) updateData.energy_account = data.energyAccount;
-      if (data.planContract) updateData.plan_contract = data.planContract;
-      if (data.planDetails) updateData.plan_details = data.planDetails;
-      if (data.notifications) updateData.notifications = data.notifications;
-      if (data.attachments) updateData.attachments = data.attachments;
+      if (data.subscriber) updateData.subscriber = JSON.parse(JSON.stringify(data.subscriber));
+      if (data.administrator) updateData.administrator = JSON.parse(JSON.stringify(data.administrator));
+      if (data.energyAccount) updateData.energy_account = JSON.parse(JSON.stringify(data.energyAccount));
+      if (data.planContract) updateData.plan_contract = JSON.parse(JSON.stringify(data.planContract));
+      if (data.planDetails) updateData.plan_details = JSON.parse(JSON.stringify(data.planDetails));
+      if (data.notifications) updateData.notifications = JSON.parse(JSON.stringify(data.notifications));
+      if (data.attachments) updateData.attachments = JSON.parse(JSON.stringify(data.attachments));
 
       const { error } = await supabase
         .from(COLLECTION_NAME)
