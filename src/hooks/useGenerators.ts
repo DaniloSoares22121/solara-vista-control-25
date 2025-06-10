@@ -43,6 +43,39 @@ export const useGenerators = () => {
     }
   };
 
+  const deleteGenerator = async (id: string) => {
+    console.log('🗑️ [HOOK] Excluindo geradora...', id);
+    setError(null);
+    
+    try {
+      await supabaseGeneratorService.deleteGenerator(id);
+      setGenerators(prev => prev.filter(gen => gen.id !== id));
+      console.log('✅ [HOOK] Geradora excluída com sucesso');
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Erro ao excluir geradora';
+      setError(errorMessage);
+      console.error('❌ [HOOK] Erro ao excluir geradora:', errorMessage);
+      throw err;
+    }
+  };
+
+  const updateGenerator = async (id: string, generatorData: Partial<GeneratorFormData>) => {
+    console.log('🔄 [HOOK] Atualizando geradora...', id, generatorData);
+    setError(null);
+    
+    try {
+      const updatedGenerator = await supabaseGeneratorService.updateGenerator(id, generatorData);
+      setGenerators(prev => prev.map(gen => gen.id === id ? updatedGenerator : gen));
+      console.log('✅ [HOOK] Geradora atualizada com sucesso:', updatedGenerator);
+      return updatedGenerator;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Erro ao atualizar geradora';
+      setError(errorMessage);
+      console.error('❌ [HOOK] Erro ao atualizar geradora:', errorMessage);
+      throw err;
+    }
+  };
+
   useEffect(() => {
     loadGenerators();
   }, []);
@@ -52,6 +85,8 @@ export const useGenerators = () => {
     loading,
     error,
     createGenerator,
+    deleteGenerator,
+    updateGenerator,
     refreshGenerators: loadGenerators
   };
 };

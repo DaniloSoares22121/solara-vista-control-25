@@ -6,13 +6,17 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-import { Zap, Plus, Search, RefreshCw, Filter, MapPin, Activity } from 'lucide-react';
+import { Zap, Plus, Search, RefreshCw, Filter, MapPin, Activity, Eye } from 'lucide-react';
 import NovaGeradora from './NovaGeradora';
+import GeneratorDetails from '@/components/GeneratorDetails';
 import { useGenerators } from '@/hooks/useGenerators';
 
 const Geradoras = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const { generators, loading, refreshGenerators } = useGenerators();
+  const [selectedGenerator, setSelectedGenerator] = useState<any>(null);
+  const [showDetails, setShowDetails] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const { generators, loading, refreshGenerators, deleteGenerator } = useGenerators();
 
   const handleOpenModal = () => {
     setIsModalOpen(true);
@@ -20,7 +24,34 @@ const Geradoras = () => {
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
+    setIsEditing(false);
+    setSelectedGenerator(null);
     refreshGenerators(); // Recarregar dados após fechar modal
+  };
+
+  const handleViewDetails = (generator: any) => {
+    setSelectedGenerator(generator);
+    setShowDetails(true);
+  };
+
+  const handleEdit = () => {
+    setShowDetails(false);
+    setIsEditing(true);
+    setIsModalOpen(true);
+  };
+
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteGenerator(id);
+      setShowDetails(false);
+    } catch (error) {
+      console.error('Erro ao excluir geradora:', error);
+    }
+  };
+
+  const handleCloseDetails = () => {
+    setShowDetails(false);
+    setSelectedGenerator(null);
   };
 
   const activeGenerators = generators.filter(g => g.status === 'active').length;
@@ -175,7 +206,7 @@ const Geradoras = () => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {generators.map((generator) => (
-              <Card key={generator.id} className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 bg-white">
+              <Card key={generator.id} className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 bg-white cursor-pointer">
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-lg font-bold text-gray-900">
@@ -188,7 +219,7 @@ const Geradoras = () => {
                   <p className="text-sm text-gray-600">{generator.concessionaria}</p>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-2">
+                  <div className="space-y-2 mb-4">
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-600">Usinas:</span>
                       <span className="font-medium">{generator.plants?.length || 0}</span>
@@ -202,6 +233,14 @@ const Geradoras = () => {
                       </span>
                     </div>
                   </div>
+                  <Button 
+                    onClick={() => handleViewDetails(generator)}
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                    size="sm"
+                  >
+                    <Eye className="w-4 h-4 mr-2" />
+                    Ver Detalhes
+                  </Button>
                 </CardContent>
               </Card>
             ))}
@@ -209,13 +248,33 @@ const Geradoras = () => {
         )}
       </div>
 
-      {/* Sheet for New Generator */}
+      {/* Sheet for New/Edit Generator */}
       <Sheet open={isModalOpen} onOpenChange={setIsModalOpen}>
         <SheetContent side="right" className="w-full sm:max-w-7xl p-0 overflow-hidden">
           <SheetHeader className="sr-only">
-            <SheetTitle>Nova Geradora</SheetTitle>
+            <SheetTitle>{isEditing ? 'Editar Geradora' : 'Nova Geradora'}</SheetTitle>
           </SheetHeader>
-          <NovaGeradora onClose={handleCloseModal} />
+          <NovaGeradora 
+            onClose={handleCloseModal} 
+            editData={isEditing ? selectedGenerator : undefined}
+          />
+        </SheetContent>
+      </Sheet>
+
+      {/* Sheet for Generator Details */}
+      <Sheet open={showDetails} onOpenChange={setShowDetails}>
+        <SheetContent side="right" className="w-full sm:max-w-6xl p-0 overflow-hidden">
+          <SheetHeader className="sr-only">
+            <SheetTitle>Detalhes da Geradora</SheetTitle>
+          </SheetHeader>
+          {selectedGenerator && (
+            <GeneratorDetails
+              generator={selectedGenerator}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+              onClose={handleCloseDetails}
+            />
+          )}
         </SheetContent>
       </Sheet>
     </DashboardLayout>

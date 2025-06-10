@@ -64,5 +64,62 @@ export const supabaseGeneratorService = {
       console.error('❌ [SUPABASE_GENERATOR_SERVICE] Erro:', error);
       throw error;
     }
+  },
+
+  async deleteGenerator(id: string) {
+    console.log('🗑️ [SUPABASE_GENERATOR_SERVICE] Excluindo geradora...', id);
+    
+    try {
+      const { error } = await supabase
+        .from('generators')
+        .delete()
+        .eq('id', id);
+
+      if (error) {
+        console.error('❌ [SUPABASE_GENERATOR_SERVICE] Erro ao excluir:', error);
+        throw error;
+      }
+
+      console.log('✅ [SUPABASE_GENERATOR_SERVICE] Geradora excluída com sucesso');
+      return true;
+    } catch (error) {
+      console.error('❌ [SUPABASE_GENERATOR_SERVICE] Erro:', error);
+      throw error;
+    }
+  },
+
+  async updateGenerator(id: string, data: Partial<GeneratorFormData>) {
+    console.log('🔄 [SUPABASE_GENERATOR_SERVICE] Atualizando geradora...', id, data);
+    
+    try {
+      const updateData = {
+        ...(data.concessionaria && { concessionaria: data.concessionaria }),
+        ...(data.owner && { owner: data.owner as any }),
+        ...(data.administrator && { administrator: data.administrator as any }),
+        ...(data.plants && { plants: data.plants as any }),
+        ...(data.distributorLogin && { distributor_login: data.distributorLogin as any }),
+        ...(data.paymentData && { payment_data: data.paymentData as any }),
+        ...(data.attachments && { attachments: data.attachments as any }),
+        updated_at: new Date().toISOString()
+      };
+
+      const { data: result, error } = await supabase
+        .from('generators')
+        .update(updateData)
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('❌ [SUPABASE_GENERATOR_SERVICE] Erro ao atualizar:', error);
+        throw error;
+      }
+
+      console.log('✅ [SUPABASE_GENERATOR_SERVICE] Geradora atualizada com sucesso:', result);
+      return result;
+    } catch (error) {
+      console.error('❌ [SUPABASE_GENERATOR_SERVICE] Erro:', error);
+      throw error;
+    }
   }
 };
