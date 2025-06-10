@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Sun, LogOut, User } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from '@/components/ui/use-toast';
-import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
+import { SidebarProvider } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/AppSidebar';
 
 const Dashboard = () => {
@@ -37,16 +37,13 @@ const Dashboard = () => {
           {/* Header */}
           <header className="bg-white/95 backdrop-blur-sm shadow-sm border-b border-gray-200/50 sticky top-0 z-40">
             <div className="flex items-center justify-between h-16 px-6">
-              <div className="flex items-center space-x-4">
-                <SidebarTrigger className="p-2 hover:bg-green-50 rounded-lg transition-colors duration-200 lg:hidden" />
-                <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 solar-gradient rounded-xl flex items-center justify-center shadow-lg">
-                    <Sun className="w-6 h-6 text-white" />
-                  </div>
-                  <h1 className="text-2xl font-bold text-gray-900">
-                    Solar<span className="solar-text-gradient">Control</span>
-                  </h1>
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 solar-gradient rounded-xl flex items-center justify-center shadow-lg">
+                  <Sun className="w-6 h-6 text-white" />
                 </div>
+                <h1 className="text-2xl font-bold text-gray-900">
+                  Solar<span className="solar-text-gradient">Control</span>
+                </h1>
               </div>
               
               <div className="flex items-center space-x-4">
