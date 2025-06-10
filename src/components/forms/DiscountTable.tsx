@@ -1,24 +1,39 @@
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { useState } from 'react';
 
 interface DiscountTableProps {
   faixaConsumo: string;
   fidelidade: string;
   anosFidelidade?: string;
+  discountRates?: any;
+  onDiscountChange?: (newRates: any) => void;
 }
 
-const DiscountTable = ({ faixaConsumo, fidelidade, anosFidelidade }: DiscountTableProps) => {
-  const getDescontoOptions = () => {
-    const options = {
-      '400-599': { sem: 13, com: { '1': 15, '2': 20 } },
-      '600-1099': { sem: 15, com: { '1': 18, '2': 20 } },
-      '1100-3099': { sem: 18, com: { '1': 20, '2': 22 } },
-      '3100-7000': { sem: 20, com: { '1': 22, '2': 25 } },
-      '7000+': { sem: 22, com: { '1': 25, '2': 27 } }
-    };
+const DiscountTable = ({ 
+  faixaConsumo, 
+  fidelidade, 
+  anosFidelidade, 
+  discountRates,
+  onDiscountChange 
+}: DiscountTableProps) => {
+  const [editingCell, setEditingCell] = useState<string | null>(null);
+  const [tempValue, setTempValue] = useState<string>('');
 
-    return options[faixaConsumo as keyof typeof options] || options['400-599'];
+  const defaultRates = {
+    '400-599': { sem: 13, com: { '1': 15, '2': 20 } },
+    '600-1099': { sem: 15, com: { '1': 18, '2': 20 } },
+    '1100-3099': { sem: 18, com: { '1': 20, '2': 22 } },
+    '3100-7000': { sem: 20, com: { '1': 22, '2': 25 } },
+    '7000+': { sem: 22, com: { '1': 25, '2': 27 } }
+  };
+
+  const rates = discountRates || defaultRates;
+
+  const getDescontoOptions = () => {
+    return rates[faixaConsumo as keyof typeof rates] || rates['400-599'];
   };
 
   const descontoOptions = getDescontoOptions();
@@ -45,10 +60,87 @@ const DiscountTable = ({ faixaConsumo, fidelidade, anosFidelidade }: DiscountTab
     return displays[faixa as keyof typeof displays] || faixa;
   };
 
+  const handleCellClick = (faixa: string, type: string) => {
+    const cellId = `${faixa}-${type}`;
+    setEditingCell(cellId);
+    
+    let currentValue;
+    if (type === 'sem') {
+      currentValue = rates[faixa].sem;
+    } else {
+      currentValue = rates[faixa].com[type];
+    }
+    setTempValue(currentValue.toString());
+  };
+
+  const handleInputChange = (value: string) => {
+    setTempValue(value);
+  };
+
+  const handleInputBlur = (faixa: string, type: string) => {
+    const newValue = parseFloat(tempValue);
+    if (!isNaN(newValue) && newValue >= 0 && newValue <= 100) {
+      const newRates = { ...rates };
+      
+      if (type === 'sem') {
+        newRates[faixa].sem = newValue;
+      } else {
+        newRates[faixa].com[type] = newValue;
+      }
+      
+      if (onDiscountChange) {
+        onDiscountChange(newRates);
+      }
+    }
+    setEditingCell(null);
+  };
+
+  const handleInputKeyDown = (e: React.KeyboardEvent, faixa: string, type: string) => {
+    if (e.key === 'Enter') {
+      handleInputBlur(faixa, type);
+    } else if (e.key === 'Escape') {
+      setEditingCell(null);
+    }
+  };
+
+  const renderEditableCell = (faixa: string, type: string, value: number, isHighlighted: boolean) => {
+    const cellId = `${faixa}-${type}`;
+    const isEditing = editingCell === cellId;
+
+    return (
+      <TableCell 
+        className={`cursor-pointer transition-colors ${isHighlighted ? 'bg-green-100 font-bold text-green-700' : 'hover:bg-gray-50'}`}
+        onClick={() => !isEditing && handleCellClick(faixa, type)}
+      >
+        {isEditing ? (
+          <Input
+            type="number"
+            value={tempValue}
+            onChange={(e) => handleInputChange(e.target.value)}
+            onBlur={() => handleInputBlur(faixa, type)}
+            onKeyDown={(e) => handleInputKeyDown(e, faixa, type)}
+            className="w-16 h-8 text-center"
+            min="0"
+            max="100"
+            autoFocus
+          />
+        ) : (
+          <span className="inline-flex items-center">
+            {value}%
+            <span className="ml-1 text-xs text-gray-400 opacity-0 group-hover:opacity-100">✏️</span>
+          </span>
+        )}
+      </TableCell>
+    );
+  };
+
   return (
     <Card className="mt-6">
       <CardHeader>
-        <CardTitle className="text-lg text-green-700">Tabela Demonstrativa de Desconto</CardTitle>
+        <CardTitle className="text-lg text-green-700">
+          Tabela Demonstrativa de Desconto
+          <span className="text-sm text-gray-500 ml-2 font-normal">(Clique nas porcentagens para editar)</span>
+        </CardTitle>
       </CardHeader>
       <CardContent>
         <Table>
@@ -61,41 +153,32 @@ const DiscountTable = ({ faixaConsumo, fidelidade, anosFidelidade }: DiscountTab
             </TableRow>
           </TableHeader>
           <TableBody>
-            {Object.entries({
-              '400-599': { sem: 13, com: { '1': 15, '2': 20 } },
-              '600-1099': { sem: 15, com: { '1': 18, '2': 20 } },
-              '1100-3099': { sem: 18, com: { '1': 20, '2': 22 } },
-              '3100-7000': { sem: 20, com: { '1': 22, '2': 25 } },
-              '7000+': { sem: 22, com: { '1': 25, '2': 27 } }
-            }).map(([faixa, valores]) => (
+            {Object.entries(rates).map(([faixa, valores]) => (
               <TableRow 
                 key={faixa}
-                className={faixa === faixaConsumo ? 'bg-green-50 border-l-4 border-green-500' : ''}
+                className={`group ${faixa === faixaConsumo ? 'bg-green-50 border-l-4 border-green-500' : ''}`}
               >
                 <TableCell className="font-medium">
                   {getFaixaDisplay(faixa)}
                 </TableCell>
-                <TableCell className={
-                  faixa === faixaConsumo && fidelidade === 'sem' 
-                    ? 'bg-green-100 font-bold text-green-700' 
-                    : ''
-                }>
-                  {valores.sem}%
-                </TableCell>
-                <TableCell className={
+                {renderEditableCell(
+                  faixa, 
+                  'sem', 
+                  valores.sem, 
+                  faixa === faixaConsumo && fidelidade === 'sem'
+                )}
+                {renderEditableCell(
+                  faixa, 
+                  '1', 
+                  valores.com['1'], 
                   faixa === faixaConsumo && fidelidade === 'com' && anosFidelidade === '1'
-                    ? 'bg-green-100 font-bold text-green-700' 
-                    : ''
-                }>
-                  {valores.com['1']}%
-                </TableCell>
-                <TableCell className={
+                )}
+                {renderEditableCell(
+                  faixa, 
+                  '2', 
+                  valores.com['2'], 
                   faixa === faixaConsumo && fidelidade === 'com' && anosFidelidade === '2'
-                    ? 'bg-green-100 font-bold text-green-700' 
-                    : ''
-                }>
-                  {valores.com['2']}%
-                </TableCell>
+                )}
               </TableRow>
             ))}
           </TableBody>

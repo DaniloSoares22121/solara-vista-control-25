@@ -1,4 +1,3 @@
-
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -7,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { UseFormReturn } from 'react-hook-form';
 import { Card, CardContent } from '@/components/ui/card';
 import DiscountTable from './DiscountTable';
+import { useState } from 'react';
 
 interface PlanoContratadoFormProps {
   form: UseFormReturn<any>;
@@ -17,8 +17,10 @@ const PlanoContratadoForm = ({ form }: PlanoContratadoFormProps) => {
   const fidelidade = form.watch('planContract.fidelidade');
   const anosFidelidade = form.watch('planContract.anosFidelidade');
 
+  const [customDiscountRates, setCustomDiscountRates] = useState<any>(null);
+
   const getDescontoOptions = () => {
-    const options = {
+    const baseOptions = {
       '400-599': { sem: 13, com: { '1': 15, '2': 20 } },
       '600-1099': { sem: 15, com: { '1': 18, '2': 20 } },
       '1100-3099': { sem: 18, com: { '1': 20, '2': 22 } },
@@ -26,10 +28,27 @@ const PlanoContratadoForm = ({ form }: PlanoContratadoFormProps) => {
       '7000+': { sem: 22, com: { '1': 25, '2': 27 } }
     };
 
-    return options[faixaConsumo as keyof typeof options] || options['400-599'];
+    const rates = customDiscountRates || baseOptions;
+    return rates[faixaConsumo as keyof typeof rates] || rates['400-599'];
   };
 
   const descontoOptions = getDescontoOptions();
+
+  const handleDiscountChange = (newRates: any) => {
+    setCustomDiscountRates(newRates);
+    
+    // Update the form value with the new discount percentage
+    const updatedOptions = newRates[faixaConsumo as keyof typeof newRates] || newRates['400-599'];
+    let newDiscount = 0;
+    
+    if (fidelidade === 'sem') {
+      newDiscount = updatedOptions.sem;
+    } else if (fidelidade === 'com' && anosFidelidade) {
+      newDiscount = updatedOptions.com[anosFidelidade as '1' | '2'];
+    }
+    
+    form.setValue('planContract.desconto', newDiscount);
+  };
 
   return (
     <div className="space-y-6">
@@ -213,6 +232,8 @@ const PlanoContratadoForm = ({ form }: PlanoContratadoFormProps) => {
         faixaConsumo={faixaConsumo}
         fidelidade={fidelidade}
         anosFidelidade={anosFidelidade}
+        discountRates={customDiscountRates}
+        onDiscountChange={handleDiscountChange}
       />
     </div>
   );
