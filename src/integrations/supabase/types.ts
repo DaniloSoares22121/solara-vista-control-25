@@ -178,6 +178,54 @@ export type Database = {
         }
         Relationships: []
       }
+      subscribers: {
+        Row: {
+          administrator: Json | null
+          attachments: Json | null
+          concessionaria: string | null
+          created_at: string
+          energy_account: Json | null
+          id: string
+          notifications: Json | null
+          plan_contract: Json | null
+          plan_details: Json | null
+          status: string | null
+          subscriber: Json | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          administrator?: Json | null
+          attachments?: Json | null
+          concessionaria?: string | null
+          created_at?: string
+          energy_account?: Json | null
+          id?: string
+          notifications?: Json | null
+          plan_contract?: Json | null
+          plan_details?: Json | null
+          status?: string | null
+          subscriber?: Json | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          administrator?: Json | null
+          attachments?: Json | null
+          concessionaria?: string | null
+          created_at?: string
+          energy_account?: Json | null
+          id?: string
+          notifications?: Json | null
+          plan_contract?: Json | null
+          plan_details?: Json | null
+          status?: string | null
+          subscriber?: Json | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

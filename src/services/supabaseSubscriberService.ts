@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { SubscriberFormData } from '@/types/subscriber';
 
@@ -43,20 +44,6 @@ export const supabaseSubscriberService = {
 
       console.log('📝 [SUPABASE_SERVICE] Dados preparados para salvar:', JSON.stringify(docData, null, 2));
 
-      // Verificar se a tabela existe
-      console.log('🔍 [SUPABASE_SERVICE] Verificando se a tabela existe...');
-      const { data: tableCheck, error: tableError } = await supabase
-        .from(COLLECTION_NAME)
-        .select('id')
-        .limit(1);
-      
-      if (tableError) {
-        console.error('❌ [SUPABASE_SERVICE] Erro ao verificar tabela:', tableError);
-        throw new Error(`Tabela não existe ou não tem permissão: ${tableError.message}`);
-      }
-      
-      console.log('✅ [SUPABASE_SERVICE] Tabela acessível');
-
       // Inserir no Supabase
       console.log('💾 [SUPABASE_SERVICE] Inserindo dados...');
       const { data: insertedData, error } = await supabase
@@ -85,7 +72,7 @@ export const supabaseSubscriberService = {
       console.log('🆔 [SUPABASE_SERVICE] ID do documento:', insertedData.id);
       
       return insertedData.id;
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ [SUPABASE_SERVICE] ERRO DETALHADO ao criar assinante:', error);
       console.error('❌ [SUPABASE_SERVICE] Stack trace:', error.stack);
       
@@ -103,8 +90,7 @@ export const supabaseSubscriberService = {
     try {
       console.log('🔍 [SUPABASE_SERVICE] Buscando assinantes...');
       
-      // Usar query SQL direta para contornar problema de tipos
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from(COLLECTION_NAME)
         .select('*')
         .order('created_at', { ascending: false });
@@ -140,7 +126,7 @@ export const supabaseSubscriberService = {
   // Buscar assinante por ID
   async getSubscriberById(id: string): Promise<(SubscriberFormData & { id: string }) | null> {
     try {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from(COLLECTION_NAME)
         .select('*')
         .eq('id', id)
@@ -186,7 +172,7 @@ export const supabaseSubscriberService = {
       if (data.notifications) updateData.notifications = data.notifications;
       if (data.attachments) updateData.attachments = data.attachments;
 
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from(COLLECTION_NAME)
         .update(updateData)
         .eq('id', id);
@@ -205,7 +191,7 @@ export const supabaseSubscriberService = {
   // Deletar assinante
   async deleteSubscriber(id: string): Promise<void> {
     try {
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from(COLLECTION_NAME)
         .delete()
         .eq('id', id);
