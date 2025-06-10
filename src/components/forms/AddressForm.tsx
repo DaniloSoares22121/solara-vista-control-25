@@ -22,10 +22,10 @@ const AddressForm = ({ form, prefix, title }: AddressFormProps) => {
         try {
           const addressData = await lookupCep(cep.replace(/\D/g, ''));
           if (addressData) {
-            form.setValue(`${prefix}.endereco`, addressData.logradouro || '');
+            form.setValue(`${prefix}.endereco`, addressData.endereco || '');
             form.setValue(`${prefix}.bairro`, addressData.bairro || '');
-            form.setValue(`${prefix}.cidade`, addressData.localidade || '');
-            form.setValue(`${prefix}.estado`, addressData.uf || '');
+            form.setValue(`${prefix}.cidade`, addressData.cidade || '');
+            form.setValue(`${prefix}.estado`, addressData.estado || '');
           }
         } catch (error) {
           console.error('Erro ao buscar CEP:', error);
