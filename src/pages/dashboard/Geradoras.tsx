@@ -27,7 +27,7 @@ const Geradoras = () => {
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div className="space-y-2">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center shadow-lg">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center shadow-lg">
                 <Zap className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
               </div>
               <div>
@@ -39,7 +39,7 @@ const Geradoras = () => {
           
           <Button 
             onClick={handleOpenModal}
-            className="bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-white shadow-lg hover:shadow-xl transition-all duration-200 px-4 sm:px-6 py-2 sm:py-3 w-fit"
+            className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white shadow-lg hover:shadow-xl transition-all duration-200 px-4 sm:px-6 py-2 sm:py-3 w-fit"
           >
             <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
             Nova Geradora
@@ -52,8 +52,8 @@ const Geradoras = () => {
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-xs sm:text-sm font-medium text-gray-600">Total de Geradoras</CardTitle>
-                <div className="p-2 rounded-lg bg-orange-50">
-                  <Zap className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" />
+                <div className="p-2 rounded-lg bg-green-50">
+                  <Zap className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
                 </div>
               </div>
             </CardHeader>
@@ -102,7 +102,7 @@ const Geradoras = () => {
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
                 <Input
                   placeholder="Buscar geradoras por nome, UC ou localização..."
-                  className="pl-10 sm:pl-12 h-10 sm:h-12 border-gray-200 focus:border-orange-500 focus:ring-orange-500 bg-gray-50 text-sm"
+                  className="pl-10 sm:pl-12 h-10 sm:h-12 border-gray-200 focus:border-green-500 focus:ring-green-500 bg-gray-50 text-sm"
                 />
               </div>
               
@@ -125,11 +125,11 @@ const Geradoras = () => {
         <Card className="border-0 shadow-lg bg-white">
           <CardContent className="flex flex-col items-center justify-center py-12 sm:py-20 px-4">
             <div className="relative mb-6 sm:mb-8">
-              <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-orange-100 to-orange-200 rounded-full flex items-center justify-center">
-                <Zap className="w-10 h-10 sm:w-12 sm:h-12 text-orange-600" />
+              <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-green-100 to-green-200 rounded-full flex items-center justify-center">
+                <Zap className="w-10 h-10 sm:w-12 sm:h-12 text-green-600" />
               </div>
               <div className="absolute -top-2 -right-2">
-                <Badge variant="secondary" className="bg-orange-100 text-orange-700 border-orange-200 text-xs">
+                <Badge variant="secondary" className="bg-green-100 text-green-700 border-green-200 text-xs">
                   Novo
                 </Badge>
               </div>
@@ -146,7 +146,7 @@ const Geradoras = () => {
               <div className="pt-2 sm:pt-4">
                 <Button 
                   onClick={handleOpenModal}
-                  className="bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-white shadow-lg px-6 sm:px-8 py-2 sm:py-3 text-sm sm:text-base"
+                  className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white shadow-lg px-6 sm:px-8 py-2 sm:py-3 text-sm sm:text-base"
                 >
                   <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                   Adicionar Primeira Geradora
