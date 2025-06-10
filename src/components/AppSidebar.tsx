@@ -45,13 +45,13 @@ export function AppSidebar() {
 
   return (
     <Sidebar className={isCollapsed ? 'w-16' : 'w-64'} collapsible="icon">
-      <SidebarContent className="bg-white border-r">
+      <SidebarContent className="bg-white border-r border-gray-200 shadow-lg">
         <SidebarGroup>
-          <SidebarGroupLabel className="text-gray-600 font-semibold px-4 py-2">
+          <SidebarGroupLabel className="text-gray-600 font-semibold px-4 py-3 text-sm uppercase tracking-wide">
             {!isCollapsed && 'Menu Principal'}
           </SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu className="space-y-1 px-2">
+            <SidebarMenu className="space-y-2 px-3">
               {menuItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
@@ -59,15 +59,19 @@ export function AppSidebar() {
                       to={item.url}
                       end
                       className={({ isActive }) => 
-                        `flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors ${
+                        `flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 group ${
                           isActive 
-                            ? 'solar-gradient text-white shadow-md' 
-                            : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                            ? 'solar-gradient text-white shadow-lg transform scale-105' 
+                            : 'text-gray-600 hover:bg-gradient-to-r hover:from-green-50 hover:to-green-100 hover:text-green-700 hover:shadow-md hover:scale-102'
                         }`
                       }
                     >
-                      <item.icon className="w-5 h-5 flex-shrink-0" />
-                      {!isCollapsed && <span className="font-medium">{item.title}</span>}
+                      <item.icon className={`w-5 h-5 flex-shrink-0 transition-transform duration-200 ${isCollapsed ? 'mx-auto' : ''}`} />
+                      {!isCollapsed && (
+                        <span className="font-medium text-sm tracking-wide group-hover:translate-x-1 transition-transform duration-200">
+                          {item.title}
+                        </span>
+                      )}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
