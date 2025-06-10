@@ -2,13 +2,13 @@
 import { NavLink } from 'react-router-dom';
 import { 
   LayoutDashboard, 
-  Zap, 
   Users, 
   Calculator, 
-  UserCheck, 
+  Zap, 
   FileText, 
   FileCheck, 
   Receipt, 
+  UserCheck, 
   MessageCircle,
   ChevronLeft,
   ChevronRight
@@ -27,13 +27,13 @@ import {
 
 const menuItems = [
   { title: 'Dashboard', url: '/dashboard', icon: LayoutDashboard },
-  { title: 'Geradoras', url: '/dashboard/geradoras', icon: Zap },
   { title: 'Assinantes', url: '/dashboard/assinantes', icon: Users },
-  { title: 'Rateio', url: '/dashboard/rateio', icon: Calculator },
-  { title: 'Representantes', url: '/dashboard/representantes', icon: UserCheck },
+  { title: 'Cadastrar rateio', url: '/dashboard/rateio', icon: Calculator },
+  { title: 'Geradoras', url: '/dashboard/geradoras', icon: Zap },
   { title: 'Fatura única', url: '/dashboard/fatura-unica', icon: FileText },
-  { title: 'Fatura em validação', url: '/dashboard/fatura-validacao', icon: FileCheck },
-  { title: 'Faturas emitidas', url: '/dashboard/faturas-emitidas', icon: Receipt },
+  { title: 'Faturas em Validação', url: '/dashboard/fatura-validacao', icon: FileCheck },
+  { title: 'Faturas Emitidas', url: '/dashboard/faturas-emitidas', icon: Receipt },
+  { title: 'Representantes', url: '/dashboard/representantes', icon: UserCheck },
   { title: 'WhatsApp', url: '/dashboard/whatsapp', icon: MessageCircle },
 ];
 
@@ -72,7 +72,7 @@ export function AppSidebar() {
             <SidebarGroup className="p-0">
               {!isCollapsed && (
                 <SidebarGroupLabel className="text-green-100 px-2 py-2 text-xs font-medium uppercase tracking-wider mb-3">
-                  Navegação
+                  Menu Principal
                 </SidebarGroupLabel>
               )}
               
