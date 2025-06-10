@@ -253,5 +253,3 @@ const Assinantes = () => {
 };
 
 export default Assinantes;
-
-</edits_to_apply>
