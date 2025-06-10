@@ -1,3 +1,4 @@
+
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -134,7 +135,7 @@ const PlantForm = ({ form, plantIndex, onRemove, canRemove }: PlantFormProps) =>
     }
   }, [potenciaModulo, quantidadeModulos, form, plantIndex]);
 
-  // Calcular potência total dos inversores - CORRIGIDO
+  // Calcular potência total dos inversores
   useEffect(() => {
     console.log('🔧 Calculando potência total dos inversores:', inversores);
     if (inversores && inversores.length > 0) {
@@ -545,7 +546,7 @@ const PlantForm = ({ form, plantIndex, onRemove, canRemove }: PlantFormProps) =>
           </div>
         </div>
 
-        {/* Inversores - CORRIGIDO */}
+        {/* Inversores */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h4 className="font-medium text-gray-900 border-b pb-2">Inversores</h4>
@@ -727,5 +728,3 @@ const PlantForm = ({ form, plantIndex, onRemove, canRemove }: PlantFormProps) =>
 };
 
 export default GeneratorPlantsForm;
-
-</edits_to_apply>
