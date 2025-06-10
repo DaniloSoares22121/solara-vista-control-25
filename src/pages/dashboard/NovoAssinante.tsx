@@ -870,5 +870,3 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
 };
 
 export default NovoAssinante;
-
-</initial_code>
