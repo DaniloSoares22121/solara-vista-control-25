@@ -331,10 +331,10 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
 
   return (
     <FormProvider {...form}>
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+      <div className="h-full flex flex-col bg-gradient-to-br from-slate-50 via-green-50 to-emerald-100">
         {/* Header */}
-        <div className="bg-white/80 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-10">
-          <div className="max-w-7xl mx-auto px-6 py-6">
+        <div className="bg-white/80 backdrop-blur-sm border-b border-gray-200 flex-shrink-0">
+          <div className="px-6 py-6">
             <div className="flex items-center justify-between mb-8">
               <div className="flex items-center space-x-4">
                 <Button 
@@ -347,7 +347,7 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
                   Voltar
                 </Button>
                 <div>
-                  <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                  <h1 className="text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
                     Novo Assinante
                   </h1>
                   <p className="text-gray-600 mt-1">Cadastre um novo cliente de energia por UC</p>
@@ -355,7 +355,7 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
               </div>
               
               <div className="flex items-center space-x-2 text-sm text-gray-500">
-                <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full font-medium">
+                <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full font-medium">
                   Etapa {currentStep + 1} de {steps.length}
                 </span>
               </div>
@@ -371,23 +371,27 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
           </div>
         </div>
 
-        {/* Form Content */}
-        <div className="max-w-6xl mx-auto px-6 py-8">
-          <div className="mb-6">
-            <h2 className="text-2xl font-semibold text-gray-800 mb-2">
-              {steps[currentStep].title}
-            </h2>
-            <p className="text-gray-600">
-              {steps[currentStep].description}
-            </p>
-          </div>
+        {/* Form Content - Scrollable */}
+        <div className="flex-1 overflow-y-auto">
+          <div className="max-w-6xl mx-auto px-6 py-8">
+            <div className="mb-6">
+              <h2 className="text-2xl font-semibold text-gray-800 mb-2">
+                {steps[currentStep].title}
+              </h2>
+              <p className="text-gray-600">
+                {steps[currentStep].description}
+              </p>
+            </div>
 
-          <div className="min-h-[600px] mb-8">
-            {renderCurrentStepContent()}
+            <div className="min-h-[400px] mb-8">
+              {renderCurrentStepContent()}
+            </div>
           </div>
+        </div>
 
-          {/* Footer Navigation */}
-          <div className="bg-white/90 backdrop-blur-sm border border-gray-200 rounded-xl p-6 shadow-lg">
+        {/* Footer Navigation - Fixed */}
+        <div className="flex-shrink-0 bg-white/90 backdrop-blur-sm border-t border-gray-200 p-6">
+          <div className="max-w-6xl mx-auto">
             <div className="flex justify-between items-center">
               <div>
                 {!isFirstStep && (
@@ -407,7 +411,7 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
                 {!isLastStep ? (
                   <Button 
                     onClick={handleNext}
-                    className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 flex items-center"
+                    className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 flex items-center"
                     size="lg"
                   >
                     Próximo

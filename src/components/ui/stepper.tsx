@@ -38,7 +38,7 @@ export const Stepper = ({ steps, currentStep, onStepClick, className }: StepperP
                   className={cn(
                     "w-12 h-12 rounded-full flex items-center justify-center border-2 transition-all duration-300 relative z-10 bg-white",
                     isCompleted && "bg-gradient-to-r from-green-500 to-emerald-500 border-green-500 text-white shadow-lg",
-                    isCurrent && "border-blue-500 bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-600 shadow-md ring-4 ring-blue-100",
+                    isCurrent && "border-green-500 bg-gradient-to-r from-green-50 to-emerald-50 text-green-600 shadow-md ring-4 ring-green-100",
                     !isCompleted && !isCurrent && "border-gray-300 text-gray-400 hover:border-gray-400",
                     isClickable && "hover:scale-105 hover:shadow-lg"
                   )}
@@ -53,7 +53,7 @@ export const Stepper = ({ steps, currentStep, onStepClick, className }: StepperP
                 <div className="mt-3 text-center max-w-32">
                   <p className={cn(
                     "text-sm font-medium transition-colors duration-200",
-                    isCurrent && "text-blue-600",
+                    isCurrent && "text-green-600",
                     isCompleted && "text-green-600",
                     !isCompleted && !isCurrent && "text-gray-500"
                   )}>
@@ -62,7 +62,7 @@ export const Stepper = ({ steps, currentStep, onStepClick, className }: StepperP
                   {step.description && (
                     <p className={cn(
                       "text-xs mt-1 transition-colors duration-200",
-                      isCurrent && "text-blue-500",
+                      isCurrent && "text-green-500",
                       isCompleted && "text-green-500",
                       !isCompleted && !isCurrent && "text-gray-400"
                     )}>

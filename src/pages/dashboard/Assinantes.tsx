@@ -242,7 +242,7 @@ const Assinantes = () => {
 
       {/* Sheet for New Subscriber */}
       <Sheet open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <SheetContent side="right" className="w-full sm:max-w-6xl p-0 overflow-hidden">
+        <SheetContent side="right" className="w-full sm:max-w-7xl p-0 overflow-hidden">
           <SheetHeader className="sr-only">
             <SheetTitle>Novo Assinante</SheetTitle>
           </SheetHeader>
