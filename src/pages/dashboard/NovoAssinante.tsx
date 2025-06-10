@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -29,46 +30,36 @@ import ContactsForm from '@/components/forms/ContactsForm';
 import { SubscriberFormData, Contact } from '@/types/subscriber';
 
 const subscriberFormSchema = z.object({
-  tipoPessoa: z.enum(['fisica', 'juridica']).default('fisica'),
-  nomeCompleto: z.string().min(3, { message: 'Nome completo deve ter pelo menos 3 caracteres.' }),
-  email: z.string().email({ message: 'Email inválido.' }),
-  dataNascimento: z.string().optional(),
-  cpf: z.string().optional(),
-  cnpj: z.string().optional(),
-  telefonePrincipal: z.string().min(10, { message: 'Telefone principal deve ter pelo menos 10 caracteres.' }),
-  telefoneSecundario: z.string().optional(),
-  observacoes: z.string().optional(),
-
-  enderecoPrincipal: z.object({
-    cep: z.string().min(8, { message: 'CEP deve ter pelo menos 8 caracteres.' }),
-    endereco: z.string().min(5, { message: 'Endereço deve ter pelo menos 5 caracteres.' }),
-    numero: z.string().min(1, { message: 'Número deve ter pelo menos 1 caractere.' }),
-    complemento: z.string().optional(),
-    bairro: z.string().min(3, { message: 'Bairro deve ter pelo menos 3 caracteres.' }),
-    cidade: z.string().min(3, { message: 'Cidade deve ter pelo menos 3 caracteres.' }),
-    estado: z.string().min(2, { message: 'Estado deve ter pelo menos 2 caracteres.' }),
+  concessionaria: z.string().min(1, 'Selecione uma concessionária'),
+  subscriber: z.object({
+    type: z.enum(['fisica', 'juridica']),
+    cpfCnpj: z.string().min(1, 'CPF/CNPJ é obrigatório'),
+    numeroParceiroNegocio: z.string().min(1, 'Número do parceiro de negócio é obrigatório'),
+    name: z.string().min(3, 'Nome deve ter pelo menos 3 caracteres'),
+    dataNascimento: z.string().optional(),
+    estadoCivil: z.string().optional(),
+    profissao: z.string().optional(),
+    razaoSocial: z.string().optional(),
+    nomeFantasia: z.string().optional(),
+    address: z.object({
+      cep: z.string().min(8, 'CEP deve ter 8 caracteres'),
+      endereco: z.string().min(5, 'Endereço deve ter pelo menos 5 caracteres'),
+      numero: z.string().min(1, 'Número é obrigatório'),
+      complemento: z.string().optional(),
+      bairro: z.string().min(3, 'Bairro deve ter pelo menos 3 caracteres'),
+      cidade: z.string().min(3, 'Cidade deve ter pelo menos 3 caracteres'),
+      estado: z.string().min(2, 'Estado deve ter pelo menos 2 caracteres'),
+    }),
+    telefone: z.string().min(10, 'Telefone deve ter pelo menos 10 caracteres'),
+    email: z.string().email('Email inválido'),
+    observacoes: z.string().optional(),
+    contacts: z.array(z.object({
+      id: z.string(),
+      name: z.string(),
+      phone: z.string(),
+      role: z.string(),
+    })).optional(),
   }),
-
-  enderecoInstalacao: z.object({
-    cep: z.string().min(8, { message: 'CEP deve ter pelo menos 8 caracteres.' }),
-    endereco: z.string().min(5, { message: 'Endereço deve ter pelo menos 5 caracteres.' }),
-    numero: z.string().min(1, { message: 'Número deve ter pelo menos 1 caractere.' }),
-    complemento: z.string().optional(),
-    bairro: z.string().min(3, { message: 'Bairro deve ter pelo menos 3 caracteres.' }),
-    cidade: z.string().min(3, { message: 'Cidade deve ter pelo menos 3 caracteres.' }),
-    estado: z.string().min(2, { message: 'Estado deve ter pelo menos 2 caracteres.' }),
-  }),
-
-  informacoesBancarias: z.object({
-    banco: z.string().min(3, { message: 'Banco deve ter pelo menos 3 caracteres.' }),
-    agencia: z.string().min(4, { message: 'Agência deve ter pelo menos 4 caracteres.' }),
-    conta: z.string().min(5, { message: 'Conta deve ter pelo menos 5 caracteres.' }),
-    tipoConta: z.enum(['corrente', 'poupanca']).default('corrente'),
-    titularidade: z.enum(['titular', 'conjunta']).default('titular'),
-    cpfCnpjTitular: z.string().min(11, { message: 'CPF/CNPJ do titular inválido.' }),
-  }),
-
-  documentos: z.array(z.string()).optional(),
 });
 
 interface NovoAssinanteProps {
@@ -84,42 +75,31 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
   const form = useForm<SubscriberFormData>({
     resolver: zodResolver(subscriberFormSchema),
     defaultValues: {
-      tipoPessoa: 'fisica',
-      nomeCompleto: '',
-      email: '',
-      dataNascimento: '',
-      cpf: '',
-      cnpj: '',
-      telefonePrincipal: '',
-      telefoneSecundario: '',
-      observacoes: '',
-      enderecoPrincipal: {
-        cep: '',
-        endereco: '',
-        numero: '',
-        complemento: '',
-        bairro: '',
-        cidade: '',
-        estado: '',
+      concessionaria: 'Equatorial Goiás',
+      subscriber: {
+        type: 'fisica',
+        cpfCnpj: '',
+        numeroParceiroNegocio: '',
+        name: '',
+        dataNascimento: '',
+        estadoCivil: '',
+        profissao: '',
+        razaoSocial: '',
+        nomeFantasia: '',
+        address: {
+          cep: '',
+          endereco: '',
+          numero: '',
+          complemento: '',
+          bairro: '',
+          cidade: '',
+          estado: '',
+        },
+        telefone: '',
+        email: '',
+        observacoes: '',
+        contacts: [],
       },
-      enderecoInstalacao: {
-        cep: '',
-        endereco: '',
-        numero: '',
-        complemento: '',
-        bairro: '',
-        cidade: '',
-        estado: '',
-      },
-      informacoesBancarias: {
-        banco: '',
-        agencia: '',
-        conta: '',
-        tipoConta: 'corrente',
-        titularidade: 'titular',
-        cpfCnpjTitular: '',
-      },
-      documentos: [],
     },
   });
 
@@ -149,17 +129,31 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
     { id: 7, label: 'Confirmação', icon: Check },
   ];
 
+  const subscriberType = form.watch('subscriber.type');
+
   return (
     <div className="w-full">
       {/* Progress Bar */}
       <div className="mb-6">
-        <ul className="steps">
-          {steps.map((step) => (
-            <li key={step.id} className={`step ${currentStep > step.id ? 'step-primary' : ''}`}>
-              {step.label}
-            </li>
+        <div className="flex items-center justify-between mb-2">
+          {steps.map((step, index) => (
+            <div key={step.id} className="flex items-center">
+              <div className={`flex items-center justify-center w-8 h-8 rounded-full ${
+                currentStep >= step.id ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600'
+              }`}>
+                {currentStep > step.id ? <Check className="w-4 h-4" /> : step.id}
+              </div>
+              {index < steps.length - 1 && (
+                <div className={`w-12 h-1 mx-2 ${
+                  currentStep > step.id ? 'bg-blue-600' : 'bg-gray-200'
+                }`} />
+              )}
+            </div>
           ))}
-        </ul>
+        </div>
+        <div className="text-sm text-gray-600 text-center">
+          {steps[currentStep - 1]?.label} ({currentStep} de {totalSteps})
+        </div>
       </div>
 
       {/* Form Content */}
@@ -174,7 +168,28 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
               <CardContent className="grid gap-4">
                 <FormField
                   control={form.control}
-                  name="tipoPessoa"
+                  name="concessionaria"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Concessionária</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecione a concessionária" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="Equatorial Goiás">Equatorial Goiás</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="subscriber.type"
                   render={({ field }) => (
                     <FormItem className="space-y-3">
                       <FormLabel>Tipo de Pessoa</FormLabel>
@@ -199,12 +214,12 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
 
                 <FormField
                   control={form.control}
-                  name="nomeCompleto"
+                  name="subscriber.cpfCnpj"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Nome Completo</FormLabel>
+                      <FormLabel>{subscriberType === 'fisica' ? 'CPF' : 'CNPJ'}</FormLabel>
                       <FormControl>
-                        <Input placeholder="Nome completo" {...field} />
+                        <Input placeholder={subscriberType === 'fisica' ? '000.000.000-00' : '00.000.000/0000-00'} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -213,23 +228,53 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
 
                 <FormField
                   control={form.control}
-                  name="email"
+                  name="subscriber.numeroParceiroNegocio"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Email</FormLabel>
+                      <FormLabel>Número Parceiro de Negócio</FormLabel>
                       <FormControl>
-                        <Input placeholder="email@example.com" {...field} />
+                        <Input placeholder="Número do parceiro de negócio" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
 
-                {form.getValues('tipoPessoa') === 'fisica' ? (
+                <FormField
+                  control={form.control}
+                  name="subscriber.name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{subscriberType === 'fisica' ? 'Nome Completo do Titular' : 'Razão Social'}</FormLabel>
+                      <FormControl>
+                        <Input placeholder={subscriberType === 'fisica' ? 'Nome completo' : 'Razão social da empresa'} {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {subscriberType === 'juridica' && (
+                  <FormField
+                    control={form.control}
+                    name="subscriber.nomeFantasia"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Nome Fantasia</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Nome fantasia" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
+
+                {subscriberType === 'fisica' && (
                   <>
                     <FormField
                       control={form.control}
-                      name="dataNascimento"
+                      name="subscriber.dataNascimento"
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Data de Nascimento</FormLabel>
@@ -243,40 +288,50 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
 
                     <FormField
                       control={form.control}
-                      name="cpf"
+                      name="subscriber.estadoCivil"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>CPF</FormLabel>
+                          <FormLabel>Estado Civil</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Selecione o estado civil" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="solteiro">Solteiro(a)</SelectItem>
+                              <SelectItem value="casado">Casado(a)</SelectItem>
+                              <SelectItem value="divorciado">Divorciado(a)</SelectItem>
+                              <SelectItem value="viuvo">Viúvo(a)</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="subscriber.profissao"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Profissão</FormLabel>
                           <FormControl>
-                            <Input placeholder="000.000.000-00" {...field} />
+                            <Input placeholder="Profissão" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
                   </>
-                ) : (
-                  <FormField
-                    control={form.control}
-                    name="cnpj"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>CNPJ</FormLabel>
-                        <FormControl>
-                          <Input placeholder="00.000.000/0000-00" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
                 )}
 
                 <FormField
                   control={form.control}
-                  name="telefonePrincipal"
+                  name="subscriber.telefone"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Telefone Principal</FormLabel>
+                      <FormLabel>Telefone</FormLabel>
                       <FormControl>
                         <Input placeholder="(00) 00000-0000" {...field} />
                       </FormControl>
@@ -287,12 +342,12 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
 
                 <FormField
                   control={form.control}
-                  name="telefoneSecundario"
+                  name="subscriber.email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Telefone Secundário</FormLabel>
+                      <FormLabel>E-mail</FormLabel>
                       <FormControl>
-                        <Input placeholder="(00) 00000-0000" {...field} />
+                        <Input placeholder="email@example.com" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -301,7 +356,7 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
 
                 <FormField
                   control={form.control}
-                  name="observacoes"
+                  name="subscriber.observacoes"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Observações</FormLabel>
@@ -322,7 +377,7 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
                 <CardTitle>Endereço Principal</CardTitle>
               </CardHeader>
               <CardContent>
-                <AddressForm form={form} prefix="enderecoPrincipal" />
+                <AddressForm form={form} prefix="subscriber.address" />
               </CardContent>
             </Card>
           )}
@@ -333,7 +388,10 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
                 <CardTitle>Endereço de Instalação</CardTitle>
               </CardHeader>
               <CardContent>
-                <AddressForm form={form} prefix="enderecoInstalacao" />
+                <div className="text-sm text-gray-600 mb-4">
+                  Mesmo endereço principal ou diferente?
+                </div>
+                <AddressForm form={form} prefix="subscriber.address" />
               </CardContent>
             </Card>
           )}
@@ -355,111 +413,12 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
                 <CardTitle>Informações Bancárias</CardTitle>
               </CardHeader>
               <CardContent className="grid gap-4">
-                <FormField
-                  control={form.control}
-                  name="informacoesBancarias.banco"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Banco</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Nome do Banco" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="informacoesBancarias.agencia"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Agência</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Número da Agência" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="informacoesBancarias.conta"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Conta</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Número da Conta" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="informacoesBancarias.tipoConta"
-                  render={({ field }) => (
-                    <FormItem className="space-y-3">
-                      <FormLabel>Tipo de Conta</FormLabel>
-                      <RadioGroup defaultValue={field.value} onValueChange={field.onChange} className="flex flex-col space-y-1">
-                        <FormItem className="flex items-center space-x-3 space-y-0">
-                          <FormControl>
-                            <RadioGroupItem value="corrente" id="corrente" />
-                          </FormControl>
-                          <FormLabel htmlFor="corrente">Corrente</FormLabel>
-                        </FormItem>
-                        <FormItem className="flex items-center space-x-3 space-y-0">
-                          <FormControl>
-                            <RadioGroupItem value="poupanca" id="poupanca" />
-                          </FormControl>
-                          <FormLabel htmlFor="poupanca">Poupança</FormLabel>
-                        </FormItem>
-                      </RadioGroup>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="informacoesBancarias.titularidade"
-                  render={({ field }) => (
-                    <FormItem className="space-y-3">
-                      <FormLabel>Titularidade</FormLabel>
-                      <RadioGroup defaultValue={field.value} onValueChange={field.onChange} className="flex flex-col space-y-1">
-                        <FormItem className="flex items-center space-x-3 space-y-0">
-                          <FormControl>
-                            <RadioGroupItem value="titular" id="titular" />
-                          </FormControl>
-                          <FormLabel htmlFor="titular">Titular</FormLabel>
-                        </FormItem>
-                        <FormItem className="flex items-center space-x-3 space-y-0">
-                          <FormControl>
-                            <RadioGroupItem value="conjunta" id="conjunta" />
-                          </FormControl>
-                          <FormLabel htmlFor="conjunta">Conjunta</FormLabel>
-                        </FormItem>
-                      </RadioGroup>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="informacoesBancarias.cpfCnpjTitular"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>CPF/CNPJ do Titular</FormLabel>
-                      <FormControl>
-                        <Input placeholder="CPF ou CNPJ do titular da conta" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <div className="text-sm text-gray-500">
+                  Informações bancárias para débito automático (futuro)
+                </div>
+                <Input placeholder="Banco" />
+                <Input placeholder="Agência" />
+                <Input placeholder="Conta" />
               </CardContent>
             </Card>
           )}
@@ -489,11 +448,38 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
                 <CardTitle>Confirmação</CardTitle>
               </CardHeader>
               <CardContent>
-                <p>
-                  Confirme os dados do assinante antes de salvar.
-                </p>
-                <pre>{JSON.stringify(form.getValues(), null, 2)}</pre>
-                <pre>{JSON.stringify(contacts, null, 2)}</pre>
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="font-medium">Dados do Assinante</h4>
+                    <p className="text-sm text-gray-600">
+                      {form.getValues('subscriber.name')} - {form.getValues('subscriber.type')}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      {form.getValues('subscriber.email')} - {form.getValues('subscriber.telefone')}
+                    </p>
+                  </div>
+                  
+                  <div>
+                    <h4 className="font-medium">Endereço</h4>
+                    <p className="text-sm text-gray-600">
+                      {form.getValues('subscriber.address.endereco')}, {form.getValues('subscriber.address.numero')} - {form.getValues('subscriber.address.bairro')}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      {form.getValues('subscriber.address.cidade')} - {form.getValues('subscriber.address.estado')}
+                    </p>
+                  </div>
+
+                  {contacts.length > 0 && (
+                    <div>
+                      <h4 className="font-medium">Contatos</h4>
+                      {contacts.map((contact) => (
+                        <p key={contact.id} className="text-sm text-gray-600">
+                          {contact.name} - {contact.phone} ({contact.role})
+                        </p>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </CardContent>
             </Card>
           )}
