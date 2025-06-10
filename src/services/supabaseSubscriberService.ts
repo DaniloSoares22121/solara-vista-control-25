@@ -11,11 +11,23 @@ export const supabaseSubscriberService = {
       console.log('🚀 [SUPABASE_SERVICE] Iniciando criação de assinante...');
       console.log('📊 [SUPABASE_SERVICE] Dados recebidos:', JSON.stringify(data, null, 2));
       
-      // Preparar dados para salvar
+      // Obter o usuário atual
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        throw new Error('Usuário não autenticado');
+      }
+
+      // Preparar dados para salvar (convertendo File objects para strings/base64 se necessário)
       const docData = {
-        ...data,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
+        user_id: user.id,
+        concessionaria: data.concessionaria,
+        subscriber: data.subscriber,
+        administrator: data.administrator || null,
+        energy_account: data.energyAccount,
+        plan_contract: data.planContract,
+        plan_details: data.planDetails,
+        notifications: data.notifications,
+        attachments: data.attachments || null,
         status: 'active'
       };
 
@@ -61,7 +73,20 @@ export const supabaseSubscriberService = {
       console.log('✅ [SUPABASE_SERVICE] Total de assinantes encontrados:', data?.length || 0);
       console.log('✅ [SUPABASE_SERVICE] Lista completa:', data);
       
-      return data || [];
+      // Transformar os dados do formato do banco para o formato esperado pela aplicação
+      const transformedData = (data || []).map(item => ({
+        id: item.id,
+        concessionaria: item.concessionaria,
+        subscriber: item.subscriber,
+        administrator: item.administrator,
+        energyAccount: item.energy_account,
+        planContract: item.plan_contract,
+        planDetails: item.plan_details,
+        notifications: item.notifications,
+        attachments: item.attachments || {}
+      }));
+      
+      return transformedData;
     } catch (error) {
       console.error('❌ [SUPABASE_SERVICE] Erro ao buscar assinantes:', error);
       throw error;
@@ -84,7 +109,18 @@ export const supabaseSubscriberService = {
         throw error;
       }
       
-      return data;
+      // Transformar os dados do formato do banco para o formato esperado pela aplicação
+      return {
+        id: data.id,
+        concessionaria: data.concessionaria,
+        subscriber: data.subscriber,
+        administrator: data.administrator,
+        energyAccount: data.energy_account,
+        planContract: data.plan_contract,
+        planDetails: data.plan_details,
+        notifications: data.notifications,
+        attachments: data.attachments || {}
+      };
     } catch (error) {
       console.error('Erro ao buscar assinante:', error);
       throw error;
@@ -94,12 +130,21 @@ export const supabaseSubscriberService = {
   // Atualizar assinante
   async updateSubscriber(id: string, data: Partial<SubscriberFormData>): Promise<void> {
     try {
+      // Transformar os dados para o formato do banco
+      const updateData: any = {};
+      
+      if (data.concessionaria) updateData.concessionaria = data.concessionaria;
+      if (data.subscriber) updateData.subscriber = data.subscriber;
+      if (data.administrator) updateData.administrator = data.administrator;
+      if (data.energyAccount) updateData.energy_account = data.energyAccount;
+      if (data.planContract) updateData.plan_contract = data.planContract;
+      if (data.planDetails) updateData.plan_details = data.planDetails;
+      if (data.notifications) updateData.notifications = data.notifications;
+      if (data.attachments) updateData.attachments = data.attachments;
+
       const { error } = await supabase
         .from(COLLECTION_NAME)
-        .update({
-          ...data,
-          updated_at: new Date().toISOString()
-        })
+        .update(updateData)
         .eq('id', id);
       
       if (error) {
