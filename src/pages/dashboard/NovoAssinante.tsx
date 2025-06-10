@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -71,6 +72,45 @@ interface NovoAssinanteProps {
   onClose?: () => void;
 }
 
+// Função para aplicar máscara de CPF
+const applyCpfMask = (value: string) => {
+  return value
+    .replace(/\D/g, '')
+    .replace(/(\d{3})(\d)/, '$1.$2')
+    .replace(/(\d{3})(\d)/, '$1.$2')
+    .replace(/(\d{3})(\d{1,2})/, '$1-$2')
+    .replace(/(-\d{2})\d+?$/, '$1');
+};
+
+// Função para aplicar máscara de CNPJ
+const applyCnpjMask = (value: string) => {
+  return value
+    .replace(/\D/g, '')
+    .replace(/(\d{2})(\d)/, '$1.$2')
+    .replace(/(\d{3})(\d)/, '$1.$2')
+    .replace(/(\d{3})(\d)/, '$1/$2')
+    .replace(/(\d{4})(\d{1,2})/, '$1-$2')
+    .replace(/(-\d{2})\d+?$/, '$1');
+};
+
+// Função para aplicar máscara de telefone
+const applyPhoneMask = (value: string) => {
+  return value
+    .replace(/\D/g, '')
+    .replace(/(\d{2})(\d)/, '($1) $2')
+    .replace(/(\d{4})(\d)/, '$1-$2')
+    .replace(/(\d{4})-(\d)(\d{4})/, '$1$2-$3')
+    .replace(/(-\d{4})\d+?$/, '$1');
+};
+
+// Função para aplicar máscara de CEP
+const applyCepMask = (value: string) => {
+  return value
+    .replace(/\D/g, '')
+    .replace(/(\d{5})(\d)/, '$1-$2')
+    .replace(/(-\d{3})\d+?$/, '$1');
+};
+
 const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [contacts, setContacts] = useState<Contact[]>([]);
@@ -136,6 +176,9 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
   const subscriberType = form.watch('subscriber.type');
   const concessionaria = form.watch('concessionaria');
   const currentStepData = steps[currentStep - 1];
+
+  // Dados do assinante para preencher automaticamente os dados da conta de energia
+  const subscriberData = form.watch('subscriber');
 
   return (
     <div className="h-full flex flex-col bg-gradient-to-br from-slate-50 to-green-50/30">
@@ -230,7 +273,7 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
                               <Building className="w-5 h-5 text-green-600" />
                               Concessionária de Energia *
                             </FormLabel>
-                            <Select onValueChange={field.onChange} value={field.value}>
+                            <Select onValueChange={field.onChange} value={field.value} disabled>
                               <FormControl>
                                 <SelectTrigger className="h-12 border-green-300 focus:border-green-500 focus:ring-green-500/20 bg-white rounded-lg">
                                   <SelectValue placeholder="Selecione a concessionária de energia" />
@@ -246,7 +289,7 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
                       />
                     </div>
 
-                    {/* Tipo de Pessoa - agora sempre aparece pois concessionária sempre está selecionada */}
+                    {/* Tipo de Pessoa */}
                     <div className="p-6 bg-slate-50/50 rounded-lg border border-slate-200/50">
                       <FormField
                         control={form.control}
@@ -274,7 +317,7 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
                       />
                     </div>
 
-                    {/* Campos específicos do tipo - agora sempre aparece pois tipo sempre está selecionado */}
+                    {/* Campos específicos do tipo */}
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                       {/* Coluna 1 */}
                       <div className="space-y-6">
@@ -290,7 +333,14 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
                                 <Input 
                                   placeholder={subscriberType === 'fisica' ? '000.000.000-00' : '00.000.000/0000-00'} 
                                   className="h-12 border-gray-300 focus:border-green-500 focus:ring-green-500/20 bg-white rounded-lg"
-                                  {...field} 
+                                  {...field}
+                                  onChange={(e) => {
+                                    const value = e.target.value;
+                                    const maskedValue = subscriberType === 'fisica' 
+                                      ? applyCpfMask(value) 
+                                      : applyCnpjMask(value);
+                                    field.onChange(maskedValue);
+                                  }}
                                 />
                               </FormControl>
                               <FormMessage />
@@ -369,7 +419,11 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
                                 <Input 
                                   placeholder="(00) 00000-0000" 
                                   className="h-12 border-gray-300 focus:border-green-500 focus:ring-green-500/20 bg-white rounded-lg"
-                                  {...field} 
+                                  {...field}
+                                  onChange={(e) => {
+                                    const maskedValue = applyPhoneMask(e.target.value);
+                                    field.onChange(maskedValue);
+                                  }}
                                 />
                               </FormControl>
                               <FormMessage />
@@ -647,6 +701,43 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
                           </p>
                         </div>
                       </div>
+                      
+                      {/* Seção de dados da conta de energia preenchidos automaticamente */}
+                      <div className="lg:col-span-2 mb-6">
+                        <div className="p-6 bg-blue-50/50 rounded-lg border border-blue-200/50">
+                          <h4 className="font-semibold text-blue-800 mb-4 flex items-center gap-2">
+                            <Zap className="w-5 h-5" />
+                            Dados da Conta de Energia
+                          </h4>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                            <div>
+                              <span className="text-blue-600 font-medium">Nome do Titular:</span>
+                              <p className="text-blue-800">{subscriberData.name || 'Não informado'}</p>
+                            </div>
+                            <div>
+                              <span className="text-blue-600 font-medium">{subscriberType === 'fisica' ? 'CPF:' : 'CNPJ:'}</span>
+                              <p className="text-blue-800">{subscriberData.cpfCnpj || 'Não informado'}</p>
+                            </div>
+                            <div>
+                              <span className="text-blue-600 font-medium">Telefone:</span>
+                              <p className="text-blue-800">{subscriberData.telefone || 'Não informado'}</p>
+                            </div>
+                            <div>
+                              <span className="text-blue-600 font-medium">E-mail:</span>
+                              <p className="text-blue-800">{subscriberData.email || 'Não informado'}</p>
+                            </div>
+                            <div className="md:col-span-2">
+                              <span className="text-blue-600 font-medium">Endereço:</span>
+                              <p className="text-blue-800">
+                                {subscriberData.address?.endereco && subscriberData.address?.numero 
+                                  ? `${subscriberData.address.endereco}, ${subscriberData.address.numero} - ${subscriberData.address.bairro}, ${subscriberData.address.cidade}/${subscriberData.address.estado}`
+                                  : 'Não informado'}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
                       <div className="space-y-4">
                         <Button variant="outline" className="w-full justify-start h-16 border-dashed border-2 hover:border-green-300 hover:bg-green-50/50 rounded-lg border-gray-300">
                           <Upload className="w-5 h-5 mr-3 text-green-600" />
