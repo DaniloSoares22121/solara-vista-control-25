@@ -34,6 +34,7 @@ import { useCepLookup } from '@/hooks/useCepLookup';
 import AddressForm from '@/components/forms/AddressForm';
 import ContactsForm from '@/components/forms/ContactsForm';
 import PlanTable from '@/components/forms/PlanTable';
+import { SubscriberFormData } from '@/types/subscriber';
 
 interface NovoAssinanteProps {
   onClose: () => void;
@@ -42,71 +43,104 @@ interface NovoAssinanteProps {
 const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
-  const [formData, setFormData] = useState({
-    // Dados do Assinante
+  const [formData, setFormData] = useState<SubscriberFormData>({
+    concessionaria: '',
     subscriber: {
-      name: '',
+      type: 'fisica',
       cpfCnpj: '',
-      email: '',
-      phone: '',
-      birthDate: '',
+      numeroParceiroNegocio: '',
+      name: '',
+      dataNascimento: '',
+      estadoCivil: '',
+      profissao: '',
       address: {
         cep: '',
-        street: '',
-        number: '',
-        complement: '',
-        neighborhood: '',
-        city: '',
-        state: '',
-      }
-    },
-    // Administrador (se diferente do assinante)
-    administrator: {
-      isSubscriber: true,
-      name: '',
-      cpfCnpj: '',
+        endereco: '',
+        numero: '',
+        complemento: '',
+        bairro: '',
+        cidade: '',
+        estado: '',
+      },
+      telefone: '',
       email: '',
-      phone: ''
+      observacoes: '',
+      contacts: [],
     },
-    // Conta de Energia
+    administrator: {
+      cpf: '',
+      nome: '',
+      dataNascimento: '',
+      estadoCivil: '',
+      profissao: '',
+      address: {
+        cep: '',
+        endereco: '',
+        numero: '',
+        complemento: '',
+        bairro: '',
+        cidade: '',
+        estado: '',
+      },
+      telefone: '',
+      email: '',
+    },
     energyAccount: {
       originalAccount: {
+        type: 'fisica',
+        cpfCnpj: '',
+        name: '',
         uc: '',
-        account: '',
-        concessionaria: ''
+        numeroParceiroUC: '',
+        address: {
+          cep: '',
+          endereco: '',
+          numero: '',
+          complemento: '',
+          bairro: '',
+          cidade: '',
+          estado: '',
+        },
       },
-      newAccount: {
-        uc: '',
-        account: '',
-        group: 'A',
-        subgroup: '4',
-        demandContratada: '',
-        voltage: ''
-      }
+      realizarTrocaTitularidade: false,
     },
-    // Contrato do Plano
     planContract: {
-      modalidadeCompensacao: '',
-      kwhContratado: '',
-      precoKwh: '',
-      valorTotal: '',
-      dataInicio: '',
-      dataFim: ''
+      modalidadeCompensacao: 'autoconsumo',
+      dataAdesao: '',
+      kwhVendedor: 0,
+      kwhContratado: 0,
+      faixaConsumo: '400-599',
+      fidelidade: 'sem',
+      desconto: 0,
     },
-    // Detalhes do Plano
     planDetails: {
-      usina: '',
-      potencia: '',
-      tecnologia: 'Fotovoltaica',
-      localizacao: ''
+      clientePagaPisCofins: false,
+      clientePagaFioB: false,
+      adicionarValorDistribuidora: false,
+      assinanteIsento: false,
     },
-    // Notificações
     notifications: {
-      email: true,
-      sms: false,
-      whatsapp: true,
-      preferredTime: 'morning'
-    }
+      whatsappFaturas: false,
+      whatsappPagamento: false,
+      notifications: {
+        criarCobranca: { whatsapp: false, email: false },
+        alteracaoValor: { whatsapp: false, email: false },
+        vencimento1Dia: { whatsapp: false, email: false },
+        vencimentoHoje: { whatsapp: false, email: false },
+      },
+      overdueNotifications: {
+        day1: { whatsapp: false, email: false },
+        day3: { whatsapp: false, email: false },
+        day5: { whatsapp: false, email: false },
+        day7: { whatsapp: false, email: false },
+        day15: { whatsapp: false, email: false },
+        day20: { whatsapp: false, email: false },
+        day25: { whatsapp: false, email: false },
+        day30: { whatsapp: false, email: false },
+        after30: { whatsapp: false, email: false },
+      },
+    },
+    attachments: {},
   });
 
   const { createSubscriber } = useSubscribers();
@@ -208,8 +242,8 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
                     <Label htmlFor="subscriber-phone">Telefone *</Label>
                     <Input
                       id="subscriber-phone"
-                      value={formData.subscriber.phone}
-                      onChange={(e) => handleInputChange('subscriber', 'phone', e.target.value)}
+                      value={formData.subscriber.telefone}
+                      onChange={(e) => handleInputChange('subscriber', 'telefone', e.target.value)}
                       placeholder="(11) 99999-9999"
                       className="focus:border-green-500 focus:ring-green-500"
                     />
@@ -220,8 +254,8 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
                     <Input
                       id="subscriber-birth"
                       type="date"
-                      value={formData.subscriber.birthDate}
-                      onChange={(e) => handleInputChange('subscriber', 'birthDate', e.target.value)}
+                      value={formData.subscriber.dataNascimento}
+                      onChange={(e) => handleInputChange('subscriber', 'dataNascimento', e.target.value)}
                       className="focus:border-green-500 focus:ring-green-500"
                     />
                   </div>
@@ -237,8 +271,15 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
                   </h3>
                   
                   <AddressForm 
-                    address={formData.subscriber.address}
-                    onChange={(address) => handleInputChange('subscriber', 'address', address)}
+                    form={{ 
+                      control: {}, 
+                      getValues: () => formData.subscriber.address,
+                      setValue: (name: string, value: any) => {
+                        const field = name.replace('subscriber.address.', '');
+                        handleNestedInputChange('subscriber', 'address', field, value);
+                      }
+                    } as any}
+                    prefix="subscriber.address"
                   />
                 </div>
               </CardContent>
@@ -259,61 +300,12 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
                   <input
                     type="checkbox"
                     id="admin-is-subscriber"
-                    checked={formData.administrator.isSubscriber}
-                    onChange={(e) => handleInputChange('administrator', 'isSubscriber', e.target.checked)}
+                    checked={true}
+                    onChange={() => {}}
                     className="rounded border-green-300 text-green-600 focus:ring-green-500"
                   />
                   <Label htmlFor="admin-is-subscriber">O assinante é o administrador da conta</Label>
                 </div>
-
-                {!formData.administrator.isSubscriber && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="admin-name">Nome do Administrador *</Label>
-                      <Input
-                        id="admin-name"
-                        value={formData.administrator.name}
-                        onChange={(e) => handleInputChange('administrator', 'name', e.target.value)}
-                        placeholder="Digite o nome completo"
-                        className="focus:border-green-500 focus:ring-green-500"
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="admin-document">CPF/CNPJ *</Label>
-                      <Input
-                        id="admin-document"
-                        value={formData.administrator.cpfCnpj}
-                        onChange={(e) => handleInputChange('administrator', 'cpfCnpj', e.target.value)}
-                        placeholder="000.000.000-00"
-                        className="focus:border-green-500 focus:ring-green-500"
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="admin-email">E-mail *</Label>
-                      <Input
-                        id="admin-email"
-                        type="email"
-                        value={formData.administrator.email}
-                        onChange={(e) => handleInputChange('administrator', 'email', e.target.value)}
-                        placeholder="exemplo@email.com"
-                        className="focus:border-green-500 focus:ring-green-500"
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="admin-phone">Telefone *</Label>
-                      <Input
-                        id="admin-phone"
-                        value={formData.administrator.phone}
-                        onChange={(e) => handleInputChange('administrator', 'phone', e.target.value)}
-                        placeholder="(11) 99999-9999"
-                        className="focus:border-green-500 focus:ring-green-500"
-                      />
-                    </div>
-                  </div>
-                )}
               </CardContent>
             </Card>
           </div>
@@ -349,8 +341,8 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
                     <Label htmlFor="original-account">Número da Conta *</Label>
                     <Input
                       id="original-account"
-                      value={formData.energyAccount.originalAccount.account}
-                      onChange={(e) => handleNestedInputChange('energyAccount', 'originalAccount', 'account', e.target.value)}
+                      value={formData.energyAccount.originalAccount.numeroParceiroUC}
+                      onChange={(e) => handleNestedInputChange('energyAccount', 'originalAccount', 'numeroParceiroUC', e.target.value)}
                       placeholder="Ex: 987654321"
                       className="focus:border-green-500 focus:ring-green-500"
                     />
@@ -359,8 +351,8 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
                   <div className="space-y-2">
                     <Label htmlFor="concessionaria">Concessionária *</Label>
                     <Select
-                      value={formData.energyAccount.originalAccount.concessionaria}
-                      onValueChange={(value) => handleNestedInputChange('energyAccount', 'originalAccount', 'concessionaria', value)}
+                      value={formData.concessionaria}
+                      onValueChange={(value) => handleInputChange('', 'concessionaria', value)}
                     >
                       <SelectTrigger className="focus:border-green-500 focus:ring-green-500">
                         <SelectValue placeholder="Selecione" />
@@ -376,107 +368,6 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
                       </SelectContent>
                     </Select>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Nova Conta */}
-            <Card className="border-green-200">
-              <CardHeader className="pb-4">
-                <CardTitle className="flex items-center gap-3 text-green-800">
-                  <div className="p-2 rounded-lg bg-green-100">
-                    <Calculator className="w-5 h-5 text-green-600" />
-                  </div>
-                  Nova Conta para Geração
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="new-uc">UC da Nova Conta *</Label>
-                    <Input
-                      id="new-uc"
-                      value={formData.energyAccount.newAccount.uc}
-                      onChange={(e) => handleNestedInputChange('energyAccount', 'newAccount', 'uc', e.target.value)}
-                      placeholder="Ex: 0987654321"
-                      className="focus:border-green-500 focus:ring-green-500"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="new-account">Número da Nova Conta *</Label>
-                    <Input
-                      id="new-account"
-                      value={formData.energyAccount.newAccount.account}
-                      onChange={(e) => handleNestedInputChange('energyAccount', 'newAccount', 'account', e.target.value)}
-                      placeholder="Ex: 123456789"
-                      className="focus:border-green-500 focus:ring-green-500"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="group">Grupo *</Label>
-                    <Select
-                      value={formData.energyAccount.newAccount.group}
-                      onValueChange={(value) => handleNestedInputChange('energyAccount', 'newAccount', 'group', value)}
-                    >
-                      <SelectTrigger className="focus:border-green-500 focus:ring-green-500">
-                        <SelectValue placeholder="Selecione" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="A">Grupo A (Alta Tensão)</SelectItem>
-                        <SelectItem value="B">Grupo B (Baixa Tensão)</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="subgroup">Subgrupo *</Label>
-                    <Select
-                      value={formData.energyAccount.newAccount.subgroup}
-                      onValueChange={(value) => handleNestedInputChange('energyAccount', 'newAccount', 'subgroup', value)}
-                    >
-                      <SelectTrigger className="focus:border-green-500 focus:ring-green-500">
-                        <SelectValue placeholder="Selecione" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="1">A1 (230kV ou mais)</SelectItem>
-                        <SelectItem value="2">A2 (88 a 138kV)</SelectItem>
-                        <SelectItem value="3">A3 (69kV)</SelectItem>
-                        <SelectItem value="4">A4 (2,3 a 25kV)</SelectItem>
-                        <SelectItem value="B1">B1 (Residencial)</SelectItem>
-                        <SelectItem value="B2">B2 (Rural)</SelectItem>
-                        <SelectItem value="B3">B3 (Demais Classes)</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {formData.energyAccount.newAccount.group === 'A' && (
-                    <>
-                      <div className="space-y-2">
-                        <Label htmlFor="demand">Demanda Contratada (kW)</Label>
-                        <Input
-                          id="demand"
-                          type="number"
-                          value={formData.energyAccount.newAccount.demandContratada}
-                          onChange={(e) => handleNestedInputChange('energyAccount', 'newAccount', 'demandContratada', e.target.value)}
-                          placeholder="Ex: 100"
-                          className="focus:border-green-500 focus:ring-green-500"
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="voltage">Tensão (V)</Label>
-                        <Input
-                          id="voltage"
-                          value={formData.energyAccount.newAccount.voltage}
-                          onChange={(e) => handleNestedInputChange('energyAccount', 'newAccount', 'voltage', e.target.value)}
-                          placeholder="Ex: 13800"
-                          className="focus:border-green-500 focus:ring-green-500"
-                        />
-                      </div>
-                    </>
-                  )}
                 </div>
               </CardContent>
             </Card>
@@ -508,9 +399,8 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
                         <SelectValue placeholder="Selecione" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="autoconsumo-remoto">Autoconsumo Remoto</SelectItem>
-                        <SelectItem value="geracao-compartilhada">Geração Compartilhada</SelectItem>
-                        <SelectItem value="multiplas-ucs">Múltiplas Unidades Consumidoras</SelectItem>
+                        <SelectItem value="autoconsumo">Autoconsumo Remoto</SelectItem>
+                        <SelectItem value="geracaoCompartilhada">Geração Compartilhada</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -521,34 +411,8 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
                       id="kwh-contratado"
                       type="number"
                       value={formData.planContract.kwhContratado}
-                      onChange={(e) => handleInputChange('planContract', 'kwhContratado', e.target.value)}
+                      onChange={(e) => handleInputChange('planContract', 'kwhContratado', Number(e.target.value))}
                       placeholder="Ex: 500"
-                      className="focus:border-green-500 focus:ring-green-500"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="preco-kwh">Preço por kWh (R$) *</Label>
-                    <Input
-                      id="preco-kwh"
-                      type="number"
-                      step="0.01"
-                      value={formData.planContract.precoKwh}
-                      onChange={(e) => handleInputChange('planContract', 'precoKwh', e.target.value)}
-                      placeholder="Ex: 0.65"
-                      className="focus:border-green-500 focus:ring-green-500"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="valor-total">Valor Total Mensal (R$) *</Label>
-                    <Input
-                      id="valor-total"
-                      type="number"
-                      step="0.01"
-                      value={formData.planContract.valorTotal}
-                      onChange={(e) => handleInputChange('planContract', 'valorTotal', e.target.value)}
-                      placeholder="Ex: 325.00"
                       className="focus:border-green-500 focus:ring-green-500"
                     />
                   </div>
@@ -558,86 +422,8 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
                     <Input
                       id="data-inicio"
                       type="date"
-                      value={formData.planContract.dataInicio}
-                      onChange={(e) => handleInputChange('planContract', 'dataInicio', e.target.value)}
-                      className="focus:border-green-500 focus:ring-green-500"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="data-fim">Data de Fim</Label>
-                    <Input
-                      id="data-fim"
-                      type="date"
-                      value={formData.planContract.dataFim}
-                      onChange={(e) => handleInputChange('planContract', 'dataFim', e.target.value)}
-                      className="focus:border-green-500 focus:ring-green-500"
-                    />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Detalhes do Plano */}
-            <Card className="border-green-200">
-              <CardHeader className="pb-4">
-                <CardTitle className="flex items-center gap-3 text-green-800">
-                  <div className="p-2 rounded-lg bg-green-100">
-                    <Info className="w-5 h-5 text-green-600" />
-                  </div>
-                  Detalhes da Usina
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="usina">Nome da Usina *</Label>
-                    <Input
-                      id="usina"
-                      value={formData.planDetails.usina}
-                      onChange={(e) => handleInputChange('planDetails', 'usina', e.target.value)}
-                      placeholder="Ex: Usina Solar ABC"
-                      className="focus:border-green-500 focus:ring-green-500"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="potencia">Potência (kWp) *</Label>
-                    <Input
-                      id="potencia"
-                      type="number"
-                      value={formData.planDetails.potencia}
-                      onChange={(e) => handleInputChange('planDetails', 'potencia', e.target.value)}
-                      placeholder="Ex: 1000"
-                      className="focus:border-green-500 focus:ring-green-500"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="tecnologia">Tecnologia</Label>
-                    <Select
-                      value={formData.planDetails.tecnologia}
-                      onValueChange={(value) => handleInputChange('planDetails', 'tecnologia', value)}
-                    >
-                      <SelectTrigger className="focus:border-green-500 focus:ring-green-500">
-                        <SelectValue placeholder="Selecione" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Fotovoltaica">Fotovoltaica</SelectItem>
-                        <SelectItem value="Eólica">Eólica</SelectItem>
-                        <SelectItem value="Hidrelétrica">Hidrelétrica</SelectItem>
-                        <SelectItem value="Biomassa">Biomassa</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="localizacao">Localização da Usina *</Label>
-                    <Input
-                      id="localizacao"
-                      value={formData.planDetails.localizacao}
-                      onChange={(e) => handleInputChange('planDetails', 'localizacao', e.target.value)}
-                      placeholder="Ex: São Paulo - SP"
+                      value={formData.planContract.dataAdesao}
+                      onChange={(e) => handleInputChange('planContract', 'dataAdesao', e.target.value)}
                       className="focus:border-green-500 focus:ring-green-500"
                     />
                   </div>
@@ -656,10 +442,7 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <PlanTable 
-                  kwhContratado={Number(formData.planContract.kwhContratado) || 0}
-                  precoKwh={Number(formData.planContract.precoKwh) || 0}
-                />
+                <PlanTable />
               </CardContent>
             </Card>
           </div>
@@ -687,21 +470,11 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
                     </div>
                     <input
                       type="checkbox"
-                      checked={formData.notifications.email}
-                      onChange={(e) => handleInputChange('notifications', 'email', e.target.checked)}
-                      className="rounded border-green-300 text-green-600 focus:ring-green-500"
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-1">
-                      <Label>Notificações por SMS</Label>
-                      <p className="text-sm text-gray-600">Receber alertas por mensagem de texto</p>
-                    </div>
-                    <input
-                      type="checkbox"
-                      checked={formData.notifications.sms}
-                      onChange={(e) => handleInputChange('notifications', 'sms', e.target.checked)}
+                      checked={formData.notifications.notifications.criarCobranca.email}
+                      onChange={(e) => handleNestedInputChange('notifications', 'notifications', 'criarCobranca', { 
+                        ...formData.notifications.notifications.criarCobranca, 
+                        email: e.target.checked 
+                      })}
                       className="rounded border-green-300 text-green-600 focus:ring-green-500"
                     />
                   </div>
@@ -713,27 +486,10 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
                     </div>
                     <input
                       type="checkbox"
-                      checked={formData.notifications.whatsapp}
-                      onChange={(e) => handleInputChange('notifications', 'whatsapp', e.target.checked)}
+                      checked={formData.notifications.whatsappFaturas}
+                      onChange={(e) => handleInputChange('notifications', 'whatsappFaturas', e.target.checked)}
                       className="rounded border-green-300 text-green-600 focus:ring-green-500"
                     />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="preferred-time">Horário Preferido para Notificações</Label>
-                    <Select
-                      value={formData.notifications.preferredTime}
-                      onValueChange={(value) => handleInputChange('notifications', 'preferredTime', value)}
-                    >
-                      <SelectTrigger className="focus:border-green-500 focus:ring-green-500">
-                        <SelectValue placeholder="Selecione" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="morning">Manhã (8h às 12h)</SelectItem>
-                        <SelectItem value="afternoon">Tarde (12h às 18h)</SelectItem>
-                        <SelectItem value="evening">Noite (18h às 22h)</SelectItem>
-                      </SelectContent>
-                    </Select>
                   </div>
                 </div>
               </CardContent>
@@ -760,20 +516,12 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
                     <p className="text-gray-700">{formData.energyAccount.originalAccount.uc || 'Não informado'}</p>
                   </div>
                   <div>
-                    <Label className="font-medium text-green-800">UC Nova:</Label>
-                    <p className="text-gray-700">{formData.energyAccount.newAccount.uc || 'Não informado'}</p>
-                  </div>
-                  <div>
                     <Label className="font-medium text-green-800">kWh Contratado:</Label>
                     <p className="text-gray-700">{formData.planContract.kwhContratado || 'Não informado'} kWh</p>
                   </div>
                   <div>
-                    <Label className="font-medium text-green-800">Valor Mensal:</Label>
-                    <p className="text-gray-700">R$ {formData.planContract.valorTotal || '0,00'}</p>
-                  </div>
-                  <div>
-                    <Label className="font-medium text-green-800">Usina:</Label>
-                    <p className="text-gray-700">{formData.planDetails.usina || 'Não informado'}</p>
+                    <Label className="font-medium text-green-800">Concessionária:</Label>
+                    <p className="text-gray-700">{formData.concessionaria || 'Não informado'}</p>
                   </div>
                 </div>
               </CardContent>
