@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import DashboardLayout from '@/components/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,7 +12,7 @@ import NovoAssinante from './NovoAssinante';
 const Assinantes = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const { subscribers, loading, createSubscriber } = useSubscribers();
+  const { subscribers, loading } = useSubscribers();
 
   const handleOpenModal = () => {
     setIsModalOpen(true);
@@ -21,15 +20,6 @@ const Assinantes = () => {
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
-  };
-
-  const handleSubscriberCreated = async (data: any) => {
-    try {
-      await createSubscriber(data);
-      handleCloseModal();
-    } catch (error) {
-      console.error('Erro ao criar assinante:', error);
-    }
   };
 
   // Filtrar assinantes baseado no termo de busca
@@ -255,7 +245,7 @@ const Assinantes = () => {
           <SheetHeader className="sr-only">
             <SheetTitle>Novo Assinante</SheetTitle>
           </SheetHeader>
-          <NovoAssinante onClose={handleCloseModal} onSubmit={handleSubscriberCreated} />
+          <NovoAssinante onClose={handleCloseModal} />
         </SheetContent>
       </Sheet>
     </DashboardLayout>
