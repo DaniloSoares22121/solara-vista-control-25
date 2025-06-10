@@ -9,16 +9,38 @@ export const subscriberService = {
   // Criar novo assinante
   async createSubscriber(data: SubscriberFormData): Promise<string> {
     try {
-      const docRef = await addDoc(collection(db, COLLECTION_NAME), {
+      console.log('🚀 Iniciando criação de assinante...');
+      console.log('📊 Dados recebidos:', data);
+      console.log('🔥 Firebase DB instance:', db);
+      console.log('📁 Collection name:', COLLECTION_NAME);
+
+      // Verificar se o db está conectado
+      if (!db) {
+        throw new Error('Firebase database não está inicializada');
+      }
+
+      const docData = {
         ...data,
         createdAt: new Date(),
         updatedAt: new Date(),
         status: 'active'
-      });
-      console.log('Assinante criado com ID:', docRef.id);
+      };
+
+      console.log('📝 Dados que serão salvos:', docData);
+
+      const docRef = await addDoc(collection(db, COLLECTION_NAME), docData);
+      
+      console.log('✅ Assinante criado com sucesso! ID:', docRef.id);
+      console.log('🔗 Document reference:', docRef);
+      
       return docRef.id;
     } catch (error) {
-      console.error('Erro ao criar assinante:', error);
+      console.error('❌ Erro detalhado ao criar assinante:');
+      console.error('Error name:', error?.name);
+      console.error('Error message:', error?.message);
+      console.error('Error code:', error?.code);
+      console.error('Full error:', error);
+      console.error('Stack trace:', error?.stack);
       throw error;
     }
   },
@@ -26,20 +48,28 @@ export const subscriberService = {
   // Buscar todos os assinantes
   async getSubscribers(): Promise<(SubscriberFormData & { id: string })[]> {
     try {
+      console.log('🔍 Buscando assinantes...');
+      
+      if (!db) {
+        throw new Error('Firebase database não está inicializada');
+      }
+
       const querySnapshot = await getDocs(collection(db, COLLECTION_NAME));
       const subscribers: (SubscriberFormData & { id: string })[] = [];
       
       querySnapshot.forEach((doc) => {
+        console.log('📄 Documento encontrado:', doc.id, doc.data());
         subscribers.push({
           id: doc.id,
           ...doc.data() as SubscriberFormData
         });
       });
       
-      console.log('Assinantes encontrados:', subscribers.length);
+      console.log('✅ Assinantes encontrados:', subscribers.length);
       return subscribers;
     } catch (error) {
-      console.error('Erro ao buscar assinantes:', error);
+      console.error('❌ Erro ao buscar assinantes:');
+      console.error('Error details:', error);
       throw error;
     }
   },

@@ -13,11 +13,13 @@ export const useSubscribers = () => {
     setLoading(true);
     setError(null);
     try {
+      console.log('🔄 Carregando assinantes...');
       const data = await subscriberService.getSubscribers();
+      console.log('✅ Assinantes carregados:', data);
       setSubscribers(data);
     } catch (err) {
+      console.error('❌ Erro ao carregar assinantes:', err);
       setError('Erro ao carregar assinantes');
-      console.error(err);
     } finally {
       setLoading(false);
     }
@@ -26,12 +28,28 @@ export const useSubscribers = () => {
   const createSubscriber = async (data: SubscriberFormData) => {
     setLoading(true);
     try {
+      console.log('🚀 Hook: Iniciando criação de assinante...');
+      console.log('📊 Hook: Dados recebidos:', data);
+      
       const id = await subscriberService.createSubscriber(data);
+      
+      console.log('✅ Hook: Assinante criado com ID:', id);
       toast.success('Assinante cadastrado com sucesso!');
+      
+      console.log('🔄 Hook: Recarregando lista...');
       await loadSubscribers(); // Recarrega a lista
+      
       return id;
     } catch (err) {
-      toast.error('Erro ao cadastrar assinante');
+      console.error('❌ Hook: Erro ao cadastrar assinante:', err);
+      
+      // Mostrar erro mais específico
+      let errorMessage = 'Erro ao cadastrar assinante';
+      if (err?.message) {
+        errorMessage += `: ${err.message}`;
+      }
+      
+      toast.error(errorMessage);
       throw err;
     } finally {
       setLoading(false);
@@ -45,6 +63,7 @@ export const useSubscribers = () => {
       toast.success('Assinante atualizado com sucesso!');
       await loadSubscribers(); // Recarrega a lista
     } catch (err) {
+      console.error('❌ Erro ao atualizar assinante:', err);
       toast.error('Erro ao atualizar assinante');
       throw err;
     } finally {
@@ -59,6 +78,7 @@ export const useSubscribers = () => {
       toast.success('Assinante removido com sucesso!');
       await loadSubscribers(); // Recarrega a lista
     } catch (err) {
+      console.error('❌ Erro ao remover assinante:', err);
       toast.error('Erro ao remover assinante');
       throw err;
     } finally {
