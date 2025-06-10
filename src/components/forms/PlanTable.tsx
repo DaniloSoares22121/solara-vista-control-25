@@ -5,6 +5,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { CheckCircle2 } from 'lucide-react';
 
 interface PlanOption {
   faixaConsumo: string;
@@ -71,6 +73,13 @@ const PlanTable = ({ selectedPlan, fidelidade, anosFidelidade, onPlanChange }: P
     return plan.comFidelidade1Ano;
   };
 
+  const isSelected = (planFaixa: string, planFidelidade: 'sem' | 'com', planAnos?: '1' | '2') => {
+    if (selectedFaixa !== planFaixa) return false;
+    if (selectedFidelidade !== planFidelidade) return false;
+    if (planFidelidade === 'com' && selectedAnos !== planAnos) return false;
+    return true;
+  };
+
   useEffect(() => {
     if (selectedFaixa) {
       const plan = planOptions.find(p => p.faixaConsumo === selectedFaixa);
@@ -82,100 +91,196 @@ const PlanTable = ({ selectedPlan, fidelidade, anosFidelidade, onPlanChange }: P
   }, [selectedFaixa, selectedFidelidade, selectedAnos]);
 
   return (
-    <Card className="w-full">
-      <CardHeader>
-        <CardTitle className="text-lg text-green-600">Tabela de Planos - Escolha seu Consumo</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-6">
-          {planOptions.map((plan) => (
-            <div 
-              key={plan.faixaConsumo} 
-              className={`p-4 border-2 rounded-lg transition-all ${
-                selectedFaixa === plan.faixaConsumo 
-                  ? 'border-green-500 bg-green-50' 
-                  : 'border-gray-200 hover:border-green-300'
-              }`}
-            >
-              <div className="flex items-center justify-between mb-4">
+    <div className="space-y-6">
+      {/* Plan Selection */}
+      <Card className="w-full">
+        <CardHeader>
+          <CardTitle className="text-lg text-green-600">Escolha sua Faixa de Consumo</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <RadioGroup 
+            value={selectedFaixa} 
+            onValueChange={setSelectedFaixa}
+            className="space-y-3"
+          >
+            {planOptions.map((plan) => (
+              <div 
+                key={plan.faixaConsumo} 
+                className={`p-4 border-2 rounded-lg transition-all ${
+                  selectedFaixa === plan.faixaConsumo 
+                    ? 'border-green-500 bg-green-50' 
+                    : 'border-gray-200 hover:border-green-300'
+                }`}
+              >
                 <div className="flex items-center space-x-3">
-                  <RadioGroup 
-                    value={selectedFaixa} 
-                    onValueChange={setSelectedFaixa}
-                    className="flex"
-                  >
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value={plan.faixaConsumo} id={plan.faixaConsumo} />
-                      <Label htmlFor={plan.faixaConsumo} className="font-semibold text-gray-800">
-                        {plan.label}
-                      </Label>
-                    </div>
-                  </RadioGroup>
+                  <RadioGroupItem value={plan.faixaConsumo} id={plan.faixaConsumo} />
+                  <Label htmlFor={plan.faixaConsumo} className="font-semibold text-gray-800 flex-1">
+                    {plan.label}
+                  </Label>
+                  {selectedFaixa === plan.faixaConsumo && (
+                    <Badge variant="default" className="bg-green-600">
+                      <CheckCircle2 className="w-3 h-3 mr-1" />
+                      Selecionado
+                    </Badge>
+                  )}
                 </div>
-                <Badge variant="outline" className="text-green-600 border-green-200">
-                  {selectedFaixa === plan.faixaConsumo ? 'Selecionado' : 'Disponível'}
-                </Badge>
               </div>
+            ))}
+          </RadioGroup>
+        </CardContent>
+      </Card>
 
-              {selectedFaixa === plan.faixaConsumo && (
-                <div className="mt-4 p-4 bg-white rounded-lg border">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="space-y-3">
-                      <h4 className="font-semibold text-gray-700">Sem Fidelidade</h4>
-                      <Button 
-                        variant={selectedFidelidade === 'sem' ? 'default' : 'outline'}
-                        onClick={() => {
-                          setSelectedFidelidade('sem');
-                          setSelectedAnos(undefined);
-                        }}
-                        className="w-full"
-                      >
-                        {plan.semFidelidade}% Desconto
-                      </Button>
-                    </div>
+      {/* Discount Table */}
+      {selectedFaixa && (
+        <Card className="w-full">
+          <CardHeader>
+            <CardTitle className="text-lg text-green-600">Tabela de Descontos - Escolha seu Plano</CardTitle>
+            <p className="text-sm text-gray-600">
+              Faixa selecionada: {planOptions.find(p => p.faixaConsumo === selectedFaixa)?.label}
+            </p>
+          </CardHeader>
+          <CardContent>
+            <div className="rounded-lg border overflow-hidden">
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-gray-50">
+                    <TableHead className="font-semibold text-gray-700">Tipo de Plano</TableHead>
+                    <TableHead className="font-semibold text-gray-700 text-center">Período de Fidelidade</TableHead>
+                    <TableHead className="font-semibold text-gray-700 text-center">Desconto</TableHead>
+                    <TableHead className="font-semibold text-gray-700 text-center">Ação</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {(() => {
+                    const selectedPlanOption = planOptions.find(p => p.faixaConsumo === selectedFaixa);
+                    if (!selectedPlanOption) return null;
 
-                    <div className="space-y-3">
-                      <h4 className="font-semibold text-gray-700">Com Fidelidade - 1 Ano</h4>
-                      <Button 
-                        variant={selectedFidelidade === 'com' && selectedAnos === '1' ? 'default' : 'outline'}
-                        onClick={() => {
-                          setSelectedFidelidade('com');
-                          setSelectedAnos('1');
-                        }}
-                        className="w-full"
-                      >
-                        {plan.comFidelidade1Ano}% Desconto
-                      </Button>
-                    </div>
+                    return (
+                      <>
+                        <TableRow className={isSelected(selectedFaixa, 'sem') ? 'bg-green-50 border-green-200' : ''}>
+                          <TableCell className="font-medium">Sem Fidelidade</TableCell>
+                          <TableCell className="text-center text-gray-500">-</TableCell>
+                          <TableCell className="text-center">
+                            <Badge variant="outline" className="text-green-700 border-green-300 bg-green-50">
+                              {selectedPlanOption.semFidelidade}% OFF
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <Button 
+                              size="sm"
+                              variant={isSelected(selectedFaixa, 'sem') ? 'default' : 'outline'}
+                              onClick={() => {
+                                setSelectedFidelidade('sem');
+                                setSelectedAnos(undefined);
+                              }}
+                              className={isSelected(selectedFaixa, 'sem') ? 'bg-green-600 hover:bg-green-700' : ''}
+                            >
+                              {isSelected(selectedFaixa, 'sem') ? (
+                                <>
+                                  <CheckCircle2 className="w-4 h-4 mr-1" />
+                                  Selecionado
+                                </>
+                              ) : (
+                                'Selecionar'
+                              )}
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                        
+                        <TableRow className={isSelected(selectedFaixa, 'com', '1') ? 'bg-green-50 border-green-200' : ''}>
+                          <TableCell className="font-medium">Com Fidelidade</TableCell>
+                          <TableCell className="text-center">
+                            <Badge variant="secondary">1 Ano</Badge>
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <Badge variant="outline" className="text-blue-700 border-blue-300 bg-blue-50">
+                              {selectedPlanOption.comFidelidade1Ano}% OFF
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <Button 
+                              size="sm"
+                              variant={isSelected(selectedFaixa, 'com', '1') ? 'default' : 'outline'}
+                              onClick={() => {
+                                setSelectedFidelidade('com');
+                                setSelectedAnos('1');
+                              }}
+                              className={isSelected(selectedFaixa, 'com', '1') ? 'bg-green-600 hover:bg-green-700' : ''}
+                            >
+                              {isSelected(selectedFaixa, 'com', '1') ? (
+                                <>
+                                  <CheckCircle2 className="w-4 h-4 mr-1" />
+                                  Selecionado
+                                </>
+                              ) : (
+                                'Selecionar'
+                              )}
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                        
+                        <TableRow className={isSelected(selectedFaixa, 'com', '2') ? 'bg-green-50 border-green-200' : ''}>
+                          <TableCell className="font-medium">Com Fidelidade</TableCell>
+                          <TableCell className="text-center">
+                            <Badge variant="secondary">2 Anos</Badge>
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <Badge variant="outline" className="text-purple-700 border-purple-300 bg-purple-50">
+                              {selectedPlanOption.comFidelidade2Anos}% OFF
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <Button 
+                              size="sm"
+                              variant={isSelected(selectedFaixa, 'com', '2') ? 'default' : 'outline'}
+                              onClick={() => {
+                                setSelectedFidelidade('com');
+                                setSelectedAnos('2');
+                              }}
+                              className={isSelected(selectedFaixa, 'com', '2') ? 'bg-green-600 hover:bg-green-700' : ''}
+                            >
+                              {isSelected(selectedFaixa, 'com', '2') ? (
+                                <>
+                                  <CheckCircle2 className="w-4 h-4 mr-1" />
+                                  Selecionado
+                                </>
+                              ) : (
+                                'Selecionar'
+                              )}
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      </>
+                    );
+                  })()}
+                </TableBody>
+              </Table>
+            </div>
 
-                    <div className="space-y-3">
-                      <h4 className="font-semibold text-gray-700">Com Fidelidade - 2 Anos</h4>
-                      <Button 
-                        variant={selectedFidelidade === 'com' && selectedAnos === '2' ? 'default' : 'outline'}
-                        onClick={() => {
-                          setSelectedFidelidade('com');
-                          setSelectedAnos('2');
-                        }}
-                        className="w-full"
-                      >
-                        {plan.comFidelidade2Anos}% Desconto
-                      </Button>
-                    </div>
-                  </div>
-
-                  <div className="mt-4 p-3 bg-green-50 rounded-lg">
-                    <p className="text-sm text-green-700 font-medium">
-                      Desconto selecionado: {getDesconto(plan, selectedFidelidade, selectedAnos)}%
+            {/* Summary */}
+            {selectedFaixa && selectedFidelidade && (
+              <div className="mt-6 p-4 bg-gradient-to-r from-green-50 to-blue-50 rounded-lg border border-green-200">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="font-semibold text-gray-900">Plano Selecionado</h4>
+                    <p className="text-sm text-gray-600">
+                      {planOptions.find(p => p.faixaConsumo === selectedFaixa)?.label}
                       {selectedFidelidade === 'com' && ` - Fidelidade de ${selectedAnos} ano${selectedAnos === '2' ? 's' : ''}`}
                     </p>
                   </div>
+                  <div className="text-right">
+                    <p className="text-2xl font-bold text-green-600">
+                      {getDesconto(planOptions.find(p => p.faixaConsumo === selectedFaixa)!, selectedFidelidade, selectedAnos)}%
+                    </p>
+                    <p className="text-xs text-gray-500">de desconto</p>
+                  </div>
                 </div>
-              )}
-            </div>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+    </div>
   );
 };
 
