@@ -214,9 +214,10 @@ const PlanTable = ({ selectedPlan, fidelidade, anosFidelidade, onPlanChange }: P
           <CardContent>
             <RadioGroup 
               value={selectedFidelidade} 
-              onValueChange={(value: 'sem' | 'com') => {
-                setSelectedFidelidade(value);
-                if (value === 'sem') {
+              onValueChange={(value: string) => {
+                const fidelidadeValue = value as 'sem' | 'com';
+                setSelectedFidelidade(fidelidadeValue);
+                if (fidelidadeValue === 'sem') {
                   setSelectedAnos(undefined);
                 } else {
                   setSelectedAnos('1'); // default para 1 ano
@@ -266,7 +267,10 @@ const PlanTable = ({ selectedPlan, fidelidade, anosFidelidade, onPlanChange }: P
                     <Label className="text-sm font-medium text-gray-700 mb-2 block">Período:</Label>
                     <RadioGroup 
                       value={selectedAnos} 
-                      onValueChange={setSelectedAnos}
+                      onValueChange={(value: string) => {
+                        const anosValue = value as '1' | '2';
+                        setSelectedAnos(anosValue);
+                      }}
                       className="flex gap-4"
                     >
                       <div className="flex items-center space-x-2">
