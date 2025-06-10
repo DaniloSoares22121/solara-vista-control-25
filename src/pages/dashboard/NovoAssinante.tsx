@@ -146,24 +146,44 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
   const { createSubscriber } = useSubscribers();
 
   const handleInputChange = (section: string, field: string, value: any) => {
-    setFormData(prev => ({
-      ...prev,
-      [section]: {
-        ...prev[section as keyof typeof prev],
-        [field]: value
-      }
-    }));
+    setFormData(prev => {
+      const currentSection = prev[section as keyof typeof prev] || {};
+      return {
+        ...prev,
+        [section]: {
+          ...currentSection,
+          [field]: value
+        }
+      };
+    });
   };
 
   const handleNestedInputChange = (section: string, subsection: string, field: string, value: any) => {
+    setFormData(prev => {
+      const currentSection = prev[section as keyof typeof prev] || {};
+      const currentSubsection = (currentSection as any)[subsection] || {};
+      return {
+        ...prev,
+        [section]: {
+          ...currentSection,
+          [subsection]: {
+            ...currentSubsection,
+            [field]: value
+          }
+        }
+      };
+    });
+  };
+
+  const handlePlanChange = (faixaConsumo: string, fidelidade: 'sem' | 'com', anos?: '1' | '2', desconto?: number) => {
     setFormData(prev => ({
       ...prev,
-      [section]: {
-        ...prev[section as keyof typeof prev],
-        [subsection]: {
-          ...(prev[section as keyof typeof prev] as any)[subsection],
-          [field]: value
-        }
+      planContract: {
+        ...prev.planContract,
+        faixaConsumo: faixaConsumo as any,
+        fidelidade,
+        anosFidelidade: anos,
+        desconto: desconto || 0
       }
     }));
   };
@@ -352,7 +372,7 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
                     <Label htmlFor="concessionaria">Concessionária *</Label>
                     <Select
                       value={formData.concessionaria}
-                      onValueChange={(value) => handleInputChange('', 'concessionaria', value)}
+                      onValueChange={(value) => setFormData(prev => ({ ...prev, concessionaria: value }))}
                     >
                       <SelectTrigger className="focus:border-green-500 focus:ring-green-500">
                         <SelectValue placeholder="Selecione" />
@@ -442,7 +462,12 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <PlanTable />
+                <PlanTable 
+                  selectedPlan={formData.planContract.faixaConsumo}
+                  fidelidade={formData.planContract.fidelidade}
+                  anosFidelidade={formData.planContract.anosFidelidade}
+                  onPlanChange={handlePlanChange}
+                />
               </CardContent>
             </Card>
           </div>
