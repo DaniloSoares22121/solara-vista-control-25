@@ -7,10 +7,16 @@ export const supabaseGeneratorService = {
     console.log('🔄 [SUPABASE_GENERATOR_SERVICE] Salvando geradora...', data);
     
     try {
+      const { data: user } = await supabase.auth.getUser();
+      
+      if (!user.user?.id) {
+        throw new Error('Usuário não autenticado');
+      }
+
       const { data: result, error } = await supabase
         .from('generators')
         .insert({
-          user_id: (await supabase.auth.getUser()).data.user?.id,
+          user_id: user.user.id,
           concessionaria: data.concessionaria,
           owner: data.owner,
           administrator: data.administrator,

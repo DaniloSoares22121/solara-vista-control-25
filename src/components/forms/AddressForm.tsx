@@ -20,10 +20,10 @@ const AddressForm = ({ form, prefix, title = "Endereço" }: AddressFormProps) =>
   useEffect(() => {
     if (addressData) {
       console.log('🏠 Preenchendo endereço automaticamente:', addressData);
-      form.setValue(`${prefix}.endereco`, addressData.logradouro);
+      form.setValue(`${prefix}.endereco`, addressData.endereco);
       form.setValue(`${prefix}.bairro`, addressData.bairro);
-      form.setValue(`${prefix}.cidade`, addressData.localidade);
-      form.setValue(`${prefix}.estado`, addressData.uf);
+      form.setValue(`${prefix}.cidade`, addressData.cidade);
+      form.setValue(`${prefix}.estado`, addressData.estado);
     }
   }, [addressData, form, prefix]);
 
