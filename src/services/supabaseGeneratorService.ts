@@ -16,12 +16,12 @@ export const supabaseGeneratorService = {
       const generatorData = {
         user_id: user.user.id,
         concessionaria: data.concessionaria,
-        owner: data.owner,
-        administrator: data.administrator,
-        plants: data.plants,
-        distributor_login: data.distributorLogin,
-        payment_data: data.paymentData,
-        attachments: data.attachments,
+        owner: data.owner as any,
+        administrator: data.administrator as any,
+        plants: data.plants as any,
+        distributor_login: data.distributorLogin as any,
+        payment_data: data.paymentData as any,
+        attachments: data.attachments as any,
         status: 'active'
       };
 
