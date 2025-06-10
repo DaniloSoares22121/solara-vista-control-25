@@ -1,54 +1,85 @@
 
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { ArrowLeft, ArrowRight, Save, ChevronLeft } from 'lucide-react';
-import { useForm, FormProvider } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { GeneratorFormData } from '@/types/generator';
-import { toast } from 'sonner';
-import { Stepper } from '@/components/ui/stepper';
-
-// Form components
+import { Button } from '@/components/ui/button';
+import { Form } from '@/components/ui/form';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 import GeneratorConcessionariaForm from '@/components/forms/GeneratorConcessionariaForm';
 import GeneratorOwnerTypeForm from '@/components/forms/GeneratorOwnerTypeForm';
 import GeneratorOwnerDataForm from '@/components/forms/GeneratorOwnerDataForm';
 import GeneratorAdministratorForm from '@/components/forms/GeneratorAdministratorForm';
+import { GeneratorFormData } from '@/types/generator';
 
-// Schema de validação
 const generatorSchema = z.object({
-  concessionaria: z.string().min(1, 'Concessionária é obrigatória'),
+  concessionaria: z.string().min(1, 'Selecione uma concessionária'),
   owner: z.object({
     type: z.enum(['fisica', 'juridica']),
-    cpfCnpj: z.string().min(1, 'CPF/CNPJ é obrigatório'),
-    numeroParceiroNegocio: z.string().min(1, 'Número parceiro é obrigatório'),
-    name: z.string().min(1, 'Nome é obrigatório'),
+    cpfCnpj: z.string().min(1, 'Campo obrigatório'),
+    numeroParceiroNegocio: z.string().min(1, 'Campo obrigatório'),
+    name: z.string().min(1, 'Campo obrigatório'),
+    dataNascimento: z.string().optional(),
+    razaoSocial: z.string().optional(),
+    nomeFantasia: z.string().optional(),
+    address: z.object({
+      cep: z.string().min(1, 'CEP é obrigatório'),
+      endereco: z.string().min(1, 'Endereço é obrigatório'),
+      numero: z.string().min(1, 'Número é obrigatório'),
+      complemento: z.string(),
+      bairro: z.string().min(1, 'Bairro é obrigatório'),
+      cidade: z.string().min(1, 'Cidade é obrigatória'),
+      estado: z.string().min(1, 'Estado é obrigatório'),
+    }),
     telefone: z.string().min(1, 'Telefone é obrigatório'),
-    email: z.string().email('Email inválido'),
+    email: z.string().email('E-mail inválido'),
+    observacoes: z.string(),
   }),
+  administrator: z.object({
+    cpf: z.string(),
+    nome: z.string(),
+    dataNascimento: z.string(),
+    address: z.object({
+      cep: z.string(),
+      endereco: z.string(),
+      numero: z.string(),
+      complemento: z.string(),
+      bairro: z.string(),
+      cidade: z.string(),
+      estado: z.string(),
+    }),
+    telefone: z.string(),
+    email: z.string(),
+  }).optional(),
+  plants: z.array(z.any()).default([]),
+  distributorLogin: z.object({
+    uc: z.string(),
+    cpfCnpj: z.string(),
+    dataNascimento: z.string().optional(),
+  }),
+  paymentData: z.object({
+    banco: z.string(),
+    agencia: z.string(),
+    conta: z.string(),
+    pix: z.string(),
+  }),
+  attachments: z.object({}).default({}),
 });
 
 interface NovaGeradoraProps {
   onClose: () => void;
 }
 
-const steps = [
-  { id: 'dados-gerais', title: 'Dados Gerais', description: 'Concessionária e tipo de geradora' },
-  { id: 'dados-dono', title: 'Dados do Dono', description: 'Informações do proprietário da usina' },
-  { id: 'usinas', title: 'Dados das Usinas', description: 'Informações das plantas de energia' },
-  { id: 'login-distribuidora', title: 'Login Distribuidora', description: 'Credenciais da concessionária' },
-  { id: 'pagamento', title: 'Dados Pagamento', description: 'Informações bancárias' },
-  { id: 'anexos', title: 'Documentos', description: 'Upload de arquivos' },
-];
-
 const NovaGeradora = ({ onClose }: NovaGeradoraProps) => {
-  const [currentStep, setCurrentStep] = useState(0);
+  const [currentStep, setCurrentStep] = useState(1);
+  const totalSteps = 4;
 
-  // Initialize form with default values
   const form = useForm<GeneratorFormData>({
     resolver: zodResolver(generatorSchema),
     defaultValues: {
-      concessionaria: 'equatorial-goias',
+      concessionaria: '',
       owner: {
         type: 'fisica',
         cpfCnpj: '',
@@ -70,22 +101,6 @@ const NovaGeradora = ({ onClose }: NovaGeradoraProps) => {
         email: '',
         observacoes: '',
       },
-      administrator: {
-        cpf: '',
-        nome: '',
-        dataNascimento: '',
-        address: {
-          cep: '',
-          endereco: '',
-          numero: '',
-          complemento: '',
-          bairro: '',
-          cidade: '',
-          estado: '',
-        },
-        telefone: '',
-        email: '',
-      },
       plants: [],
       distributorLogin: {
         uc: '',
@@ -104,244 +119,282 @@ const NovaGeradora = ({ onClose }: NovaGeradoraProps) => {
 
   const ownerType = form.watch('owner.type');
 
-  const validateCurrentStep = async () => {
-    const fieldsToValidate: Record<number, string[]> = {
-      0: ['concessionaria', 'owner.type'],
-      1: ['owner.cpfCnpj', 'owner.numeroParceiroNegocio', 'owner.name', 'owner.telefone', 'owner.email'],
-      2: [], // Usinas
-      3: [], // Login distribuidora
-      4: [], // Pagamento
-      5: [], // Anexos
-    };
+  const steps = [
+    { 
+      number: 1, 
+      title: 'Dados Gerais e Dono da Usina', 
+      description: 'Concessionária e informações do proprietário' 
+    },
+    { 
+      number: 2, 
+      title: 'Dados das Usinas', 
+      description: 'Informações das unidades geradoras' 
+    },
+    { 
+      number: 3, 
+      title: 'Login e Pagamento', 
+      description: 'Credenciais e dados bancários' 
+    },
+    { 
+      number: 4, 
+      title: 'Anexos', 
+      description: 'Documentos e contratos' 
+    },
+  ];
 
-    const fields = fieldsToValidate[currentStep] || [];
-    if (fields.length === 0) return true;
-
-    const result = await form.trigger(fields as any);
-    return result;
+  const onSubmit = (data: GeneratorFormData) => {
+    console.log('Generator data:', data);
+    // TODO: Implementar salvamento no banco
+    onClose();
   };
 
-  const handleNext = async () => {
-    const isValid = await validateCurrentStep();
-    if (!isValid) {
-      toast.error('Por favor, preencha todos os campos obrigatórios antes de continuar');
-      return;
-    }
-
-    if (currentStep < steps.length - 1) {
+  const nextStep = () => {
+    if (currentStep < totalSteps) {
       setCurrentStep(currentStep + 1);
     }
   };
 
-  const handlePrevious = () => {
-    if (currentStep > 0) {
+  const prevStep = () => {
+    if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
     }
   };
 
-  const handleStepClick = (stepIndex: number) => {
-    setCurrentStep(stepIndex);
+  const canProceed = () => {
+    // TODO: Implementar validação específica por step
+    return true;
   };
-
-  const handleSubmit = async () => {
-    try {
-      console.log('📝 [NOVA_GERADORA] Iniciando submissão do formulário...');
-      
-      const isValid = await form.trigger();
-      if (!isValid) {
-        console.error('❌ [NOVA_GERADORA] Formulário inválido');
-        toast.error('Por favor, preencha todos os campos obrigatórios');
-        return;
-      }
-
-      const formData = form.getValues();
-      console.log('📊 [NOVA_GERADORA] Dados do formulário:', JSON.stringify(formData, null, 2));
-      
-      // TODO: Implementar salvamento
-      toast.success('Geradora cadastrada com sucesso!');
-      onClose();
-    } catch (error: any) {
-      console.error('❌ [NOVA_GERADORA] Erro ao cadastrar geradora:', error);
-      toast.error('Erro ao cadastrar geradora. Tente novamente.');
-    }
-  };
-
-  const renderCurrentStepContent = () => {
-    switch (currentStep) {
-      case 0:
-        return (
-          <div className="space-y-8">
-            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-lg border border-blue-200">
-              <GeneratorConcessionariaForm form={form} />
-            </div>
-            
-            <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-6 rounded-lg border border-green-200">
-              <GeneratorOwnerTypeForm form={form} />
-            </div>
-          </div>
-        );
-      case 1:
-        return (
-          <div className="space-y-8">
-            <div className="bg-white p-6 rounded-lg border-2 border-gray-100 shadow-sm">
-              <GeneratorOwnerDataForm form={form} ownerType={ownerType} />
-            </div>
-
-            {ownerType === 'juridica' && (
-              <div className="bg-gradient-to-r from-purple-50 to-violet-50 p-6 rounded-lg border border-purple-200">
-                <GeneratorAdministratorForm form={form} />
-              </div>
-            )}
-          </div>
-        );
-      case 2:
-        return (
-          <div className="bg-white p-6 rounded-lg border-2 border-gray-100 shadow-sm">
-            <div className="text-center py-12">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Dados das Usinas</h3>
-              <p className="text-gray-600">Formulário de usinas será implementado aqui</p>
-            </div>
-          </div>
-        );
-      case 3:
-        return (
-          <div className="bg-white p-6 rounded-lg border-2 border-gray-100 shadow-sm">
-            <div className="text-center py-12">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Login da Distribuidora</h3>
-              <p className="text-gray-600">Formulário de login será implementado aqui</p>
-            </div>
-          </div>
-        );
-      case 4:
-        return (
-          <div className="bg-white p-6 rounded-lg border-2 border-gray-100 shadow-sm">
-            <div className="text-center py-12">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Dados para Recebimento</h3>
-              <p className="text-gray-600">Formulário de pagamento será implementado aqui</p>
-            </div>
-          </div>
-        );
-      case 5:
-        return (
-          <div className="bg-white p-6 rounded-lg border-2 border-gray-100 shadow-sm">
-            <div className="text-center py-12">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Anexos</h3>
-              <p className="text-gray-600">Formulário de anexos será implementado aqui</p>
-            </div>
-          </div>
-        );
-      default:
-        return null;
-    }
-  };
-
-  const isLastStep = currentStep === steps.length - 1;
-  const isFirstStep = currentStep === 0;
 
   return (
-    <FormProvider {...form}>
-      <div className="h-full flex flex-col bg-gradient-to-br from-slate-50 via-orange-50 to-amber-100">
-        {/* Header */}
-        <div className="bg-white/80 backdrop-blur-sm border-b border-gray-200 flex-shrink-0">
-          <div className="px-6 py-6">
-            <div className="flex items-center justify-between mb-8">
-              <div className="flex items-center space-x-4">
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={onClose}
-                  className="text-gray-600 hover:text-gray-800 hover:bg-gray-100"
-                >
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  Voltar
-                </Button>
-                <div>
-                  <h1 className="text-3xl font-bold bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent">
-                    Nova Geradora
-                  </h1>
-                  <p className="text-gray-600 mt-1">Cadastre uma nova unidade geradora de energia</p>
+    <div className="h-full flex flex-col bg-gray-50">
+      {/* Header */}
+      <div className="bg-white border-b border-gray-200 px-6 py-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Nova Geradora</h1>
+            <p className="text-gray-600 mt-1">Cadastre uma nova unidade geradora de energia</p>
+          </div>
+          <Button 
+            variant="ghost" 
+            size="icon"
+            onClick={onClose}
+            className="text-gray-500 hover:text-gray-700"
+          >
+            <X className="w-5 h-5" />
+          </Button>
+        </div>
+      </div>
+
+      {/* Progress Steps */}
+      <div className="bg-white border-b border-gray-200 px-6 py-4">
+        <div className="flex items-center justify-between">
+          {steps.map((step, index) => (
+            <div key={step.number} className="flex items-center">
+              <div className="flex items-center">
+                <div className={`
+                  w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium
+                  ${currentStep >= step.number 
+                    ? 'bg-green-600 text-white' 
+                    : 'bg-gray-200 text-gray-600'
+                  }
+                `}>
+                  {step.number}
+                </div>
+                <div className="ml-3">
+                  <p className={`text-sm font-medium ${
+                    currentStep >= step.number ? 'text-green-600' : 'text-gray-500'
+                  }`}>
+                    {step.title}
+                  </p>
+                  <p className="text-xs text-gray-500">{step.description}</p>
                 </div>
               </div>
+              {index < steps.length - 1 && (
+                <div className={`
+                  w-12 h-0.5 mx-4
+                  ${currentStep > step.number ? 'bg-green-600' : 'bg-gray-200'}
+                `} />
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Form Content */}
+      <div className="flex-1 overflow-y-auto">
+        <div className="max-w-4xl mx-auto p-6">
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
               
-              <div className="flex items-center space-x-2 text-sm text-gray-500">
-                <span className="bg-orange-100 text-orange-700 px-3 py-1 rounded-full font-medium">
-                  Etapa {currentStep + 1} de {steps.length}
-                </span>
-              </div>
-            </div>
+              {/* Step 1: Dados Gerais e Dono da Usina */}
+              {currentStep === 1 && (
+                <Card className="border-0 shadow-lg">
+                  <CardHeader className="bg-gradient-to-r from-green-50 to-green-100 border-b">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <CardTitle className="text-xl text-green-800">
+                          Dados Gerais e Dono da Usina
+                        </CardTitle>
+                        <p className="text-green-600 mt-1">
+                          Informações da concessionária e proprietário da geradora
+                        </p>
+                      </div>
+                      <Badge className="bg-green-100 text-green-800 border-green-200">
+                        Passo 1 de {totalSteps}
+                      </Badge>
+                    </div>
+                  </CardHeader>
+                  
+                  <CardContent className="p-6 space-y-8">
+                    <GeneratorConcessionariaForm form={form} />
+                    <GeneratorOwnerTypeForm form={form} />
+                    <GeneratorOwnerDataForm form={form} ownerType={ownerType} />
+                    {ownerType === 'juridica' && (
+                      <GeneratorAdministratorForm form={form} />
+                    )}
+                  </CardContent>
+                </Card>
+              )}
 
-            {/* Stepper */}
-            <Stepper
-              steps={steps}
-              currentStep={currentStep}
-              onStepClick={handleStepClick}
-              className="max-w-5xl mx-auto"
-            />
-          </div>
+              {/* Step 2: Dados das Usinas */}
+              {currentStep === 2 && (
+                <Card className="border-0 shadow-lg">
+                  <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-100 border-b">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <CardTitle className="text-xl text-blue-800">
+                          Dados das Usinas
+                        </CardTitle>
+                        <p className="text-blue-600 mt-1">
+                          Informações técnicas das unidades geradoras
+                        </p>
+                      </div>
+                      <Badge className="bg-blue-100 text-blue-800 border-blue-200">
+                        Passo 2 de {totalSteps}
+                      </Badge>
+                    </div>
+                  </CardHeader>
+                  
+                  <CardContent className="p-6">
+                    <div className="text-center py-12">
+                      <p className="text-gray-500">
+                        Formulário de dados das usinas será implementado aqui
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Step 3: Login e Pagamento */}
+              {currentStep === 3 && (
+                <Card className="border-0 shadow-lg">
+                  <CardHeader className="bg-gradient-to-r from-purple-50 to-purple-100 border-b">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <CardTitle className="text-xl text-purple-800">
+                          Login e Pagamento
+                        </CardTitle>
+                        <p className="text-purple-600 mt-1">
+                          Credenciais da distribuidora e dados de recebimento
+                        </p>
+                      </div>
+                      <Badge className="bg-purple-100 text-purple-800 border-purple-200">
+                        Passo 3 de {totalSteps}
+                      </Badge>
+                    </div>
+                  </CardHeader>
+                  
+                  <CardContent className="p-6">
+                    <div className="text-center py-12">
+                      <p className="text-gray-500">
+                        Formulário de login e pagamento será implementado aqui
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Step 4: Anexos */}
+              {currentStep === 4 && (
+                <Card className="border-0 shadow-lg">
+                  <CardHeader className="bg-gradient-to-r from-amber-50 to-amber-100 border-b">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <CardTitle className="text-xl text-amber-800">
+                          Anexos
+                        </CardTitle>
+                        <p className="text-amber-600 mt-1">
+                          Documentos e contratos necessários
+                        </p>
+                      </div>
+                      <Badge className="bg-amber-100 text-amber-800 border-amber-200">
+                        Passo 4 de {totalSteps}
+                      </Badge>
+                    </div>
+                  </CardHeader>
+                  
+                  <CardContent className="p-6">
+                    <div className="text-center py-12">
+                      <p className="text-gray-500">
+                        Formulário de anexos será implementado aqui
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+            </form>
+          </Form>
         </div>
+      </div>
 
-        {/* Form Content - Scrollable */}
-        <div className="flex-1 overflow-y-auto">
-          <div className="max-w-6xl mx-auto px-6 py-8">
-            <div className="mb-6">
-              <h2 className="text-2xl font-semibold text-gray-800 mb-2">
-                {steps[currentStep].title}
-              </h2>
-              <p className="text-gray-600">
-                {steps[currentStep].description}
-              </p>
-            </div>
+      {/* Footer with Navigation */}
+      <div className="bg-white border-t border-gray-200 px-6 py-4">
+        <div className="flex items-center justify-between">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={prevStep}
+            disabled={currentStep === 1}
+            className="flex items-center gap-2"
+          >
+            <ChevronLeft className="w-4 h-4" />
+            Anterior
+          </Button>
 
-            <div className="min-h-[400px] mb-8">
-              {renderCurrentStepContent()}
-            </div>
-          </div>
-        </div>
-
-        {/* Footer Navigation - Fixed */}
-        <div className="flex-shrink-0 bg-white/90 backdrop-blur-sm border-t border-gray-200 p-6">
-          <div className="max-w-6xl mx-auto">
-            <div className="flex justify-between items-center">
-              <div>
-                {!isFirstStep && (
-                  <Button 
-                    variant="outline" 
-                    onClick={handlePrevious}
-                    className="flex items-center hover:bg-gray-50"
-                    size="lg"
-                  >
-                    <ChevronLeft className="w-4 h-4 mr-2" />
-                    Anterior
-                  </Button>
-                )}
-              </div>
-
-              <div className="flex space-x-4">
-                {!isLastStep ? (
-                  <Button 
-                    onClick={handleNext}
-                    className="bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 flex items-center"
-                    size="lg"
-                  >
-                    Próximo
-                    <ArrowRight className="w-4 h-4 ml-2" />
-                  </Button>
-                ) : (
-                  <Button 
-                    onClick={handleSubmit}
-                    className="bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
-                    size="lg"
-                  >
-                    <Save className="w-4 h-4 mr-2" />
-                    Cadastrar Geradora
-                  </Button>
-                )}
-              </div>
-            </div>
+          <div className="flex items-center gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => form.reset()}
+            >
+              Limpar
+            </Button>
+            
+            {currentStep === totalSteps ? (
+              <Button
+                type="submit"
+                onClick={form.handleSubmit(onSubmit)}
+                disabled={!canProceed()}
+                className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white"
+              >
+                Salvar Geradora
+              </Button>
+            ) : (
+              <Button
+                type="button"
+                onClick={nextStep}
+                disabled={!canProceed()}
+                className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white flex items-center gap-2"
+              >
+                Próximo
+                <ChevronRight className="w-4 h-4" />
+              </Button>
+            )}
           </div>
         </div>
       </div>
-    </FormProvider>
+    </div>
   );
 };
 
