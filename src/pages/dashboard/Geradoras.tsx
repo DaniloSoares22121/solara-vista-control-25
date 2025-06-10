@@ -214,7 +214,7 @@ const Geradoras = () => {
         <SheetContent side="right" className="w-full sm:max-w-7xl p-0 overflow-hidden">
           <SheetHeader className="sr-only">
             <SheetTitle>Nova Geradora</SheetTitle>
-          </ShHeader>
+          </SheetHeader>
           <NovaGeradora onClose={handleCloseModal} />
         </SheetContent>
       </Sheet>
