@@ -45,8 +45,10 @@ export function AppSidebar() {
     <Sidebar className="bg-green-600 border-none" collapsible="icon">
       <div className="h-screen bg-green-600 flex flex-col">
         <SidebarContent className="bg-green-600 flex flex-col h-full">
-          {/* Header compacto */}
-          <div className="flex items-center justify-between p-3 border-b border-green-500/20 flex-shrink-0">
+          {/* Header */}
+          <div className={`flex items-center p-3 border-b border-green-500/20 flex-shrink-0 ${
+            isCollapsed ? 'justify-center' : 'justify-between'
+          }`}>
             {!isCollapsed && (
               <h2 className="text-lg font-bold text-white">
                 SolarControl
@@ -55,7 +57,7 @@ export function AppSidebar() {
             
             <button
               onClick={toggleSidebar}
-              className="p-1.5 rounded-md bg-green-700/30 hover:bg-green-700/50 text-white transition-colors flex-shrink-0"
+              className="p-2 rounded-lg bg-green-700/40 hover:bg-green-700/60 text-white transition-all duration-200 shadow-sm"
             >
               {isCollapsed ? (
                 <ChevronRight className="w-4 h-4" />
@@ -65,63 +67,65 @@ export function AppSidebar() {
             </button>
           </div>
 
-          {/* Menu de navegação - ocupando o espaço restante */}
-          <div className="flex-1 flex flex-col justify-between p-2 overflow-hidden">
-            <div className="flex-1 flex flex-col justify-center">
-              <SidebarGroup className="p-0">
-                {!isCollapsed && (
-                  <SidebarGroupLabel className="text-green-100 px-2 py-1 text-xs font-medium uppercase tracking-wider mb-2 flex-shrink-0">
-                    Navegação
-                  </SidebarGroupLabel>
-                )}
-                
-                <SidebarGroupContent className="flex-1">
-                  <SidebarMenu className="space-y-1 h-full flex flex-col justify-center">
-                    {menuItems.map((item) => (
-                      <SidebarMenuItem key={item.title} className="flex-shrink-0">
-                        <SidebarMenuButton asChild size="lg">
-                          <NavLink
-                            to={item.url}
-                            end
-                            className={({ isActive }) => 
-                              `flex items-center gap-3 px-3 py-2.5 rounded-md transition-colors text-white ${
-                                isActive 
-                                  ? 'bg-green-700/70 text-white' 
-                                  : 'hover:bg-green-700/40'
-                              } ${isCollapsed ? 'justify-center px-2' : ''}`
-                            }
-                          >
-                            <item.icon className="w-5 h-5 flex-shrink-0" />
-                            {!isCollapsed && (
-                              <span className="font-medium text-sm">{item.title}</span>
-                            )}
-                          </NavLink>
-                        </SidebarMenuButton>
-                      </SidebarMenuItem>
-                    ))}
-                  </SidebarMenu>
-                </SidebarGroupContent>
-              </SidebarGroup>
-            </div>
-            
-            {/* Footer compacto */}
-            <div className="flex-shrink-0 pt-2">
-              {!isCollapsed ? (
-                <div className="bg-green-700/30 rounded-md p-2">
-                  <div className="flex items-center space-x-2">
-                    <div className="w-2 h-2 bg-green-300 rounded-full flex-shrink-0"></div>
-                    <div className="min-w-0">
-                      <p className="text-white text-xs font-medium">Sistema Online</p>
-                      <p className="text-green-100 text-xs opacity-80">Todos os serviços ativos</p>
-                    </div>
+          {/* Menu de navegação */}
+          <div className="flex-1 p-3">
+            <SidebarGroup className="p-0">
+              {!isCollapsed && (
+                <SidebarGroupLabel className="text-green-100 px-2 py-2 text-xs font-medium uppercase tracking-wider mb-3">
+                  Navegação
+                </SidebarGroupLabel>
+              )}
+              
+              <SidebarGroupContent>
+                <SidebarMenu className={`space-y-2 ${isCollapsed ? 'items-center' : ''}`}>
+                  {menuItems.map((item) => (
+                    <SidebarMenuItem key={item.title}>
+                      <SidebarMenuButton 
+                        asChild 
+                        size="lg"
+                        tooltip={isCollapsed ? item.title : undefined}
+                      >
+                        <NavLink
+                          to={item.url}
+                          end
+                          className={({ isActive }) => 
+                            `flex items-center gap-3 px-3 py-3 rounded-lg transition-all duration-200 text-white group ${
+                              isActive 
+                                ? 'bg-green-700/80 text-white shadow-md' 
+                                : 'hover:bg-green-700/50'
+                            } ${isCollapsed ? 'justify-center w-12 h-12' : ''}`
+                          }
+                        >
+                          <item.icon className={`flex-shrink-0 ${isCollapsed ? 'w-5 h-5' : 'w-5 h-5'}`} />
+                          {!isCollapsed && (
+                            <span className="font-medium text-sm">{item.title}</span>
+                          )}
+                        </NavLink>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          </div>
+          
+          {/* Footer */}
+          <div className="flex-shrink-0 p-3">
+            {!isCollapsed ? (
+              <div className="bg-green-700/30 rounded-lg p-3">
+                <div className="flex items-center space-x-3">
+                  <div className="w-2 h-2 bg-green-300 rounded-full flex-shrink-0"></div>
+                  <div className="min-w-0">
+                    <p className="text-white text-xs font-medium">Sistema Online</p>
+                    <p className="text-green-100 text-xs opacity-80">Todos os serviços ativos</p>
                   </div>
                 </div>
-              ) : (
-                <div className="flex justify-center">
-                  <div className="w-2 h-2 bg-green-300 rounded-full"></div>
-                </div>
-              )}
-            </div>
+              </div>
+            ) : (
+              <div className="flex justify-center">
+                <div className="w-3 h-3 bg-green-300 rounded-full shadow-sm"></div>
+              </div>
+            )}
           </div>
         </SidebarContent>
       </div>
