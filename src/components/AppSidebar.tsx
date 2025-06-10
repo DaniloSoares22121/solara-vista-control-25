@@ -43,79 +43,81 @@ export function AppSidebar() {
 
   return (
     <Sidebar className="bg-green-600 border-none" collapsible="icon">
-      <div className="h-full bg-green-600">
-        <SidebarContent className="bg-green-600">
+      <div className="h-full bg-green-600 flex flex-col">
+        <SidebarContent className="bg-green-600 flex flex-col h-full">
           {/* Header com logo e botão de toggle */}
-          <div className="flex items-center justify-between p-6 border-b border-green-500/30">
+          <div className="flex items-center justify-between p-4 border-b border-green-500/20">
             {!isCollapsed && (
-              <h2 className="text-2xl font-bold text-white">
+              <h2 className="text-xl font-bold text-white">
                 SolarControl
               </h2>
             )}
             
             <button
               onClick={toggleSidebar}
-              className="p-2.5 rounded-lg bg-green-700/50 hover:bg-green-700 text-white transition-all duration-200 shadow-lg hover:shadow-xl"
+              className="p-2 rounded-md bg-green-700/30 hover:bg-green-700/50 text-white transition-colors"
             >
               {isCollapsed ? (
-                <ChevronRight className="w-5 h-5" />
+                <ChevronRight className="w-4 h-4" />
               ) : (
-                <ChevronLeft className="w-5 h-5" />
+                <ChevronLeft className="w-4 h-4" />
               )}
             </button>
           </div>
 
           {/* Menu de navegação */}
-          <SidebarGroup className="p-4">
-            {!isCollapsed && (
-              <SidebarGroupLabel className="text-green-100 px-3 py-2 text-sm font-semibold uppercase tracking-wide">
-                Navegação
-              </SidebarGroupLabel>
-            )}
-            
-            <SidebarGroupContent>
-              <SidebarMenu className="space-y-2 mt-2">
-                {menuItems.map((item) => (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton asChild size="lg">
-                      <NavLink
-                        to={item.url}
-                        end
-                        className={({ isActive }) => 
-                          `flex items-center gap-4 px-4 py-4 rounded-xl transition-all duration-200 group ${
-                            isActive 
-                              ? 'bg-green-700 text-white shadow-lg transform scale-[1.02]' 
-                              : 'text-white hover:bg-green-700/70 hover:text-white hover:transform hover:scale-[1.01]'
-                          } ${isCollapsed ? 'justify-center px-3' : ''}`
-                        }
-                      >
-                        <item.icon className="w-6 h-6 flex-shrink-0" />
-                        {!isCollapsed && (
-                          <span className="font-medium text-base">{item.title}</span>
-                        )}
-                      </NavLink>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
+          <div className="flex-1 p-3">
+            <SidebarGroup className="p-0">
+              {!isCollapsed && (
+                <SidebarGroupLabel className="text-green-100 px-2 py-2 text-xs font-medium uppercase tracking-wider mb-2">
+                  Navegação
+                </SidebarGroupLabel>
+              )}
+              
+              <SidebarGroupContent>
+                <SidebarMenu className="space-y-1">
+                  {menuItems.map((item) => (
+                    <SidebarMenuItem key={item.title}>
+                      <SidebarMenuButton asChild size="lg">
+                        <NavLink
+                          to={item.url}
+                          end
+                          className={({ isActive }) => 
+                            `flex items-center gap-3 px-3 py-3 rounded-md transition-colors text-white ${
+                              isActive 
+                                ? 'bg-green-700/70 text-white' 
+                                : 'hover:bg-green-700/40'
+                            } ${isCollapsed ? 'justify-center px-2' : ''}`
+                          }
+                        >
+                          <item.icon className="w-5 h-5 flex-shrink-0" />
+                          {!isCollapsed && (
+                            <span className="font-medium text-sm">{item.title}</span>
+                          )}
+                        </NavLink>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          </div>
           
           {/* Footer com status */}
-          <div className="mt-auto p-6 border-t border-green-500/30">
+          <div className="p-4 border-t border-green-500/20">
             {!isCollapsed ? (
-              <div className="bg-green-700/50 rounded-xl p-4 shadow-inner">
-                <div className="flex items-center space-x-3">
-                  <div className="w-3 h-3 bg-green-300 rounded-full animate-pulse shadow-lg"></div>
+              <div className="bg-green-700/30 rounded-md p-3">
+                <div className="flex items-center space-x-2">
+                  <div className="w-2 h-2 bg-green-300 rounded-full"></div>
                   <div>
-                    <p className="text-white text-sm font-semibold">Sistema Online</p>
-                    <p className="text-green-100 text-xs">Todos os serviços ativos</p>
+                    <p className="text-white text-xs font-medium">Sistema Online</p>
+                    <p className="text-green-100 text-xs opacity-80">Todos os serviços ativos</p>
                   </div>
                 </div>
               </div>
             ) : (
               <div className="flex justify-center">
-                <div className="w-3 h-3 bg-green-300 rounded-full animate-pulse shadow-lg"></div>
+                <div className="w-2 h-2 bg-green-300 rounded-full"></div>
               </div>
             )}
           </div>
