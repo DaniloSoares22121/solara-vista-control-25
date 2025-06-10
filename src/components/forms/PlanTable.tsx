@@ -5,8 +5,10 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { CheckCircle2 } from 'lucide-react';
+import { CheckCircle2, Calendar } from 'lucide-react';
 
 interface PlanOption {
   faixaConsumo: string;
@@ -65,6 +67,12 @@ const PlanTable = ({ selectedPlan, fidelidade, anosFidelidade, onPlanChange }: P
   const [selectedFaixa, setSelectedFaixa] = useState(selectedPlan);
   const [selectedFidelidade, setSelectedFidelidade] = useState(fidelidade);
   const [selectedAnos, setSelectedAnos] = useState(anosFidelidade);
+  
+  // Novos campos de contratação
+  const [modalidadeCompensacao, setModalidadeCompensacao] = useState('');
+  const [dataAdesao, setDataAdesao] = useState('');
+  const [kwhVendedor, setKwhVendedor] = useState('');
+  const [kwhContratado, setKwhContratado] = useState('');
 
   const getDesconto = (plan: PlanOption, fidelidade: string, anos?: string) => {
     if (fidelidade === 'sem') return plan.semFidelidade;
@@ -92,6 +100,73 @@ const PlanTable = ({ selectedPlan, fidelidade, anosFidelidade, onPlanChange }: P
 
   return (
     <div className="space-y-6">
+      {/* Campos de Contratação */}
+      <Card className="w-full">
+        <CardHeader>
+          <CardTitle className="text-lg text-green-600">Contratação - Plano Escolhido</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="modalidade" className="text-sm font-medium text-gray-700">
+                Modalidade de Compensação
+              </Label>
+              <Select value={modalidadeCompensacao} onValueChange={setModalidadeCompensacao}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione a modalidade" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="autoconsumo">AutoConsumo</SelectItem>
+                  <SelectItem value="geracao-compartilhada">Geração Compartilhada</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="data-adesao" className="text-sm font-medium text-gray-700">
+                Data de Adesão
+              </Label>
+              <div className="relative">
+                <Input
+                  id="data-adesao"
+                  type="date"
+                  value={dataAdesao}
+                  onChange={(e) => setDataAdesao(e.target.value)}
+                  className="pl-10"
+                />
+                <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              </div>
+            </div>
+
+            <div>
+              <Label htmlFor="kwh-vendedor" className="text-sm font-medium text-gray-700">
+                kWh Vendedor Informou
+              </Label>
+              <Input
+                id="kwh-vendedor"
+                type="number"
+                placeholder="Ex: 500"
+                value={kwhVendedor}
+                onChange={(e) => setKwhVendedor(e.target.value)}
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="kwh-contratado" className="text-sm font-medium text-gray-700">
+                kWh Contratado (Gestor Definido)
+              </Label>
+              <Input
+                id="kwh-contratado"
+                type="number"
+                placeholder="Ex: 450"
+                value={kwhContratado}
+                onChange={(e) => setKwhContratado(e.target.value)}
+              />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Plan Selection */}
       <Card className="w-full">
         <CardHeader>
