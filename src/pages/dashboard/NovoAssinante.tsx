@@ -26,47 +26,43 @@ const subscriberSchema = z.object({
     name: z.string().min(1, 'Nome é obrigatório'),
     cpfCnpj: z.string().min(1, 'CPF/CNPJ é obrigatório'),
     email: z.string().email('Email inválido'),
-    phone: z.string().min(1, 'Telefone é obrigatório'),
-    birthDate: z.string().min(1, 'Data de nascimento é obrigatória'),
+    telefone: z.string().min(1, 'Telefone é obrigatório'),
+    dataNascimento: z.string().min(1, 'Data de nascimento é obrigatória'),
     address: z.object({
       cep: z.string().min(8, 'CEP é obrigatório'),
-      street: z.string().min(1, 'Rua é obrigatória'),
-      number: z.string().min(1, 'Número é obrigatório'),
-      complement: z.string().optional(),
-      neighborhood: z.string().min(1, 'Bairro é obrigatório'),
-      city: z.string().min(1, 'Cidade é obrigatória'),
-      state: z.string().min(1, 'Estado é obrigatório'),
+      endereco: z.string().min(1, 'Endereço é obrigatório'),
+      numero: z.string().min(1, 'Número é obrigatório'),
+      complemento: z.string().optional(),
+      bairro: z.string().min(1, 'Bairro é obrigatório'),
+      cidade: z.string().min(1, 'Cidade é obrigatória'),
+      estado: z.string().min(1, 'Estado é obrigatório'),
     }),
   }),
   energyAccount: z.object({
     originalAccount: z.object({
       uc: z.string().min(1, 'UC é obrigatória'),
-      accountNumber: z.string().min(1, 'Número da conta é obrigatório'),
-    }),
-    distributorAccount: z.object({
-      uc: z.string().min(1, 'UC é obrigatória'),
-      accountNumber: z.string().min(1, 'Número da conta é obrigatório'),
+      numeroParceiroUC: z.string().min(1, 'Número do parceiro UC é obrigatório'),
     }),
   }),
   planContract: z.object({
     kwhContratado: z.number().min(1, 'kWh contratado é obrigatório'),
-    precoKwh: z.number().min(0.01, 'Preço kWh é obrigatório'),
-    modalidadeCompensacao: z.string().min(1, 'Modalidade é obrigatória'),
-    selectedPlan: z.string().min(1, 'Plano é obrigatório'),
-    fidelidade: z.number().min(1, 'Fidelidade é obrigatória'),
-    anosFidelidade: z.number().min(1, 'Anos de fidelidade é obrigatório'),
+    modalidadeCompensacao: z.enum(['autoconsumo', 'geracaoCompartilhada']),
+    fidelidade: z.enum(['sem', 'com']),
+    anosFidelidade: z.enum(['1', '2']).optional(),
   }),
-  contacts: z.object({
-    emergency: z.string().optional(),
-    billing: z.string().optional(),
-  }),
+  contacts: z.array(z.any()).optional(),
   notifications: z.object({
-    email: z.boolean(),
-    sms: z.boolean(),
-    whatsapp: z.boolean(),
+    whatsappFaturas: z.boolean(),
+    whatsappPagamento: z.boolean(),
   }),
   concessionaria: z.string().min(1, 'Concessionária é obrigatória'),
-  attachments: z.array(z.any()).optional(),
+  attachments: z.object({
+    contrato: z.any().optional(),
+    cnh: z.any().optional(),
+    conta: z.any().optional(),
+    contratoSocial: z.any().optional(),
+    procuracao: z.any().optional(),
+  }).optional(),
 });
 
 interface NovoAssinanteProps {
@@ -82,50 +78,82 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
     resolver: zodResolver(subscriberSchema),
     defaultValues: {
       subscriber: {
+        type: 'fisica',
         name: '',
         cpfCnpj: '',
+        numeroParceiroNegocio: '',
         email: '',
-        phone: '',
-        birthDate: '',
+        telefone: '',
+        dataNascimento: '',
+        observacoes: '',
         address: {
           cep: '',
-          street: '',
-          number: '',
-          complement: '',
-          neighborhood: '',
-          city: '',
-          state: '',
+          endereco: '',
+          numero: '',
+          complemento: '',
+          bairro: '',
+          cidade: '',
+          estado: '',
         },
+        contacts: [],
       },
       energyAccount: {
         originalAccount: {
+          type: 'fisica',
+          cpfCnpj: '',
+          name: '',
           uc: '',
-          accountNumber: '',
+          numeroParceiroUC: '',
+          address: {
+            cep: '',
+            endereco: '',
+            numero: '',
+            complemento: '',
+            bairro: '',
+            cidade: '',
+            estado: '',
+          },
         },
-        distributorAccount: {
-          uc: '',
-          accountNumber: '',
-        },
+        realizarTrocaTitularidade: false,
       },
       planContract: {
+        modalidadeCompensacao: 'autoconsumo',
+        dataAdesao: '',
+        kwhVendedor: 0,
         kwhContratado: 0,
-        precoKwh: 0,
-        modalidadeCompensacao: '',
-        selectedPlan: '',
-        fidelidade: 12,
-        anosFidelidade: 1,
+        faixaConsumo: '400-599',
+        fidelidade: 'sem',
+        desconto: 0,
       },
-      contacts: {
-        emergency: '',
-        billing: '',
+      planDetails: {
+        clientePagaPisCofins: false,
+        clientePagaFioB: false,
+        adicionarValorDistribuidora: false,
+        assinanteIsento: false,
       },
       notifications: {
-        email: true,
-        sms: false,
-        whatsapp: true,
+        whatsappFaturas: true,
+        whatsappPagamento: true,
+        notifications: {
+          criarCobranca: { whatsapp: true, email: true },
+          alteracaoValor: { whatsapp: true, email: true },
+          vencimento1Dia: { whatsapp: true, email: true },
+          vencimentoHoje: { whatsapp: true, email: true },
+        },
+        overdueNotifications: {
+          day1: { whatsapp: true, email: true },
+          day3: { whatsapp: true, email: true },
+          day5: { whatsapp: true, email: true },
+          day7: { whatsapp: true, email: true },
+          day15: { whatsapp: true, email: true },
+          day20: { whatsapp: true, email: true },
+          day25: { whatsapp: true, email: true },
+          day30: { whatsapp: true, email: true },
+          after30: { whatsapp: true, email: true },
+        },
       },
       concessionaria: '',
-      attachments: [],
+      attachments: {},
     },
   });
 
@@ -133,16 +161,16 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
 
   const handleInputChange = (section: string, field: string, value: any) => {
     const currentSection = formData[section as keyof typeof formData];
-    if (typeof currentSection === 'object' && currentSection !== null) {
+    if (typeof currentSection === 'object' && currentSection !== null && !Array.isArray(currentSection)) {
       form.setValue(`${section}.${field}` as any, value);
     }
   };
 
   const handleNestedInputChange = (section: string, subsection: string, field: string, value: any) => {
     const currentSection = formData[section as keyof typeof formData];
-    if (typeof currentSection === 'object' && currentSection !== null) {
+    if (typeof currentSection === 'object' && currentSection !== null && !Array.isArray(currentSection)) {
       const currentSubsection = (currentSection as any)[subsection];
-      if (typeof currentSubsection === 'object' && currentSubsection !== null) {
+      if (typeof currentSubsection === 'object' && currentSubsection !== null && !Array.isArray(currentSubsection)) {
         form.setValue(`${section}.${subsection}.${field}` as any, value);
       }
     }
@@ -155,9 +183,7 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
   };
 
   const handleContactsChange = (contacts: any) => {
-    Object.keys(contacts).forEach(key => {
-      form.setValue(`contacts.${key}` as any, contacts[key]);
-    });
+    form.setValue('subscriber.contacts', contacts);
   };
 
   const handlePlanChange = (planData: any) => {
@@ -322,22 +348,22 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
                         </div>
 
                         <div className="space-y-2">
-                          <Label htmlFor="phone">Telefone *</Label>
+                          <Label htmlFor="telefone">Telefone *</Label>
                           <Input
-                            id="phone"
-                            value={formData.subscriber.phone}
-                            onChange={(e) => handleInputChange('subscriber', 'phone', e.target.value)}
+                            id="telefone"
+                            value={formData.subscriber.telefone}
+                            onChange={(e) => handleInputChange('subscriber', 'telefone', e.target.value)}
                             placeholder="Digite o telefone"
                           />
                         </div>
 
                         <div className="space-y-2">
-                          <Label htmlFor="birthDate">Data de Nascimento *</Label>
+                          <Label htmlFor="dataNascimento">Data de Nascimento *</Label>
                           <Input
-                            id="birthDate"
+                            id="dataNascimento"
                             type="date"
-                            value={formData.subscriber.birthDate}
-                            onChange={(e) => handleInputChange('subscriber', 'birthDate', e.target.value)}
+                            value={formData.subscriber.dataNascimento}
+                            onChange={(e) => handleInputChange('subscriber', 'dataNascimento', e.target.value)}
                           />
                         </div>
 
@@ -374,7 +400,8 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
                     </CardHeader>
                     <CardContent>
                       <AddressForm 
-                        onChange={handleAddressChange}
+                        form={form}
+                        prefix="subscriber.address"
                       />
                     </CardContent>
                   </Card>
@@ -390,6 +417,7 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
                     </CardHeader>
                     <CardContent>
                       <ContactsForm 
+                        contacts={formData.subscriber.contacts || []}
                         onChange={handleContactsChange}
                       />
                       
@@ -397,27 +425,19 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
                         <h4 className="font-medium text-gray-900">Preferências de Notificação</h4>
                         <div className="space-y-3">
                           <div className="flex items-center justify-between">
-                            <Label htmlFor="email-notifications">Notificações por Email</Label>
+                            <Label htmlFor="whatsapp-faturas">WhatsApp para Faturas</Label>
                             <Switch
-                              id="email-notifications"
-                              checked={formData.notifications.email}
-                              onCheckedChange={(checked) => handleNestedInputChange('notifications', '', 'email', checked)}
+                              id="whatsapp-faturas"
+                              checked={formData.notifications.whatsappFaturas}
+                              onCheckedChange={(checked) => handleNestedInputChange('notifications', '', 'whatsappFaturas', checked)}
                             />
                           </div>
                           <div className="flex items-center justify-between">
-                            <Label htmlFor="sms-notifications">Notificações por SMS</Label>
+                            <Label htmlFor="whatsapp-pagamento">WhatsApp para Pagamento</Label>
                             <Switch
-                              id="sms-notifications"
-                              checked={formData.notifications.sms}
-                              onCheckedChange={(checked) => handleNestedInputChange('notifications', '', 'sms', checked)}
-                            />
-                          </div>
-                          <div className="flex items-center justify-between">
-                            <Label htmlFor="whatsapp-notifications">Notificações por WhatsApp</Label>
-                            <Switch
-                              id="whatsapp-notifications"
-                              checked={formData.notifications.whatsapp}
-                              onCheckedChange={(checked) => handleNestedInputChange('notifications', '', 'whatsapp', checked)}
+                              id="whatsapp-pagamento"
+                              checked={formData.notifications.whatsappPagamento}
+                              onCheckedChange={(checked) => handleNestedInputChange('notifications', '', 'whatsappPagamento', checked)}
                             />
                           </div>
                         </div>
@@ -450,43 +470,12 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="original-account">Número da Conta *</Label>
+                        <Label htmlFor="original-parceiro">Número do Parceiro UC *</Label>
                         <Input
-                          id="original-account"
-                          value={formData.energyAccount.originalAccount.accountNumber}
-                          onChange={(e) => handleNestedInputChange('energyAccount', 'originalAccount', 'accountNumber', e.target.value)}
-                          placeholder="Digite o número da conta"
-                        />
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center space-x-2">
-                      <Zap className="w-5 h-5 text-green-600" />
-                      <span>Conta Distribuidora</span>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="distributor-uc">UC (Unidade Consumidora) *</Label>
-                        <Input
-                          id="distributor-uc"
-                          value={formData.energyAccount.distributorAccount.uc}
-                          onChange={(e) => handleNestedInputChange('energyAccount', 'distributorAccount', 'uc', e.target.value)}
-                          placeholder="Digite a UC"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="distributor-account">Número da Conta *</Label>
-                        <Input
-                          id="distributor-account"
-                          value={formData.energyAccount.distributorAccount.accountNumber}
-                          onChange={(e) => handleNestedInputChange('energyAccount', 'distributorAccount', 'accountNumber', e.target.value)}
-                          placeholder="Digite o número da conta"
+                          id="original-parceiro"
+                          value={formData.energyAccount.originalAccount.numeroParceiroUC}
+                          onChange={(e) => handleNestedInputChange('energyAccount', 'originalAccount', 'numeroParceiroUC', e.target.value)}
+                          placeholder="Digite o número do parceiro"
                         />
                       </div>
                     </div>
@@ -518,17 +507,6 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="preco-kwh">Preço por kWh *</Label>
-                        <Input
-                          id="preco-kwh"
-                          type="number"
-                          step="0.01"
-                          value={formData.planContract.precoKwh}
-                          onChange={(e) => handleNestedInputChange('planContract', '', 'precoKwh', Number(e.target.value))}
-                          placeholder="0.00"
-                        />
-                      </div>
-                      <div className="space-y-2">
                         <Label htmlFor="modalidade">Modalidade de Compensação *</Label>
                         <Select
                           value={formData.planContract.modalidadeCompensacao}
@@ -538,9 +516,23 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
                             <SelectValue placeholder="Selecione" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="geracao-local">Geração Local</SelectItem>
-                            <SelectItem value="geracao-compartilhada">Geração Compartilhada</SelectItem>
-                            <SelectItem value="autoconsumo-remoto">Autoconsumo Remoto</SelectItem>
+                            <SelectItem value="autoconsumo">Autoconsumo</SelectItem>
+                            <SelectItem value="geracaoCompartilhada">Geração Compartilhada</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="fidelidade">Fidelidade *</Label>
+                        <Select
+                          value={formData.planContract.fidelidade}
+                          onValueChange={(value) => handleNestedInputChange('planContract', '', 'fidelidade', value)}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecione" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="sem">Sem Fidelidade</SelectItem>
+                            <SelectItem value="com">Com Fidelidade</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
@@ -554,7 +546,7 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
                   </CardHeader>
                   <CardContent>
                     <PlanTable 
-                      selectedPlan={formData.planContract.selectedPlan}
+                      selectedPlan={formData.planContract.faixaConsumo}
                       fidelidade={formData.planContract.fidelidade}
                       anosFidelidade={formData.planContract.anosFidelidade}
                       onPlanChange={handlePlanChange}
@@ -582,7 +574,7 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
                           <p><strong>Nome:</strong> {formData.subscriber.name}</p>
                           <p><strong>CPF/CNPJ:</strong> {formData.subscriber.cpfCnpj}</p>
                           <p><strong>Email:</strong> {formData.subscriber.email}</p>
-                          <p><strong>Telefone:</strong> {formData.subscriber.phone}</p>
+                          <p><strong>Telefone:</strong> {formData.subscriber.telefone}</p>
                         </div>
                       </div>
 
@@ -590,9 +582,7 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
                         <h4 className="font-medium text-gray-900">Conta de Energia</h4>
                         <div className="space-y-2 text-sm">
                           <p><strong>UC Original:</strong> {formData.energyAccount.originalAccount.uc}</p>
-                          <p><strong>Conta Original:</strong> {formData.energyAccount.originalAccount.accountNumber}</p>
-                          <p><strong>UC Distribuidora:</strong> {formData.energyAccount.distributorAccount.uc}</p>
-                          <p><strong>Conta Distribuidora:</strong> {formData.energyAccount.distributorAccount.accountNumber}</p>
+                          <p><strong>Parceiro UC:</strong> {formData.energyAccount.originalAccount.numeroParceiroUC}</p>
                         </div>
                       </div>
 
@@ -600,9 +590,8 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
                         <h4 className="font-medium text-gray-900">Plano Contratado</h4>
                         <div className="space-y-2 text-sm">
                           <p><strong>kWh Contratado:</strong> {formData.planContract.kwhContratado}</p>
-                          <p><strong>Preço kWh:</strong> R$ {formData.planContract.precoKwh}</p>
                           <p><strong>Modalidade:</strong> {formData.planContract.modalidadeCompensacao}</p>
-                          <p><strong>Plano:</strong> {formData.planContract.selectedPlan}</p>
+                          <p><strong>Fidelidade:</strong> {formData.planContract.fidelidade}</p>
                         </div>
                       </div>
 
@@ -610,9 +599,9 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
                         <h4 className="font-medium text-gray-900">Endereço</h4>
                         <div className="space-y-2 text-sm">
                           <p><strong>CEP:</strong> {formData.subscriber.address.cep}</p>
-                          <p><strong>Rua:</strong> {formData.subscriber.address.street}, {formData.subscriber.address.number}</p>
-                          <p><strong>Bairro:</strong> {formData.subscriber.address.neighborhood}</p>
-                          <p><strong>Cidade:</strong> {formData.subscriber.address.city} - {formData.subscriber.address.state}</p>
+                          <p><strong>Endereço:</strong> {formData.subscriber.address.endereco}, {formData.subscriber.address.numero}</p>
+                          <p><strong>Bairro:</strong> {formData.subscriber.address.bairro}</p>
+                          <p><strong>Cidade:</strong> {formData.subscriber.address.cidade} - {formData.subscriber.address.estado}</p>
                         </div>
                       </div>
                     </div>
