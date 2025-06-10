@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -32,7 +31,7 @@ import {
   FileCheck,
   Home,
   UserCheck,
-  Contact,
+  Contact as ContactIcon,
   Shield,
   Sparkles
 } from 'lucide-react';
@@ -154,7 +153,7 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
     { 
       id: 4, 
       label: 'Contatos', 
-      icon: Contact, 
+      icon: ContactIcon, 
       description: 'Contatos adicionais',
       color: 'primary'
     },
