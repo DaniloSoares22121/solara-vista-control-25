@@ -94,7 +94,7 @@ const LoginForm = () => {
           <div className="text-center pt-6">
             <p className="text-gray-600">
               Não tem uma conta?{" "}
-              <a href="#" className="text-green-600 hover:text-green-700 font-semibold transition-colors">
+              <a href="/register" className="text-green-600 hover:text-green-700 font-semibold transition-colors">
                 Cadastre-se aqui
               </a>
             </p>
