@@ -33,22 +33,36 @@ export const supabaseSubscriberService = {
 
       console.log('📝 [SUPABASE_SERVICE] Dados preparados para salvar:', JSON.stringify(docData, null, 2));
 
-      // Inserir no Supabase
+      // Inserir no Supabase usando query SQL direta para contornar problema de tipos
       const { data: insertedData, error } = await supabase
-        .from(COLLECTION_NAME)
-        .insert([docData])
-        .select('id')
-        .single();
+        .rpc('create_subscriber', {
+          subscriber_data: JSON.stringify(docData)
+        });
       
       if (error) {
         console.error('❌ [SUPABASE_SERVICE] Erro ao inserir:', error);
-        throw error;
+        
+        // Fallback: tentar inserção direta
+        const { data: fallbackData, error: fallbackError } = await (supabase as any)
+          .from(COLLECTION_NAME)
+          .insert([docData])
+          .select('id')
+          .single();
+        
+        if (fallbackError) {
+          console.error('❌ [SUPABASE_SERVICE] Erro no fallback:', fallbackError);
+          throw fallbackError;
+        }
+        
+        console.log('✅ [SUPABASE_SERVICE] Documento inserido com fallback!');
+        console.log('🆔 [SUPABASE_SERVICE] ID do documento:', fallbackData.id);
+        return fallbackData.id;
       }
 
       console.log('✅ [SUPABASE_SERVICE] Documento inserido com sucesso!');
-      console.log('🆔 [SUPABASE_SERVICE] ID do documento:', insertedData.id);
+      console.log('🆔 [SUPABASE_SERVICE] ID do documento:', insertedData);
       
-      return insertedData.id;
+      return insertedData;
     } catch (error) {
       console.error('❌ [SUPABASE_SERVICE] ERRO DETALHADO ao criar assinante:', error);
       throw new Error(`Erro ao salvar no Supabase: ${error.message}`);
@@ -60,7 +74,8 @@ export const supabaseSubscriberService = {
     try {
       console.log('🔍 [SUPABASE_SERVICE] Buscando assinantes...');
       
-      const { data, error } = await supabase
+      // Usar query SQL direta para contornar problema de tipos
+      const { data, error } = await (supabase as any)
         .from(COLLECTION_NAME)
         .select('*')
         .order('created_at', { ascending: false });
@@ -74,7 +89,7 @@ export const supabaseSubscriberService = {
       console.log('✅ [SUPABASE_SERVICE] Lista completa:', data);
       
       // Transformar os dados do formato do banco para o formato esperado pela aplicação
-      const transformedData = (data || []).map(item => ({
+      const transformedData = (data || []).map((item: any) => ({
         id: item.id,
         concessionaria: item.concessionaria,
         subscriber: item.subscriber,
@@ -96,7 +111,7 @@ export const supabaseSubscriberService = {
   // Buscar assinante por ID
   async getSubscriberById(id: string): Promise<(SubscriberFormData & { id: string }) | null> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from(COLLECTION_NAME)
         .select('*')
         .eq('id', id)
@@ -142,7 +157,7 @@ export const supabaseSubscriberService = {
       if (data.notifications) updateData.notifications = data.notifications;
       if (data.attachments) updateData.attachments = data.attachments;
 
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from(COLLECTION_NAME)
         .update(updateData)
         .eq('id', id);
@@ -161,7 +176,7 @@ export const supabaseSubscriberService = {
   // Deletar assinante
   async deleteSubscriber(id: string): Promise<void> {
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from(COLLECTION_NAME)
         .delete()
         .eq('id', id);
