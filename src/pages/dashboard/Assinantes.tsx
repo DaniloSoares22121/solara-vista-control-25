@@ -1,12 +1,25 @@
 
+import { useState } from 'react';
 import DashboardLayout from '@/components/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Search, Plus, Filter, User, Users, MapPin, Activity, Download } from 'lucide-react';
+import NovoAssinante from './NovoAssinante';
 
 const Assinantes = () => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleOpenModal = () => {
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+  };
+
   return (
     <DashboardLayout>
       <div className="space-y-6 sm:space-y-8 p-4 sm:p-6">
@@ -29,7 +42,10 @@ const Assinantes = () => {
               <Download className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
               Exportar
             </Button>
-            <Button className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-lg hover:shadow-xl transition-all duration-200 px-4 sm:px-6 py-2 sm:py-3 text-sm">
+            <Button 
+              onClick={handleOpenModal}
+              className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-lg hover:shadow-xl transition-all duration-200 px-4 sm:px-6 py-2 sm:py-3 text-sm"
+            >
               <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
               Novo Assinante
             </Button>
@@ -142,7 +158,10 @@ const Assinantes = () => {
               </p>
               
               <div className="flex flex-col sm:flex-row gap-3 pt-2 sm:pt-4 justify-center">
-                <Button className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-lg px-6 sm:px-8 py-2 sm:py-3 text-sm">
+                <Button 
+                  onClick={handleOpenModal}
+                  className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-lg px-6 sm:px-8 py-2 sm:py-3 text-sm"
+                >
                   <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                   Adicionar Assinante
                 </Button>
@@ -155,6 +174,20 @@ const Assinantes = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Modal for New Subscriber */}
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden p-0">
+          <DialogHeader className="p-6 pb-0">
+            <DialogTitle className="text-2xl font-bold text-gray-900">
+              Novo Assinante
+            </DialogTitle>
+          </DialogHeader>
+          <div className="overflow-y-auto px-6 pb-6">
+            <NovoAssinante onClose={handleCloseModal} />
+          </div>
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 };
