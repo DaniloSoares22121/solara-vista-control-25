@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import { Search, Plus, Filter, User, Users, MapPin, Activity, Download, Loader2 } from 'lucide-react';
+import { Search, Plus, Filter, User, Users, MapPin, Activity, Download, Loader2, Phone, Mail, Calendar, Zap } from 'lucide-react';
 import { useSubscribers } from '@/hooks/useSubscribers';
 import NovoAssinante from './NovoAssinante';
 
@@ -35,6 +35,23 @@ const Assinantes = () => {
   const activeSubscribers = subscribers.filter(sub => sub.planContract.modalidadeCompensacao).length;
   const totalUCs = subscribers.reduce((acc, sub) => acc + 1, 0); // Por enquanto 1 UC por assinante
   const totalEconomy = 0; // Implementar cálculo de economia depois
+
+  // Formatação de data
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('pt-BR');
+  };
+
+  // Formatação de endereço
+  const formatAddress = (address: any) => {
+    if (!address) return 'Endereço não informado';
+    return `${address.endereco}, ${address.numero}${address.complemento ? `, ${address.complemento}` : ''} - ${address.bairro}, ${address.cidade}/${address.estado}`;
+  };
+
+  // Formatação de modalidade
+  const formatModalidade = (modalidade: string) => {
+    return modalidade === 'autoconsumo' ? 'Autoconsumo Remoto' : 'Geração Compartilhada';
+  };
 
   return (
     <DashboardLayout>
@@ -211,32 +228,91 @@ const Assinantes = () => {
             </CardContent>
           </Card>
         ) : (
-          // Lista de assinantes (implementar depois se necessário)
-          <Card className="border-0 shadow-lg bg-white">
-            <CardContent className="p-6">
-              <div className="space-y-4">
-                {filteredSubscribers.map((subscriber) => (
-                  <div key={subscriber.id} className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h3 className="font-semibold text-gray-900">{subscriber.subscriber.name}</h3>
-                        <p className="text-sm text-gray-600">UC: {subscriber.energyAccount.originalAccount.uc}</p>
-                        <p className="text-sm text-gray-600">{subscriber.subscriber.cpfCnpj}</p>
-                      </div>
-                      <div className="text-right">
-                        <Badge variant="secondary" className="bg-green-100 text-green-700">
-                          {subscriber.planContract.modalidadeCompensacao}
-                        </Badge>
-                        <p className="text-sm text-gray-600 mt-1">
-                          {subscriber.planContract.kwhContratado} kWh
-                        </p>
+          // Lista de assinantes com informações detalhadas
+          <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-6">
+            {filteredSubscribers.map((subscriber) => (
+              <Card key={subscriber.id} className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 bg-white">
+                <CardHeader className="border-b border-gray-100 pb-4">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <CardTitle className="text-lg font-bold text-gray-900 mb-1">
+                        {subscriber.subscriber.name}
+                      </CardTitle>
+                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                        <MapPin className="w-4 h-4" />
+                        <span className="font-medium">UC: {subscriber.energyAccount.originalAccount.uc}</span>
                       </div>
                     </div>
+                    <Badge 
+                      variant="secondary" 
+                      className={`${
+                        subscriber.planContract.modalidadeCompensacao === 'autoconsumo' 
+                          ? 'bg-blue-100 text-blue-700 border-blue-200' 
+                          : 'bg-green-100 text-green-700 border-green-200'
+                      }`}
+                    >
+                      {formatModalidade(subscriber.planContract.modalidadeCompensacao)}
+                    </Badge>
                   </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+                </CardHeader>
+
+                <CardContent className="pt-4 space-y-4">
+                  {/* Contato */}
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 text-sm">
+                      <Phone className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                      <span className="text-gray-900">{subscriber.subscriber.telefone}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm">
+                      <Mail className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                      <span className="text-gray-900 break-all">{subscriber.subscriber.email}</span>
+                    </div>
+                  </div>
+
+                  {/* Endereço */}
+                  <div className="border-t border-gray-100 pt-3">
+                    <div className="flex items-start gap-2 text-sm">
+                      <MapPin className="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" />
+                      <span className="text-gray-900 leading-relaxed">
+                        {formatAddress(subscriber.subscriber.address)}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Plano e Detalhes */}
+                  <div className="border-t border-gray-100 pt-3 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Zap className="w-4 h-4 text-yellow-500" />
+                        <span className="text-sm font-medium text-gray-700">Plano Contratado</span>
+                      </div>
+                      <span className="text-sm font-bold text-gray-900">
+                        {subscriber.planContract.kwhContratado.toLocaleString()} kWh/mês
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Calendar className="w-4 h-4 text-blue-500" />
+                        <span className="text-sm font-medium text-gray-700">Desde</span>
+                      </div>
+                      <span className="text-sm font-bold text-gray-900">
+                        {formatDate(subscriber.planContract.dataAdesao)}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Informações adicionais */}
+                  <div className="border-t border-gray-100 pt-3">
+                    <div className="flex items-center justify-between text-xs text-gray-500">
+                      <span>Desconto: {subscriber.planContract.desconto}%</span>
+                      <span>Faixa: {subscriber.planContract.faixaConsumo}</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         )}
       </div>
 
