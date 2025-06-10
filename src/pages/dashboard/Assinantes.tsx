@@ -1,11 +1,10 @@
-
 import { useState } from 'react';
 import DashboardLayout from '@/components/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Search, Plus, Filter, User, Users, MapPin, Activity, Download } from 'lucide-react';
 import NovoAssinante from './NovoAssinante';
 
@@ -175,19 +174,15 @@ const Assinantes = () => {
         </Card>
       </div>
 
-      {/* Modal for New Subscriber */}
-      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden p-0">
-          <DialogHeader className="p-6 pb-0">
-            <DialogTitle className="text-2xl font-bold text-gray-900">
-              Novo Assinante
-            </DialogTitle>
-          </DialogHeader>
-          <div className="overflow-y-auto px-6 pb-6">
-            <NovoAssinante onClose={handleCloseModal} />
-          </div>
-        </DialogContent>
-      </Dialog>
+      {/* Sheet for New Subscriber */}
+      <Sheet open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <SheetContent side="right" className="w-full sm:max-w-6xl p-0 overflow-hidden">
+          <SheetHeader className="sr-only">
+            <SheetTitle>Novo Assinante</SheetTitle>
+          </SheetHeader>
+          <NovoAssinante onClose={handleCloseModal} />
+        </SheetContent>
+      </Sheet>
     </DashboardLayout>
   );
 };
