@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import DashboardLayout from '@/components/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -42,7 +43,7 @@ const Assinantes = () => {
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div className="space-y-2">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center shadow-lg">
                 <Users className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
               </div>
               <div>
@@ -60,7 +61,7 @@ const Assinantes = () => {
             <Button 
               onClick={handleOpenModal}
               disabled={loading}
-              className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-lg hover:shadow-xl transition-all duration-200 px-4 sm:px-6 py-2 sm:py-3 text-sm"
+              className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white shadow-lg hover:shadow-xl transition-all duration-200 px-4 sm:px-6 py-2 sm:py-3 text-sm"
             >
               {loading ? (
                 <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 mr-2 animate-spin" />
@@ -78,8 +79,8 @@ const Assinantes = () => {
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-xs sm:text-sm font-medium text-gray-600">Total de Assinantes</CardTitle>
-                <div className="p-2 rounded-lg bg-blue-50">
-                  <Users className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
+                <div className="p-2 rounded-lg bg-green-50">
+                  <Users className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
                 </div>
               </div>
             </CardHeader>
@@ -108,8 +109,8 @@ const Assinantes = () => {
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-xs sm:text-sm font-medium text-gray-600">UCs Vinculadas</CardTitle>
-                <div className="p-2 rounded-lg bg-purple-50">
-                  <MapPin className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
+                <div className="p-2 rounded-lg bg-green-50">
+                  <MapPin className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
                 </div>
               </div>
             </CardHeader>
@@ -123,8 +124,8 @@ const Assinantes = () => {
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-xs sm:text-sm font-medium text-gray-600">Economia Total</CardTitle>
-                <div className="p-2 rounded-lg bg-orange-50">
-                  <Activity className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" />
+                <div className="p-2 rounded-lg bg-green-50">
+                  <Activity className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
                 </div>
               </div>
             </CardHeader>
@@ -145,7 +146,7 @@ const Assinantes = () => {
                   placeholder="Buscar assinantes por nome, UC ou documento..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 sm:pl-12 h-10 sm:h-12 border-gray-200 focus:border-blue-500 focus:ring-blue-500 bg-gray-50 text-sm"
+                  className="pl-10 sm:pl-12 h-10 sm:h-12 border-gray-200 focus:border-green-500 focus:ring-green-500 bg-gray-50 text-sm"
                 />
               </div>
               
@@ -161,7 +162,7 @@ const Assinantes = () => {
         {loading && (
           <Card className="border-0 shadow-lg bg-white">
             <CardContent className="flex items-center justify-center py-12">
-              <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+              <Loader2 className="w-8 h-8 animate-spin text-green-600" />
               <span className="ml-2 text-gray-600">Carregando assinantes...</span>
             </CardContent>
           </Card>
@@ -172,8 +173,8 @@ const Assinantes = () => {
           <Card className="border-0 shadow-lg bg-white">
             <CardContent className="flex flex-col items-center justify-center py-12 sm:py-20 px-4">
               <div className="relative mb-6 sm:mb-8">
-                <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-blue-100 to-blue-200 rounded-full flex items-center justify-center">
-                  <User className="w-10 h-10 sm:w-12 sm:h-12 text-blue-600" />
+                <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-green-100 to-green-200 rounded-full flex items-center justify-center">
+                  <User className="w-10 h-10 sm:w-12 sm:h-12 text-green-600" />
                 </div>
                 <div className="absolute -top-2 -right-2">
                   <Badge variant="secondary" className="bg-green-100 text-green-700 border-green-200 text-xs">
@@ -196,7 +197,7 @@ const Assinantes = () => {
                 <div className="flex flex-col sm:flex-row gap-3 pt-2 sm:pt-4 justify-center">
                   <Button 
                     onClick={handleOpenModal}
-                    className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-lg px-6 sm:px-8 py-2 sm:py-3 text-sm"
+                    className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white shadow-lg px-6 sm:px-8 py-2 sm:py-3 text-sm"
                   >
                     <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                     Adicionar Assinante
