@@ -80,7 +80,7 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
   const form = useForm<SubscriberFormData>({
     resolver: zodResolver(subscriberFormSchema),
     defaultValues: {
-      concessionaria: '',
+      concessionaria: 'Equatorial Goiás',
       subscriber: {
         type: 'fisica',
         cpfCnpj: '',
@@ -230,7 +230,7 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
                               <Building className="w-5 h-5 text-green-600" />
                               Concessionária de Energia *
                             </FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <Select onValueChange={field.onChange} value={field.value}>
                               <FormControl>
                                 <SelectTrigger className="h-12 border-green-300 focus:border-green-500 focus:ring-green-500/20 bg-white rounded-lg">
                                   <SelectValue placeholder="Selecione a concessionária de energia" />
@@ -238,8 +238,6 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
                               </FormControl>
                               <SelectContent className="bg-white">
                                 <SelectItem value="Equatorial Goiás">Equatorial Goiás</SelectItem>
-                                <SelectItem value="Enel">Enel</SelectItem>
-                                <SelectItem value="CEMIG">CEMIG</SelectItem>
                               </SelectContent>
                             </Select>
                             <FormMessage />
@@ -248,109 +246,154 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
                       />
                     </div>
 
-                    {/* Tipo de Pessoa - só aparece após selecionar concessionária */}
-                    {concessionaria && (
-                      <div className="p-6 bg-slate-50/50 rounded-lg border border-slate-200/50">
+                    {/* Tipo de Pessoa - agora sempre aparece pois concessionária sempre está selecionada */}
+                    <div className="p-6 bg-slate-50/50 rounded-lg border border-slate-200/50">
+                      <FormField
+                        control={form.control}
+                        name="subscriber.type"
+                        render={({ field }) => (
+                          <FormItem className="space-y-4">
+                            <FormLabel className="text-base font-semibold text-gray-800">Tipo de Pessoa *</FormLabel>
+                            <RadioGroup defaultValue={field.value} onValueChange={field.onChange} className="flex gap-6">
+                              <FormItem className="flex items-center space-x-3 space-y-0 p-4 border border-green-300 rounded-lg hover:border-green-400 transition-colors bg-white">
+                                <FormControl>
+                                  <RadioGroupItem value="fisica" id="fisica" className="border-green-500 text-green-600" />
+                                </FormControl>
+                                <FormLabel htmlFor="fisica" className="font-medium text-gray-700 cursor-pointer">Pessoa Física</FormLabel>
+                              </FormItem>
+                              <FormItem className="flex items-center space-x-3 space-y-0 p-4 border border-green-300 rounded-lg hover:border-green-400 transition-colors bg-white">
+                                <FormControl>
+                                  <RadioGroupItem value="juridica" id="juridica" className="border-green-500 text-green-600" />
+                                </FormControl>
+                                <FormLabel htmlFor="juridica" className="font-medium text-gray-700 cursor-pointer">Pessoa Jurídica</FormLabel>
+                              </FormItem>
+                            </RadioGroup>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    {/* Campos específicos do tipo - agora sempre aparece pois tipo sempre está selecionado */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                      {/* Coluna 1 */}
+                      <div className="space-y-6">
                         <FormField
                           control={form.control}
-                          name="subscriber.type"
+                          name="subscriber.cpfCnpj"
                           render={({ field }) => (
-                            <FormItem className="space-y-4">
-                              <FormLabel className="text-base font-semibold text-gray-800">Tipo de Pessoa *</FormLabel>
-                              <RadioGroup defaultValue={field.value} onValueChange={field.onChange} className="flex gap-6">
-                                <FormItem className="flex items-center space-x-3 space-y-0 p-4 border border-green-300 rounded-lg hover:border-green-400 transition-colors bg-white">
-                                  <FormControl>
-                                    <RadioGroupItem value="fisica" id="fisica" className="border-green-500 text-green-600" />
-                                  </FormControl>
-                                  <FormLabel htmlFor="fisica" className="font-medium text-gray-700 cursor-pointer">Pessoa Física</FormLabel>
-                                </FormItem>
-                                <FormItem className="flex items-center space-x-3 space-y-0 p-4 border border-green-300 rounded-lg hover:border-green-400 transition-colors bg-white">
-                                  <FormControl>
-                                    <RadioGroupItem value="juridica" id="juridica" className="border-green-500 text-green-600" />
-                                  </FormControl>
-                                  <FormLabel htmlFor="juridica" className="font-medium text-gray-700 cursor-pointer">Pessoa Jurídica</FormLabel>
-                                </FormItem>
-                              </RadioGroup>
+                            <FormItem>
+                              <FormLabel className="text-sm font-semibold text-gray-700">
+                                {subscriberType === 'fisica' ? 'CPF *' : 'CNPJ *'}
+                              </FormLabel>
+                              <FormControl>
+                                <Input 
+                                  placeholder={subscriberType === 'fisica' ? '000.000.000-00' : '00.000.000/0000-00'} 
+                                  className="h-12 border-gray-300 focus:border-green-500 focus:ring-green-500/20 bg-white rounded-lg"
+                                  {...field} 
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="subscriber.numeroParceiroNegocio"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-sm font-semibold text-gray-700">Número Parceiro de Negócio *</FormLabel>
+                              <FormControl>
+                                <Input 
+                                  placeholder="Número do parceiro de negócio" 
+                                  className="h-12 border-gray-300 focus:border-green-500 focus:ring-green-500/20 bg-white rounded-lg"
+                                  {...field} 
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="subscriber.name"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-sm font-semibold text-gray-700">
+                                {subscriberType === 'fisica' ? 'Nome Completo do Titular *' : 'Razão Social *'}
+                              </FormLabel>
+                              <FormControl>
+                                <Input 
+                                  placeholder={subscriberType === 'fisica' ? 'Nome completo' : 'Razão social da empresa'} 
+                                  className="h-12 border-gray-300 focus:border-green-500 focus:ring-green-500/20 bg-white rounded-lg"
+                                  {...field} 
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        {subscriberType === 'juridica' && (
+                          <FormField
+                            control={form.control}
+                            name="subscriber.nomeFantasia"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-sm font-semibold text-gray-700">Nome Fantasia</FormLabel>
+                                <FormControl>
+                                  <Input 
+                                    placeholder="Nome fantasia" 
+                                    className="h-12 border-gray-300 focus:border-green-500 focus:ring-green-500/20 bg-white rounded-lg"
+                                    {...field} 
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        )}
+
+                        <FormField
+                          control={form.control}
+                          name="subscriber.telefone"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                                <Phone className="w-4 h-4 text-green-500" />
+                                Telefone *
+                              </FormLabel>
+                              <FormControl>
+                                <Input 
+                                  placeholder="(00) 00000-0000" 
+                                  className="h-12 border-gray-300 focus:border-green-500 focus:ring-green-500/20 bg-white rounded-lg"
+                                  {...field} 
+                                />
+                              </FormControl>
                               <FormMessage />
                             </FormItem>
                           )}
                         />
                       </div>
-                    )}
 
-                    {/* Campos específicos do tipo - só aparece após selecionar tipo */}
-                    {subscriberType && (
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                        {/* Coluna 1 */}
-                        <div className="space-y-6">
-                          <FormField
-                            control={form.control}
-                            name="subscriber.cpfCnpj"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel className="text-sm font-semibold text-gray-700">
-                                  {subscriberType === 'fisica' ? 'CPF *' : 'CNPJ *'}
-                                </FormLabel>
-                                <FormControl>
-                                  <Input 
-                                    placeholder={subscriberType === 'fisica' ? '000.000.000-00' : '00.000.000/0000-00'} 
-                                    className="h-12 border-gray-300 focus:border-green-500 focus:ring-green-500/20 bg-white rounded-lg"
-                                    {...field} 
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-
-                          <FormField
-                            control={form.control}
-                            name="subscriber.numeroParceiroNegocio"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel className="text-sm font-semibold text-gray-700">Número Parceiro de Negócio *</FormLabel>
-                                <FormControl>
-                                  <Input 
-                                    placeholder="Número do parceiro de negócio" 
-                                    className="h-12 border-gray-300 focus:border-green-500 focus:ring-green-500/20 bg-white rounded-lg"
-                                    {...field} 
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-
-                          <FormField
-                            control={form.control}
-                            name="subscriber.name"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel className="text-sm font-semibold text-gray-700">
-                                  {subscriberType === 'fisica' ? 'Nome Completo do Titular *' : 'Razão Social *'}
-                                </FormLabel>
-                                <FormControl>
-                                  <Input 
-                                    placeholder={subscriberType === 'fisica' ? 'Nome completo' : 'Razão social da empresa'} 
-                                    className="h-12 border-gray-300 focus:border-green-500 focus:ring-green-500/20 bg-white rounded-lg"
-                                    {...field} 
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-
-                          {subscriberType === 'juridica' && (
+                      {/* Coluna 2 */}
+                      <div className="space-y-6">
+                        {subscriberType === 'fisica' && (
+                          <>
                             <FormField
                               control={form.control}
-                              name="subscriber.nomeFantasia"
+                              name="subscriber.dataNascimento"
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel className="text-sm font-semibold text-gray-700">Nome Fantasia</FormLabel>
+                                  <FormLabel className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                                    <Calendar className="w-4 h-4 text-green-500" />
+                                    Data de Nascimento
+                                  </FormLabel>
                                   <FormControl>
                                     <Input 
-                                      placeholder="Nome fantasia" 
+                                      type="date" 
                                       className="h-12 border-gray-300 focus:border-green-500 focus:ring-green-500/20 bg-white rounded-lg"
                                       {...field} 
                                     />
@@ -359,140 +402,91 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
                                 </FormItem>
                               )}
                             />
-                          )}
 
-                          <FormField
-                            control={form.control}
-                            name="subscriber.telefone"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                                  <Phone className="w-4 h-4 text-green-500" />
-                                  Telefone *
-                                </FormLabel>
-                                <FormControl>
-                                  <Input 
-                                    placeholder="(00) 00000-0000" 
-                                    className="h-12 border-gray-300 focus:border-green-500 focus:ring-green-500/20 bg-white rounded-lg"
-                                    {...field} 
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
-
-                        {/* Coluna 2 */}
-                        <div className="space-y-6">
-                          {subscriberType === 'fisica' && (
-                            <>
-                              <FormField
-                                control={form.control}
-                                name="subscriber.dataNascimento"
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormLabel className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                                      <Calendar className="w-4 h-4 text-green-500" />
-                                      Data de Nascimento
-                                    </FormLabel>
+                            <FormField
+                              control={form.control}
+                              name="subscriber.estadoCivil"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel className="text-sm font-semibold text-gray-700">Estado Civil</FormLabel>
+                                  <Select onValueChange={field.onChange} defaultValue={field.value}>
                                     <FormControl>
-                                      <Input 
-                                        type="date" 
-                                        className="h-12 border-gray-300 focus:border-green-500 focus:ring-green-500/20 bg-white rounded-lg"
-                                        {...field} 
-                                      />
+                                      <SelectTrigger className="h-12 border-gray-300 focus:border-green-500 focus:ring-green-500/20 bg-white rounded-lg">
+                                        <SelectValue placeholder="Selecione o estado civil" />
+                                      </SelectTrigger>
                                     </FormControl>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
+                                    <SelectContent className="bg-white">
+                                      <SelectItem value="solteiro">Solteiro(a)</SelectItem>
+                                      <SelectItem value="casado">Casado(a)</SelectItem>
+                                      <SelectItem value="divorciado">Divorciado(a)</SelectItem>
+                                      <SelectItem value="viuvo">Viúvo(a)</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
 
-                              <FormField
-                                control={form.control}
-                                name="subscriber.estadoCivil"
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormLabel className="text-sm font-semibold text-gray-700">Estado Civil</FormLabel>
-                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                      <FormControl>
-                                        <SelectTrigger className="h-12 border-gray-300 focus:border-green-500 focus:ring-green-500/20 bg-white rounded-lg">
-                                          <SelectValue placeholder="Selecione o estado civil" />
-                                        </SelectTrigger>
-                                      </FormControl>
-                                      <SelectContent className="bg-white">
-                                        <SelectItem value="solteiro">Solteiro(a)</SelectItem>
-                                        <SelectItem value="casado">Casado(a)</SelectItem>
-                                        <SelectItem value="divorciado">Divorciado(a)</SelectItem>
-                                        <SelectItem value="viuvo">Viúvo(a)</SelectItem>
-                                      </SelectContent>
-                                    </Select>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
+                            <FormField
+                              control={form.control}
+                              name="subscriber.profissao"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel className="text-sm font-semibold text-gray-700">Profissão</FormLabel>
+                                  <FormControl>
+                                    <Input 
+                                      placeholder="Profissão" 
+                                      className="h-12 border-gray-300 focus:border-green-500 focus:ring-green-500/20 bg-white rounded-lg"
+                                      {...field} 
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </>
+                        )}
 
-                              <FormField
-                                control={form.control}
-                                name="subscriber.profissao"
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormLabel className="text-sm font-semibold text-gray-700">Profissão</FormLabel>
-                                    <FormControl>
-                                      <Input 
-                                        placeholder="Profissão" 
-                                        className="h-12 border-gray-300 focus:border-green-500 focus:ring-green-500/20 bg-white rounded-lg"
-                                        {...field} 
-                                      />
-                                    </FormControl>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
-                            </>
+                        <FormField
+                          control={form.control}
+                          name="subscriber.email"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                                <Mail className="w-4 h-4 text-green-500" />
+                                E-mail *
+                              </FormLabel>
+                              <FormControl>
+                                <Input 
+                                  placeholder="email@example.com" 
+                                  className="h-12 border-gray-300 focus:border-green-500 focus:ring-green-500/20 bg-white rounded-lg"
+                                  {...field} 
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
                           )}
+                        />
 
-                          <FormField
-                            control={form.control}
-                            name="subscriber.email"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                                  <Mail className="w-4 h-4 text-green-500" />
-                                  E-mail *
-                                </FormLabel>
-                                <FormControl>
-                                  <Input 
-                                    placeholder="email@example.com" 
-                                    className="h-12 border-gray-300 focus:border-green-500 focus:ring-green-500/20 bg-white rounded-lg"
-                                    {...field} 
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-
-                          <FormField
-                            control={form.control}
-                            name="subscriber.observacoes"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel className="text-sm font-semibold text-gray-700">Observações</FormLabel>
-                                <FormControl>
-                                  <Textarea 
-                                    placeholder="Observações adicionais" 
-                                    className="min-h-[120px] border-gray-300 focus:border-green-500 focus:ring-green-500/20 resize-none bg-white rounded-lg"
-                                    {...field} 
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
+                        <FormField
+                          control={form.control}
+                          name="subscriber.observacoes"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-sm font-semibold text-gray-700">Observações</FormLabel>
+                              <FormControl>
+                                <Textarea 
+                                  placeholder="Observações adicionais" 
+                                  className="min-h-[120px] border-gray-300 focus:border-green-500 focus:ring-green-500/20 resize-none bg-white rounded-lg"
+                                  {...field} 
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
                       </div>
-                    )}
+                    </div>
                   </CardContent>
                 </Card>
               )}
