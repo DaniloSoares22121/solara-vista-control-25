@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -8,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { CheckCircle2, Calendar, TrendingUp, Award, Clock } from 'lucide-react';
+import { CheckCircle2, Calendar, TrendingUp, Award, Clock, Edit3 } from 'lucide-react';
 
 interface PlanOption {
   faixaConsumo: string;
@@ -74,11 +73,29 @@ const PlanTable = ({ selectedPlan, fidelidade, anosFidelidade, onPlanChange }: P
   const [kwhVendedor, setKwhVendedor] = useState('');
   const [kwhContratado, setKwhContratado] = useState('');
 
+  // Estados para descontos editáveis
+  const [customDiscounts, setCustomDiscounts] = useState<{[key: string]: {semFidelidade: number, comFidelidade1Ano: number, comFidelidade2Anos: number}}>({});
+
+  const getCustomDiscount = (faixaConsumo: string, type: 'semFidelidade' | 'comFidelidade1Ano' | 'comFidelidade2Anos') => {
+    return customDiscounts[faixaConsumo]?.[type] ?? planOptions.find(p => p.faixaConsumo === faixaConsumo)?.[type] ?? 0;
+  };
+
+  const updateCustomDiscount = (faixaConsumo: string, type: 'semFidelidade' | 'comFidelidade1Ano' | 'comFidelidade2Anos', value: number) => {
+    setCustomDiscounts(prev => ({
+      ...prev,
+      [faixaConsumo]: {
+        ...prev[faixaConsumo],
+        [type]: value
+      }
+    }));
+  };
+
   const getDesconto = (plan: PlanOption, fidelidade: string, anos?: string) => {
-    if (fidelidade === 'sem') return plan.semFidelidade;
-    if (anos === '1') return plan.comFidelidade1Ano;
-    if (anos === '2') return plan.comFidelidade2Anos;
-    return plan.comFidelidade1Ano;
+    const faixaConsumo = plan.faixaConsumo;
+    if (fidelidade === 'sem') return getCustomDiscount(faixaConsumo, 'semFidelidade');
+    if (anos === '1') return getCustomDiscount(faixaConsumo, 'comFidelidade1Ano');
+    if (anos === '2') return getCustomDiscount(faixaConsumo, 'comFidelidade2Anos');
+    return getCustomDiscount(faixaConsumo, 'comFidelidade1Ano');
   };
 
   const isSelected = (planFaixa: string, planFidelidade: 'sem' | 'com', planAnos?: '1' | '2') => {
@@ -96,7 +113,7 @@ const PlanTable = ({ selectedPlan, fidelidade, anosFidelidade, onPlanChange }: P
         onPlanChange(selectedFaixa, selectedFidelidade, selectedAnos, desconto);
       }
     }
-  }, [selectedFaixa, selectedFidelidade, selectedAnos]);
+  }, [selectedFaixa, selectedFidelidade, selectedAnos, customDiscounts]);
 
   return (
     <div className="space-y-8">
@@ -316,7 +333,7 @@ const PlanTable = ({ selectedPlan, fidelidade, anosFidelidade, onPlanChange }: P
         </Card>
       )}
 
-      {/* Tabela de Visualização dos Descontos - Melhorada */}
+      {/* Tabela de Visualização dos Descontos - Com Edição */}
       {selectedFaixa && selectedFidelidade && (
         <Card className="border-0 shadow-2xl bg-gradient-to-br from-slate-50 via-white to-blue-50">
           <CardHeader className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white rounded-t-lg">
@@ -326,9 +343,13 @@ const PlanTable = ({ selectedPlan, fidelidade, anosFidelidade, onPlanChange }: P
                 <CardTitle className="text-2xl font-bold">
                   Tabela de Descontos
                 </CardTitle>
+                <Edit3 className="w-5 h-5 ml-2" />
               </div>
               <p className="text-blue-100 font-medium text-lg">
                 {planOptions.find(p => p.faixaConsumo === selectedFaixa)?.label}
+              </p>
+              <p className="text-blue-200 text-sm">
+                Clique nos valores para editar os descontos
               </p>
             </div>
           </CardHeader>
@@ -375,16 +396,24 @@ const PlanTable = ({ selectedPlan, fidelidade, anosFidelidade, onPlanChange }: P
                             </Badge>
                           </TableCell>
                           <TableCell className="text-center py-8">
-                            <div className="flex items-center justify-center">
-                              <Badge 
-                                className={`text-2xl px-6 py-3 font-bold rounded-xl ${
-                                  selectedFidelidade === 'sem'
-                                    ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg'
-                                    : 'bg-gray-100 text-gray-600 border border-gray-300'
-                                }`}
-                              >
-                                {selectedPlanOption.semFidelidade}% OFF
-                              </Badge>
+                            <div className="flex items-center justify-center gap-2">
+                              <div className="relative group">
+                                <Input
+                                  type="number"
+                                  value={getCustomDiscount(selectedFaixa, 'semFidelidade')}
+                                  onChange={(e) => updateCustomDiscount(selectedFaixa, 'semFidelidade', Number(e.target.value))}
+                                  className={`w-20 h-12 text-center text-lg font-bold border-2 rounded-lg ${
+                                    selectedFidelidade === 'sem'
+                                      ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white border-green-400 focus:border-green-300'
+                                      : 'bg-gray-100 text-gray-600 border-gray-300 focus:border-gray-400'
+                                  }`}
+                                  min="0"
+                                  max="100"
+                                />
+                                <span className={`absolute right-2 top-1/2 transform -translate-y-1/2 text-sm font-bold ${
+                                  selectedFidelidade === 'sem' ? 'text-white' : 'text-gray-600'
+                                }`}>%</span>
+                              </div>
                             </div>
                           </TableCell>
                           <TableCell className="text-center py-8">
@@ -417,16 +446,24 @@ const PlanTable = ({ selectedPlan, fidelidade, anosFidelidade, onPlanChange }: P
                             </Badge>
                           </TableCell>
                           <TableCell className="text-center py-8">
-                            <div className="flex items-center justify-center">
-                              <Badge 
-                                className={`text-2xl px-6 py-3 font-bold rounded-xl ${
-                                  selectedFidelidade === 'com' && selectedAnos === '1'
-                                    ? 'bg-gradient-to-r from-blue-500 to-cyan-600 text-white shadow-lg'
-                                    : 'bg-gray-100 text-gray-600 border border-gray-300'
-                                }`}
-                              >
-                                {selectedPlanOption.comFidelidade1Ano}% OFF
-                              </Badge>
+                            <div className="flex items-center justify-center gap-2">
+                              <div className="relative group">
+                                <Input
+                                  type="number"
+                                  value={getCustomDiscount(selectedFaixa, 'comFidelidade1Ano')}
+                                  onChange={(e) => updateCustomDiscount(selectedFaixa, 'comFidelidade1Ano', Number(e.target.value))}
+                                  className={`w-20 h-12 text-center text-lg font-bold border-2 rounded-lg ${
+                                    selectedFidelidade === 'com' && selectedAnos === '1'
+                                      ? 'bg-gradient-to-r from-blue-500 to-cyan-600 text-white border-blue-400 focus:border-blue-300'
+                                      : 'bg-gray-100 text-gray-600 border-gray-300 focus:border-gray-400'
+                                  }`}
+                                  min="0"
+                                  max="100"
+                                />
+                                <span className={`absolute right-2 top-1/2 transform -translate-y-1/2 text-sm font-bold ${
+                                  selectedFidelidade === 'com' && selectedAnos === '1' ? 'text-white' : 'text-gray-600'
+                                }`}>%</span>
+                              </div>
                             </div>
                           </TableCell>
                           <TableCell className="text-center py-8">
@@ -459,16 +496,24 @@ const PlanTable = ({ selectedPlan, fidelidade, anosFidelidade, onPlanChange }: P
                             </Badge>
                           </TableCell>
                           <TableCell className="text-center py-8">
-                            <div className="flex items-center justify-center">
-                              <Badge 
-                                className={`text-2xl px-6 py-3 font-bold rounded-xl ${
-                                  selectedFidelidade === 'com' && selectedAnos === '2'
-                                    ? 'bg-gradient-to-r from-purple-500 to-violet-600 text-white shadow-lg'
-                                    : 'bg-gray-100 text-gray-600 border border-gray-300'
-                                }`}
-                              >
-                                {selectedPlanOption.comFidelidade2Anos}% OFF
-                              </Badge>
+                            <div className="flex items-center justify-center gap-2">
+                              <div className="relative group">
+                                <Input
+                                  type="number"
+                                  value={getCustomDiscount(selectedFaixa, 'comFidelidade2Anos')}
+                                  onChange={(e) => updateCustomDiscount(selectedFaixa, 'comFidelidade2Anos', Number(e.target.value))}
+                                  className={`w-20 h-12 text-center text-lg font-bold border-2 rounded-lg ${
+                                    selectedFidelidade === 'com' && selectedAnos === '2'
+                                      ? 'bg-gradient-to-r from-purple-500 to-violet-600 text-white border-purple-400 focus:border-purple-300'
+                                      : 'bg-gray-100 text-gray-600 border-gray-300 focus:border-gray-400'
+                                  }`}
+                                  min="0"
+                                  max="100"
+                                />
+                                <span className={`absolute right-2 top-1/2 transform -translate-y-1/2 text-sm font-bold ${
+                                  selectedFidelidade === 'com' && selectedAnos === '2' ? 'text-white' : 'text-gray-600'
+                                }`}>%</span>
+                              </div>
                             </div>
                           </TableCell>
                           <TableCell className="text-center py-8">
@@ -542,3 +587,5 @@ const PlanTable = ({ selectedPlan, fidelidade, anosFidelidade, onPlanChange }: P
 };
 
 export default PlanTable;
+
+</initial_code>
