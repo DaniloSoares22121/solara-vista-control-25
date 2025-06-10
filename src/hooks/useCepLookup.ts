@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface CepData {
   cep: string;
@@ -11,40 +11,56 @@ interface CepData {
   erro?: boolean;
 }
 
-export const useCepLookup = () => {
+interface AddressData {
+  endereco: string;
+  bairro: string;
+  cidade: string;
+  estado: string;
+  complemento: string;
+}
+
+export const useCepLookup = (cep?: string) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [addressData, setAddressData] = useState<AddressData | null>(null);
 
-  const lookupCep = async (cep: string) => {
-    if (!cep || cep.length !== 9) return null;
-
-    setLoading(true);
-    setError(null);
-
-    try {
-      const cleanCep = cep.replace(/\D/g, '');
-      const response = await fetch(`https://viacep.com.br/ws/${cleanCep}/json/`);
-      const data: CepData = await response.json();
-
-      if (data.erro) {
-        setError('CEP não encontrado');
-        return null;
-      }
-
-      return {
-        endereco: data.logradouro,
-        bairro: data.bairro,
-        cidade: data.localidade,
-        estado: data.uf,
-        complemento: data.complemento || '',
-      };
-    } catch (err) {
-      setError('Erro ao buscar CEP');
-      return null;
-    } finally {
-      setLoading(false);
+  useEffect(() => {
+    if (!cep || cep.length !== 8) {
+      setAddressData(null);
+      return;
     }
-  };
 
-  return { lookupCep, loading, error };
+    const lookupCep = async () => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+        const data: CepData = await response.json();
+
+        if (data.erro) {
+          setError('CEP não encontrado');
+          setAddressData(null);
+          return;
+        }
+
+        setAddressData({
+          endereco: data.logradouro,
+          bairro: data.bairro,
+          cidade: data.localidade,
+          estado: data.uf,
+          complemento: data.complemento || '',
+        });
+      } catch (err) {
+        setError('Erro ao buscar CEP');
+        setAddressData(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    lookupCep();
+  }, [cep]);
+
+  return { addressData, loading, error };
 };

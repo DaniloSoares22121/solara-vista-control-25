@@ -9,7 +9,7 @@ export const supabaseGeneratorService = {
     try {
       const { data: result, error } = await supabase
         .from('generators')
-        .insert([{
+        .insert({
           user_id: (await supabase.auth.getUser()).data.user?.id,
           concessionaria: data.concessionaria,
           owner: data.owner,
@@ -19,7 +19,7 @@ export const supabaseGeneratorService = {
           payment_data: data.paymentData,
           attachments: data.attachments,
           status: 'active'
-        }])
+        })
         .select()
         .single();
 
