@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { CheckCircle2, Calendar } from 'lucide-react';
+import { CheckCircle2, Calendar, TrendingUp, Award, Clock } from 'lucide-react';
 
 interface PlanOption {
   faixaConsumo: string;
@@ -99,20 +99,26 @@ const PlanTable = ({ selectedPlan, fidelidade, anosFidelidade, onPlanChange }: P
   }, [selectedFaixa, selectedFidelidade, selectedAnos]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Campos de Contratação */}
-      <Card className="w-full">
-        <CardHeader>
-          <CardTitle className="text-lg text-green-600">Contratação - Plano Escolhido</CardTitle>
+      <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-indigo-50">
+        <CardHeader className="pb-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-blue-100">
+              <CheckCircle2 className="w-5 h-5 text-blue-600" />
+            </div>
+            <CardTitle className="text-xl text-blue-700">Contratação - Plano Escolhido</CardTitle>
+          </div>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="modalidade" className="text-sm font-medium text-gray-700">
+        <CardContent className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <Label htmlFor="modalidade" className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                <TrendingUp className="w-4 h-4" />
                 Modalidade de Compensação
               </Label>
               <Select value={modalidadeCompensacao} onValueChange={setModalidadeCompensacao}>
-                <SelectTrigger>
+                <SelectTrigger className="h-12 bg-white border-2 border-gray-200 focus:border-blue-400">
                   <SelectValue placeholder="Selecione a modalidade" />
                 </SelectTrigger>
                 <SelectContent>
@@ -122,8 +128,9 @@ const PlanTable = ({ selectedPlan, fidelidade, anosFidelidade, onPlanChange }: P
               </Select>
             </div>
 
-            <div>
-              <Label htmlFor="data-adesao" className="text-sm font-medium text-gray-700">
+            <div className="space-y-2">
+              <Label htmlFor="data-adesao" className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                <Calendar className="w-4 h-4" />
                 Data de Adesão
               </Label>
               <div className="relative">
@@ -132,14 +139,14 @@ const PlanTable = ({ selectedPlan, fidelidade, anosFidelidade, onPlanChange }: P
                   type="date"
                   value={dataAdesao}
                   onChange={(e) => setDataAdesao(e.target.value)}
-                  className="pl-10"
+                  className="h-12 pl-10 bg-white border-2 border-gray-200 focus:border-blue-400"
                 />
                 <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
               </div>
             </div>
 
-            <div>
-              <Label htmlFor="kwh-vendedor" className="text-sm font-medium text-gray-700">
+            <div className="space-y-2">
+              <Label htmlFor="kwh-vendedor" className="text-sm font-semibold text-gray-700">
                 kWh Vendedor Informou
               </Label>
               <Input
@@ -148,11 +155,12 @@ const PlanTable = ({ selectedPlan, fidelidade, anosFidelidade, onPlanChange }: P
                 placeholder="Ex: 500"
                 value={kwhVendedor}
                 onChange={(e) => setKwhVendedor(e.target.value)}
+                className="h-12 bg-white border-2 border-gray-200 focus:border-blue-400"
               />
             </div>
 
-            <div>
-              <Label htmlFor="kwh-contratado" className="text-sm font-medium text-gray-700">
+            <div className="space-y-2">
+              <Label htmlFor="kwh-contratado" className="text-sm font-semibold text-gray-700">
                 kWh Contratado (Gestor Definido)
               </Label>
               <Input
@@ -161,6 +169,7 @@ const PlanTable = ({ selectedPlan, fidelidade, anosFidelidade, onPlanChange }: P
                 placeholder="Ex: 450"
                 value={kwhContratado}
                 onChange={(e) => setKwhContratado(e.target.value)}
+                className="h-12 bg-white border-2 border-gray-200 focus:border-blue-400"
               />
             </div>
           </div>
@@ -168,33 +177,38 @@ const PlanTable = ({ selectedPlan, fidelidade, anosFidelidade, onPlanChange }: P
       </Card>
 
       {/* Plan Selection */}
-      <Card className="w-full">
-        <CardHeader>
-          <CardTitle className="text-lg text-green-600">Escolha sua Faixa de Consumo</CardTitle>
+      <Card className="border-0 shadow-lg">
+        <CardHeader className="pb-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-green-100">
+              <TrendingUp className="w-5 h-5 text-green-600" />
+            </div>
+            <CardTitle className="text-xl text-green-700">Escolha sua Faixa de Consumo</CardTitle>
+          </div>
         </CardHeader>
         <CardContent>
           <RadioGroup 
             value={selectedFaixa} 
             onValueChange={setSelectedFaixa}
-            className="space-y-3"
+            className="space-y-4"
           >
             {planOptions.map((plan) => (
               <div 
                 key={plan.faixaConsumo} 
-                className={`p-4 border-2 rounded-lg transition-all ${
+                className={`p-6 border-2 rounded-xl transition-all duration-300 ${
                   selectedFaixa === plan.faixaConsumo 
-                    ? 'border-green-500 bg-green-50' 
-                    : 'border-gray-200 hover:border-green-300'
+                    ? 'border-green-500 bg-gradient-to-br from-green-50 to-emerald-50 shadow-lg transform scale-[1.02]' 
+                    : 'border-gray-200 hover:border-green-300 hover:shadow-md bg-white'
                 }`}
               >
-                <div className="flex items-center space-x-3">
-                  <RadioGroupItem value={plan.faixaConsumo} id={plan.faixaConsumo} />
-                  <Label htmlFor={plan.faixaConsumo} className="font-semibold text-gray-800 flex-1">
+                <div className="flex items-center space-x-4">
+                  <RadioGroupItem value={plan.faixaConsumo} id={plan.faixaConsumo} className="w-5 h-5" />
+                  <Label htmlFor={plan.faixaConsumo} className="font-semibold text-gray-800 flex-1 text-lg">
                     {plan.label}
                   </Label>
                   {selectedFaixa === plan.faixaConsumo && (
-                    <Badge variant="default" className="bg-green-600">
-                      <CheckCircle2 className="w-3 h-3 mr-1" />
+                    <Badge className="bg-green-600 text-white px-3 py-1 text-sm">
+                      <CheckCircle2 className="w-4 h-4 mr-1" />
                       Selecionado
                     </Badge>
                   )}
@@ -207,9 +221,14 @@ const PlanTable = ({ selectedPlan, fidelidade, anosFidelidade, onPlanChange }: P
 
       {/* Fidelidade Selection */}
       {selectedFaixa && (
-        <Card className="w-full">
-          <CardHeader>
-            <CardTitle className="text-lg text-green-600">Tipo de Fidelidade</CardTitle>
+        <Card className="border-0 shadow-lg">
+          <CardHeader className="pb-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-purple-100">
+                <Clock className="w-5 h-5 text-purple-600" />
+              </div>
+              <CardTitle className="text-xl text-purple-700">Tipo de Fidelidade</CardTitle>
+            </div>
           </CardHeader>
           <CardContent>
             <RadioGroup 
@@ -223,63 +242,70 @@ const PlanTable = ({ selectedPlan, fidelidade, anosFidelidade, onPlanChange }: P
                   setSelectedAnos('1'); // default para 1 ano
                 }
               }}
-              className="space-y-3"
+              className="space-y-4"
             >
-              <div className={`p-4 border-2 rounded-lg transition-all ${
+              <div className={`p-6 border-2 rounded-xl transition-all duration-300 ${
                 selectedFidelidade === 'sem' 
-                  ? 'border-green-500 bg-green-50' 
-                  : 'border-gray-200 hover:border-green-300'
+                  ? 'border-purple-500 bg-gradient-to-br from-purple-50 to-violet-50 shadow-lg transform scale-[1.02]' 
+                  : 'border-gray-200 hover:border-purple-300 hover:shadow-md bg-white'
               }`}>
-                <div className="flex items-center space-x-3">
-                  <RadioGroupItem value="sem" id="sem-fidelidade" />
-                  <Label htmlFor="sem-fidelidade" className="font-semibold text-gray-800 flex-1">
+                <div className="flex items-center space-x-4">
+                  <RadioGroupItem value="sem" id="sem-fidelidade" className="w-5 h-5" />
+                  <Label htmlFor="sem-fidelidade" className="font-semibold text-gray-800 flex-1 text-lg">
                     Sem Fidelidade
                   </Label>
                   {selectedFidelidade === 'sem' && (
-                    <Badge variant="default" className="bg-green-600">
-                      <CheckCircle2 className="w-3 h-3 mr-1" />
+                    <Badge className="bg-purple-600 text-white px-3 py-1 text-sm">
+                      <CheckCircle2 className="w-4 h-4 mr-1" />
                       Selecionado
                     </Badge>
                   )}
                 </div>
               </div>
 
-              <div className={`p-4 border-2 rounded-lg transition-all ${
+              <div className={`p-6 border-2 rounded-xl transition-all duration-300 ${
                 selectedFidelidade === 'com' 
-                  ? 'border-green-500 bg-green-50' 
-                  : 'border-gray-200 hover:border-green-300'
+                  ? 'border-orange-500 bg-gradient-to-br from-orange-50 to-amber-50 shadow-lg transform scale-[1.02]' 
+                  : 'border-gray-200 hover:border-orange-300 hover:shadow-md bg-white'
               }`}>
-                <div className="flex items-center space-x-3">
-                  <RadioGroupItem value="com" id="com-fidelidade" />
-                  <Label htmlFor="com-fidelidade" className="font-semibold text-gray-800 flex-1">
+                <div className="flex items-center space-x-4">
+                  <RadioGroupItem value="com" id="com-fidelidade" className="w-5 h-5" />
+                  <Label htmlFor="com-fidelidade" className="font-semibold text-gray-800 flex-1 text-lg">
                     Com Fidelidade
                   </Label>
                   {selectedFidelidade === 'com' && (
-                    <Badge variant="default" className="bg-green-600">
-                      <CheckCircle2 className="w-3 h-3 mr-1" />
+                    <Badge className="bg-orange-600 text-white px-3 py-1 text-sm">
+                      <CheckCircle2 className="w-4 h-4 mr-1" />
                       Selecionado
                     </Badge>
                   )}
                 </div>
                 
                 {selectedFidelidade === 'com' && (
-                  <div className="mt-4 ml-6">
-                    <Label className="text-sm font-medium text-gray-700 mb-2 block">Período:</Label>
+                  <div className="mt-6 ml-9 space-y-3">
+                    <Label className="text-sm font-semibold text-gray-700 mb-3 block flex items-center gap-2">
+                      <Clock className="w-4 h-4" />
+                      Período de Fidelidade:
+                    </Label>
                     <RadioGroup 
                       value={selectedAnos} 
                       onValueChange={(value: string) => {
                         const anosValue = value as '1' | '2';
                         setSelectedAnos(anosValue);
                       }}
-                      className="flex gap-4"
+                      className="flex gap-6"
                     >
-                      <div className="flex items-center space-x-2">
+                      <div className={`flex items-center space-x-3 p-4 rounded-lg border-2 transition-all ${
+                        selectedAnos === '1' ? 'border-orange-400 bg-orange-50' : 'border-gray-200 bg-white'
+                      }`}>
                         <RadioGroupItem value="1" id="1-ano" />
-                        <Label htmlFor="1-ano" className="text-sm">1 Ano</Label>
+                        <Label htmlFor="1-ano" className="font-medium">1 Ano</Label>
                       </div>
-                      <div className="flex items-center space-x-2">
+                      <div className={`flex items-center space-x-3 p-4 rounded-lg border-2 transition-all ${
+                        selectedAnos === '2' ? 'border-orange-400 bg-orange-50' : 'border-gray-200 bg-white'
+                      }`}>
                         <RadioGroupItem value="2" id="2-anos" />
-                        <Label htmlFor="2-anos" className="text-sm">2 Anos</Label>
+                        <Label htmlFor="2-anos" className="font-medium">2 Anos</Label>
                       </div>
                     </RadioGroup>
                   </div>
@@ -290,26 +316,39 @@ const PlanTable = ({ selectedPlan, fidelidade, anosFidelidade, onPlanChange }: P
         </Card>
       )}
 
-      {/* Tabela de Visualização dos Descontos */}
+      {/* Tabela de Visualização dos Descontos - Melhorada */}
       {selectedFaixa && selectedFidelidade && (
-        <Card className="w-full border-2 border-green-200 shadow-lg">
-          <CardHeader className="bg-gradient-to-r from-green-50 to-blue-50">
-            <CardTitle className="text-xl text-green-700 text-center">
-              💰 Tabela de Descontos - Plano Selecionado
-            </CardTitle>
-            <p className="text-center text-gray-600 font-medium">
-              {planOptions.find(p => p.faixaConsumo === selectedFaixa)?.label}
-            </p>
+        <Card className="border-0 shadow-2xl bg-gradient-to-br from-slate-50 via-white to-blue-50">
+          <CardHeader className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white rounded-t-lg">
+            <div className="text-center space-y-2">
+              <div className="flex items-center justify-center gap-2">
+                <Award className="w-6 h-6" />
+                <CardTitle className="text-2xl font-bold">
+                  Tabela de Descontos
+                </CardTitle>
+              </div>
+              <p className="text-blue-100 font-medium text-lg">
+                {planOptions.find(p => p.faixaConsumo === selectedFaixa)?.label}
+              </p>
+            </div>
           </CardHeader>
-          <CardContent className="p-6">
-            <div className="rounded-lg border-2 border-green-100 overflow-hidden shadow-sm">
+          <CardContent className="p-0">
+            <div className="overflow-hidden">
               <Table>
                 <TableHeader>
-                  <TableRow className="bg-green-600 text-white">
-                    <TableHead className="font-bold text-white text-center py-4">Tipo de Plano</TableHead>
-                    <TableHead className="font-bold text-white text-center py-4">Período</TableHead>
-                    <TableHead className="font-bold text-white text-center py-4">Desconto</TableHead>
-                    <TableHead className="font-bold text-white text-center py-4">Status</TableHead>
+                  <TableRow className="bg-gradient-to-r from-gray-50 to-slate-100 border-b-2 border-gray-200">
+                    <TableHead className="font-bold text-gray-800 text-center py-6 text-base">
+                      Tipo de Plano
+                    </TableHead>
+                    <TableHead className="font-bold text-gray-800 text-center py-6 text-base">
+                      Período
+                    </TableHead>
+                    <TableHead className="font-bold text-gray-800 text-center py-6 text-base">
+                      Desconto
+                    </TableHead>
+                    <TableHead className="font-bold text-gray-800 text-center py-6 text-base">
+                      Status
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -321,34 +360,40 @@ const PlanTable = ({ selectedPlan, fidelidade, anosFidelidade, onPlanChange }: P
                       <>
                         <TableRow className={`${
                           selectedFidelidade === 'sem' 
-                            ? 'bg-green-100 border-l-4 border-l-green-500' 
-                            : 'bg-gray-50'
-                        } hover:bg-green-50 transition-colors`}>
-                          <TableCell className="font-semibold text-center py-4">
-                            Sem Fidelidade
+                            ? 'bg-gradient-to-r from-green-50 to-emerald-50 border-l-4 border-l-green-500 shadow-md' 
+                            : 'bg-white hover:bg-gray-50'
+                        } transition-all duration-300`}>
+                          <TableCell className="font-semibold text-center py-8 text-base">
+                            <div className="flex items-center justify-center gap-2">
+                              <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                              Sem Fidelidade
+                            </div>
                           </TableCell>
-                          <TableCell className="text-center py-4 text-gray-500">
-                            -
-                          </TableCell>
-                          <TableCell className="text-center py-4">
-                            <Badge 
-                              variant="outline" 
-                              className={`text-lg px-4 py-2 font-bold ${
-                                selectedFidelidade === 'sem'
-                                  ? 'bg-green-100 text-green-800 border-green-400'
-                                  : 'bg-gray-100 text-gray-600 border-gray-300'
-                              }`}
-                            >
-                              {selectedPlanOption.semFidelidade}% OFF
+                          <TableCell className="text-center py-8 text-gray-500 text-base">
+                            <Badge variant="outline" className="bg-gray-100 text-gray-600">
+                              Flexível
                             </Badge>
                           </TableCell>
-                          <TableCell className="text-center py-4">
+                          <TableCell className="text-center py-8">
+                            <div className="flex items-center justify-center">
+                              <Badge 
+                                className={`text-2xl px-6 py-3 font-bold rounded-xl ${
+                                  selectedFidelidade === 'sem'
+                                    ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg'
+                                    : 'bg-gray-100 text-gray-600 border border-gray-300'
+                                }`}
+                              >
+                                {selectedPlanOption.semFidelidade}% OFF
+                              </Badge>
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-center py-8">
                             {selectedFidelidade === 'sem' ? (
-                              <Badge className="bg-green-600 text-white px-3 py-1">
+                              <Badge className="bg-gradient-to-r from-green-600 to-emerald-700 text-white px-4 py-2 text-base shadow-md">
                                 ✓ SELECIONADO
                               </Badge>
                             ) : (
-                              <Badge variant="outline" className="text-gray-500 border-gray-300">
+                              <Badge variant="outline" className="text-gray-500 border-gray-300 px-4 py-2">
                                 Disponível
                               </Badge>
                             )}
@@ -357,36 +402,40 @@ const PlanTable = ({ selectedPlan, fidelidade, anosFidelidade, onPlanChange }: P
                         
                         <TableRow className={`${
                           selectedFidelidade === 'com' && selectedAnos === '1'
-                            ? 'bg-blue-100 border-l-4 border-l-blue-500' 
-                            : 'bg-gray-50'
-                        } hover:bg-blue-50 transition-colors`}>
-                          <TableCell className="font-semibold text-center py-4">
-                            Com Fidelidade
+                            ? 'bg-gradient-to-r from-blue-50 to-cyan-50 border-l-4 border-l-blue-500 shadow-md' 
+                            : 'bg-white hover:bg-gray-50'
+                        } transition-all duration-300`}>
+                          <TableCell className="font-semibold text-center py-8 text-base">
+                            <div className="flex items-center justify-center gap-2">
+                              <div className="w-3 h-3 rounded-full bg-blue-500"></div>
+                              Com Fidelidade
+                            </div>
                           </TableCell>
-                          <TableCell className="text-center py-4">
-                            <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+                          <TableCell className="text-center py-8">
+                            <Badge className="bg-gradient-to-r from-blue-100 to-cyan-100 text-blue-800 px-4 py-2 text-base font-semibold">
                               1 Ano
                             </Badge>
                           </TableCell>
-                          <TableCell className="text-center py-4">
-                            <Badge 
-                              variant="outline" 
-                              className={`text-lg px-4 py-2 font-bold ${
-                                selectedFidelidade === 'com' && selectedAnos === '1'
-                                  ? 'bg-blue-100 text-blue-800 border-blue-400'
-                                  : 'bg-gray-100 text-gray-600 border-gray-300'
-                              }`}
-                            >
-                              {selectedPlanOption.comFidelidade1Ano}% OFF
-                            </Badge>
+                          <TableCell className="text-center py-8">
+                            <div className="flex items-center justify-center">
+                              <Badge 
+                                className={`text-2xl px-6 py-3 font-bold rounded-xl ${
+                                  selectedFidelidade === 'com' && selectedAnos === '1'
+                                    ? 'bg-gradient-to-r from-blue-500 to-cyan-600 text-white shadow-lg'
+                                    : 'bg-gray-100 text-gray-600 border border-gray-300'
+                                }`}
+                              >
+                                {selectedPlanOption.comFidelidade1Ano}% OFF
+                              </Badge>
+                            </div>
                           </TableCell>
-                          <TableCell className="text-center py-4">
+                          <TableCell className="text-center py-8">
                             {selectedFidelidade === 'com' && selectedAnos === '1' ? (
-                              <Badge className="bg-blue-600 text-white px-3 py-1">
+                              <Badge className="bg-gradient-to-r from-blue-600 to-cyan-700 text-white px-4 py-2 text-base shadow-md">
                                 ✓ SELECIONADO
                               </Badge>
                             ) : (
-                              <Badge variant="outline" className="text-gray-500 border-gray-300">
+                              <Badge variant="outline" className="text-gray-500 border-gray-300 px-4 py-2">
                                 Disponível
                               </Badge>
                             )}
@@ -395,36 +444,40 @@ const PlanTable = ({ selectedPlan, fidelidade, anosFidelidade, onPlanChange }: P
                         
                         <TableRow className={`${
                           selectedFidelidade === 'com' && selectedAnos === '2'
-                            ? 'bg-purple-100 border-l-4 border-l-purple-500' 
-                            : 'bg-gray-50'
-                        } hover:bg-purple-50 transition-colors`}>
-                          <TableCell className="font-semibold text-center py-4">
-                            Com Fidelidade
+                            ? 'bg-gradient-to-r from-purple-50 to-violet-50 border-l-4 border-l-purple-500 shadow-md' 
+                            : 'bg-white hover:bg-gray-50'
+                        } transition-all duration-300`}>
+                          <TableCell className="font-semibold text-center py-8 text-base">
+                            <div className="flex items-center justify-center gap-2">
+                              <div className="w-3 h-3 rounded-full bg-purple-500"></div>
+                              Com Fidelidade
+                            </div>
                           </TableCell>
-                          <TableCell className="text-center py-4">
-                            <Badge variant="secondary" className="bg-purple-100 text-purple-800">
+                          <TableCell className="text-center py-8">
+                            <Badge className="bg-gradient-to-r from-purple-100 to-violet-100 text-purple-800 px-4 py-2 text-base font-semibold">
                               2 Anos
                             </Badge>
                           </TableCell>
-                          <TableCell className="text-center py-4">
-                            <Badge 
-                              variant="outline" 
-                              className={`text-lg px-4 py-2 font-bold ${
-                                selectedFidelidade === 'com' && selectedAnos === '2'
-                                  ? 'bg-purple-100 text-purple-800 border-purple-400'
-                                  : 'bg-gray-100 text-gray-600 border-gray-300'
-                              }`}
-                            >
-                              {selectedPlanOption.comFidelidade2Anos}% OFF
-                            </Badge>
+                          <TableCell className="text-center py-8">
+                            <div className="flex items-center justify-center">
+                              <Badge 
+                                className={`text-2xl px-6 py-3 font-bold rounded-xl ${
+                                  selectedFidelidade === 'com' && selectedAnos === '2'
+                                    ? 'bg-gradient-to-r from-purple-500 to-violet-600 text-white shadow-lg'
+                                    : 'bg-gray-100 text-gray-600 border border-gray-300'
+                                }`}
+                              >
+                                {selectedPlanOption.comFidelidade2Anos}% OFF
+                              </Badge>
+                            </div>
                           </TableCell>
-                          <TableCell className="text-center py-4">
+                          <TableCell className="text-center py-8">
                             {selectedFidelidade === 'com' && selectedAnos === '2' ? (
-                              <Badge className="bg-purple-600 text-white px-3 py-1">
+                              <Badge className="bg-gradient-to-r from-purple-600 to-violet-700 text-white px-4 py-2 text-base shadow-md">
                                 ✓ SELECIONADO
                               </Badge>
                             ) : (
-                              <Badge variant="outline" className="text-gray-500 border-gray-300">
+                              <Badge variant="outline" className="text-gray-500 border-gray-300 px-4 py-2">
                                 Disponível
                               </Badge>
                             )}
@@ -437,29 +490,47 @@ const PlanTable = ({ selectedPlan, fidelidade, anosFidelidade, onPlanChange }: P
               </Table>
             </div>
 
-            {/* Resumo Final */}
-            <div className="mt-6 p-6 bg-gradient-to-r from-green-100 via-blue-50 to-purple-50 rounded-xl border-2 border-green-200">
-              <div className="text-center">
-                <h4 className="text-2xl font-bold text-gray-900 mb-2">🎉 Seu Desconto Final</h4>
-                <div className="flex items-center justify-center gap-4">
-                  <div className="text-center">
-                    <p className="text-6xl font-bold text-green-600">
-                      {(() => {
-                        const plan = planOptions.find(p => p.faixaConsumo === selectedFaixa);
-                        if (!plan) return '0';
-                        return getDesconto(plan, selectedFidelidade, selectedAnos);
-                      })()}%
-                    </p>
-                    <p className="text-lg text-gray-600 font-medium">de desconto</p>
+            {/* Resumo Final Melhorado */}
+            <div className="p-8 bg-gradient-to-br from-amber-50 via-yellow-50 to-orange-50 border-t-4 border-amber-300">
+              <div className="text-center space-y-6">
+                <div className="flex items-center justify-center gap-3 mb-4">
+                  <Award className="w-8 h-8 text-amber-600" />
+                  <h4 className="text-3xl font-bold text-gray-900">Seu Desconto Final</h4>
+                </div>
+                
+                <div className="flex items-center justify-center">
+                  <div className="relative">
+                    <div className="absolute inset-0 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full blur-lg opacity-20 transform scale-110"></div>
+                    <div className="relative bg-gradient-to-br from-amber-400 via-yellow-500 to-orange-500 text-white rounded-full w-40 h-40 flex items-center justify-center shadow-2xl">
+                      <div className="text-center">
+                        <p className="text-5xl font-black">
+                          {(() => {
+                            const plan = planOptions.find(p => p.faixaConsumo === selectedFaixa);
+                            if (!plan) return '0';
+                            return getDesconto(plan, selectedFidelidade, selectedAnos);
+                          })()}%
+                        </p>
+                        <p className="text-sm font-semibold">OFF</p>
+                      </div>
+                    </div>
                   </div>
                 </div>
-                <div className="mt-4 p-4 bg-white rounded-lg shadow-sm border">
-                  <p className="text-sm text-gray-700">
-                    <strong>Faixa:</strong> {planOptions.find(p => p.faixaConsumo === selectedFaixa)?.label}
-                  </p>
-                  <p className="text-sm text-gray-700">
-                    <strong>Tipo:</strong> {selectedFidelidade === 'sem' ? 'Sem Fidelidade' : `Com Fidelidade - ${selectedAnos} ano${selectedAnos === '2' ? 's' : ''}`}
-                  </p>
+                
+                <div className="bg-white rounded-xl shadow-lg border-2 border-amber-200 p-6 max-w-md mx-auto">
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-semibold text-gray-600">Faixa:</span>
+                      <span className="text-sm font-bold text-gray-900">
+                        {planOptions.find(p => p.faixaConsumo === selectedFaixa)?.label}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-semibold text-gray-600">Tipo:</span>
+                      <span className="text-sm font-bold text-gray-900">
+                        {selectedFidelidade === 'sem' ? 'Sem Fidelidade' : `Com Fidelidade - ${selectedAnos} ano${selectedAnos === '2' ? 's' : ''}`}
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
