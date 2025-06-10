@@ -15,11 +15,7 @@ import { SubscriberFormData } from '@/types/subscriber';
 import { useCepLookup } from '@/hooks/useCepLookup';
 import PlanTable from '@/components/forms/PlanTable';
 
-interface NovoAssinanteProps {
-  onClose?: () => void;
-}
-
-const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
+const NovoAssinante = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const { lookupCep, loading: cepLoading } = useCepLookup();
   
@@ -33,8 +29,6 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
       dataNascimento: '',
       estadoCivil: '',
       profissao: '',
-      razaoSocial: '',
-      nomeFantasia: '',
       address: {
         cep: '',
         endereco: '',
@@ -275,59 +269,47 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
   const handleSubmit = () => {
     console.log('Form Data:', formData);
     toast.success('Assinante cadastrado com sucesso!');
-    if (onClose) {
-      onClose();
-    }
   };
 
   const renderStep1 = () => (
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle className="text-green-600">Informações do Assinante</CardTitle>
+          <CardTitle className="text-green-600">Dados do Assinante</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Concessionária e Tipo */}
-          <div className="space-y-4">
-            <div>
-              <Label>Concessionária</Label>
-              <Select value={formData.concessionaria} disabled>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Equatorial Goiás">Equatorial Goiás</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <Label>Tipo de Assinante</Label>
-              <RadioGroup 
-                value={formData.subscriber.type} 
-                onValueChange={(value) => setFormData(prev => ({
-                  ...prev,
-                  subscriber: { ...prev.subscriber, type: value as 'fisica' | 'juridica' }
-                }))}
-                className="flex space-x-4"
-              >
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="fisica" id="fisica" />
-                  <Label htmlFor="fisica">Pessoa Física</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="juridica" id="juridica" />
-                  <Label htmlFor="juridica">Pessoa Jurídica</Label>
-                </div>
-              </RadioGroup>
-            </div>
+        <CardContent className="space-y-4">
+          <div>
+            <Label>Concessionária</Label>
+            <Select value={formData.concessionaria} disabled>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Equatorial Goiás">Equatorial Goiás</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
-          {/* Dados Pessoais/Empresariais */}
-          <Separator />
-          <h3 className="font-semibold text-gray-700">
-            {formData.subscriber.type === 'fisica' ? 'Dados Pessoais' : 'Dados da Empresa'}
-          </h3>
+          <div>
+            <Label>Tipo de Assinante</Label>
+            <RadioGroup 
+              value={formData.subscriber.type} 
+              onValueChange={(value) => setFormData(prev => ({
+                ...prev,
+                subscriber: { ...prev.subscriber, type: value as 'fisica' | 'juridica' }
+              }))}
+              className="flex space-x-4"
+            >
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="fisica" id="fisica" />
+                <Label htmlFor="fisica">Pessoa Física</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="juridica" id="juridica" />
+                <Label htmlFor="juridica">Pessoa Jurídica</Label>
+              </div>
+            </RadioGroup>
+          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -435,9 +417,8 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
                 </div>
               </div>
 
-              {/* Dados do Administrador */}
               <Separator />
-              <h4 className="font-medium text-gray-600">Dados do Administrador</h4>
+              <h3 className="font-semibold text-gray-700">Dados do Administrador</h3>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -524,9 +505,10 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
             </>
           )}
 
-          {/* Endereço Principal */}
           <Separator />
-          <h3 className="font-semibold text-gray-700">Endereço Principal</h3>
+          <h3 className="font-semibold text-gray-700">
+            {formData.subscriber.type === 'fisica' ? 'Endereço' : 'Endereço da Empresa'}
+          </h3>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
@@ -624,10 +606,6 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
             </div>
           </div>
 
-          {/* Contato Principal */}
-          <Separator />
-          <h3 className="font-semibold text-gray-700">Contato Principal</h3>
-
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Label>Telefone</Label>
@@ -665,10 +643,9 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
             />
           </div>
 
-          {/* Contatos Adicionais para Cobrança */}
           <Separator />
           <div className="flex items-center justify-between">
-            <h3 className="font-semibold text-gray-700">Contatos Adicionais para Cobrança</h3>
+            <h3 className="font-semibold text-gray-700">Contatos para Cobrança</h3>
             <Button onClick={addContact} size="sm" variant="outline">
               <Plus className="w-4 h-4 mr-2" />
               Adicionar Contato
@@ -750,36 +727,42 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
         <CardHeader>
           <CardTitle className="text-green-600">Conta de Energia</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className="space-y-4">
+          <h3 className="font-semibold text-gray-700">Cadastro Original da Conta de Energia</h3>
+          <Badge variant="outline" className="text-blue-600 border-blue-200">
+            Dados preenchidos automaticamente com base no assinante
+          </Badge>
+          
+          <div>
+            <Label>Tipo</Label>
+            <RadioGroup 
+              value={formData.energyAccount.originalAccount.type} 
+              onValueChange={(value) => setFormData(prev => ({
+                ...prev,
+                energyAccount: {
+                  ...prev.energyAccount,
+                  originalAccount: {
+                    ...prev.energyAccount.originalAccount,
+                    type: value as 'fisica' | 'juridica'
+                  }
+                }
+              }))}
+              className="flex space-x-4"
+            >
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="fisica" id="energia-fisica" />
+                <Label htmlFor="energia-fisica">Pessoa Física</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="juridica" id="energia-juridica" />
+                <Label htmlFor="energia-juridica">Pessoa Jurídica</Label>
+              </div>
+            </RadioGroup>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label>Tipo de Titularidade</Label>
-              <RadioGroup
-                value={formData.energyAccount.originalAccount.type}
-                onValueChange={(value) => setFormData(prev => ({
-                  ...prev,
-                  energyAccount: {
-                    ...prev.energyAccount,
-                    originalAccount: {
-                      ...prev.energyAccount.originalAccount,
-                      type: value as 'fisica' | 'juridica'
-                    }
-                  }
-                }))}
-                className="flex space-x-4"
-              >
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="fisica" id="tipo-fisica" />
-                  <Label htmlFor="tipo-fisica">Pessoa Física</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="juridica" id="tipo-juridica" />
-                  <Label htmlFor="tipo-juridica">Pessoa Jurídica</Label>
-                </div>
-              </RadioGroup>
-            </div>
-            <div>
-              <Label>CPF/CNPJ</Label>
+              <Label>{formData.energyAccount.originalAccount.type === 'fisica' ? 'CPF' : 'CNPJ'} na Conta de Energia</Label>
               <Input
                 value={formData.energyAccount.originalAccount.cpfCnpj}
                 onChange={(e) => setFormData(prev => ({
@@ -788,7 +771,24 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
                     ...prev.energyAccount,
                     originalAccount: {
                       ...prev.energyAccount.originalAccount,
-                      cpfCnpj: e.target.value
+                      cpfCnpj: formatCpfCnpj(e.target.value)
+                    }
+                  }
+                }))}
+                placeholder={formData.energyAccount.originalAccount.type === 'fisica' ? '000.000.000-00' : '00.000.000/0000-00'}
+              />
+            </div>
+            <div>
+              <Label>Nome na Conta de Energia</Label>
+              <Input
+                value={formData.energyAccount.originalAccount.name}
+                onChange={(e) => setFormData(prev => ({
+                  ...prev,
+                  energyAccount: {
+                    ...prev.energyAccount,
+                    originalAccount: {
+                      ...prev.energyAccount.originalAccount,
+                      name: e.target.value
                     }
                   }
                 }))}
@@ -796,78 +796,64 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
             </div>
           </div>
 
-          <div>
-            <Label>Nome</Label>
-            <Input
-              value={formData.energyAccount.originalAccount.name}
-              onChange={(e) => setFormData(prev => ({
-                ...prev,
-                energyAccount: {
-                  ...prev.energyAccount,
-                  originalAccount: {
-                    ...prev.energyAccount.originalAccount,
-                    name: e.target.value
+          {formData.energyAccount.originalAccount.type === 'fisica' && (
+            <div>
+              <Label>Data de Nascimento na Conta de Energia</Label>
+              <Input
+                type="date"
+                value={formData.energyAccount.originalAccount.dataNascimento}
+                onChange={(e) => setFormData(prev => ({
+                  ...prev,
+                  energyAccount: {
+                    ...prev.energyAccount,
+                    originalAccount: {
+                      ...prev.energyAccount.originalAccount,
+                      dataNascimento: e.target.value
+                    }
                   }
-                }
-              }))}
-            />
-          </div>
+                }))}
+              />
+            </div>
+          )}
 
-          <div>
-            <Label>Data de Nascimento</Label>
-            <Input
-              type="date"
-              value={formData.energyAccount.originalAccount.dataNascimento || ''}
-              onChange={(e) => setFormData(prev => ({
-                ...prev,
-                energyAccount: {
-                  ...prev.energyAccount,
-                  originalAccount: {
-                    ...prev.energyAccount.originalAccount,
-                    dataNascimento: e.target.value
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label>UC - Unidade Consumidora</Label>
+              <Input
+                value={formData.energyAccount.originalAccount.uc}
+                onChange={(e) => setFormData(prev => ({
+                  ...prev,
+                  energyAccount: {
+                    ...prev.energyAccount,
+                    originalAccount: {
+                      ...prev.energyAccount.originalAccount,
+                      uc: e.target.value
+                    }
                   }
-                }
-              }))}
-            />
-          </div>
-
-          <div>
-            <Label>Unidade Consumidora (UC)</Label>
-            <Input
-              value={formData.energyAccount.originalAccount.uc}
-              onChange={(e) => setFormData(prev => ({
-                ...prev,
-                energyAccount: {
-                  ...prev.energyAccount,
-                  originalAccount: {
-                    ...prev.energyAccount.originalAccount,
-                    uc: e.target.value
+                }))}
+              />
+            </div>
+            <div>
+              <Label>Número do Parceiro UC</Label>
+              <Input
+                value={formData.energyAccount.originalAccount.numeroParceiroUC}
+                onChange={(e) => setFormData(prev => ({
+                  ...prev,
+                  energyAccount: {
+                    ...prev.energyAccount,
+                    originalAccount: {
+                      ...prev.energyAccount.originalAccount,
+                      numeroParceiroUC: e.target.value
+                    }
                   }
-                }
-              }))}
-            />
-          </div>
-
-          <div>
-            <Label>Número Parceiro UC</Label>
-            <Input
-              value={formData.energyAccount.originalAccount.numeroParceiroUC}
-              onChange={(e) => setFormData(prev => ({
-                ...prev,
-                energyAccount: {
-                  ...prev.energyAccount,
-                  originalAccount: {
-                    ...prev.energyAccount.originalAccount,
-                    numeroParceiroUC: e.target.value
-                  }
-                }
-              }))}
-            />
+                }))}
+              />
+            </div>
           </div>
 
           <Separator />
-          <h4 className="font-semibold text-gray-700">Endereço da UC</h4>
-
+          <h4 className="font-medium text-gray-600">Endereço da Conta de Energia</h4>
+          
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <Label>CEP</Label>
@@ -875,7 +861,6 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
                 value={formData.energyAccount.originalAccount.address.cep}
                 onChange={(e) => handleCepChange(e.target.value, 'energyAccount')}
                 placeholder="00000-000"
-                disabled={cepLoading}
               />
             </div>
             <div className="md:col-span-2">
@@ -983,198 +968,181 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
           </div>
 
           <Separator />
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-2">
             <Switch
-              checked={formData.energyAccount.realizarTrocaTitularidade}
-              onCheckedChange={(checked) => setFormData(prev => ({
-                ...prev,
-                energyAccount: {
-                  ...prev.energyAccount,
-                  realizarTrocaTitularidade: checked
-                }
-              }))}
               id="troca-titularidade"
+              checked={formData.energyAccount.realizarTrocaTitularidade}
+              onCheckedChange={(checked) => {
+                setFormData(prev => ({
+                  ...prev,
+                  energyAccount: {
+                    ...prev.energyAccount,
+                    realizarTrocaTitularidade: checked,
+                    newTitularity: checked ? {
+                      type: 'fisica',
+                      cpfCnpj: '',
+                      name: '',
+                      dataNascimento: '',
+                      uc: '',
+                      numeroParceiroUC: '',
+                      trocaConcluida: false
+                    } : undefined
+                  }
+                }));
+              }}
             />
-            <Label htmlFor="troca-titularidade" className="cursor-pointer">
-              Realizar Troca de Titularidade
-            </Label>
+            <Label htmlFor="troca-titularidade">Realizará Troca de Titularidade?</Label>
           </div>
 
-          {formData.energyAccount.realizarTrocaTitularidade && (
-            <div className="mt-4 p-4 border rounded-lg space-y-4">
-              <h4 className="font-semibold text-gray-700">Novo Titular</h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {formData.energyAccount.realizarTrocaTitularidade && formData.energyAccount.newTitularity && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm">Nova Titularidade da Conta de Energia</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
                 <div>
                   <Label>Tipo</Label>
-                  <RadioGroup
-                    value={formData.energyAccount.newTitularity?.type || 'fisica'}
+                  <RadioGroup 
+                    value={formData.energyAccount.newTitularity.type} 
                     onValueChange={(value) => setFormData(prev => ({
                       ...prev,
                       energyAccount: {
                         ...prev.energyAccount,
-                        newTitularity: {
-                          ...(prev.energyAccount.newTitularity || {}),
+                        newTitularity: prev.energyAccount.newTitularity ? {
+                          ...prev.energyAccount.newTitularity,
                           type: value as 'fisica' | 'juridica'
-                        }
+                        } : undefined
                       }
                     }))}
                     className="flex space-x-4"
                   >
                     <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="fisica" id="new-titular-fisica" />
-                      <Label htmlFor="new-titular-fisica">Pessoa Física</Label>
+                      <RadioGroupItem value="fisica" id="nova-fisica" />
+                      <Label htmlFor="nova-fisica">Pessoa Física</Label>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="juridica" id="new-titular-juridica" />
-                      <Label htmlFor="new-titular-juridica">Pessoa Jurídica</Label>
+                      <RadioGroupItem value="juridica" id="nova-juridica" />
+                      <Label htmlFor="nova-juridica">Pessoa Jurídica</Label>
                     </div>
                   </RadioGroup>
                 </div>
-                <div>
-                  <Label>CPF/CNPJ</Label>
-                  <Input
-                    value={formData.energyAccount.newTitularity?.cpfCnpj || ''}
-                    onChange={(e) => setFormData(prev => ({
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label>{formData.energyAccount.newTitularity.type === 'fisica' ? 'CPF' : 'CNPJ'}</Label>
+                    <Input
+                      value={formData.energyAccount.newTitularity.cpfCnpj}
+                      onChange={(e) => setFormData(prev => ({
+                        ...prev,
+                        energyAccount: {
+                          ...prev.energyAccount,
+                          newTitularity: prev.energyAccount.newTitularity ? {
+                            ...prev.energyAccount.newTitularity,
+                            cpfCnpj: formatCpfCnpj(e.target.value)
+                          } : undefined
+                        }
+                      }))}
+                      placeholder={formData.energyAccount.newTitularity.type === 'fisica' ? '000.000.000-00' : '00.000.000/0000-00'}
+                    />
+                  </div>
+                  <div>
+                    <Label>Nome</Label>
+                    <Input
+                      value={formData.energyAccount.newTitularity.name}
+                      onChange={(e) => setFormData(prev => ({
+                        ...prev,
+                        energyAccount: {
+                          ...prev.energyAccount,
+                          newTitularity: prev.energyAccount.newTitularity ? {
+                            ...prev.energyAccount.newTitularity,
+                            name: e.target.value
+                          } : undefined
+                        }
+                      }))}
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label>UC</Label>
+                    <Input
+                      value={formData.energyAccount.newTitularity.uc}
+                      onChange={(e) => setFormData(prev => ({
+                        ...prev,
+                        energyAccount: {
+                          ...prev.energyAccount,
+                          newTitularity: prev.energyAccount.newTitularity ? {
+                            ...prev.energyAccount.newTitularity,
+                            uc: e.target.value
+                          } : undefined
+                        }
+                      }))}
+                    />
+                  </div>
+                  <div>
+                    <Label>Número do Parceiro UC</Label>
+                    <Input
+                      value={formData.energyAccount.newTitularity.numeroParceiroUC}
+                      onChange={(e) => setFormData(prev => ({
+                        ...prev,
+                        energyAccount: {
+                          ...prev.energyAccount,
+                          newTitularity: prev.energyAccount.newTitularity ? {
+                            ...prev.energyAccount.newTitularity,
+                            numeroParceiroUC: e.target.value
+                          } : undefined
+                        }
+                      }))}
+                    />
+                  </div>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="troca-concluida"
+                    checked={formData.energyAccount.newTitularity.trocaConcluida}
+                    onCheckedChange={(checked) => setFormData(prev => ({
                       ...prev,
                       energyAccount: {
                         ...prev.energyAccount,
-                        newTitularity: {
-                          ...(prev.energyAccount.newTitularity || {}),
-                          cpfCnpj: e.target.value
-                        }
+                        newTitularity: prev.energyAccount.newTitularity ? {
+                          ...prev.energyAccount.newTitularity,
+                          trocaConcluida: checked
+                        } : undefined
                       }
                     }))}
                   />
+                  <Label htmlFor="troca-concluida">Troca de Titularidade Concluída</Label>
                 </div>
-              </div>
 
-              <div>
-                <Label>Nome</Label>
-                <Input
-                  value={formData.energyAccount.newTitularity?.name || ''}
-                  onChange={(e) => setFormData(prev => ({
-                    ...prev,
-                    energyAccount: {
-                      ...prev.energyAccount,
-                      newTitularity: {
-                        ...(prev.energyAccount.newTitularity || {}),
-                        name: e.target.value
-                      }
-                    }
-                  }))}
-                />
-              </div>
-
-              <div>
-                <Label>Data de Nascimento</Label>
-                <Input
-                  type="date"
-                  value={formData.energyAccount.newTitularity?.dataNascimento || ''}
-                  onChange={(e) => setFormData(prev => ({
-                    ...prev,
-                    energyAccount: {
-                      ...prev.energyAccount,
-                      newTitularity: {
-                        ...(prev.energyAccount.newTitularity || {}),
-                        dataNascimento: e.target.value
-                      }
-                    }
-                  }))}
-                />
-              </div>
-
-              <div>
-                <Label>UC</Label>
-                <Input
-                  value={formData.energyAccount.newTitularity?.uc || ''}
-                  onChange={(e) => setFormData(prev => ({
-                    ...prev,
-                    energyAccount: {
-                      ...prev.energyAccount,
-                      newTitularity: {
-                        ...(prev.energyAccount.newTitularity || {}),
-                        uc: e.target.value
-                      }
-                    }
-                  }))}
-                />
-              </div>
-
-              <div>
-                <Label>Número Parceiro UC</Label>
-                <Input
-                  value={formData.energyAccount.newTitularity?.numeroParceiroUC || ''}
-                  onChange={(e) => setFormData(prev => ({
-                    ...prev,
-                    energyAccount: {
-                      ...prev.energyAccount,
-                      newTitularity: {
-                        ...(prev.energyAccount.newTitularity || {}),
-                        numeroParceiroUC: e.target.value
-                      }
-                    }
-                  }))}
-                />
-              </div>
-
-              <div className="flex items-center space-x-3">
-                <Switch
-                  checked={formData.energyAccount.newTitularity?.trocaConcluida || false}
-                  onCheckedChange={(checked) => setFormData(prev => ({
-                    ...prev,
-                    energyAccount: {
-                      ...prev.energyAccount,
-                      newTitularity: {
-                        ...(prev.energyAccount.newTitularity || {}),
-                        trocaConcluida: checked
-                      }
-                    }
-                  }))}
-                  id="troca-concluida"
-                />
-                <Label htmlFor="troca-concluida" className="cursor-pointer">
-                  Troca Concluída
-                </Label>
-              </div>
-
-              <div>
-                <Label>Data da Troca</Label>
-                <Input
-                  type="date"
-                  value={formData.energyAccount.newTitularity?.dataTroca || ''}
-                  onChange={(e) => setFormData(prev => ({
-                    ...prev,
-                    energyAccount: {
-                      ...prev.energyAccount,
-                      newTitularity: {
-                        ...(prev.energyAccount.newTitularity || {}),
-                        dataTroca: e.target.value
-                      }
-                    }
-                  }))}
-                />
-              </div>
-
-              <div>
-                <Label>Anexar Protocolo</Label>
-                <Input
-                  type="file"
-                  onChange={(e) => {
-                    const file = e.target.files ? e.target.files[0] : undefined;
-                    setFormData(prev => ({
-                      ...prev,
-                      energyAccount: {
-                        ...prev.energyAccount,
-                        newTitularity: {
-                          ...(prev.energyAccount.newTitularity || {}),
-                          protocoloAnexo: file
-                        }
-                      }
-                    }));
-                  }}
-                />
-              </div>
-            </div>
+                {formData.energyAccount.newTitularity.trocaConcluida && (
+                  <>
+                    <div>
+                      <Label>Data da Troca</Label>
+                      <Input
+                        type="date"
+                        value={formData.energyAccount.newTitularity.dataTroca || ''}
+                        onChange={(e) => setFormData(prev => ({
+                          ...prev,
+                          energyAccount: {
+                            ...prev.energyAccount,
+                            newTitularity: prev.energyAccount.newTitularity ? {
+                              ...prev.energyAccount.newTitularity,
+                              dataTroca: e.target.value
+                            } : undefined
+                          }
+                        }))}
+                      />
+                    </div>
+                    <div>
+                      <Label>Protocolo de Troca de Titularidade</Label>
+                      <Input type="file" accept=".pdf,.doc,.docx" />
+                    </div>
+                  </>
+                )}
+              </CardContent>
+            </Card>
           )}
         </CardContent>
       </Card>
@@ -1185,43 +1153,44 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle className="text-green-600">Plano e Configurações</CardTitle>
+          <CardTitle className="text-green-600">Contratação do Plano e Configurações</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-6">
-          <div>
-            <Label>Modalidade de Compensação</Label>
-            <Select
-              value={formData.planContract.modalidadeCompensacao}
-              onValueChange={(value) => setFormData(prev => ({
-                ...prev,
-                planContract: { ...prev.planContract, modalidadeCompensacao: value as 'autoconsumo' | 'geracaoCompartilhada' }
-              }))}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="autoconsumo">Autoconsumo</SelectItem>
-                <SelectItem value="geracaoCompartilhada">Geração Compartilhada</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div>
-            <Label>Data de Adesão</Label>
-            <Input
-              type="date"
-              value={formData.planContract.dataAdesao}
-              onChange={(e) => setFormData(prev => ({
-                ...prev,
-                planContract: { ...prev.planContract, dataAdesao: e.target.value }
-              }))}
-            />
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label>Modalidade de Compensação</Label>
+              <Select 
+                value={formData.planContract.modalidadeCompensacao} 
+                onValueChange={(value) => setFormData(prev => ({
+                  ...prev,
+                  planContract: { ...prev.planContract, modalidadeCompensacao: value as 'autoconsumo' | 'geracaoCompartilhada' }
+                }))}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="autoconsumo">AutoConsumo</SelectItem>
+                  <SelectItem value="geracaoCompartilhada">Geração Compartilhada</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label>Data de Adesão</Label>
+              <Input
+                type="date"
+                value={formData.planContract.dataAdesao}
+                onChange={(e) => setFormData(prev => ({
+                  ...prev,
+                  planContract: { ...prev.planContract, dataAdesao: e.target.value }
+                }))}
+              />
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label>kWh Vendedor</Label>
+              <Label>kWh Vendedor Informou</Label>
               <Input
                 type="number"
                 value={formData.planContract.kwhVendedor}
@@ -1253,73 +1222,98 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
                 ...prev,
                 planContract: {
                   ...prev.planContract,
-                  faixaConsumo,
+                  faixaConsumo: faixaConsumo as any,
                   fidelidade,
                   anosFidelidade: anos,
-                  desconto: desconto || prev.planContract.desconto,
+                  desconto: desconto || 13
                 }
               }));
             }}
           />
 
           <Separator />
-          <h4 className="font-semibold text-gray-700">Detalhes do Plano</h4>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="flex items-center space-x-3">
-              <Switch
-                checked={formData.planDetails.clientePagaPisCofins}
-                onCheckedChange={(checked) => setFormData(prev => ({
-                  ...prev,
-                  planDetails: { ...prev.planDetails, clientePagaPisCofins: checked }
-                }))}
-                id="cliente-paga-pis-cofins"
-              />
-              <Label htmlFor="cliente-paga-pis-cofins" className="cursor-pointer">
-                Cliente Paga PIS/COFINS
-              </Label>
+          <div>
+            <h3 className="font-semibold text-gray-700 mb-4">Detalhes do Plano</h3>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <Label>Cliente Paga PIS e COFINS</Label>
+                <Switch
+                  checked={formData.planDetails.clientePagaPisCofins}
+                  onCheckedChange={(checked) => setFormData(prev => ({
+                    ...prev,
+                    planDetails: { ...prev.planDetails, clientePagaPisCofins: checked }
+                  }))}
+                />
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <Label>Cliente Paga Fio B</Label>
+                <Switch
+                  checked={formData.planDetails.clientePagaFioB}
+                  onCheckedChange={(checked) => setFormData(prev => ({
+                    ...prev,
+                    planDetails: { ...prev.planDetails, clientePagaFioB: checked }
+                  }))}
+                />
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <Label>Adicionar Valor da Distribuidora na Fatura</Label>
+                <Switch
+                  checked={formData.planDetails.adicionarValorDistribuidora}
+                  onCheckedChange={(checked) => setFormData(prev => ({
+                    ...prev,
+                    planDetails: { ...prev.planDetails, adicionarValorDistribuidora: checked }
+                  }))}
+                />
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <Label>Assinante ISENTO de pagamento das Faturas de Energia?</Label>
+                <Switch
+                  checked={formData.planDetails.assinanteIsento}
+                  onCheckedChange={(checked) => setFormData(prev => ({
+                    ...prev,
+                    planDetails: { ...prev.planDetails, assinanteIsento: checked }
+                  }))}
+                />
+              </div>
             </div>
+          </div>
 
-            <div className="flex items-center space-x-3">
-              <Switch
-                checked={formData.planDetails.clientePagaFioB}
-                onCheckedChange={(checked) => setFormData(prev => ({
-                  ...prev,
-                  planDetails: { ...prev.planDetails, clientePagaFioB: checked }
-                }))}
-                id="cliente-paga-fio-b"
-              />
-              <Label htmlFor="cliente-paga-fio-b" className="cursor-pointer">
-                Cliente Paga Fio B
-              </Label>
-            </div>
+          <Separator />
 
-            <div className="flex items-center space-x-3">
-              <Switch
-                checked={formData.planDetails.adicionarValorDistribuidora}
-                onCheckedChange={(checked) => setFormData(prev => ({
-                  ...prev,
-                  planDetails: { ...prev.planDetails, adicionarValorDistribuidora: checked }
-                }))}
-                id="adicionar-valor-distribuidora"
-              />
-              <Label htmlFor="adicionar-valor-distribuidora" className="cursor-pointer">
-                Adicionar Valor Distribuidora
-              </Label>
-            </div>
+          <div>
+            <h3 className="font-semibold text-gray-700 mb-4">Configurações de Notificações</h3>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <Label>Enviar por WhatsApp Faturas de Energia?</Label>
+                <Switch
+                  checked={formData.notifications.whatsappFaturas}
+                  onCheckedChange={(checked) => setFormData(prev => ({
+                    ...prev,
+                    notifications: { ...prev.notifications, whatsappFaturas: checked }
+                  }))}
+                />
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <Label>Informar por WhatsApp Pagamento Recebido</Label>
+                <Switch
+                  checked={formData.notifications.whatsappPagamento}
+                  onCheckedChange={(checked) => setFormData(prev => ({
+                    ...prev,
+                    notifications: { ...prev.notifications, whatsappPagamento: checked }
+                  }))}
+                />
+              </div>
 
-            <div className="flex items-center space-x-3">
-              <Switch
-                checked={formData.planDetails.assinanteIsento}
-                onCheckedChange={(checked) => setFormData(prev => ({
-                  ...prev,
-                  planDetails: { ...prev.planDetails, assinanteIsento: checked }
-                }))}
-                id="assinante-isento"
-              />
-              <Label htmlFor="assinante-isento" className="cursor-pointer">
-                Assinante Isento
-              </Label>
+              <div className="p-4 bg-gray-50 rounded-lg">
+                <p className="text-sm text-gray-600 mb-2">
+                  <strong>Configurações avançadas de notificações:</strong> Por padrão, todas as notificações antes do vencimento e de cobrança vencida estão ativadas para WhatsApp e E-mail. Essas configurações podem ser ajustadas posteriormente na edição do assinante.
+                </p>
+              </div>
             </div>
           </div>
         </CardContent>
@@ -1333,75 +1327,41 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
         <CardHeader>
           <CardTitle className="text-green-600">Anexos</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-6">
-          <div>
-            <Label>Contrato</Label>
-            <Input
-              type="file"
-              onChange={(e) => {
-                const file = e.target.files ? e.target.files[0] : undefined;
-                setFormData(prev => ({
-                  ...prev,
-                  attachments: { ...prev.attachments, contrato: file }
-                }));
-              }}
-            />
-          </div>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+              <Upload className="w-8 h-8 mx-auto mb-2 text-gray-400" />
+              <Label className="text-sm font-medium">Contrato do Assinante assinado</Label>
+              <Input type="file" className="mt-2" accept=".pdf,.doc,.docx" />
+            </div>
 
-          <div>
-            <Label>CNH</Label>
-            <Input
-              type="file"
-              onChange={(e) => {
-                const file = e.target.files ? e.target.files[0] : undefined;
-                setFormData(prev => ({
-                  ...prev,
-                  attachments: { ...prev.attachments, cnh: file }
-                }));
-              }}
-            />
-          </div>
+            <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+              <Upload className="w-8 h-8 mx-auto mb-2 text-gray-400" />
+              <Label className="text-sm font-medium">CNH do assinante</Label>
+              <Input type="file" className="mt-2" accept=".pdf,.jpg,.jpeg,.png" />
+            </div>
 
-          <div>
-            <Label>Conta</Label>
-            <Input
-              type="file"
-              onChange={(e) => {
-                const file = e.target.files ? e.target.files[0] : undefined;
-                setFormData(prev => ({
-                  ...prev,
-                  attachments: { ...prev.attachments, conta: file }
-                }));
-              }}
-            />
-          </div>
+            <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+              <Upload className="w-8 h-8 mx-auto mb-2 text-gray-400" />
+              <Label className="text-sm font-medium">Conta do assinante</Label>
+              <Input type="file" className="mt-2" accept=".pdf,.jpg,.jpeg,.png" />
+            </div>
 
-          <div>
-            <Label>Contrato Social</Label>
-            <Input
-              type="file"
-              onChange={(e) => {
-                const file = e.target.files ? e.target.files[0] : undefined;
-                setFormData(prev => ({
-                  ...prev,
-                  attachments: { ...prev.attachments, contratoSocial: file }
-                }));
-              }}
-            />
-          </div>
+            {formData.subscriber.type === 'juridica' && (
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                <Upload className="w-8 h-8 mx-auto mb-2 text-gray-400" />
+                <Label className="text-sm font-medium">Contrato Social</Label>
+                <Input type="file" className="mt-2" accept=".pdf,.doc,.docx" />
+              </div>
+            )}
 
-          <div>
-            <Label>Procuração</Label>
-            <Input
-              type="file"
-              onChange={(e) => {
-                const file = e.target.files ? e.target.files[0] : undefined;
-                setFormData(prev => ({
-                  ...prev,
-                  attachments: { ...prev.attachments, procuracao: file }
-                }));
-              }}
-            />
+            {formData.energyAccount.realizarTrocaTitularidade && (
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                <Upload className="w-8 h-8 mx-auto mb-2 text-gray-400" />
+                <Label className="text-sm font-medium">Procuração</Label>
+                <Input type="file" className="mt-2" accept=".pdf,.doc,.docx" />
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -1425,7 +1385,6 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
         <p className="text-gray-600">Cadastre um novo assinante no sistema</p>
       </div>
 
-      {/* Progress Bar */}
       <div className="mb-8">
         <div className="flex items-center justify-between mb-4">
           {Array.from({ length: totalSteps }, (_, i) => i + 1).map((step) => (
@@ -1456,7 +1415,6 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
         </div>
       </div>
 
-      {/* Form Content */}
       <div className="mb-8">
         {currentStep === 1 && renderStep1()}
         {currentStep === 2 && renderStep2()}
@@ -1464,7 +1422,6 @@ const NovoAssinante = ({ onClose }: NovoAssinanteProps) => {
         {currentStep === 4 && renderStep4()}
       </div>
 
-      {/* Navigation */}
       <div className="flex justify-between">
         <Button
           onClick={prevStep}
