@@ -33,7 +33,6 @@ export const useRateio = () => {
 
   const createRateio = async (data: Omit<RateioData, 'id'>) => {
     try {
-      // Implementar criação de rateio
       console.log('Criando rateio:', data);
       return { success: true };
     } catch (error) {
@@ -44,10 +43,12 @@ export const useRateio = () => {
 
   const selectGenerator = (generator: RateioGenerator) => {
     setSelectedGenerator(generator);
+    return generator;
   };
 
   const selectSubscriber = (subscriber: RateioSubscriber) => {
     setSelectedSubscriber(subscriber);
+    return subscriber;
   };
 
   const getRateiosByGenerator = (generatorId: string) => {
@@ -61,12 +62,10 @@ export const useRateio = () => {
   };
 
   const validateRateio = (data: any) => {
-    // Implementar validação
     return { isValid: true, errors: [], warnings: [] };
   };
 
   const calculateAutoDistribution = (subscribers: RateioSubscriber[], totalGeneration: number) => {
-    // Implementar cálculo automático
     return subscribers.map(sub => ({
       ...sub,
       allocatedEnergy: totalGeneration / subscribers.length

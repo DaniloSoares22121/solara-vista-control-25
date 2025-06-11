@@ -128,8 +128,17 @@ export const useSubscriberForm = () => {
           }
           break;
         case 'energy':
+          const currentEnergyAddress = formData.energyAccount.address || {
+            cep: '',
+            street: '',
+            number: '',
+            complement: '',
+            neighborhood: '',
+            city: '',
+            state: '',
+          };
           updateFormData('energyAccount', {
-            address: { ...formData.energyAccount.address, ...addressUpdate }
+            address: { ...currentEnergyAddress, ...addressUpdate }
           });
           break;
       }
