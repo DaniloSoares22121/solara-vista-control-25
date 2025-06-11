@@ -50,8 +50,8 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    // Chamar a API externa com a nova URL
-    const apiResponse = await fetch('https://313c-2804-2904-44c-1d00-9868-d47f-2885-6fbe.ngrok-free.app/baixar-fatura', {
+    // Chamar a API externa com a nova URL padrão
+    const apiResponse = await fetch('https://877f-2804-2904-44c-1d00-9868-d47f-2885-6fbe.ngrok-free.app/baixar-fatura', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
