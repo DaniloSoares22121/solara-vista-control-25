@@ -1,7 +1,9 @@
 
-import React, { forwardRef, useImperativeHandle, useRef } from 'react';
+import React, { forwardRef, useImperativeHandle, useRef, useState, useEffect } from 'react';
 import { PlanDetails } from '@/types/subscriber';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useForm } from 'react-hook-form';
+import DetalhesPlanoForm from './DetalhesPlanoForm';
 
 interface PlanDetailsFormProps {
   initialValues: PlanDetails;
@@ -12,6 +14,23 @@ interface PlanDetailsFormProps {
 const PlanDetailsForm = forwardRef<HTMLFormElement, PlanDetailsFormProps>(
   ({ initialValues, onChange, isEditing }, ref) => {
     const formRef = useRef<HTMLFormElement>(null);
+    
+    const form = useForm({
+      defaultValues: initialValues,
+      mode: 'onChange'
+    });
+
+    const watchedValues = form.watch();
+
+    // Update data when form changes
+    useEffect(() => {
+      onChange(watchedValues);
+    }, [watchedValues, onChange]);
+
+    // Update form when initialValues change
+    useEffect(() => {
+      form.reset(initialValues);
+    }, [initialValues, form]);
 
     useImperativeHandle(ref, () => formRef.current!);
 
@@ -22,9 +41,7 @@ const PlanDetailsForm = forwardRef<HTMLFormElement, PlanDetailsFormProps>(
         </CardHeader>
         <CardContent>
           <form ref={formRef} className="space-y-4">
-            <div className="text-sm text-gray-600">
-              Formulário dos detalhes do plano em desenvolvimento...
-            </div>
+            <DetalhesPlanoForm form={form} />
             <input type="hidden" name="planDetails" required />
           </form>
         </CardContent>

@@ -1,7 +1,9 @@
 
-import React, { forwardRef, useImperativeHandle, useRef } from 'react';
+import React, { forwardRef, useImperativeHandle, useRef, useState, useEffect } from 'react';
 import { PlanContract } from '@/types/subscriber';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useForm } from 'react-hook-form';
+import PlanoContratadoForm from './PlanoContratadoForm';
 
 interface PlanContractFormProps {
   initialValues: PlanContract;
@@ -12,6 +14,23 @@ interface PlanContractFormProps {
 const PlanContractForm = forwardRef<HTMLFormElement, PlanContractFormProps>(
   ({ initialValues, onChange, isEditing }, ref) => {
     const formRef = useRef<HTMLFormElement>(null);
+    
+    const form = useForm({
+      defaultValues: initialValues,
+      mode: 'onChange'
+    });
+
+    const watchedValues = form.watch();
+
+    // Update data when form changes
+    useEffect(() => {
+      onChange(watchedValues);
+    }, [watchedValues, onChange]);
+
+    // Update form when initialValues change
+    useEffect(() => {
+      form.reset(initialValues);
+    }, [initialValues, form]);
 
     useImperativeHandle(ref, () => formRef.current!);
 
@@ -22,9 +41,7 @@ const PlanContractForm = forwardRef<HTMLFormElement, PlanContractFormProps>(
         </CardHeader>
         <CardContent>
           <form ref={formRef} className="space-y-4">
-            <div className="text-sm text-gray-600">
-              Formulário do plano contratado em desenvolvimento...
-            </div>
+            <PlanoContratadoForm form={form} />
             <input type="hidden" name="planContract" required />
           </form>
         </CardContent>

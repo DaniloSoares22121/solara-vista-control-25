@@ -11,7 +11,7 @@ import PlanDetailsForm from '@/components/forms/PlanDetailsForm';
 import NotificationSettingsForm from '@/components/forms/NotificationSettingsForm';
 import AttachmentsForm from '@/components/forms/AttachmentsForm';
 import { Step, Steps } from '@/components/ui/steps';
-import { SubscriberFormData, Address, PersonData, AdministratorData, OriginalEnergyAccount, NewTitularity, EnergyAccount, PlanContract, PlanDetails, NotificationSettings } from '@/types/subscriber';
+import { SubscriberFormData, Address, PersonData, AdministratorData, EnergyAccount, PlanContract, PlanDetails, NotificationSettings } from '@/types/subscriber';
 import { useSubscribers } from '@/hooks/useSubscribers';
 
 interface NovoAssinanteProps {
