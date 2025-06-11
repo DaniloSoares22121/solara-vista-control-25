@@ -58,130 +58,156 @@ const NotificacoesForm = ({ form }: NotificacoesFormProps) => {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-md">Notificações antes do vencimento</CardTitle>
+          <CardTitle className="text-md">Notificações Antes do Vencimento</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <h5 className="font-medium">Ao Criar Nova Cobrança</h5>
-              <div className="flex items-center justify-between">
-                <FormLabel className="text-sm">WhatsApp</FormLabel>
-                <FormField
-                  control={form.control}
-                  name="notifications.notifications.criarCobranca.whatsapp"
-                  render={({ field }) => (
-                    <FormControl>
-                      <Switch checked={field.value} onCheckedChange={field.onChange} />
-                    </FormControl>
-                  )}
-                />
-              </div>
-              <div className="flex items-center justify-between">
-                <FormLabel className="text-sm">E-mail</FormLabel>
-                <FormField
-                  control={form.control}
-                  name="notifications.notifications.criarCobranca.email"
-                  render={({ field }) => (
-                    <FormControl>
-                      <Switch checked={field.value} onCheckedChange={field.onChange} />
-                    </FormControl>
-                  )}
-                />
-              </div>
-            </div>
+          <div className="grid grid-cols-3 gap-4 items-center">
+            <div className="font-medium">Evento</div>
+            <div className="font-medium text-center">WhatsApp</div>
+            <div className="font-medium text-center">E-Mail</div>
+          </div>
 
-            <div className="space-y-2">
-              <h5 className="font-medium">Alteração de Valor ou Data</h5>
-              <div className="flex items-center justify-between">
-                <FormLabel className="text-sm">WhatsApp</FormLabel>
-                <FormField
-                  control={form.control}
-                  name="notifications.notifications.alteracaoValor.whatsapp"
-                  render={({ field }) => (
-                    <FormControl>
-                      <Switch checked={field.value} onCheckedChange={field.onChange} />
-                    </FormControl>
-                  )}
-                />
-              </div>
-              <div className="flex items-center justify-between">
-                <FormLabel className="text-sm">E-mail</FormLabel>
-                <FormField
-                  control={form.control}
-                  name="notifications.notifications.alteracaoValor.email"
-                  render={({ field }) => (
-                    <FormControl>
-                      <Switch checked={field.value} onCheckedChange={field.onChange} />
-                    </FormControl>
-                  )}
-                />
-              </div>
-            </div>
+          <div className="grid grid-cols-3 gap-4 items-center">
+            <div>Ao Criar Nova Cobrança</div>
+            <FormField
+              control={form.control}
+              name="notifications.notifications.criarCobranca.whatsapp"
+              render={({ field }) => (
+                <FormItem className="flex justify-center">
+                  <FormControl>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="notifications.notifications.criarCobranca.email"
+              render={({ field }) => (
+                <FormItem className="flex justify-center">
+                  <FormControl>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+          </div>
 
-            <div className="space-y-2">
-              <h5 className="font-medium">Vencimento 1 dia antes</h5>
-              <div className="flex items-center justify-between">
-                <FormLabel className="text-sm">WhatsApp</FormLabel>
-                <FormField
-                  control={form.control}
-                  name="notifications.notifications.vencimento1Dia.whatsapp"
-                  render={({ field }) => (
-                    <FormControl>
-                      <Switch checked={field.value} onCheckedChange={field.onChange} />
-                    </FormControl>
-                  )}
-                />
-              </div>
-              <div className="flex items-center justify-between">
-                <FormLabel className="text-sm">E-mail</FormLabel>
-                <FormField
-                  control={form.control}
-                  name="notifications.notifications.vencimento1Dia.email"
-                  render={({ field }) => (
-                    <FormControl>
-                      <Switch checked={field.value} onCheckedChange={field.onChange} />
-                    </FormControl>
-                  )}
-                />
-              </div>
-            </div>
+          <div className="grid grid-cols-3 gap-4 items-center">
+            <div>Alteração de Valor ou Data de Vencimento</div>
+            <FormField
+              control={form.control}
+              name="notifications.notifications.alteracaoValor.whatsapp"
+              render={({ field }) => (
+                <FormItem className="flex justify-center">
+                  <FormControl>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="notifications.notifications.alteracaoValor.email"
+              render={({ field }) => (
+                <FormItem className="flex justify-center">
+                  <FormControl>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+          </div>
 
-            <div className="space-y-2">
-              <h5 className="font-medium">Vencimento hoje</h5>
-              <div className="flex items-center justify-between">
-                <FormLabel className="text-sm">WhatsApp</FormLabel>
-                <FormField
-                  control={form.control}
-                  name="notifications.notifications.vencimentoHoje.whatsapp"
-                  render={({ field }) => (
-                    <FormControl>
-                      <Switch checked={field.value} onCheckedChange={field.onChange} />
-                    </FormControl>
-                  )}
-                />
-              </div>
-              <div className="flex items-center justify-between">
-                <FormLabel className="text-sm">E-mail</FormLabel>
-                <FormField
-                  control={form.control}
-                  name="notifications.notifications.vencimentoHoje.email"
-                  render={({ field }) => (
-                    <FormControl>
-                      <Switch checked={field.value} onCheckedChange={field.onChange} />
-                    </FormControl>
-                  )}
-                />
-              </div>
-            </div>
+          <div className="grid grid-cols-3 gap-4 items-center">
+            <div>Aviso do Vencimento 1 dia antes</div>
+            <FormField
+              control={form.control}
+              name="notifications.notifications.vencimento1Dia.whatsapp"
+              render={({ field }) => (
+                <FormItem className="flex justify-center">
+                  <FormControl>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="notifications.notifications.vencimento1Dia.email"
+              render={({ field }) => (
+                <FormItem className="flex justify-center">
+                  <FormControl>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+          </div>
+
+          <div className="grid grid-cols-3 gap-4 items-center">
+            <div>Aviso do Vencimento hoje (no dia do vencimento)</div>
+            <FormField
+              control={form.control}
+              name="notifications.notifications.vencimentoHoje.whatsapp"
+              render={({ field }) => (
+                <FormItem className="flex justify-center">
+                  <FormControl>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="notifications.notifications.vencimentoHoje.email"
+              render={({ field }) => (
+                <FormItem className="flex justify-center">
+                  <FormControl>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
           </div>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-md">Notificações de cobranças vencidas</CardTitle>
+          <CardTitle className="text-md">Notificações de Cobranças Vencidas</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+          <div className="grid grid-cols-3 gap-4 items-center">
+            <div className="font-medium">Período</div>
+            <div className="font-medium text-center">WhatsApp</div>
+            <div className="font-medium text-center">E-Mail</div>
+          </div>
+
           {[
             { key: 'day1', label: '1 dia após o vencimento' },
             { key: 'day3', label: '3 dias após o vencimento' },
@@ -193,32 +219,36 @@ const NotificacoesForm = ({ form }: NotificacoesFormProps) => {
             { key: 'day30', label: '30 dias após o vencimento' },
             { key: 'after30', label: 'Após 30 dias (de 5 em 5 dias)' }
           ].map((item) => (
-            <div key={item.key} className="space-y-2 border-b pb-2">
-              <h5 className="font-medium">{item.label}</h5>
-              <div className="flex items-center justify-between">
-                <FormLabel className="text-sm">WhatsApp</FormLabel>
-                <FormField
-                  control={form.control}
-                  name={`notifications.overdueNotifications.${item.key}.whatsapp`}
-                  render={({ field }) => (
+            <div key={item.key} className="grid grid-cols-3 gap-4 items-center">
+              <div>{item.label}</div>
+              <FormField
+                control={form.control}
+                name={`notifications.overdueNotifications.${item.key}.whatsapp`}
+                render={({ field }) => (
+                  <FormItem className="flex justify-center">
                     <FormControl>
-                      <Switch checked={field.value} onCheckedChange={field.onChange} />
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
                     </FormControl>
-                  )}
-                />
-              </div>
-              <div className="flex items-center justify-between">
-                <FormLabel className="text-sm">E-mail</FormLabel>
-                <FormField
-                  control={form.control}
-                  name={`notifications.overdueNotifications.${item.key}.email`}
-                  render={({ field }) => (
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name={`notifications.overdueNotifications.${item.key}.email`}
+                render={({ field }) => (
+                  <FormItem className="flex justify-center">
                     <FormControl>
-                      <Switch checked={field.value} onCheckedChange={field.onChange} />
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
                     </FormControl>
-                  )}
-                />
-              </div>
+                  </FormItem>
+                )}
+              />
             </div>
           ))}
         </CardContent>

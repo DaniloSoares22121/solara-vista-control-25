@@ -4,7 +4,6 @@ import { useForm } from 'react-hook-form';
 import { PersonData, Contact } from '@/types/subscriber';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
@@ -13,16 +12,16 @@ import DadosPessoaJuridicaForm from './DadosPessoaJuridicaForm';
 
 interface SubscriberFormProps {
   initialValues: PersonData;
-  onChange: (value: PersonData) => void;
+  onChange: (value: PersonData, concessionaria: string) => void;
   isEditing?: boolean;
   concessionaria?: string;
-  onConcessionariaChange?: (value: string) => void;
 }
 
 const SubscriberForm = forwardRef<HTMLFormElement, SubscriberFormProps>(
-  ({ initialValues, onChange, isEditing, concessionaria, onConcessionariaChange }, ref) => {
+  ({ initialValues, onChange, isEditing, concessionaria = '' }, ref) => {
     const formRef = useRef<HTMLFormElement>(null);
     const [contacts, setContacts] = React.useState<Contact[]>(initialValues.contacts || []);
+    const [currentConcessionaria, setCurrentConcessionaria] = React.useState(concessionaria);
 
     useImperativeHandle(ref, () => formRef.current!);
 
@@ -37,8 +36,8 @@ const SubscriberForm = forwardRef<HTMLFormElement, SubscriberFormProps>(
     // Atualizar dados quando form mudar
     useEffect(() => {
       const currentData = { ...watchedValues, contacts };
-      onChange(currentData);
-    }, [watchedValues, contacts, onChange]);
+      onChange(currentData, currentConcessionaria);
+    }, [watchedValues, contacts, currentConcessionaria, onChange]);
 
     // Atualizar form quando initialValues mudar
     useEffect(() => {
@@ -50,20 +49,24 @@ const SubscriberForm = forwardRef<HTMLFormElement, SubscriberFormProps>(
       setContacts(newContacts);
     };
 
+    const handleConcessionariaChange = (value: string) => {
+      setCurrentConcessionaria(value);
+    };
+
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Dados do Assinante</CardTitle>
+          <CardTitle>1. Dados do Assinante</CardTitle>
         </CardHeader>
         <CardContent>
           <Form {...form}>
             <form ref={formRef} className="space-y-6">
               {/* Seleção da Concessionária */}
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Concessionária</h3>
+                <h3 className="text-lg font-semibold">Seleção da Concessionária</h3>
                 <div className="space-y-2">
                   <Label htmlFor="concessionaria">Concessionária *</Label>
-                  <Select value={concessionaria} onValueChange={onConcessionariaChange} required>
+                  <Select value={currentConcessionaria} onValueChange={handleConcessionariaChange} required>
                     <SelectTrigger>
                       <SelectValue placeholder="Selecione a concessionária" />
                     </SelectTrigger>
@@ -74,9 +77,9 @@ const SubscriberForm = forwardRef<HTMLFormElement, SubscriberFormProps>(
                 </div>
               </div>
 
-              {/* Tipo de Pessoa */}
+              {/* Tipo de Assinante */}
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Tipo de Pessoa</h3>
+                <h3 className="text-lg font-semibold">2. Tipo de Assinante</h3>
                 <FormField
                   control={form.control}
                   name="type"
@@ -121,7 +124,7 @@ const SubscriberForm = forwardRef<HTMLFormElement, SubscriberFormProps>(
 
               {/* Campo hidden obrigatório para validação */}
               <input type="hidden" name="subscriber" required />
-              <input type="hidden" name="concessionaria" value={concessionaria} required />
+              <input type="hidden" name="concessionaria" value={currentConcessionaria} required />
             </form>
           </Form>
         </CardContent>

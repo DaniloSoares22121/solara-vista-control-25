@@ -1,12 +1,11 @@
+
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { UseFormReturn } from 'react-hook-form';
-import { Card, CardContent } from '@/components/ui/card';
 import DiscountTable from './DiscountTable';
-import { useState } from 'react';
 
 interface PlanoContratadoFormProps {
   form: UseFormReturn<any>;
@@ -17,46 +16,31 @@ const PlanoContratadoForm = ({ form }: PlanoContratadoFormProps) => {
   const fidelidade = form.watch('planContract.fidelidade');
   const anosFidelidade = form.watch('planContract.anosFidelidade');
 
-  const [customDiscountRates, setCustomDiscountRates] = useState<{
-    [key: string]: {
-      sem: number;
-      com: {
-        '1': number;
-        '2': number;
-      };
-    };
-  } | null>(null);
-
-  const getDescontoOptions = () => {
-    const baseOptions = {
-      '400-599': { sem: 13, com: { '1': 15, '2': 20 } },
-      '600-1099': { sem: 15, com: { '1': 18, '2': 20 } },
-      '1100-3099': { sem: 18, com: { '1': 20, '2': 22 } },
-      '3100-7000': { sem: 20, com: { '1': 22, '2': 25 } },
-      '7000+': { sem: 22, com: { '1': 25, '2': 27 } }
-    };
-
-    const rates = customDiscountRates || baseOptions;
-    return rates[faixaConsumo as keyof typeof rates] || rates['400-599'];
+  const discountRates = {
+    '400-599': { sem: 13, com: { '1': 15, '2': 20 } },
+    '600-1099': { sem: 15, com: { '1': 18, '2': 20 } },
+    '1100-3099': { sem: 18, com: { '1': 20, '2': 22 } },
+    '3100-7000': { sem: 20, com: { '1': 22, '2': 25 } },
+    '7000+': { sem: 22, com: { '1': 25, '2': 27 } }
   };
 
-  const descontoOptions = getDescontoOptions();
-
-  const handleDiscountChange = (newRates: any) => {
-    setCustomDiscountRates(newRates);
+  const getCurrentDiscount = () => {
+    if (!faixaConsumo || !fidelidade) return 0;
     
-    // Update the form value with the new discount percentage
-    const updatedOptions = newRates[faixaConsumo as keyof typeof newRates] || newRates['400-599'];
-    let newDiscount = 0;
-    
+    const rates = discountRates[faixaConsumo as keyof typeof discountRates];
     if (fidelidade === 'sem') {
-      newDiscount = updatedOptions.sem;
+      return rates.sem;
     } else if (fidelidade === 'com' && anosFidelidade) {
-      newDiscount = updatedOptions.com[anosFidelidade as '1' | '2'];
+      return rates.com[anosFidelidade as '1' | '2'];
     }
-    
-    form.setValue('planContract.desconto', newDiscount);
+    return 0;
   };
+
+  // Atualizar o desconto automaticamente quando as seleções mudarem
+  React.useEffect(() => {
+    const currentDiscount = getCurrentDiscount();
+    form.setValue('planContract.desconto', currentDiscount);
+  }, [faixaConsumo, fidelidade, anosFidelidade, form]);
 
   return (
     <div className="space-y-6">
@@ -70,20 +54,15 @@ const PlanoContratadoForm = ({ form }: PlanoContratadoFormProps) => {
             <FormItem>
               <FormLabel>Modalidade de Compensação *</FormLabel>
               <FormControl>
-                <RadioGroup
-                  value={field.value}
-                  onValueChange={field.onChange}
-                  className="flex flex-col space-y-2"
-                >
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="autoconsumo" id="autoconsumo" />
-                    <Label htmlFor="autoconsumo">AutoConsumo</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="geracaoCompartilhada" id="geracao" />
-                    <Label htmlFor="geracao">Geração Compartilhada</Label>
-                  </div>
-                </RadioGroup>
+                <Select value={field.value} onValueChange={field.onChange}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione a modalidade" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="autoconsumo">AutoConsumo</SelectItem>
+                    <SelectItem value="geracaoCompartilhada">Geração Compartilhada</SelectItem>
+                  </SelectContent>
+                </Select>
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -109,13 +88,13 @@ const PlanoContratadoForm = ({ form }: PlanoContratadoFormProps) => {
           name="planContract.kwhVendedor"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>kWh Vendedor informou *</FormLabel>
+              <FormLabel>kWh Vendedor Informou *</FormLabel>
               <FormControl>
                 <Input 
                   {...field} 
                   type="number" 
-                  placeholder="0" 
-                  onChange={(e) => field.onChange(Number(e.target.value))}
+                  placeholder="Valor informado pelo vendedor"
+                  onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
                 />
               </FormControl>
               <FormMessage />
@@ -133,8 +112,8 @@ const PlanoContratadoForm = ({ form }: PlanoContratadoFormProps) => {
                 <Input 
                   {...field} 
                   type="number" 
-                  placeholder="0"
-                  onChange={(e) => field.onChange(Number(e.target.value))}
+                  placeholder="Valor definido pelo gestor"
+                  onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
                 />
               </FormControl>
               <FormMessage />
@@ -168,80 +147,66 @@ const PlanoContratadoForm = ({ form }: PlanoContratadoFormProps) => {
         )}
       />
 
-      {faixaConsumo && (
-        <Card>
-          <CardContent className="p-4">
-            <FormField
-              control={form.control}
-              name="planContract.fidelidade"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Tipo de Fidelidade *</FormLabel>
-                  <FormControl>
-                    <RadioGroup
-                      value={field.value}
-                      onValueChange={field.onChange}
-                      className="flex space-x-6"
-                    >
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="sem" id="sem-fidelidade" />
-                        <Label htmlFor="sem-fidelidade">
-                          Sem Fidelidade - {descontoOptions.sem}% Desconto
-                        </Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="com" id="com-fidelidade" />
-                        <Label htmlFor="com-fidelidade">Com Fidelidade</Label>
-                      </div>
-                    </RadioGroup>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+      <FormField
+        control={form.control}
+        name="planContract.fidelidade"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Tipo de Fidelidade *</FormLabel>
+            <FormControl>
+              <RadioGroup
+                value={field.value}
+                onValueChange={field.onChange}
+                className="flex space-x-6"
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="sem" id="sem-fidelidade" />
+                  <Label htmlFor="sem-fidelidade">Sem Fidelidade</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="com" id="com-fidelidade" />
+                  <Label htmlFor="com-fidelidade">Com Fidelidade</Label>
+                </div>
+              </RadioGroup>
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
 
-            {fidelidade === 'com' && (
-              <FormField
-                control={form.control}
-                name="planContract.anosFidelidade"
-                render={({ field }) => (
-                  <FormItem className="mt-4">
-                    <FormLabel>Anos de Fidelidade *</FormLabel>
-                    <FormControl>
-                      <RadioGroup
-                        value={field.value}
-                        onValueChange={field.onChange}
-                        className="flex space-x-6"
-                      >
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="1" id="1-ano" />
-                          <Label htmlFor="1-ano">
-                            1 Ano - {descontoOptions.com['1']}% Desconto
-                          </Label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="2" id="2-anos" />
-                          <Label htmlFor="2-anos">
-                            2 Anos - {descontoOptions.com['2']}% Desconto
-                          </Label>
-                        </div>
-                      </RadioGroup>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            )}
-          </CardContent>
-        </Card>
+      {fidelidade === 'com' && (
+        <FormField
+          control={form.control}
+          name="planContract.anosFidelidade"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Anos de Fidelidade *</FormLabel>
+              <FormControl>
+                <RadioGroup
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  className="flex space-x-6"
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="1" id="1-ano" />
+                    <Label htmlFor="1-ano">1 Ano</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="2" id="2-anos" />
+                    <Label htmlFor="2-anos">2 Anos</Label>
+                  </div>
+                </RadioGroup>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
       )}
 
       <DiscountTable 
         faixaConsumo={faixaConsumo}
         fidelidade={fidelidade}
         anosFidelidade={anosFidelidade}
-        discountRates={customDiscountRates}
-        onDiscountChange={handleDiscountChange}
       />
     </div>
   );

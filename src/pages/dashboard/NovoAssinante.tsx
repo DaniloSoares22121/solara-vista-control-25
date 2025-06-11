@@ -103,33 +103,33 @@ const defaultFormData: SubscriberFormData = {
     faixaConsumo: '400-599',
     fidelidade: 'sem',
     anosFidelidade: '1',
-    desconto: 0,
+    desconto: 13,
   },
   planDetails: {
-    clientePagaPisCofins: false,
+    clientePagaPisCofins: true,
     clientePagaFioB: false,
     adicionarValorDistribuidora: false,
     assinanteIsento: false,
   },
   notifications: {
-    whatsappFaturas: false,
+    whatsappFaturas: true,
     whatsappPagamento: false,
     notifications: {
-      criarCobranca: { whatsapp: false, email: false },
-      alteracaoValor: { whatsapp: false, email: false },
-      vencimento1Dia: { whatsapp: false, email: false },
-      vencimentoHoje: { whatsapp: false, email: false },
+      criarCobranca: { whatsapp: true, email: true },
+      alteracaoValor: { whatsapp: true, email: true },
+      vencimento1Dia: { whatsapp: true, email: true },
+      vencimentoHoje: { whatsapp: true, email: true },
     },
     overdueNotifications: {
-      day1: { whatsapp: false, email: false },
-      day3: { whatsapp: false, email: false },
-      day5: { whatsapp: false, email: false },
-      day7: { whatsapp: false, email: false },
-      day15: { whatsapp: false, email: false },
-      day20: { whatsapp: false, email: false },
-      day25: { whatsapp: false, email: false },
-      day30: { whatsapp: false, email: false },
-      after30: { whatsapp: false, email: false },
+      day1: { whatsapp: true, email: true },
+      day3: { whatsapp: true, email: true },
+      day5: { whatsapp: true, email: true },
+      day7: { whatsapp: true, email: true },
+      day15: { whatsapp: true, email: true },
+      day20: { whatsapp: true, email: true },
+      day25: { whatsapp: true, email: true },
+      day30: { whatsapp: true, email: true },
+      after30: { whatsapp: true, email: true },
     },
   },
   attachments: {},
@@ -140,13 +140,13 @@ const NovoAssinante = ({ onClose, initialData, onSubmit, isEditing = false }: No
   
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // 5 etapas conforme solicitado
   const steps = [
-    'Assinante',
-    'Administrador',
+    'Dados do Assinante',
+    'Administrador (PJ)',
     'Conta de Energia',
-    'Plano Contratado',
-    'Detalhes do Plano',
-    'Notificações',
+    'Plano e Notificações',
     'Anexos',
   ];
 
@@ -154,8 +154,6 @@ const NovoAssinante = ({ onClose, initialData, onSubmit, isEditing = false }: No
   const administratorFormRef = useRef<HTMLFormElement>(null);
   const energyAccountFormRef = useRef<HTMLFormElement>(null);
   const planContractFormRef = useRef<HTMLFormElement>(null);
-  const planDetailsFormRef = useRef<HTMLFormElement>(null);
-  const notificationSettingsFormRef = useRef<HTMLFormElement>(null);
   const attachmentsFormRef = useRef<HTMLFormElement>(null);
 
   // Inicializar com dados existentes se estiver editando
@@ -181,16 +179,13 @@ const NovoAssinante = ({ onClose, initialData, onSubmit, isEditing = false }: No
       case 0:
         return subscriberFormRef.current?.checkValidity() || false;
       case 1:
-        return administratorFormRef.current?.checkValidity() || true; // Opcional
+        // Só é obrigatório se for pessoa jurídica
+        return formData.subscriber.type === 'fisica' || administratorFormRef.current?.checkValidity() || false;
       case 2:
         return energyAccountFormRef.current?.checkValidity() || false;
       case 3:
         return planContractFormRef.current?.checkValidity() || false;
       case 4:
-        return planDetailsFormRef.current?.checkValidity() || false;
-      case 5:
-        return notificationSettingsFormRef.current?.checkValidity() || false;
-      case 6:
         return attachmentsFormRef.current?.checkValidity() || true; // Opcional
       default:
         return false;
@@ -220,12 +215,12 @@ const NovoAssinante = ({ onClose, initialData, onSubmit, isEditing = false }: No
     setCurrentStep((prev) => Math.max(prev - 1, 0));
   };
 
-  const handleConcessionariaChange = (value: string) => {
-    setFormData((prev) => ({ ...prev, concessionaria: value }));
-  };
-
-  const handleSubscriberChange = (value: PersonData) => {
-    setFormData((prev) => ({ ...prev, subscriber: value }));
+  const handleSubscriberChange = (value: PersonData, concessionaria: string) => {
+    setFormData((prev) => ({ 
+      ...prev, 
+      subscriber: value,
+      concessionaria: concessionaria
+    }));
   };
 
   const handleAdministratorChange = (value: AdministratorData | undefined) => {
@@ -357,7 +352,6 @@ const NovoAssinante = ({ onClose, initialData, onSubmit, isEditing = false }: No
               initialValues={formData.subscriber}
               onChange={handleSubscriberChange}
               concessionaria={formData.concessionaria}
-              onConcessionariaChange={handleConcessionariaChange}
               isEditing={isEditing}
             />
           )}
@@ -366,7 +360,7 @@ const NovoAssinante = ({ onClose, initialData, onSubmit, isEditing = false }: No
             <AdministratorForm
               ref={administratorFormRef}
               initialValues={formData.administrator}
-              onChange={(value) => handleAdministratorChange(value)}
+              onChange={handleAdministratorChange}
               isEditing={isEditing}
             />
           )}
@@ -381,33 +375,29 @@ const NovoAssinante = ({ onClose, initialData, onSubmit, isEditing = false }: No
           )}
 
           {currentStep === 3 && (
-            <PlanContractForm
-              ref={planContractFormRef}
-              initialValues={formData.planContract}
-              onChange={handlePlanContractChange}
-              isEditing={isEditing}
-            />
+            <div className="space-y-6">
+              <PlanContractForm
+                ref={planContractFormRef}
+                initialValues={formData.planContract}
+                onChange={handlePlanContractChange}
+                isEditing={isEditing}
+              />
+              
+              <PlanDetailsForm
+                initialValues={formData.planDetails}
+                onChange={handlePlanDetailsChange}
+                isEditing={isEditing}
+              />
+              
+              <NotificationSettingsForm
+                initialValues={formData.notifications}
+                onChange={handleNotificationSettingsChange}
+                isEditing={isEditing}
+              />
+            </div>
           )}
 
           {currentStep === 4 && (
-            <PlanDetailsForm
-              ref={planDetailsFormRef}
-              initialValues={formData.planDetails}
-              onChange={handlePlanDetailsChange}
-              isEditing={isEditing}
-            />
-          )}
-
-          {currentStep === 5 && (
-            <NotificationSettingsForm
-              ref={notificationSettingsFormRef}
-              initialValues={formData.notifications}
-              onChange={handleNotificationSettingsChange}
-              isEditing={isEditing}
-            />
-          )}
-
-          {currentStep === 6 && (
             <AttachmentsForm
               ref={attachmentsFormRef}
               initialValues={formData.attachments}
