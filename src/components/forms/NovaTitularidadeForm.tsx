@@ -1,4 +1,5 @@
 
+import React from 'react';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { MaskedInput } from '@/components/ui/masked-input';
@@ -14,6 +15,9 @@ interface NovaTitularidadeFormProps {
 const NovaTitularidadeForm = ({ form }: NovaTitularidadeFormProps) => {
   const tipoNovaTitularidade = form.watch('energyAccount.newTitularity.type');
   const trocaConcluida = form.watch('energyAccount.newTitularity.trocaConcluida');
+
+  console.log('NovaTitularidadeForm - tipoNovaTitularidade:', tipoNovaTitularidade);
+  console.log('NovaTitularidadeForm - trocaConcluida:', trocaConcluida);
 
   return (
     <div className="space-y-6 border p-4 rounded-lg bg-blue-50">
@@ -120,7 +124,7 @@ const NovaTitularidadeForm = ({ form }: NovaTitularidadeFormProps) => {
                 <Input 
                   {...field} 
                   placeholder="Mesmo UC da conta original" 
-                  value={form.watch('energyAccount.originalAccount.uc')}
+                  value={form.watch('energyAccount.originalAccount.uc') || ''}
                   disabled
                 />
               </FormControl>
@@ -153,7 +157,7 @@ const NovaTitularidadeForm = ({ form }: NovaTitularidadeFormProps) => {
               <FormLabel>Troca de Titularidade Concluída?</FormLabel>
               <FormControl>
                 <Switch
-                  checked={field.value}
+                  checked={field.value || false}
                   onCheckedChange={field.onChange}
                 />
               </FormControl>

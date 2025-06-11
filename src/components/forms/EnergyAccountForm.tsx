@@ -1,5 +1,5 @@
 
-import React, { forwardRef, useImperativeHandle, useRef, useState, useEffect } from 'react';
+import React, { forwardRef, useImperativeHandle, useRef, useEffect } from 'react';
 import { EnergyAccount } from '@/types/subscriber';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useForm } from 'react-hook-form';
@@ -16,6 +16,8 @@ const EnergyAccountForm = forwardRef<HTMLFormElement, EnergyAccountFormProps>(
   ({ initialValues, onChange, isEditing }, ref) => {
     const formRef = useRef<HTMLFormElement>(null);
     
+    console.log('EnergyAccountForm - initialValues:', initialValues);
+    
     const form = useForm({
       defaultValues: initialValues,
       mode: 'onChange'
@@ -25,11 +27,13 @@ const EnergyAccountForm = forwardRef<HTMLFormElement, EnergyAccountFormProps>(
 
     // Update data when form changes
     useEffect(() => {
+      console.log('EnergyAccountForm - watchedValues changed:', watchedValues);
       onChange(watchedValues);
     }, [watchedValues, onChange]);
 
     // Update form when initialValues change
     useEffect(() => {
+      console.log('EnergyAccountForm - resetting form with:', initialValues);
       form.reset(initialValues);
     }, [initialValues, form]);
 
@@ -38,7 +42,7 @@ const EnergyAccountForm = forwardRef<HTMLFormElement, EnergyAccountFormProps>(
     return (
       <Card>
         <CardHeader>
-          <CardTitle>4. Conta de Energia</CardTitle>
+          <CardTitle>3. Conta de Energia</CardTitle>
         </CardHeader>
         <CardContent>
           <Form {...form}>

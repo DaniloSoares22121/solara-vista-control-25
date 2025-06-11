@@ -1,4 +1,5 @@
 
+import React, { useEffect } from 'react';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { MaskedInput } from '@/components/ui/masked-input';
@@ -6,7 +7,6 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { UseFormReturn } from 'react-hook-form';
-import { useEffect } from 'react';
 import AddressForm from './AddressForm';
 import NovaTitularidadeForm from './NovaTitularidadeForm';
 
@@ -15,51 +15,17 @@ interface ContaEnergiaFormProps {
 }
 
 const ContaEnergiaForm = ({ form }: ContaEnergiaFormProps) => {
+  console.log('ContaEnergiaForm rendering...');
+  
   const realizarTroca = form.watch('energyAccount.realizarTrocaTitularidade');
   const tipoContaOriginal = form.watch('energyAccount.originalAccount.type');
   
-  // Dados do assinante para pré-preenchimento
-  const tipoAssinante = form.watch('subscriber.type');
-  const cpfCnpjAssinante = form.watch('subscriber.cpfCnpj');
-  const nomeAssinante = form.watch('subscriber.name');
-  const razaoSocialAssinante = form.watch('subscriber.razaoSocial');
-  const dataNascimentoAssinante = form.watch('subscriber.dataNascimento');
-  const numeroParceiroAssinante = form.watch('subscriber.numeroParceiroNegocio');
-
-  // Pré-preencher dados automaticamente quando o tipo da conta mudar
-  useEffect(() => {
-    if (tipoContaOriginal && tipoAssinante) {
-      // Definir o tipo da conta igual ao tipo do assinante por padrão
-      if (!form.getValues('energyAccount.originalAccount.type')) {
-        form.setValue('energyAccount.originalAccount.type', tipoAssinante);
-      }
-      
-      // Pré-preencher CPF/CNPJ
-      if (cpfCnpjAssinante && !form.getValues('energyAccount.originalAccount.cpfCnpj')) {
-        form.setValue('energyAccount.originalAccount.cpfCnpj', cpfCnpjAssinante);
-      }
-      
-      // Pré-preencher nome
-      const nomeParaPreencher = tipoAssinante === 'fisica' ? nomeAssinante : razaoSocialAssinante;
-      if (nomeParaPreencher && !form.getValues('energyAccount.originalAccount.name')) {
-        form.setValue('energyAccount.originalAccount.name', nomeParaPreencher);
-      }
-      
-      // Pré-preencher data de nascimento (apenas para PF)
-      if (tipoAssinante === 'fisica' && dataNascimentoAssinante && !form.getValues('energyAccount.originalAccount.dataNascimento')) {
-        form.setValue('energyAccount.originalAccount.dataNascimento', dataNascimentoAssinante);
-      }
-      
-      // Pré-preencher número do parceiro
-      if (numeroParceiroAssinante && !form.getValues('energyAccount.originalAccount.numeroParceiroUC')) {
-        form.setValue('energyAccount.originalAccount.numeroParceiroUC', numeroParceiroAssinante);
-      }
-    }
-  }, [tipoContaOriginal, tipoAssinante, cpfCnpjAssinante, nomeAssinante, razaoSocialAssinante, dataNascimentoAssinante, numeroParceiroAssinante, form]);
+  console.log('ContaEnergiaForm - realizarTroca:', realizarTroca);
+  console.log('ContaEnergiaForm - tipoContaOriginal:', tipoContaOriginal);
 
   return (
     <div className="space-y-6">
-      <h3 className="text-lg font-semibold">4. Adicionar Conta de Energia UC</h3>
+      <h3 className="text-lg font-semibold">Adicionar Conta de Energia UC</h3>
       
       <div className="space-y-6 border p-4 rounded-lg">
         <h4 className="text-md font-semibold">Cadastro Original da Conta de Energia</h4>
