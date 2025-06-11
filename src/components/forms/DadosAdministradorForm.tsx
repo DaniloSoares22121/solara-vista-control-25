@@ -41,17 +41,21 @@ const DadosAdministradorForm = ({ administrator, onChange }: DadosAdministradorF
 
   const watchedValues = form.watch();
 
-  // Atualizar dados quando form mudar
+  // Atualizar dados quando form mudar - com debounce para evitar loops
   useEffect(() => {
-    onChange(watchedValues);
+    const timeoutId = setTimeout(() => {
+      onChange(watchedValues);
+    }, 100);
+
+    return () => clearTimeout(timeoutId);
   }, [watchedValues, onChange]);
 
-  // Atualizar form quando administrator mudar
+  // Atualizar form apenas uma vez quando administrator mudar externamente
   useEffect(() => {
-    if (administrator) {
+    if (administrator && JSON.stringify(administrator) !== JSON.stringify(form.getValues())) {
       form.reset(administrator);
     }
-  }, [administrator, form]);
+  }, [administrator?.cpf, administrator?.nome]); // Usar campos específicos como dependência
 
   return (
     <div className="space-y-6 border-t pt-6">

@@ -21,12 +21,48 @@ const ContaEnergiaForm = ({ form }: ContaEnergiaFormProps) => {
   const realizarTroca = form.watch('energyAccount.realizarTrocaTitularidade');
   const tipoContaOriginal = form.watch('energyAccount.originalAccount.type');
   
-  // Puxar endereço do assinante
+  // Puxar dados do assinante para auto-preenchimento
+  const subscriberData = form.watch('subscriber');
   const subscriberAddress = form.watch('subscriber.address');
   
   console.log('ContaEnergiaForm - realizarTroca:', realizarTroca);
   console.log('ContaEnergiaForm - tipoContaOriginal:', tipoContaOriginal);
-  console.log('ContaEnergiaForm - subscriberAddress:', subscriberAddress);
+  console.log('ContaEnergiaForm - subscriberData:', subscriberData);
+
+  // Auto-preencher campos quando mudar o tipo da conta original
+  useEffect(() => {
+    if (subscriberData && tipoContaOriginal) {
+      // Auto-preencher tipo da conta com base no assinante
+      if (!form.getValues('energyAccount.originalAccount.type')) {
+        form.setValue('energyAccount.originalAccount.type', subscriberData.type || 'fisica');
+      }
+
+      // Auto-preencher CPF/CNPJ se ainda não preenchido
+      if (!form.getValues('energyAccount.originalAccount.cpfCnpj') && subscriberData.cpfCnpj) {
+        form.setValue('energyAccount.originalAccount.cpfCnpj', subscriberData.cpfCnpj);
+      }
+
+      // Auto-preencher nome/razão social se ainda não preenchido
+      if (!form.getValues('energyAccount.originalAccount.name')) {
+        const name = subscriberData.type === 'fisica' 
+          ? subscriberData.name 
+          : subscriberData.razaoSocial;
+        if (name) {
+          form.setValue('energyAccount.originalAccount.name', name);
+        }
+      }
+
+      // Auto-preencher data de nascimento para pessoa física
+      if (subscriberData.type === 'fisica' && !form.getValues('energyAccount.originalAccount.dataNascimento') && subscriberData.dataNascimento) {
+        form.setValue('energyAccount.originalAccount.dataNascimento', subscriberData.dataNascimento);
+      }
+
+      // Auto-preencher número do parceiro se ainda não preenchido
+      if (!form.getValues('energyAccount.originalAccount.numeroParceiroUC') && subscriberData.numeroParceiroNegocio) {
+        form.setValue('energyAccount.originalAccount.numeroParceiroUC', subscriberData.numeroParceiroNegocio);
+      }
+    }
+  }, [subscriberData, tipoContaOriginal, form]);
 
   const copyAddressFromSubscriber = () => {
     if (subscriberAddress) {
@@ -40,9 +76,49 @@ const ContaEnergiaForm = ({ form }: ContaEnergiaFormProps) => {
     }
   };
 
+  const copyDataFromSubscriber = () => {
+    if (subscriberData) {
+      // Copiar tipo
+      form.setValue('energyAccount.originalAccount.type', subscriberData.type || 'fisica');
+      
+      // Copiar CPF/CNPJ
+      if (subscriberData.cpfCnpj) {
+        form.setValue('energyAccount.originalAccount.cpfCnpj', subscriberData.cpfCnpj);
+      }
+      
+      // Copiar nome/razão social
+      const name = subscriberData.type === 'fisica' 
+        ? subscriberData.name 
+        : subscriberData.razaoSocial;
+      if (name) {
+        form.setValue('energyAccount.originalAccount.name', name);
+      }
+      
+      // Copiar data de nascimento para pessoa física
+      if (subscriberData.type === 'fisica' && subscriberData.dataNascimento) {
+        form.setValue('energyAccount.originalAccount.dataNascimento', subscriberData.dataNascimento);
+      }
+      
+      // Copiar número do parceiro
+      if (subscriberData.numeroParceiroNegocio) {
+        form.setValue('energyAccount.originalAccount.numeroParceiroUC', subscriberData.numeroParceiroNegocio);
+      }
+    }
+  };
+
   return (
     <div className="space-y-6">
-      <h3 className="text-lg font-semibold">Adicionar Conta de Energia UC</h3>
+      <div className="flex items-center justify-between">
+        <h3 className="text-lg font-semibold">Adicionar Conta de Energia UC</h3>
+        <Button 
+          type="button" 
+          variant="outline" 
+          onClick={copyDataFromSubscriber}
+          className="text-sm"
+        >
+          Copiar Dados do Assinante
+        </Button>
+      </div>
       
       <div className="space-y-6 border p-4 rounded-lg">
         <h4 className="text-md font-semibold">Cadastro Original da Conta de Energia</h4>
