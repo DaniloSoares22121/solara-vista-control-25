@@ -8,10 +8,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Search, Plus, Download, Users, UserCheck, Percent, MapPin, TrendingUp, RefreshCw, Edit, Trash2, Eye } from 'lucide-react';
 import { useRepresentatives } from '@/hooks/useRepresentatives';
-import { Representative } from '@/types/representative';
+import { AddRepresentativeModal } from '@/components/representatives/AddRepresentativeModal';
 
 const Representantes = () => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [showAddModal, setShowAddModal] = useState(false);
   const { 
     representatives, 
     loading, 
@@ -27,6 +28,10 @@ const Representantes = () => {
         console.error('Erro ao excluir representante:', error);
       }
     }
+  };
+
+  const handleRefresh = () => {
+    refreshRepresentatives();
   };
 
   const filteredRepresentatives = representatives.filter(rep =>
@@ -51,7 +56,7 @@ const Representantes = () => {
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div className="space-y-2">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center shadow-lg">
                 <Users className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
               </div>
               <div>
@@ -62,7 +67,7 @@ const Representantes = () => {
           </div>
           
           <div className="flex items-center gap-3">
-            <Badge variant="secondary" className="bg-purple-100 text-purple-700 border-purple-200 px-3 py-2 text-xs sm:text-sm">
+            <Badge variant="secondary" className="bg-green-100 text-green-700 border-green-200 px-3 py-2 text-xs sm:text-sm">
               <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
               Vendas: R$ {totalSales.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
             </Badge>
@@ -76,8 +81,8 @@ const Representantes = () => {
               <CardTitle className="text-xs sm:text-sm font-medium text-gray-600">
                 Total de Representantes
               </CardTitle>
-              <div className="p-2 rounded-lg bg-purple-50">
-                <Users className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600" />
+              <div className="p-2 rounded-lg bg-green-50">
+                <Users className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
               </div>
             </CardHeader>
             <CardContent>
@@ -140,7 +145,7 @@ const Representantes = () => {
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
                 <Input
                   placeholder="Buscar representante por nome, região ou contato..."
-                  className="pl-10 sm:pl-12 h-10 sm:h-12 border-gray-200 focus:border-purple-500 focus:ring-purple-500 bg-gray-50 text-sm"
+                  className="pl-10 sm:pl-12 h-10 sm:h-12 border-gray-200 focus:border-green-500 focus:ring-green-500 bg-gray-50 text-sm"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -149,7 +154,7 @@ const Representantes = () => {
                 <Button 
                   variant="outline" 
                   className="h-10 sm:h-12 px-4 sm:px-6 border-gray-200 hover:bg-gray-50 text-sm"
-                  onClick={refreshRepresentatives}
+                  onClick={handleRefresh}
                   disabled={loading}
                 >
                   <RefreshCw className={`w-4 h-4 sm:w-5 sm:h-5 mr-2 ${loading ? 'animate-spin' : ''}`} />
@@ -159,7 +164,10 @@ const Representantes = () => {
                   <Download className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                   Exportar Lista
                 </Button>
-                <Button className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white shadow-lg h-10 sm:h-12 px-4 sm:px-6 text-sm">
+                <Button 
+                  className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white shadow-lg h-10 sm:h-12 px-4 sm:px-6 text-sm"
+                  onClick={() => setShowAddModal(true)}
+                >
                   <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                   Adicionar Representante
                 </Button>
@@ -191,7 +199,7 @@ const Representantes = () => {
                     <TableRow>
                       <TableCell colSpan={6} className="text-center py-12">
                         <div className="flex items-center justify-center">
-                          <RefreshCw className="w-6 h-6 animate-spin text-purple-600 mr-2" />
+                          <RefreshCw className="w-6 h-6 animate-spin text-green-600 mr-2" />
                           Carregando representantes...
                         </div>
                       </TableCell>
@@ -200,8 +208,8 @@ const Representantes = () => {
                     <TableRow>
                       <TableCell colSpan={6} className="text-center py-12 sm:py-20">
                         <div className="flex flex-col items-center justify-center space-y-4">
-                          <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-purple-100 to-purple-200 rounded-full flex items-center justify-center">
-                            <Users className="w-8 h-8 sm:w-10 sm:h-10 text-purple-600" />
+                          <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-green-100 to-green-200 rounded-full flex items-center justify-center">
+                            <Users className="w-8 h-8 sm:w-10 sm:h-10 text-green-600" />
                           </div>
                           <div className="space-y-2">
                             <h3 className="text-lg sm:text-xl font-semibold text-gray-900">
@@ -216,7 +224,10 @@ const Representantes = () => {
                           </div>
                           {!searchTerm && (
                             <div className="pt-2">
-                              <Button className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white shadow-lg px-6 sm:px-8 py-2 sm:py-3 text-sm">
+                              <Button 
+                                className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white shadow-lg px-6 sm:px-8 py-2 sm:py-3 text-sm"
+                                onClick={() => setShowAddModal(true)}
+                              >
                                 <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                                 Adicionar Primeiro Representante
                               </Button>
@@ -282,6 +293,12 @@ const Representantes = () => {
             </div>
           </CardContent>
         </Card>
+
+        {/* Add Representative Modal */}
+        <AddRepresentativeModal 
+          open={showAddModal} 
+          onOpenChange={setShowAddModal} 
+        />
       </div>
     </DashboardLayout>
   );

@@ -22,7 +22,10 @@ export const representativeService = {
       throw error;
     }
 
-    return data || [];
+    return (data || []).map(item => ({
+      ...item,
+      status: item.status as 'active' | 'inactive'
+    }));
   },
 
   // Criar novo representante
@@ -47,7 +50,10 @@ export const representativeService = {
       throw error;
     }
 
-    return data;
+    return {
+      ...data,
+      status: data.status as 'active' | 'inactive'
+    };
   },
 
   // Atualizar representante
@@ -64,7 +70,10 @@ export const representativeService = {
       throw error;
     }
 
-    return data;
+    return {
+      ...data,
+      status: data.status as 'active' | 'inactive'
+    };
   },
 
   // Deletar representante
