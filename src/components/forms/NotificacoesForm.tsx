@@ -33,7 +33,10 @@ const NotificacoesForm = ({ form }: NotificacoesFormProps) => {
                   <FormControl>
                     <Switch
                       checked={field.value || false}
-                      onCheckedChange={field.onChange}
+                      onCheckedChange={(checked) => {
+                        field.onChange(checked);
+                        console.log('WhatsApp faturas:', checked);
+                      }}
                     />
                   </FormControl>
                 </div>
@@ -51,7 +54,10 @@ const NotificacoesForm = ({ form }: NotificacoesFormProps) => {
                   <FormControl>
                     <Switch
                       checked={field.value || false}
-                      onCheckedChange={field.onChange}
+                      onCheckedChange={(checked) => {
+                        field.onChange(checked);
+                        console.log('WhatsApp pagamento:', checked);
+                      }}
                     />
                   </FormControl>
                 </div>
@@ -82,7 +88,10 @@ const NotificacoesForm = ({ form }: NotificacoesFormProps) => {
                   <FormControl>
                     <Switch
                       checked={field.value || false}
-                      onCheckedChange={field.onChange}
+                      onCheckedChange={(checked) => {
+                        field.onChange(checked);
+                        console.log('Criar cobrança WhatsApp:', checked);
+                      }}
                     />
                   </FormControl>
                 </FormItem>
@@ -96,7 +105,10 @@ const NotificacoesForm = ({ form }: NotificacoesFormProps) => {
                   <FormControl>
                     <Switch
                       checked={field.value || false}
-                      onCheckedChange={field.onChange}
+                      onCheckedChange={(checked) => {
+                        field.onChange(checked);
+                        console.log('Criar cobrança email:', checked);
+                      }}
                     />
                   </FormControl>
                 </FormItem>
@@ -114,7 +126,10 @@ const NotificacoesForm = ({ form }: NotificacoesFormProps) => {
                   <FormControl>
                     <Switch
                       checked={field.value || false}
-                      onCheckedChange={field.onChange}
+                      onCheckedChange={(checked) => {
+                        field.onChange(checked);
+                        console.log('Alteração valor WhatsApp:', checked);
+                      }}
                     />
                   </FormControl>
                 </FormItem>
@@ -128,7 +143,10 @@ const NotificacoesForm = ({ form }: NotificacoesFormProps) => {
                   <FormControl>
                     <Switch
                       checked={field.value || false}
-                      onCheckedChange={field.onChange}
+                      onCheckedChange={(checked) => {
+                        field.onChange(checked);
+                        console.log('Alteração valor email:', checked);
+                      }}
                     />
                   </FormControl>
                 </FormItem>
@@ -146,7 +164,10 @@ const NotificacoesForm = ({ form }: NotificacoesFormProps) => {
                   <FormControl>
                     <Switch
                       checked={field.value || false}
-                      onCheckedChange={field.onChange}
+                      onCheckedChange={(checked) => {
+                        field.onChange(checked);
+                        console.log('Vencimento 1 dia WhatsApp:', checked);
+                      }}
                     />
                   </FormControl>
                 </FormItem>
@@ -160,7 +181,10 @@ const NotificacoesForm = ({ form }: NotificacoesFormProps) => {
                   <FormControl>
                     <Switch
                       checked={field.value || false}
-                      onCheckedChange={field.onChange}
+                      onCheckedChange={(checked) => {
+                        field.onChange(checked);
+                        console.log('Vencimento 1 dia email:', checked);
+                      }}
                     />
                   </FormControl>
                 </FormItem>
@@ -178,7 +202,10 @@ const NotificacoesForm = ({ form }: NotificacoesFormProps) => {
                   <FormControl>
                     <Switch
                       checked={field.value || false}
-                      onCheckedChange={field.onChange}
+                      onCheckedChange={(checked) => {
+                        field.onChange(checked);
+                        console.log('Vencimento hoje WhatsApp:', checked);
+                      }}
                     />
                   </FormControl>
                 </FormItem>
@@ -192,7 +219,10 @@ const NotificacoesForm = ({ form }: NotificacoesFormProps) => {
                   <FormControl>
                     <Switch
                       checked={field.value || false}
-                      onCheckedChange={field.onChange}
+                      onCheckedChange={(checked) => {
+                        field.onChange(checked);
+                        console.log('Vencimento hoje email:', checked);
+                      }}
                     />
                   </FormControl>
                 </FormItem>
@@ -234,7 +264,10 @@ const NotificacoesForm = ({ form }: NotificacoesFormProps) => {
                     <FormControl>
                       <Switch
                         checked={field.value || false}
-                        onCheckedChange={field.onChange}
+                        onCheckedChange={(checked) => {
+                          field.onChange(checked);
+                          console.log(`${item.key} WhatsApp:`, checked);
+                        }}
                       />
                     </FormControl>
                   </FormItem>
@@ -248,7 +281,10 @@ const NotificacoesForm = ({ form }: NotificacoesFormProps) => {
                     <FormControl>
                       <Switch
                         checked={field.value || false}
-                        onCheckedChange={field.onChange}
+                        onCheckedChange={(checked) => {
+                          field.onChange(checked);
+                          console.log(`${item.key} email:`, checked);
+                        }}
                       />
                     </FormControl>
                   </FormItem>

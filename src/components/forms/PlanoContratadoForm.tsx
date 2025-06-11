@@ -13,7 +13,7 @@ interface PlanoContratadoFormProps {
 }
 
 const PlanoContratadoForm = ({ form }: PlanoContratadoFormProps) => {
-  // Watch specific form values
+  // Watch specific form values with proper fallbacks
   const planContract = form.watch('planContract') || {};
   const faixaConsumo = planContract.faixaConsumo || '';
   const fidelidade = planContract.fidelidade || '';
@@ -60,7 +60,13 @@ const PlanoContratadoForm = ({ form }: PlanoContratadoFormProps) => {
             <FormItem>
               <FormLabel>Modalidade de Compensação *</FormLabel>
               <FormControl>
-                <Select value={field.value || ''} onValueChange={field.onChange}>
+                <Select 
+                  value={field.value || ''} 
+                  onValueChange={(value) => {
+                    field.onChange(value);
+                    console.log('Modalidade selecionada:', value);
+                  }}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Selecione a modalidade" />
                   </SelectTrigger>
@@ -82,7 +88,15 @@ const PlanoContratadoForm = ({ form }: PlanoContratadoFormProps) => {
             <FormItem>
               <FormLabel>Data de Adesão *</FormLabel>
               <FormControl>
-                <Input {...field} type="date" value={field.value || ''} />
+                <Input 
+                  {...field} 
+                  type="date" 
+                  value={field.value || ''} 
+                  onChange={(e) => {
+                    field.onChange(e.target.value);
+                    console.log('Data de adesão:', e.target.value);
+                  }}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -103,6 +117,7 @@ const PlanoContratadoForm = ({ form }: PlanoContratadoFormProps) => {
                   onChange={(e) => {
                     const value = parseFloat(e.target.value) || 0;
                     field.onChange(value);
+                    console.log('kWh Vendedor:', value);
                   }}
                   min="0"
                 />
@@ -131,6 +146,7 @@ const PlanoContratadoForm = ({ form }: PlanoContratadoFormProps) => {
                   onChange={(e) => {
                     const value = parseFloat(e.target.value) || 0;
                     field.onChange(value);
+                    console.log('kWh Contratado:', value);
                   }}
                   min="0"
                 />
@@ -148,7 +164,13 @@ const PlanoContratadoForm = ({ form }: PlanoContratadoFormProps) => {
           <FormItem>
             <FormLabel>Faixa de Consumo *</FormLabel>
             <FormControl>
-              <Select value={field.value || ''} onValueChange={field.onChange}>
+              <Select 
+                value={field.value || ''} 
+                onValueChange={(value) => {
+                  field.onChange(value);
+                  console.log('Faixa de consumo selecionada:', value);
+                }}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione a faixa de consumo" />
                 </SelectTrigger>
@@ -180,7 +202,14 @@ const PlanoContratadoForm = ({ form }: PlanoContratadoFormProps) => {
             <FormControl>
               <RadioGroup
                 value={field.value || ''}
-                onValueChange={field.onChange}
+                onValueChange={(value) => {
+                  field.onChange(value);
+                  console.log('Fidelidade selecionada:', value);
+                  // Reset anos de fidelidade se mudar para "sem"
+                  if (value === 'sem') {
+                    form.setValue('planContract.anosFidelidade', '');
+                  }
+                }}
                 className="flex space-x-6"
               >
                 <div className="flex items-center space-x-2">
@@ -208,7 +237,10 @@ const PlanoContratadoForm = ({ form }: PlanoContratadoFormProps) => {
               <FormControl>
                 <RadioGroup
                   value={field.value || ''}
-                  onValueChange={field.onChange}
+                  onValueChange={(value) => {
+                    field.onChange(value);
+                    console.log('Anos de fidelidade:', value);
+                  }}
                   className="flex space-x-6"
                 >
                   <div className="flex items-center space-x-2">

@@ -1,3 +1,4 @@
+
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -153,6 +154,7 @@ const DiscountTable = ({
 
     return (
       <TableCell 
+        key={cellId}
         className={`cursor-pointer transition-all duration-300 text-center relative ${
           isHighlighted 
             ? 'bg-green-100 border-2 border-green-500 font-bold text-green-800 shadow-lg' 

@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useCallback } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -224,9 +225,8 @@ const NovoAssinante = ({ onClose, initialData, onSubmit, isEditing = false }: No
         break;
         
       case 1:
-        // Step 2 - Conta de Energia (REMOVIDA A VALIDAÇÃO OBRIGATÓRIA)
-        // Agora apenas valida campos básicos se preenchidos, mas não exige preenchimento
-        console.log('Step 2 validado automaticamente - campos opcionais');
+        // Step 2 - Conta de Energia (Validação simplificada - não obrigatória)
+        console.log('Step 2 validado - campos opcionais');
         break;
         
       case 2:
@@ -237,6 +237,14 @@ const NovoAssinante = ({ onClose, initialData, onSubmit, isEditing = false }: No
         }
         if (!formData.planContract?.modalidadeCompensacao) {
           toast.error('Selecione a modalidade de compensação');
+          return false;
+        }
+        if (!formData.planContract?.fidelidade) {
+          toast.error('Selecione o tipo de fidelidade');
+          return false;
+        }
+        if (formData.planContract.fidelidade === 'com' && !formData.planContract?.anosFidelidade) {
+          toast.error('Selecione os anos de fidelidade');
           return false;
         }
         break;
@@ -326,7 +334,6 @@ const NovoAssinante = ({ onClose, initialData, onSubmit, isEditing = false }: No
     }
   };
 
-  // Remover a verificação hasErrors que estava impedindo o avanço
   const isNextDisabled = false;
 
   return (
@@ -414,6 +421,7 @@ const NovoAssinante = ({ onClose, initialData, onSubmit, isEditing = false }: No
                   ref={planContractFormRef}
                   initialValues={form.watch('planContract')}
                   onChange={(planContract) => {
+                    console.log('PlanContractForm onChange:', planContract);
                     form.setValue('planContract', planContract);
                   }}
                   isEditing={isEditing}
@@ -422,6 +430,7 @@ const NovoAssinante = ({ onClose, initialData, onSubmit, isEditing = false }: No
                 <PlanDetailsForm
                   initialValues={form.watch('planDetails')}
                   onChange={(planDetails) => {
+                    console.log('PlanDetailsForm onChange:', planDetails);
                     form.setValue('planDetails', planDetails);
                   }}
                   isEditing={isEditing}
@@ -430,6 +439,7 @@ const NovoAssinante = ({ onClose, initialData, onSubmit, isEditing = false }: No
                 <NotificationSettingsForm
                   initialValues={form.watch('notifications')}
                   onChange={(notifications) => {
+                    console.log('NotificationSettingsForm onChange:', notifications);
                     form.setValue('notifications', notifications);
                   }}
                   isEditing={isEditing}
