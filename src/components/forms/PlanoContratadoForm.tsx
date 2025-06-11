@@ -13,21 +13,19 @@ interface PlanoContratadoFormProps {
 }
 
 const PlanoContratadoForm = ({ form }: PlanoContratadoFormProps) => {
-  // Watch all form values directly
-  const formValues = form.watch();
-  
-  // Extract values with proper fallbacks
-  const faixaConsumo = formValues?.planContract?.faixaConsumo || '';
-  const fidelidade = formValues?.planContract?.fidelidade || '';
-  const anosFidelidade = formValues?.planContract?.anosFidelidade || '';
-  const kwhVendedor = formValues?.planContract?.kwhVendedor || 0;
+  // Watch specific form values
+  const planContract = form.watch('planContract') || {};
+  const faixaConsumo = planContract.faixaConsumo || '';
+  const fidelidade = planContract.fidelidade || '';
+  const anosFidelidade = planContract.anosFidelidade || '';
+  const kwhVendedor = planContract.kwhVendedor || 0;
 
-  console.log('PlanoContratadoForm - Form values:', { 
-    faixaConsumo, 
-    fidelidade, 
-    anosFidelidade, 
+  console.log('PlanoContratadoForm - Valores atuais:', {
+    faixaConsumo,
+    fidelidade,
+    anosFidelidade,
     kwhVendedor,
-    fullFormValues: formValues
+    planContract
   });
 
   // Função para determinar a faixa de consumo automaticamente baseada no kWh do vendedor

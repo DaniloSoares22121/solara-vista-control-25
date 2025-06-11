@@ -9,6 +9,11 @@ interface NotificacoesFormProps {
 }
 
 const NotificacoesForm = ({ form }: NotificacoesFormProps) => {
+  // Watch notifications to ensure reactivity
+  const notifications = form.watch('notifications') || {};
+  
+  console.log('NotificacoesForm - Valores atuais:', notifications);
+
   return (
     <div className="space-y-6">
       <h3 className="text-lg font-semibold">7. Cadência de Mensagens (WhatsApp e E-Mail)</h3>
@@ -27,7 +32,7 @@ const NotificacoesForm = ({ form }: NotificacoesFormProps) => {
                   <FormLabel>Enviar por WhatsApp Faturas de Energia?</FormLabel>
                   <FormControl>
                     <Switch
-                      checked={field.value}
+                      checked={field.value || false}
                       onCheckedChange={field.onChange}
                     />
                   </FormControl>
@@ -45,7 +50,7 @@ const NotificacoesForm = ({ form }: NotificacoesFormProps) => {
                   <FormLabel>Informar por WhatsApp Pagamento Recebido</FormLabel>
                   <FormControl>
                     <Switch
-                      checked={field.value}
+                      checked={field.value || false}
                       onCheckedChange={field.onChange}
                     />
                   </FormControl>
@@ -76,7 +81,7 @@ const NotificacoesForm = ({ form }: NotificacoesFormProps) => {
                 <FormItem className="flex justify-center">
                   <FormControl>
                     <Switch
-                      checked={field.value}
+                      checked={field.value || false}
                       onCheckedChange={field.onChange}
                     />
                   </FormControl>
@@ -90,7 +95,7 @@ const NotificacoesForm = ({ form }: NotificacoesFormProps) => {
                 <FormItem className="flex justify-center">
                   <FormControl>
                     <Switch
-                      checked={field.value}
+                      checked={field.value || false}
                       onCheckedChange={field.onChange}
                     />
                   </FormControl>
@@ -108,7 +113,7 @@ const NotificacoesForm = ({ form }: NotificacoesFormProps) => {
                 <FormItem className="flex justify-center">
                   <FormControl>
                     <Switch
-                      checked={field.value}
+                      checked={field.value || false}
                       onCheckedChange={field.onChange}
                     />
                   </FormControl>
@@ -122,7 +127,7 @@ const NotificacoesForm = ({ form }: NotificacoesFormProps) => {
                 <FormItem className="flex justify-center">
                   <FormControl>
                     <Switch
-                      checked={field.value}
+                      checked={field.value || false}
                       onCheckedChange={field.onChange}
                     />
                   </FormControl>
@@ -140,7 +145,7 @@ const NotificacoesForm = ({ form }: NotificacoesFormProps) => {
                 <FormItem className="flex justify-center">
                   <FormControl>
                     <Switch
-                      checked={field.value}
+                      checked={field.value || false}
                       onCheckedChange={field.onChange}
                     />
                   </FormControl>
@@ -154,7 +159,7 @@ const NotificacoesForm = ({ form }: NotificacoesFormProps) => {
                 <FormItem className="flex justify-center">
                   <FormControl>
                     <Switch
-                      checked={field.value}
+                      checked={field.value || false}
                       onCheckedChange={field.onChange}
                     />
                   </FormControl>
@@ -172,7 +177,7 @@ const NotificacoesForm = ({ form }: NotificacoesFormProps) => {
                 <FormItem className="flex justify-center">
                   <FormControl>
                     <Switch
-                      checked={field.value}
+                      checked={field.value || false}
                       onCheckedChange={field.onChange}
                     />
                   </FormControl>
@@ -186,7 +191,7 @@ const NotificacoesForm = ({ form }: NotificacoesFormProps) => {
                 <FormItem className="flex justify-center">
                   <FormControl>
                     <Switch
-                      checked={field.value}
+                      checked={field.value || false}
                       onCheckedChange={field.onChange}
                     />
                   </FormControl>
@@ -228,7 +233,7 @@ const NotificacoesForm = ({ form }: NotificacoesFormProps) => {
                   <FormItem className="flex justify-center">
                     <FormControl>
                       <Switch
-                        checked={field.value}
+                        checked={field.value || false}
                         onCheckedChange={field.onChange}
                       />
                     </FormControl>
@@ -242,7 +247,7 @@ const NotificacoesForm = ({ form }: NotificacoesFormProps) => {
                   <FormItem className="flex justify-center">
                     <FormControl>
                       <Switch
-                        checked={field.value}
+                        checked={field.value || false}
                         onCheckedChange={field.onChange}
                       />
                     </FormControl>
