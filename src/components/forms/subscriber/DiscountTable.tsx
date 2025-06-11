@@ -69,33 +69,26 @@ const DiscountTable = ({ informedKwh, loyalty, onDiscountSelect }: DiscountTable
     setEditValue('');
   };
 
-  const getLoyaltyBadgeColor = () => {
-    switch (loyalty) {
-      case 'oneYear': return 'bg-green-100 text-green-800 border-green-200';
-      case 'twoYears': return 'bg-green-100 text-green-800 border-green-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
-    }
-  };
-
   const getLoyaltyIcon = () => {
     switch (loyalty) {
-      case 'oneYear': return <TrendingUp className="w-4 h-4" />;
-      case 'twoYears': return <Star className="w-4 h-4" />;
-      default: return <Zap className="w-4 h-4" />;
+      case 'oneYear': return <TrendingUp className="w-3 h-3" />;
+      case 'twoYears': return <Star className="w-3 h-3" />;
+      default: return null;
     }
   };
 
   return (
-    <div className="space-y-6">
-      <Card className="shadow-sm border border-gray-200">
-        <CardHeader className="bg-gray-50 border-b border-gray-200">
+    <div className="space-y-8">
+      {/* Tabela principal */}
+      <Card className="border border-gray-200">
+        <CardHeader className="bg-gray-50 border-b border-gray-200 pb-4">
           <CardTitle className="flex items-center space-x-3">
             <div className="w-8 h-8 bg-green-600 rounded-lg flex items-center justify-center">
               <Calculator className="w-5 h-5 text-white" />
             </div>
             <div>
               <h3 className="text-lg font-semibold text-gray-900">Tabela de Descontos</h3>
-              <p className="text-gray-600 text-sm font-normal">Configure os percentuais de desconto por faixa de consumo</p>
+              <p className="text-gray-600 text-sm font-normal">Configure os percentuais por faixa de consumo</p>
             </div>
           </CardTitle>
         </CardHeader>
@@ -106,25 +99,25 @@ const DiscountTable = ({ informedKwh, loyalty, onDiscountSelect }: DiscountTable
                 <tr className="bg-gray-50 border-b border-gray-200">
                   <th className="text-left p-4 font-semibold text-gray-700">
                     <div className="flex items-center space-x-2">
-                      <Zap className="w-4 h-4" />
+                      <Zap className="w-4 h-4 text-green-600" />
                       <span>Faixa (kWh)</span>
                     </div>
                   </th>
                   <th className="text-center p-4 font-semibold text-gray-700">
                     <div className="flex items-center justify-center space-x-2">
-                      <Percent className="w-4 h-4" />
+                      <Percent className="w-4 h-4 text-green-600" />
                       <span>Base (%)</span>
                     </div>
                   </th>
                   <th className="text-center p-4 font-semibold text-gray-700">
                     <div className="flex items-center justify-center space-x-2">
-                      <Target className="w-4 h-4" />
+                      <Target className="w-4 h-4 text-green-600" />
                       <span>Total (%)</span>
                     </div>
                   </th>
                   <th className="text-center p-4 font-semibold text-gray-700">
                     <div className="flex items-center justify-center space-x-2">
-                      <Edit3 className="w-4 h-4" />
+                      <Edit3 className="w-4 h-4 text-green-600" />
                       <span>Ações</span>
                     </div>
                   </th>
@@ -146,10 +139,10 @@ const DiscountTable = ({ informedKwh, loyalty, onDiscountSelect }: DiscountTable
                       }`}
                     >
                       <td className="p-4">
-                        <div className="flex items-center space-x-2">
+                        <div className="flex items-center space-x-3">
                           <span className="font-medium text-gray-900">{discount.range}</span>
                           {isApplicable && (
-                            <Badge className="bg-green-100 text-green-800 border-green-200">
+                            <Badge className="bg-green-100 text-green-800 border-green-200 text-xs">
                               <Target className="w-3 h-3 mr-1" />
                               Aplicável
                             </Badge>
@@ -196,9 +189,9 @@ const DiscountTable = ({ informedKwh, loyalty, onDiscountSelect }: DiscountTable
                             {totalDiscount}%
                           </span>
                           {getLoyaltyBonus() > 0 && (
-                            <Badge className={`text-xs ${getLoyaltyBadgeColor()}`}>
+                            <Badge className="text-xs bg-green-100 text-green-800 border-green-200">
                               {getLoyaltyIcon()}
-                              +{getLoyaltyBonus()}%
+                              <span className="ml-1">+{getLoyaltyBonus()}%</span>
                             </Badge>
                           )}
                         </div>
@@ -224,31 +217,31 @@ const DiscountTable = ({ informedKwh, loyalty, onDiscountSelect }: DiscountTable
         </CardContent>
       </Card>
 
-      {/* Resumo do Desconto Aplicado */}
+      {/* Resumo do desconto aplicado */}
       {informedKwh > 0 && (
-        <Card className="shadow-sm border border-gray-200">
-          <CardContent className="p-6 bg-gray-50">
-            <div className="text-center space-y-4">
+        <Card className="border border-gray-200">
+          <CardContent className="p-8 bg-green-50">
+            <div className="text-center space-y-6">
               <div className="w-16 h-16 bg-green-600 rounded-full flex items-center justify-center mx-auto">
                 <Target className="w-8 h-8 text-white" />
               </div>
               <div>
-                <h4 className="text-lg font-semibold text-gray-900 mb-2">
+                <h4 className="text-xl font-semibold text-gray-900 mb-3">
                   Desconto Aplicado
                 </h4>
-                <div className="space-y-2">
+                <div className="space-y-3">
                   <p className="text-gray-600">
                     Para <span className="font-semibold text-gray-900">{informedKwh} kWh</span> informados
                   </p>
-                  <div className="text-3xl font-bold text-green-600">
+                  <div className="text-4xl font-bold text-green-600">
                     {selectedDiscount}%
                   </div>
                   {getLoyaltyBonus() > 0 && (
                     <div className="flex items-center justify-center space-x-2 text-sm text-gray-600">
                       <span>Inclui bônus de fidelidade:</span>
-                      <Badge className={getLoyaltyBadgeColor()}>
+                      <Badge className="bg-green-100 text-green-800 border-green-200">
                         {getLoyaltyIcon()}
-                        +{getLoyaltyBonus()}%
+                        <span className="ml-1">+{getLoyaltyBonus()}%</span>
                       </Badge>
                     </div>
                   )}
