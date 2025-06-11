@@ -1,5 +1,5 @@
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useCallback } from 'react';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { MaskedInput } from '@/components/ui/masked-input';
@@ -22,11 +22,12 @@ const ContaEnergiaForm = ({ form, subscriberData }: ContaEnergiaFormProps) => {
   console.log('ContaEnergiaForm - subscriberData recebido:', subscriberData);
   
   const buttonRef = useRef<HTMLButtonElement>(null);
+  const hasAutoFilledRef = useRef(false);
   const realizarTroca = form.watch('energyAccount.realizarTrocaTitularidade');
   const tipoContaOriginal = form.watch('energyAccount.originalAccount.type');
   
   // Função para preencher automaticamente com dados do assinante
-  const preencherComDadosAssinante = () => {
+  const preencherComDadosAssinante = useCallback(() => {
     if (!subscriberData) {
       console.log('Nenhum dado do assinante disponível');
       return;
@@ -88,12 +89,14 @@ const ContaEnergiaForm = ({ form, subscriberData }: ContaEnergiaFormProps) => {
         form.setValue('energyAccount.originalAccount.address.estado', address.estado, { shouldValidate: true });
       }
     }
-  };
+  }, [subscriberData, form]);
 
   // Executar preenchimento automático quando componente montar e tiver dados do assinante
   useEffect(() => {
-    if (subscriberData && buttonRef.current) {
+    if (subscriberData && !hasAutoFilledRef.current) {
       console.log('Executando clique automático no botão...');
+      hasAutoFilledRef.current = true;
+      
       // Simular clique no botão automaticamente
       setTimeout(() => {
         if (buttonRef.current) {
