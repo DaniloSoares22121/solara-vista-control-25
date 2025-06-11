@@ -1,17 +1,11 @@
 
 import { useState, useEffect } from 'react';
-import { RateioData, RateioSubscriber, RateioGenerator } from '@/types/rateio';
+import { RateioData } from '@/types/rateio';
 
 export const useRateio = () => {
   const [rateios, setRateios] = useState<RateioData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedGenerator, setSelectedGenerator] = useState<RateioGenerator | null>(null);
-  const [selectedSubscriber, setSelectedSubscriber] = useState<RateioSubscriber | null>(null);
-  const [subscribersByGenerator, setSubscribersByGenerator] = useState<RateioSubscriber[]>([]);
-  const [generators, setGenerators] = useState<RateioGenerator[]>([]);
-  const [subscribers, setSubscribers] = useState<RateioSubscriber[]>([]);
-  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     // Simular carregamento de dados
@@ -33,6 +27,7 @@ export const useRateio = () => {
 
   const createRateio = async (data: Omit<RateioData, 'id'>) => {
     try {
+      // Implementar criação de rateio
       console.log('Criando rateio:', data);
       return { success: true };
     } catch (error) {
@@ -41,64 +36,10 @@ export const useRateio = () => {
     }
   };
 
-  const selectGenerator = (generator: RateioGenerator) => {
-    setSelectedGenerator(generator);
-    // Mock subscribers for this generator
-    const mockSubscribers: RateioSubscriber[] = [
-      {
-        id: '1',
-        name: 'Subscriber 1',
-        uc: '12345',
-        contractedConsumption: 400,
-        accumulatedCredit: 100
-      }
-    ];
-    setSubscribersByGenerator(mockSubscribers);
-    return generator;
-  };
-
-  const selectSubscriber = (subscriber: RateioSubscriber) => {
-    setSelectedSubscriber(subscriber);
-    return subscriber;
-  };
-
-  const getRateiosByGenerator = (generatorId: string) => {
-    return rateios.filter(rateio => rateio.generatorId === generatorId);
-  };
-
-  const resetSelections = () => {
-    setSelectedGenerator(null);
-    setSelectedSubscriber(null);
-    setSubscribersByGenerator([]);
-  };
-
-  const validateRateio = (data: any) => {
-    return { isValid: true, errors: [], warnings: [] };
-  };
-
-  const calculateAutoDistribution = (subscribers: RateioSubscriber[], totalGeneration: number) => {
-    return subscribers.map(sub => ({
-      ...sub,
-      allocatedEnergy: totalGeneration / subscribers.length
-    }));
-  };
-
   return {
     rateios,
     isLoading,
     error,
-    selectedGenerator,
-    selectedSubscriber,
-    subscribersByGenerator,
-    generators,
-    subscribers,
-    loading,
-    createRateio,
-    selectGenerator,
-    selectSubscriber,
-    getRateiosByGenerator,
-    resetSelections,
-    validateRateio,
-    calculateAutoDistribution
+    createRateio
   };
 };

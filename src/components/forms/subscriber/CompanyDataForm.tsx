@@ -31,6 +31,36 @@ const CompanyDataForm = ({
   onRemoveContact,
   form
 }: CompanyDataFormProps) => {
+  const handleCompanyAddressChange = (addressUpdate: Partial<Address>) => {
+    const currentAddress = companyData?.address || {
+      cep: '',
+      street: '',
+      number: '',
+      complement: '',
+      neighborhood: '',
+      city: '',
+      state: '',
+    };
+    
+    const newAddress: Address = { ...currentAddress, ...addressUpdate };
+    onUpdateCompany({ address: newAddress });
+  };
+
+  const handleAdministratorAddressChange = (addressUpdate: Partial<Address>) => {
+    const currentAddress = administratorData?.address || {
+      cep: '',
+      street: '',
+      number: '',
+      complement: '',
+      neighborhood: '',
+      city: '',
+      state: '',
+    };
+    
+    const newAddress: Address = { ...currentAddress, ...addressUpdate };
+    onUpdateAdministrator({ address: newAddress });
+  };
+
   return (
     <div className="space-y-8">
       {/* Dados da Empresa */}
@@ -174,12 +204,7 @@ const CompanyDataForm = ({
           prefix="companyData.address" 
           title="Endereço da Empresa"
           onCepChange={(cep) => onCepLookup(cep, 'company')}
-          onAddressChange={(address: Partial<Address>) => onUpdateCompany({ 
-            address: { 
-              ...companyData?.address, 
-              ...address 
-            } as Address 
-          })}
+          onAddressChange={handleCompanyAddressChange}
         />
 
         <FormField
@@ -383,12 +408,7 @@ const CompanyDataForm = ({
           prefix="administratorData.address" 
           title="Endereço Residencial do Administrador"
           onCepChange={(cep) => onCepLookup(cep, 'administrator')}
-          onAddressChange={(address: Partial<Address>) => onUpdateAdministrator({ 
-            address: { 
-              ...administratorData?.address, 
-              ...address 
-            } as Address 
-          })}
+          onAddressChange={handleAdministratorAddressChange}
         />
       </div>
     </div>

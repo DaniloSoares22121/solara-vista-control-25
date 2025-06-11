@@ -1,4 +1,3 @@
-
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { MaskedInput } from '@/components/ui/masked-input';
@@ -12,9 +11,10 @@ interface AddressFormProps {
   title: string;
   onCepChange?: (cep: string) => void;
   onAddressChange?: (address: Partial<Address>) => void;
+  className?: string;
 }
 
-const AddressForm = ({ form, prefix, title, onCepChange, onAddressChange }: AddressFormProps) => {
+const AddressForm = ({ form, prefix, title, onCepChange, onAddressChange, className }: AddressFormProps) => {
   const states = [
     { value: 'AC', label: 'Acre' },
     { value: 'AL', label: 'Alagoas' },
@@ -46,25 +46,21 @@ const AddressForm = ({ form, prefix, title, onCepChange, onAddressChange }: Addr
   ];
 
   return (
-    <div className="space-y-6">
-      <div className="border-l-4 border-primary pl-4">
-        <h4 className="text-lg font-semibold text-gray-900">{title}</h4>
-        <p className="text-sm text-gray-600 mt-1">Preencha os dados do endereço</p>
-      </div>
+    <div className={className || "space-y-4"}>
+      <h4 className="text-md font-semibold text-gray-900">{title}</h4>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <FormField
           control={form.control}
           name={`${prefix}.cep`}
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-sm font-medium text-gray-700">CEP *</FormLabel>
+              <FormLabel>CEP *</FormLabel>
               <FormControl>
                 <MaskedInput 
                   {...field} 
                   mask="99999-999" 
                   placeholder="00000-000" 
-                  className="border-gray-300 focus:border-primary focus:ring-primary"
                   onChange={(e) => {
                     field.onChange(e);
                     const cep = e.target.value.replace(/\D/g, '');
@@ -87,12 +83,11 @@ const AddressForm = ({ form, prefix, title, onCepChange, onAddressChange }: Addr
           name={`${prefix}.street`}
           render={({ field }) => (
             <FormItem className="md:col-span-2">
-              <FormLabel className="text-sm font-medium text-gray-700">Endereço *</FormLabel>
+              <FormLabel>Endereço *</FormLabel>
               <FormControl>
                 <Input 
                   {...field} 
-                  placeholder="Digite o endereço completo" 
-                  className="border-gray-300 focus:border-primary focus:ring-primary"
+                  placeholder="Digite o endereço" 
                   onChange={(e) => {
                     field.onChange(e);
                     if (onAddressChange) {
@@ -111,12 +106,11 @@ const AddressForm = ({ form, prefix, title, onCepChange, onAddressChange }: Addr
           name={`${prefix}.number`}
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-sm font-medium text-gray-700">Número *</FormLabel>
+              <FormLabel>Número *</FormLabel>
               <FormControl>
                 <Input 
                   {...field} 
                   placeholder="Nº" 
-                  className="border-gray-300 focus:border-primary focus:ring-primary"
                   onChange={(e) => {
                     field.onChange(e);
                     if (onAddressChange) {
@@ -135,12 +129,11 @@ const AddressForm = ({ form, prefix, title, onCepChange, onAddressChange }: Addr
           name={`${prefix}.complement`}
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-sm font-medium text-gray-700">Complemento</FormLabel>
+              <FormLabel>Complemento</FormLabel>
               <FormControl>
                 <Input 
                   {...field} 
                   placeholder="Apto, Casa, etc." 
-                  className="border-gray-300 focus:border-primary focus:ring-primary"
                   onChange={(e) => {
                     field.onChange(e);
                     if (onAddressChange) {
@@ -159,12 +152,11 @@ const AddressForm = ({ form, prefix, title, onCepChange, onAddressChange }: Addr
           name={`${prefix}.neighborhood`}
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-sm font-medium text-gray-700">Bairro *</FormLabel>
+              <FormLabel>Bairro *</FormLabel>
               <FormControl>
                 <Input 
                   {...field} 
                   placeholder="Digite o bairro" 
-                  className="border-gray-300 focus:border-primary focus:ring-primary"
                   onChange={(e) => {
                     field.onChange(e);
                     if (onAddressChange) {
@@ -183,12 +175,11 @@ const AddressForm = ({ form, prefix, title, onCepChange, onAddressChange }: Addr
           name={`${prefix}.city`}
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-sm font-medium text-gray-700">Cidade *</FormLabel>
+              <FormLabel>Cidade *</FormLabel>
               <FormControl>
                 <Input 
                   {...field} 
                   placeholder="Digite a cidade" 
-                  className="border-gray-300 focus:border-primary focus:ring-primary"
                   onChange={(e) => {
                     field.onChange(e);
                     if (onAddressChange) {
@@ -207,7 +198,7 @@ const AddressForm = ({ form, prefix, title, onCepChange, onAddressChange }: Addr
           name={`${prefix}.state`}
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-sm font-medium text-gray-700">Estado *</FormLabel>
+              <FormLabel>Estado *</FormLabel>
               <FormControl>
                 <Select 
                   value={field.value} 
@@ -218,8 +209,8 @@ const AddressForm = ({ form, prefix, title, onCepChange, onAddressChange }: Addr
                     }
                   }}
                 >
-                  <SelectTrigger className="border-gray-300 focus:border-primary focus:ring-primary">
-                    <SelectValue placeholder="Selecione o estado" />
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione" />
                   </SelectTrigger>
                   <SelectContent>
                     {states.map(state => (

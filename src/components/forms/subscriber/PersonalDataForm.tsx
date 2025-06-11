@@ -27,6 +27,21 @@ const PersonalDataForm = ({
   onRemoveContact,
   form
 }: PersonalDataFormProps) => {
+  const handleAddressChange = (addressUpdate: Partial<Address>) => {
+    const currentAddress = data?.address || {
+      cep: '',
+      street: '',
+      number: '',
+      complement: '',
+      neighborhood: '',
+      city: '',
+      state: '',
+    };
+    
+    const newAddress: Address = { ...currentAddress, ...addressUpdate };
+    onUpdate({ address: newAddress });
+  };
+
   return (
     <div className="space-y-6">
       <h3 className="text-lg font-semibold">3A. Dados do Assinante (Pessoa Física)</h3>
@@ -219,23 +234,7 @@ const PersonalDataForm = ({
         prefix="personalData.address" 
         title="Endereço Residencial"
         onCepChange={onCepLookup}
-        onAddressChange={(address: Partial<Address>) => {
-          const currentAddress = data?.address || {
-            cep: '',
-            street: '',
-            number: '',
-            complement: '',
-            neighborhood: '',
-            city: '',
-            state: '',
-          };
-          onUpdate({ 
-            address: { 
-              ...currentAddress, 
-              ...address 
-            } as Address 
-          });
-        }}
+        onAddressChange={handleAddressChange}
       />
 
       <FormField
