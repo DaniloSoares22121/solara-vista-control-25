@@ -54,6 +54,45 @@ export type Database = {
         }
         Relationships: []
       }
+      representatives: {
+        Row: {
+          commission_rate: number
+          created_at: string
+          email: string
+          id: string
+          name: string
+          phone: string
+          region: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          commission_rate?: number
+          created_at?: string
+          email: string
+          id?: string
+          name: string
+          phone: string
+          region: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          commission_rate?: number
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string
+          phone?: string
+          region?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       solar_access_logs: {
         Row: {
           action: string
