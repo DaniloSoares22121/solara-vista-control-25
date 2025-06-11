@@ -109,8 +109,6 @@ const SubscriberForm = forwardRef<HTMLFormElement, SubscriberFormProps>(
                             console.log('Radio button changed to:', value);
                             const typedValue = value as 'fisica' | 'juridica';
                             field.onChange(typedValue);
-                            // Force a re-render by updating the form state
-                            form.setValue('type', typedValue);
                           }}
                           className="flex gap-6"
                         >
