@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef, useCallback } from 'react';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
@@ -89,12 +90,15 @@ const ContaEnergiaForm = ({ form, subscriberData }: ContaEnergiaFormProps) => {
     }
   }, [subscriberData, form]);
 
-  // Preencher automaticamente apenas uma vez quando tiver dados do assinante
+  // Preencher automaticamente assim que o componente monta e tem dados do assinante
   useEffect(() => {
     if (subscriberData && !hasAutoFilledRef.current) {
-      console.log('Preenchendo automaticamente com dados do assinante...');
+      console.log('Auto-preenchendo na montagem do componente...');
       hasAutoFilledRef.current = true;
-      preencherComDadosAssinante();
+      // Usar setTimeout para garantir que o DOM está pronto
+      setTimeout(() => {
+        preencherComDadosAssinante();
+      }, 100);
     }
   }, [subscriberData, preencherComDadosAssinante]);
 
