@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
@@ -37,7 +38,7 @@ const PersonalDataForm = ({
       state: '',
     };
     
-    const newAddress = { ...currentAddress, ...addressUpdate };
+    const newAddress: Address = { ...currentAddress, ...addressUpdate };
     onUpdate({ address: newAddress });
   };
 
@@ -269,5 +270,3 @@ const PersonalDataForm = ({
 };
 
 export default PersonalDataForm;
-
-</initial_code>

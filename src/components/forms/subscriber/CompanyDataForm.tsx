@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
@@ -41,7 +42,7 @@ const CompanyDataForm = ({
       state: '',
     };
     
-    const newAddress = { ...currentAddress, ...addressUpdate };
+    const newAddress: Address = { ...currentAddress, ...addressUpdate };
     onUpdateCompany({ address: newAddress });
   };
 
@@ -56,7 +57,7 @@ const CompanyDataForm = ({
       state: '',
     };
     
-    const newAddress = { ...currentAddress, ...addressUpdate };
+    const newAddress: Address = { ...currentAddress, ...addressUpdate };
     onUpdateAdministrator({ address: newAddress });
   };
 
@@ -415,5 +416,3 @@ const CompanyDataForm = ({
 };
 
 export default CompanyDataForm;
-
-}
