@@ -1,14 +1,10 @@
 
-import React, { forwardRef, useImperativeHandle, useRef, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
-import { PersonData, Contact, AdministratorData } from '@/types/subscriber';
+import React, { forwardRef, useImperativeHandle, useRef, useState, useEffect } from 'react';
+import { PersonData, AdministratorData } from '@/types/subscriber';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Label } from '@/components/ui/label';
-import DadosPessoaFisicaForm from './DadosPessoaFisicaForm';
-import DadosPessoaJuridicaForm from './DadosPessoaJuridicaForm';
+import ConcessionariaSelector from './subscriber/ConcessionariaSelector';
+import SubscriberTypeSelector from './subscriber/SubscriberTypeSelector';
+import SubscriberDataManager from './subscriber/SubscriberDataManager';
 
 interface SubscriberFormProps {
   initialValues: PersonData;
@@ -21,53 +17,46 @@ interface SubscriberFormProps {
 const SubscriberForm = forwardRef<HTMLFormElement, SubscriberFormProps>(
   ({ initialValues, initialAdministrator, onChange, isEditing, concessionaria = '' }, ref) => {
     const formRef = useRef<HTMLFormElement>(null);
-    const [contacts, setContacts] = React.useState<Contact[]>(initialValues.contacts || []);
-    const [currentConcessionaria, setCurrentConcessionaria] = React.useState(concessionaria);
-    const [administrator, setAdministrator] = React.useState<AdministratorData | undefined>(initialAdministrator);
+    const [subscriberType, setSubscriberType] = useState<'fisica' | 'juridica'>(initialValues.type || 'fisica');
+    const [currentConcessionaria, setCurrentConcessionaria] = useState(concessionaria);
+    const [subscriberData, setSubscriberData] = useState<PersonData>(initialValues);
+    const [administrator, setAdministrator] = useState<AdministratorData | undefined>(initialAdministrator);
 
     useImperativeHandle(ref, () => formRef.current!);
 
-    const form = useForm({
-      defaultValues: {
-        ...initialValues,
-        type: initialValues.type || 'fisica'
-      },
-      mode: 'onChange'
-    });
-
-    const watchedValues = form.watch();
-    const subscriberType = form.watch('type');
-
     console.log('SubscriberForm - subscriberType:', subscriberType);
-    console.log('SubscriberForm - watchedValues:', watchedValues);
+    console.log('SubscriberForm - currentConcessionaria:', currentConcessionaria);
 
-    // Atualizar dados quando form mudar
+    // Update parent when any data changes
     useEffect(() => {
-      const currentData = { ...watchedValues, contacts };
-      onChange(currentData, currentConcessionaria, administrator);
-    }, [watchedValues, contacts, currentConcessionaria, administrator, onChange]);
+      onChange(subscriberData, currentConcessionaria, administrator);
+    }, [subscriberData, currentConcessionaria, administrator, onChange]);
 
-    // Atualizar form quando initialValues mudar
+    // Update form when initial values change
     useEffect(() => {
-      form.reset(initialValues);
-      setContacts(initialValues.contacts || []);
-    }, [initialValues, form]);
+      setSubscriberData(initialValues);
+      setSubscriberType(initialValues.type || 'fisica');
+    }, [initialValues]);
 
-    // Atualizar administrator quando initialAdministrator mudar
+    // Update administrator when initial administrator changes
     useEffect(() => {
       setAdministrator(initialAdministrator);
     }, [initialAdministrator]);
 
-    const handleContactsChange = (newContacts: Contact[]) => {
-      setContacts(newContacts);
-    };
-
-    const handleAdministratorChange = (newAdministrator: AdministratorData | undefined) => {
-      setAdministrator(newAdministrator);
+    const handleSubscriberTypeChange = (newType: 'fisica' | 'juridica') => {
+      console.log('Subscriber type changing to:', newType);
+      setSubscriberType(newType);
     };
 
     const handleConcessionariaChange = (value: string) => {
       setCurrentConcessionaria(value);
+    };
+
+    const handleSubscriberDataChange = (data: PersonData, adminData?: AdministratorData) => {
+      setSubscriberData(data);
+      if (adminData !== undefined) {
+        setAdministrator(adminData);
+      }
     };
 
     return (
@@ -76,80 +65,28 @@ const SubscriberForm = forwardRef<HTMLFormElement, SubscriberFormProps>(
           <CardTitle>1. Dados do Assinante</CardTitle>
         </CardHeader>
         <CardContent>
-          <Form {...form}>
-            <form ref={formRef} className="space-y-6">
-              {/* Seleção da Concessionária */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Seleção da Concessionária</h3>
-                <div className="space-y-2">
-                  <Label htmlFor="concessionaria">Concessionária *</Label>
-                  <Select value={currentConcessionaria} onValueChange={handleConcessionariaChange} required>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione a concessionária" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="equatorial-goias">Equatorial Goiás</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
+          <form ref={formRef} className="space-y-6">
+            <ConcessionariaSelector 
+              value={currentConcessionaria} 
+              onChange={handleConcessionariaChange} 
+            />
 
-              {/* Tipo de Assinante */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold">2. Tipo de Assinante</h3>
-                <FormField
-                  control={form.control}
-                  name="type"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <RadioGroup
-                          value={field.value}
-                          onValueChange={(value) => {
-                            console.log('Radio button changed to:', value);
-                            const typedValue = value as 'fisica' | 'juridica';
-                            field.onChange(typedValue);
-                          }}
-                          className="flex gap-6"
-                        >
-                          <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="fisica" id="fisica" />
-                            <Label htmlFor="fisica" className="cursor-pointer">Pessoa Física</Label>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="juridica" id="juridica" />
-                            <Label htmlFor="juridica" className="cursor-pointer">Pessoa Jurídica</Label>
-                          </div>
-                        </RadioGroup>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+            <SubscriberTypeSelector 
+              value={subscriberType} 
+              onChange={handleSubscriberTypeChange} 
+            />
 
-              {/* Formulários condicionais baseados no tipo */}
-              {subscriberType === 'fisica' ? (
-                <DadosPessoaFisicaForm 
-                  form={form} 
-                  contacts={contacts}
-                  onContactsChange={handleContactsChange}
-                />
-              ) : (
-                <DadosPessoaJuridicaForm 
-                  form={form} 
-                  contacts={contacts}
-                  onContactsChange={handleContactsChange}
-                  administrator={administrator}
-                  onAdministratorChange={handleAdministratorChange}
-                />
-              )}
+            <SubscriberDataManager
+              subscriberType={subscriberType}
+              initialData={subscriberData}
+              initialAdministrator={administrator}
+              onChange={handleSubscriberDataChange}
+            />
 
-              {/* Campo hidden obrigatório para validação */}
-              <input type="hidden" name="subscriber" required />
-              <input type="hidden" name="concessionaria" value={currentConcessionaria} required />
-            </form>
-          </Form>
+            {/* Hidden fields for form validation */}
+            <input type="hidden" name="subscriber" required />
+            <input type="hidden" name="concessionaria" value={currentConcessionaria} required />
+          </form>
         </CardContent>
       </Card>
     );

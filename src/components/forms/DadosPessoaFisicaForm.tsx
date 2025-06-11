@@ -22,7 +22,7 @@ const DadosPessoaFisicaForm = ({ form, contacts, onContactsChange }: DadosPessoa
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <FormField
           control={form.control}
-          name="subscriber.cpfCnpj"
+          name="cpfCnpj"
           render={({ field }) => (
             <FormItem>
               <FormLabel>CPF *</FormLabel>
@@ -40,7 +40,7 @@ const DadosPessoaFisicaForm = ({ form, contacts, onContactsChange }: DadosPessoa
 
         <FormField
           control={form.control}
-          name="subscriber.numeroParceiroNegocio"
+          name="numeroParceiroNegocio"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Número Parceiro de Negócio *</FormLabel>
@@ -54,7 +54,7 @@ const DadosPessoaFisicaForm = ({ form, contacts, onContactsChange }: DadosPessoa
 
         <FormField
           control={form.control}
-          name="subscriber.name"
+          name="name"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Nome Completo do Titular *</FormLabel>
@@ -68,7 +68,7 @@ const DadosPessoaFisicaForm = ({ form, contacts, onContactsChange }: DadosPessoa
 
         <FormField
           control={form.control}
-          name="subscriber.dataNascimento"
+          name="dataNascimento"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Data de Nascimento *</FormLabel>
@@ -82,7 +82,7 @@ const DadosPessoaFisicaForm = ({ form, contacts, onContactsChange }: DadosPessoa
 
         <FormField
           control={form.control}
-          name="subscriber.estadoCivil"
+          name="estadoCivil"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Estado Civil</FormLabel>
@@ -106,7 +106,7 @@ const DadosPessoaFisicaForm = ({ form, contacts, onContactsChange }: DadosPessoa
 
         <FormField
           control={form.control}
-          name="subscriber.profissao"
+          name="profissao"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Profissão</FormLabel>
@@ -120,7 +120,7 @@ const DadosPessoaFisicaForm = ({ form, contacts, onContactsChange }: DadosPessoa
 
         <FormField
           control={form.control}
-          name="subscriber.telefone"
+          name="telefone"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Telefone *</FormLabel>
@@ -138,7 +138,7 @@ const DadosPessoaFisicaForm = ({ form, contacts, onContactsChange }: DadosPessoa
 
         <FormField
           control={form.control}
-          name="subscriber.email"
+          name="email"
           render={({ field }) => (
             <FormItem>
               <FormLabel>E-mail *</FormLabel>
@@ -151,11 +151,11 @@ const DadosPessoaFisicaForm = ({ form, contacts, onContactsChange }: DadosPessoa
         />
       </div>
 
-      <AddressForm form={form} prefix="subscriber.address" title="Endereço Residencial" />
+      <AddressForm form={form} prefix="address" title="Endereço Residencial" />
 
       <FormField
         control={form.control}
-        name="subscriber.observacoes"
+        name="observacoes"
         render={({ field }) => (
           <FormItem>
             <FormLabel>Observações</FormLabel>
