@@ -28,7 +28,10 @@ const SubscriberForm = forwardRef<HTMLFormElement, SubscriberFormProps>(
     useImperativeHandle(ref, () => formRef.current!);
 
     const form = useForm({
-      defaultValues: initialValues,
+      defaultValues: {
+        ...initialValues,
+        type: initialValues.type || 'fisica'
+      },
       mode: 'onChange'
     });
 
@@ -101,10 +104,12 @@ const SubscriberForm = forwardRef<HTMLFormElement, SubscriberFormProps>(
                     <FormItem>
                       <FormControl>
                         <RadioGroup
-                          value={field.value || 'fisica'}
+                          value={field.value}
                           onValueChange={(value) => {
                             console.log('Radio button changed to:', value);
                             field.onChange(value);
+                            // Force a re-render by updating the form state
+                            form.setValue('type', value);
                           }}
                           className="flex gap-6"
                         >
