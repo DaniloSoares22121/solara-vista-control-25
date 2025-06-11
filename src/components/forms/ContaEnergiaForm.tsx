@@ -29,40 +29,49 @@ const ContaEnergiaForm = ({ form }: ContaEnergiaFormProps) => {
   console.log('ContaEnergiaForm - tipoContaOriginal:', tipoContaOriginal);
   console.log('ContaEnergiaForm - subscriberData:', subscriberData);
 
-  // Auto-preencher campos quando mudar o tipo da conta original
+  // Auto-preencher campos sempre que o subscriberData mudar
   useEffect(() => {
-    if (subscriberData && tipoContaOriginal) {
-      // Auto-preencher tipo da conta com base no assinante
-      if (!form.getValues('energyAccount.originalAccount.type')) {
-        form.setValue('energyAccount.originalAccount.type', subscriberData.type || 'fisica');
-      }
+    if (subscriberData) {
+      console.log('Auto-preenchendo dados da conta de energia...');
+      
+      // Auto-preencher tipo da conta
+      form.setValue('energyAccount.originalAccount.type', subscriberData.type || 'fisica');
 
-      // Auto-preencher CPF/CNPJ se ainda não preenchido
-      if (!form.getValues('energyAccount.originalAccount.cpfCnpj') && subscriberData.cpfCnpj) {
+      // Auto-preencher CPF/CNPJ
+      if (subscriberData.cpfCnpj) {
         form.setValue('energyAccount.originalAccount.cpfCnpj', subscriberData.cpfCnpj);
       }
 
-      // Auto-preencher nome/razão social se ainda não preenchido
-      if (!form.getValues('energyAccount.originalAccount.name')) {
-        const name = subscriberData.type === 'fisica' 
-          ? subscriberData.name 
-          : subscriberData.razaoSocial;
-        if (name) {
-          form.setValue('energyAccount.originalAccount.name', name);
-        }
+      // Auto-preencher nome/razão social
+      const name = subscriberData.type === 'fisica' 
+        ? subscriberData.name 
+        : subscriberData.razaoSocial;
+      if (name) {
+        form.setValue('energyAccount.originalAccount.name', name);
       }
 
       // Auto-preencher data de nascimento para pessoa física
-      if (subscriberData.type === 'fisica' && !form.getValues('energyAccount.originalAccount.dataNascimento') && subscriberData.dataNascimento) {
+      if (subscriberData.type === 'fisica' && subscriberData.dataNascimento) {
         form.setValue('energyAccount.originalAccount.dataNascimento', subscriberData.dataNascimento);
       }
 
-      // Auto-preencher número do parceiro se ainda não preenchido
-      if (!form.getValues('energyAccount.originalAccount.numeroParceiroUC') && subscriberData.numeroParceiroNegocio) {
+      // Auto-preencher número do parceiro
+      if (subscriberData.numeroParceiroNegocio) {
         form.setValue('energyAccount.originalAccount.numeroParceiroUC', subscriberData.numeroParceiroNegocio);
       }
+
+      // Auto-preencher endereço
+      if (subscriberAddress) {
+        form.setValue('energyAccount.originalAccount.address.cep', subscriberAddress.cep || '');
+        form.setValue('energyAccount.originalAccount.address.endereco', subscriberAddress.endereco || '');
+        form.setValue('energyAccount.originalAccount.address.numero', subscriberAddress.numero || '');
+        form.setValue('energyAccount.originalAccount.address.complemento', subscriberAddress.complemento || '');
+        form.setValue('energyAccount.originalAccount.address.bairro', subscriberAddress.bairro || '');
+        form.setValue('energyAccount.originalAccount.address.cidade', subscriberAddress.cidade || '');
+        form.setValue('energyAccount.originalAccount.address.estado', subscriberAddress.estado || '');
+      }
     }
-  }, [subscriberData, tipoContaOriginal, form]);
+  }, [subscriberData, subscriberAddress, form]);
 
   const copyAddressFromSubscriber = () => {
     if (subscriberAddress) {

@@ -399,12 +399,16 @@ const NovoAssinante = ({ onClose, initialData, onSubmit, isEditing = false }: No
             Anterior
           </Button>
           <div className="flex gap-2">
-            <Button
-              onClick={nextStep}
-              disabled={currentStep === steps.length - 1 || isSubmitting}
-            >
-              Próximo
-            </Button>
+            {/* Só mostra o botão Próximo se não for a última etapa */}
+            {currentStep !== steps.length - 1 && (
+              <Button
+                onClick={nextStep}
+                disabled={isSubmitting}
+              >
+                Próximo
+              </Button>
+            )}
+            {/* Só mostra o botão de finalizar na última etapa */}
             {currentStep === steps.length - 1 && (
               <Button
                 onClick={handleSubmit}
