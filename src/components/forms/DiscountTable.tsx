@@ -70,6 +70,17 @@ const DiscountTable = ({
     return displays[faixa as keyof typeof displays] || faixa;
   };
 
+  // Função para verificar se uma célula específica deve ser destacada
+  const isCellHighlighted = (faixa: string, type: string) => {
+    if (faixa !== faixaConsumo) return false;
+    
+    if (type === 'sem' && fidelidade === 'sem') return true;
+    if (type === '1' && fidelidade === 'com' && anosFidelidade === '1') return true;
+    if (type === '2' && fidelidade === 'com' && anosFidelidade === '2') return true;
+    
+    return false;
+  };
+
   const handleCellClick = (faixa: string, type: string) => {
     const cellId = `${faixa}-${type}`;
     setEditingCell(cellId);
@@ -115,13 +126,18 @@ const DiscountTable = ({
     }
   };
 
-  const renderEditableCell = (faixa: string, type: string, value: number, isHighlighted: boolean) => {
+  const renderEditableCell = (faixa: string, type: string, value: number) => {
     const cellId = `${faixa}-${type}`;
     const isEditing = editingCell === cellId;
+    const isHighlighted = isCellHighlighted(faixa, type);
 
     return (
       <TableCell 
-        className={`cursor-pointer transition-colors ${isHighlighted ? 'bg-green-100 font-bold text-green-700' : 'hover:bg-gray-50'}`}
+        className={`cursor-pointer transition-all duration-300 ${
+          isHighlighted 
+            ? 'bg-gradient-to-r from-green-100 to-emerald-100 border-2 border-green-400 font-bold text-green-800 shadow-lg transform scale-105' 
+            : 'hover:bg-gray-50 border border-transparent'
+        }`}
         onClick={() => !isEditing && handleCellClick(faixa, type)}
       >
         {isEditing ? (
@@ -137,10 +153,15 @@ const DiscountTable = ({
             autoFocus
           />
         ) : (
-          <span className="inline-flex items-center">
-            {value}%
+          <div className={`inline-flex items-center justify-center ${isHighlighted ? 'font-bold' : ''}`}>
+            <span className={`${isHighlighted ? 'text-green-800 text-lg' : ''}`}>
+              {value}%
+            </span>
+            {isHighlighted && (
+              <span className="ml-2 text-green-600">✓</span>
+            )}
             <span className="ml-1 text-xs text-gray-400 opacity-0 group-hover:opacity-100">✏️</span>
-          </span>
+          </div>
         )}
       </TableCell>
     );
@@ -168,41 +189,43 @@ const DiscountTable = ({
             {Object.entries(rates).map(([faixa, valores]) => (
               <TableRow 
                 key={faixa}
-                className={`group ${faixa === faixaConsumo ? 'bg-green-50 border-l-4 border-green-500' : ''}`}
+                className={`group transition-all duration-300 ${
+                  faixa === faixaConsumo 
+                    ? 'bg-green-50 border-l-4 border-green-500 shadow-md' 
+                    : 'hover:bg-gray-50'
+                }`}
               >
-                <TableCell className="font-medium">
+                <TableCell className={`font-medium ${
+                  faixa === faixaConsumo ? 'text-green-800 font-bold' : ''
+                }`}>
                   {getFaixaDisplay(faixa)}
+                  {faixa === faixaConsumo && (
+                    <span className="ml-2 text-green-600">← Selecionada</span>
+                  )}
                 </TableCell>
-                {renderEditableCell(
-                  faixa, 
-                  'sem', 
-                  valores.sem, 
-                  faixa === faixaConsumo && fidelidade === 'sem'
-                )}
-                {renderEditableCell(
-                  faixa, 
-                  '1', 
-                  valores.com['1'], 
-                  faixa === faixaConsumo && fidelidade === 'com' && anosFidelidade === '1'
-                )}
-                {renderEditableCell(
-                  faixa, 
-                  '2', 
-                  valores.com['2'], 
-                  faixa === faixaConsumo && fidelidade === 'com' && anosFidelidade === '2'
-                )}
+                {renderEditableCell(faixa, 'sem', valores.sem)}
+                {renderEditableCell(faixa, '1', valores.com['1'])}
+                {renderEditableCell(faixa, '2', valores.com['2'])}
               </TableRow>
             ))}
           </TableBody>
         </Table>
 
         {faixaConsumo && (
-          <div className="mt-4 p-4 bg-green-50 rounded-lg border border-green-200">
-            <h4 className="font-semibold text-green-800 mb-2">Sua Seleção Atual:</h4>
-            <div className="text-sm text-green-700">
+          <div className="mt-4 p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border-2 border-green-200 shadow-md">
+            <h4 className="font-semibold text-green-800 mb-2 flex items-center gap-2">
+              <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+              Sua Seleção Atual:
+            </h4>
+            <div className="text-sm text-green-700 space-y-1">
               <p><strong>Faixa:</strong> {getFaixaDisplay(faixaConsumo)}</p>
               <p><strong>Tipo:</strong> {fidelidade === 'sem' ? 'Sem Fidelidade' : `Com Fidelidade (${anosFidelidade} ano${anosFidelidade === '1' ? '' : 's'})`}</p>
-              <p><strong>Desconto:</strong> <span className="text-lg font-bold text-green-600">{currentDiscount}%</span></p>
+              <p className="flex items-center gap-2">
+                <strong>Desconto:</strong> 
+                <span className="text-xl font-bold text-green-600 bg-white px-3 py-1 rounded-full shadow-sm border border-green-300">
+                  {currentDiscount}%
+                </span>
+              </p>
             </div>
           </div>
         )}
