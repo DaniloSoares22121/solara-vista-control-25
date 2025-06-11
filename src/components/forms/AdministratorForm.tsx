@@ -15,27 +15,20 @@ interface AdministratorFormProps {
 const AdministratorForm = forwardRef<HTMLFormElement, AdministratorFormProps>(
   ({ initialValues, onChange, isEditing }, ref) => {
     const formRef = useRef<HTMLFormElement>(null);
-    
-    const form = useForm({
-      defaultValues: initialValues,
-      mode: 'onChange'
-    });
-
-    const watchedValues = form.watch();
-
-    // Update data when form changes
-    useEffect(() => {
-      onChange(watchedValues);
-    }, [watchedValues, onChange]);
-
-    // Update form when initialValues change
-    useEffect(() => {
-      if (initialValues) {
-        form.reset(initialValues);
-      }
-    }, [initialValues, form]);
+    const [administrator, setAdministrator] = useState<AdministratorData | undefined>(initialValues);
 
     useImperativeHandle(ref, () => formRef.current!);
+
+    // Handle administrator changes from DadosAdministradorForm
+    const handleAdministratorChange = (newAdministrator: AdministratorData | undefined) => {
+      setAdministrator(newAdministrator);
+      onChange(newAdministrator);
+    };
+
+    // Update administrator when initialValues change
+    useEffect(() => {
+      setAdministrator(initialValues);
+    }, [initialValues]);
 
     return (
       <Card>
@@ -43,12 +36,13 @@ const AdministratorForm = forwardRef<HTMLFormElement, AdministratorFormProps>(
           <CardTitle>3. Dados do Administrador</CardTitle>
         </CardHeader>
         <CardContent>
-          <Form {...form}>
-            <form ref={formRef} className="space-y-4">
-              <DadosAdministradorForm form={form} />
-              <input type="hidden" name="administrator" />
-            </form>
-          </Form>
+          <form ref={formRef} className="space-y-4">
+            <DadosAdministradorForm 
+              administrator={administrator}
+              onChange={handleAdministratorChange}
+            />
+            <input type="hidden" name="administrator" />
+          </form>
         </CardContent>
       </Card>
     );
