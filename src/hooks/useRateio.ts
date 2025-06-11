@@ -43,6 +43,17 @@ export const useRateio = () => {
 
   const selectGenerator = (generator: RateioGenerator) => {
     setSelectedGenerator(generator);
+    // Mock subscribers for this generator
+    const mockSubscribers: RateioSubscriber[] = [
+      {
+        id: '1',
+        name: 'Subscriber 1',
+        uc: '12345',
+        contractedConsumption: 400,
+        accumulatedCredit: 100
+      }
+    ];
+    setSubscribersByGenerator(mockSubscribers);
     return generator;
   };
 

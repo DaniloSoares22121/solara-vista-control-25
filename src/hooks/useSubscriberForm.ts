@@ -88,16 +88,25 @@ export const useSubscriberForm = () => {
   const { createSubscriber } = useSubscribers();
 
   const updateFormData = useCallback((section: keyof SubscriberFormData, data: any) => {
-    setFormData(prev => ({
-      ...prev,
-      [section]: typeof data === 'object' && data !== null ? { ...prev[section], ...data } : data,
-    }));
+    setFormData(prev => {
+      const currentSectionData = prev[section];
+      if (typeof data === 'object' && data !== null && currentSectionData && typeof currentSectionData === 'object') {
+        return {
+          ...prev,
+          [section]: { ...currentSectionData, ...data },
+        };
+      }
+      return {
+        ...prev,
+        [section]: data,
+      };
+    });
   }, []);
 
   const handleCepLookup = useCallback(async (cep: string, addressType: 'personal' | 'company' | 'administrator' | 'energy') => {
     const cepData = await lookupCep(cep);
     if (cepData) {
-      const addressUpdate = {
+      const addressUpdate: Partial<Address> = {
         cep: cepData.cep,
         street: cepData.logradouro,
         neighborhood: cepData.bairro,

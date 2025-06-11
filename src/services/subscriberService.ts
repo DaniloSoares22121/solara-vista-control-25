@@ -1,9 +1,24 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { SubscriberFormData } from '@/types/subscriber';
 
-export const subscriberService = {
-  async create(data: SubscriberFormData) {
+export interface SubscriberRecord {
+  id: string;
+  user_id: string;
+  concessionaria: string | null;
+  subscriber: any;
+  administrator: any;
+  energy_account: any;
+  plan_contract: any;
+  plan_details: any;
+  notifications: any;
+  attachments: any;
+  status: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export const SubscriberService = {
+  async createSubscriber(data: SubscriberFormData) {
     try {
       console.log('Criando assinante:', data);
       
@@ -19,7 +34,7 @@ export const subscriberService = {
           notifications: data.notificationSettings,
           attachments: data.attachments,
           status: 'active'
-        })
+        } as any)
         .select()
         .single();
 
@@ -36,7 +51,7 @@ export const subscriberService = {
     }
   },
 
-  async getAll() {
+  async getSubscribers() {
     try {
       const { data, error } = await supabase
         .from('subscribers')
@@ -55,7 +70,7 @@ export const subscriberService = {
     }
   },
 
-  async getById(id: string) {
+  async getSubscriber(id: string) {
     try {
       const { data, error } = await supabase
         .from('subscribers')
@@ -75,7 +90,7 @@ export const subscriberService = {
     }
   },
 
-  async update(id: string, data: Partial<SubscriberFormData>) {
+  async updateSubscriber(id: string, data: Partial<SubscriberFormData>) {
     try {
       const { data: result, error } = await supabase
         .from('subscribers')
@@ -88,7 +103,7 @@ export const subscriberService = {
           plan_details: data.planDetails,
           notifications: data.notificationSettings,
           attachments: data.attachments,
-        })
+        } as any)
         .eq('id', id)
         .select()
         .single();
@@ -105,7 +120,7 @@ export const subscriberService = {
     }
   },
 
-  async delete(id: string) {
+  async deleteSubscriber(id: string) {
     try {
       const { error } = await supabase
         .from('subscribers')
@@ -124,3 +139,6 @@ export const subscriberService = {
     }
   }
 };
+
+// Keep the old export for backwards compatibility
+export const subscriberService = SubscriberService;
