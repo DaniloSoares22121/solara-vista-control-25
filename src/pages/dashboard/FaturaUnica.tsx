@@ -100,14 +100,14 @@ const FaturaUnica = () => {
   }, isFromAssinante: boolean = false) => {
     setIsConsultingFatura(true);
     setConsultaProgress(0);
-    setTimeRemaining(15); // 15 segundos
+    setTimeRemaining(60); // Alterado para 60 segundos (1 minuto)
     setFaturaResult(null);
 
     try {
       // Simular progresso
       const progressInterval = setInterval(() => {
         setConsultaProgress(prev => {
-          const next = prev + 6.67; // 100/15 = 6.67% por segundo
+          const next = prev + 1.67; // 100/60 = 1.67% por segundo
           return next >= 100 ? 100 : next;
         });
       }, 1000);
