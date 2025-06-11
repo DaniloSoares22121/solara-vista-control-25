@@ -107,21 +107,21 @@ export const useSubscriberForm = () => {
 
       switch (addressType) {
         case 'personal':
-          if (formData.personalData && formData.personalData.address) {
+          if (formData.personalData?.address) {
             updateFormData('personalData', {
               address: { ...formData.personalData.address, ...addressUpdate }
             });
           }
           break;
         case 'company':
-          if (formData.companyData && formData.companyData.address) {
+          if (formData.companyData?.address) {
             updateFormData('companyData', {
               address: { ...formData.companyData.address, ...addressUpdate }
             });
           }
           break;
         case 'administrator':
-          if (formData.administratorData && formData.administratorData.address) {
+          if (formData.administratorData?.address) {
             updateFormData('administratorData', {
               address: { ...formData.administratorData.address, ...addressUpdate }
             });
@@ -179,7 +179,15 @@ export const useSubscriberForm = () => {
         holderName: formData.personalData.fullName,
         birthDate: formData.personalData.birthDate,
         partnerNumber: formData.personalData.partnerNumber,
-        address: { ...formData.personalData.address },
+        address: formData.personalData.address ? { ...formData.personalData.address } : {
+          cep: '',
+          street: '',
+          number: '',
+          complement: '',
+          neighborhood: '',
+          city: '',
+          state: '',
+        },
       });
     } else if (formData.subscriberType === 'company' && formData.companyData) {
       updateFormData('energyAccount', {
@@ -187,7 +195,15 @@ export const useSubscriberForm = () => {
         cpfCnpj: formData.companyData.cnpj,
         holderName: formData.companyData.companyName,
         partnerNumber: formData.companyData.partnerNumber,
-        address: { ...formData.companyData.address },
+        address: formData.companyData.address ? { ...formData.companyData.address } : {
+          cep: '',
+          street: '',
+          number: '',
+          complement: '',
+          neighborhood: '',
+          city: '',
+          state: '',
+        },
       });
     }
   }, [formData, updateFormData]);

@@ -6,7 +6,7 @@ import { MaskedInput } from '@/components/ui/masked-input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { UseFormReturn } from 'react-hook-form';
-import { PersonalData } from '@/types/subscriber';
+import { PersonalData, Address } from '@/types/subscriber';
 import AddressForm from '../AddressForm';
 import ContactsSection from './ContactsSection';
 
@@ -219,7 +219,23 @@ const PersonalDataForm = ({
         prefix="personalData.address" 
         title="Endereço Residencial"
         onCepChange={onCepLookup}
-        onAddressChange={(address) => onUpdate({ address })}
+        onAddressChange={(address: Partial<Address>) => {
+          const currentAddress = data?.address || {
+            cep: '',
+            street: '',
+            number: '',
+            complement: '',
+            neighborhood: '',
+            city: '',
+            state: '',
+          };
+          onUpdate({ 
+            address: { 
+              ...currentAddress, 
+              ...address 
+            } as Address 
+          });
+        }}
       />
 
       <FormField

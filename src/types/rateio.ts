@@ -11,6 +11,9 @@ export interface RateioSubscriber {
   allocatedEnergy?: number; // energia alocada calculada
   creditUsed?: number; // crédito utilizado
   remainingCredit?: number; // crédito restante
+  subscriber?: any; // dados completos do assinante
+  energyAccount?: any; // conta de energia
+  planContract?: any; // contrato do plano
 }
 
 export interface RateioGenerator {
@@ -20,6 +23,8 @@ export interface RateioGenerator {
   generation: number; // kWh
   ownerName?: string;
   status?: 'active' | 'inactive';
+  owner?: any; // dados do proprietário
+  plants?: any; // dados das plantas
 }
 
 export interface RateioCalculation {
