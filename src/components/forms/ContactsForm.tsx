@@ -1,10 +1,12 @@
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent } from '@/components/ui/card';
+import { MaskedInput } from '@/components/ui/masked-input';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Plus, Trash2 } from 'lucide-react';
 import { Contact } from '@/types/subscriber';
+import { v4 as uuidv4 } from 'uuid';
 
 interface ContactsFormProps {
   contacts: Contact[];
@@ -12,81 +14,99 @@ interface ContactsFormProps {
 }
 
 const ContactsForm = ({ contacts, onChange }: ContactsFormProps) => {
-  const addContact = () => {
-    const newContact: Contact = {
-      id: Date.now().toString(),
-      name: '',
-      phone: '',
-      role: ''
-    };
-    onChange([...contacts, newContact]);
-  };
+  const [newContact, setNewContact] = useState<Omit<Contact, 'id'>>({
+    name: '',
+    phone: '',
+    role: ''
+  });
 
-  const updateContact = (id: string, field: keyof Contact, value: string) => {
-    const updated = contacts.map(contact => 
-      contact.id === id ? { ...contact, [field]: value } : contact
-    );
-    onChange(updated);
+  const addContact = () => {
+    if (newContact.name && newContact.phone) {
+      const contact: Contact = {
+        ...newContact,
+        id: uuidv4()
+      };
+      onChange([...contacts, contact]);
+      setNewContact({ name: '', phone: '', role: '' });
+    }
   };
 
   const removeContact = (id: string) => {
     onChange(contacts.filter(contact => contact.id !== id));
   };
 
+  const updateContact = (id: string, field: keyof Omit<Contact, 'id'>, value: string) => {
+    onChange(contacts.map(contact => 
+      contact.id === id ? { ...contact, [field]: value } : contact
+    ));
+  };
+
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h4 className="font-medium text-gray-900">Contatos</h4>
-        <Button type="button" variant="outline" size="sm" onClick={addContact}>
-          <Plus className="w-4 h-4 mr-2" />
-          Adicionar Contato
-        </Button>
-      </div>
+    <Card>
+      <CardHeader>
+        <CardTitle>Contatos Adicionais</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {/* Lista de contatos existentes */}
+        {contacts.map((contact) => (
+          <div key={contact.id} className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 border rounded-lg">
+            <Input
+              placeholder="Nome"
+              value={contact.name}
+              onChange={(e) => updateContact(contact.id, 'name', e.target.value)}
+            />
+            <MaskedInput
+              mask="(99) 99999-9999"
+              placeholder="(00) 00000-0000"
+              value={contact.phone}
+              onChange={(e) => updateContact(contact.id, 'phone', e.target.value)}
+            />
+            <Input
+              placeholder="Cargo/Função"
+              value={contact.role}
+              onChange={(e) => updateContact(contact.id, 'role', e.target.value)}
+            />
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => removeContact(contact.id)}
+              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+            >
+              <Trash2 className="w-4 h-4" />
+            </Button>
+          </div>
+        ))}
 
-      {contacts.map((contact, index) => (
-        <Card key={contact.id} className="border border-gray-200">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between mb-3">
-              <h5 className="text-sm font-medium">Contato {index + 1}</h5>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => removeContact(contact.id)}
-                className="text-red-600 hover:text-red-700"
-              >
-                <Trash2 className="w-4 h-4" />
-              </Button>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              <Input
-                placeholder="Nome do contato"
-                value={contact.name}
-                onChange={(e) => updateContact(contact.id, 'name', e.target.value)}
-              />
-              <Input
-                placeholder="Telefone"
-                value={contact.phone}
-                onChange={(e) => updateContact(contact.id, 'phone', e.target.value)}
-              />
-              <Input
-                placeholder="Função"
-                value={contact.role}
-                onChange={(e) => updateContact(contact.id, 'role', e.target.value)}
-              />
-            </div>
-          </CardContent>
-        </Card>
-      ))}
-
-      {contacts.length === 0 && (
-        <div className="text-center py-6 text-gray-500 border-2 border-dashed border-gray-200 rounded-lg">
-          <p>Nenhum contato adicionado</p>
-          <p className="text-sm">Clique em "Adicionar Contato" para começar</p>
+        {/* Formulário para novo contato */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 border-2 border-dashed border-gray-300 rounded-lg">
+          <Input
+            placeholder="Nome do contato"
+            value={newContact.name}
+            onChange={(e) => setNewContact({ ...newContact, name: e.target.value })}
+          />
+          <MaskedInput
+            mask="(99) 99999-9999"
+            placeholder="(00) 00000-0000"
+            value={newContact.phone}
+            onChange={(e) => setNewContact({ ...newContact, phone: e.target.value })}
+          />
+          <Input
+            placeholder="Cargo/Função"
+            value={newContact.role}
+            onChange={(e) => setNewContact({ ...newContact, role: e.target.value })}
+          />
+          <Button
+            type="button"
+            onClick={addContact}
+            disabled={!newContact.name || !newContact.phone}
+            className="bg-green-600 hover:bg-green-700 text-white"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Adicionar
+          </Button>
         </div>
-      )}
-    </div>
+      </CardContent>
+    </Card>
   );
 };
 

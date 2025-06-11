@@ -1,66 +1,51 @@
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { toast } from 'sonner';
 
-interface CepData {
+interface CepResponse {
   cep: string;
   logradouro: string;
   complemento: string;
   bairro: string;
   localidade: string;
   uf: string;
-  erro?: boolean;
+  ibge: string;
+  gia: string;
+  ddd: string;
+  siafi: string;
 }
 
-interface AddressData {
-  endereco: string;
-  bairro: string;
-  cidade: string;
-  estado: string;
-  complemento: string;
-}
-
-export const useCepLookup = (cep?: string) => {
+export const useCepLookup = () => {
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [addressData, setAddressData] = useState<AddressData | null>(null);
 
-  useEffect(() => {
-    if (!cep || cep.length !== 8) {
-      setAddressData(null);
-      return;
+  const lookupCep = async (cep: string): Promise<CepResponse | null> => {
+    const cleanCep = cep.replace(/\D/g, '');
+    
+    if (cleanCep.length !== 8) {
+      toast.error('CEP deve ter 8 dígitos');
+      return null;
     }
 
-    const lookupCep = async () => {
-      setLoading(true);
-      setError(null);
-
-      try {
-        const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
-        const data: CepData = await response.json();
-
-        if (data.erro) {
-          setError('CEP não encontrado');
-          setAddressData(null);
-          return;
-        }
-
-        setAddressData({
-          endereco: data.logradouro,
-          bairro: data.bairro,
-          cidade: data.localidade,
-          estado: data.uf,
-          complemento: data.complemento || '',
-        });
-      } catch (err) {
-        setError('Erro ao buscar CEP');
-        setAddressData(null);
-      } finally {
-        setLoading(false);
+    setLoading(true);
+    
+    try {
+      const response = await fetch(`https://viacep.com.br/ws/${cleanCep}/json/`);
+      const data = await response.json();
+      
+      if (data.erro) {
+        toast.error('CEP não encontrado');
+        return null;
       }
-    };
+      
+      return data;
+    } catch (error) {
+      console.error('Erro ao buscar CEP:', error);
+      toast.error('Erro ao buscar CEP');
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    lookupCep();
-  }, [cep]);
-
-  return { addressData, loading, error };
+  return { lookupCep, loading };
 };
