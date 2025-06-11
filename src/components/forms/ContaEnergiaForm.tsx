@@ -373,5 +373,3 @@ const ContaEnergiaForm = ({ form, subscriberData }: ContaEnergiaFormProps) => {
 };
 
 export default ContaEnergiaForm;
-
-</edits_to_apply>
