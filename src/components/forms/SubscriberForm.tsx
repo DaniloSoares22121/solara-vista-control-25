@@ -101,7 +101,7 @@ const SubscriberForm = forwardRef<HTMLFormElement, SubscriberFormProps>(
                     <FormItem>
                       <FormControl>
                         <RadioGroup
-                          value={field.value}
+                          value={field.value || 'fisica'}
                           onValueChange={(value) => {
                             console.log('Radio button changed to:', value);
                             field.onChange(value);
@@ -110,11 +110,11 @@ const SubscriberForm = forwardRef<HTMLFormElement, SubscriberFormProps>(
                         >
                           <div className="flex items-center space-x-2">
                             <RadioGroupItem value="fisica" id="fisica" />
-                            <Label htmlFor="fisica">Pessoa Física</Label>
+                            <Label htmlFor="fisica" className="cursor-pointer">Pessoa Física</Label>
                           </div>
                           <div className="flex items-center space-x-2">
                             <RadioGroupItem value="juridica" id="juridica" />
-                            <Label htmlFor="juridica">Pessoa Jurídica</Label>
+                            <Label htmlFor="juridica" className="cursor-pointer">Pessoa Jurídica</Label>
                           </div>
                         </RadioGroup>
                       </FormControl>

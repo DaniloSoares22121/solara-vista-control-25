@@ -6,6 +6,7 @@ import { MaskedInput } from '@/components/ui/masked-input';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
+import { Button } from '@/components/ui/button';
 import { UseFormReturn } from 'react-hook-form';
 import AddressForm from './AddressForm';
 import NovaTitularidadeForm from './NovaTitularidadeForm';
@@ -20,8 +21,24 @@ const ContaEnergiaForm = ({ form }: ContaEnergiaFormProps) => {
   const realizarTroca = form.watch('energyAccount.realizarTrocaTitularidade');
   const tipoContaOriginal = form.watch('energyAccount.originalAccount.type');
   
+  // Puxar endereço do assinante
+  const subscriberAddress = form.watch('subscriber.address');
+  
   console.log('ContaEnergiaForm - realizarTroca:', realizarTroca);
   console.log('ContaEnergiaForm - tipoContaOriginal:', tipoContaOriginal);
+  console.log('ContaEnergiaForm - subscriberAddress:', subscriberAddress);
+
+  const copyAddressFromSubscriber = () => {
+    if (subscriberAddress) {
+      form.setValue('energyAccount.originalAccount.address.cep', subscriberAddress.cep || '');
+      form.setValue('energyAccount.originalAccount.address.endereco', subscriberAddress.endereco || '');
+      form.setValue('energyAccount.originalAccount.address.numero', subscriberAddress.numero || '');
+      form.setValue('energyAccount.originalAccount.address.complemento', subscriberAddress.complemento || '');
+      form.setValue('energyAccount.originalAccount.address.bairro', subscriberAddress.bairro || '');
+      form.setValue('energyAccount.originalAccount.address.cidade', subscriberAddress.cidade || '');
+      form.setValue('energyAccount.originalAccount.address.estado', subscriberAddress.estado || '');
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -150,7 +167,19 @@ const ContaEnergiaForm = ({ form }: ContaEnergiaFormProps) => {
           />
         </div>
 
-        <AddressForm form={form} prefix="energyAccount.originalAccount.address" title="Endereço da Conta de Energia" />
+        <div className="flex items-center justify-between">
+          <AddressForm form={form} prefix="energyAccount.originalAccount.address" title="Endereço da Conta de Energia" />
+          <div className="ml-4">
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={copyAddressFromSubscriber}
+              className="whitespace-nowrap"
+            >
+              Copiar Endereço do Assinante
+            </Button>
+          </div>
+        </div>
       </div>
 
       <div className="space-y-4">
