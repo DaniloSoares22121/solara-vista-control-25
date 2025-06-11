@@ -6,7 +6,7 @@ import { MaskedInput } from '@/components/ui/masked-input';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { UseFormReturn } from 'react-hook-form';
-import { EnergyAccount } from '@/types/subscriber';
+import { EnergyAccount, Address } from '@/types/subscriber';
 import AddressForm from '../AddressForm';
 
 interface EnergyAccountFormProps {
@@ -167,7 +167,12 @@ const EnergyAccountForm = ({ data, onUpdate, onCepLookup, form }: EnergyAccountF
           prefix="energyAccount.address" 
           title="Endereço da Conta de Energia"
           onCepChange={onCepLookup}
-          onAddressChange={(address) => onUpdate({ address })}
+          onAddressChange={(address: Partial<Address>) => onUpdate({ 
+            address: { 
+              ...data.address, 
+              ...address 
+            } as Address 
+          })}
         />
       </div>
     </div>

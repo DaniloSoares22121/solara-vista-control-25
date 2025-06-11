@@ -6,7 +6,7 @@ import { MaskedInput } from '@/components/ui/masked-input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { UseFormReturn } from 'react-hook-form';
-import { CompanyData, AdministratorData } from '@/types/subscriber';
+import { CompanyData, AdministratorData, Address } from '@/types/subscriber';
 import AddressForm from '../AddressForm';
 import ContactsSection from './ContactsSection';
 
@@ -174,7 +174,12 @@ const CompanyDataForm = ({
           prefix="companyData.address" 
           title="Endereço da Empresa"
           onCepChange={(cep) => onCepLookup(cep, 'company')}
-          onAddressChange={(address) => onUpdateCompany({ address })}
+          onAddressChange={(address: Partial<Address>) => onUpdateCompany({ 
+            address: { 
+              ...companyData?.address, 
+              ...address 
+            } as Address 
+          })}
         />
 
         <FormField
@@ -378,7 +383,12 @@ const CompanyDataForm = ({
           prefix="administratorData.address" 
           title="Endereço Residencial do Administrador"
           onCepChange={(cep) => onCepLookup(cep, 'administrator')}
-          onAddressChange={(address) => onUpdateAdministrator({ address })}
+          onAddressChange={(address: Partial<Address>) => onUpdateAdministrator({ 
+            address: { 
+              ...administratorData?.address, 
+              ...address 
+            } as Address 
+          })}
         />
       </div>
     </div>

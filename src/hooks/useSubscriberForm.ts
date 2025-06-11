@@ -107,21 +107,21 @@ export const useSubscriberForm = () => {
 
       switch (addressType) {
         case 'personal':
-          if (formData.personalData?.address) {
+          if (formData.personalData && formData.personalData.address) {
             updateFormData('personalData', {
               address: { ...formData.personalData.address, ...addressUpdate }
             });
           }
           break;
         case 'company':
-          if (formData.companyData?.address) {
+          if (formData.companyData && formData.companyData.address) {
             updateFormData('companyData', {
               address: { ...formData.companyData.address, ...addressUpdate }
             });
           }
           break;
         case 'administrator':
-          if (formData.administratorData?.address) {
+          if (formData.administratorData && formData.administratorData.address) {
             updateFormData('administratorData', {
               address: { ...formData.administratorData.address, ...addressUpdate }
             });
