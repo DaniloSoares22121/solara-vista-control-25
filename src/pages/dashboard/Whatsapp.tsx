@@ -4,15 +4,44 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
-import { QrCode, Settings, MessageCircle, RefreshCw, X, Smartphone, Send, Users } from 'lucide-react';
-import { useState } from 'react';
+import { QrCode, Settings, MessageCircle, RefreshCw, CheckCircle, X, Smartphone, Send, Users, Cog } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { useWhatsApp } from '@/hooks/useWhatsApp';
+import WhatsAppConfigModal from '@/components/WhatsAppConfigModal';
+import WhatsAppTestMessage from '@/components/WhatsAppTestMessage';
 
 const Whatsapp = () => {
-  const [isConnected, setIsConnected] = useState(false);
   const [autoResponse, setAutoResponse] = useState(true);
   const [messageTemplate, setMessageTemplate] = useState(
     "Olá {{nome}}, sua fatura no valor de R$ {{valor}} está disponível. Acesse: {{link}}"
   );
+  const [showConfigModal, setShowConfigModal] = useState(false);
+  const [showTestModal, setShowTestModal] = useState(false);
+
+  const {
+    config,
+    setConfig,
+    connectionStatus,
+    isConnecting,
+    isCheckingStatus,
+    isSendingMessage,
+    connect,
+    checkStatus,
+    sendMessage
+  } = useWhatsApp();
+
+  const isConnected = connectionStatus?.state === 'open';
+
+  // Verificar status ao carregar a página se já tiver configuração
+  useEffect(() => {
+    if (config.apiUrl && config.apiKey) {
+      checkStatus();
+    }
+  }, [config.apiUrl, config.apiKey]);
+
+  const handleTestMessage = async (number: string, text: string) => {
+    return await sendMessage({ number, text });
+  };
 
   return (
     <DashboardLayout>
@@ -36,6 +65,15 @@ const Whatsapp = () => {
               <div className={`w-2 h-2 rounded-full mr-2 ${isConnected ? 'bg-green-500' : 'bg-red-500'}`}></div>
               {isConnected ? 'Conectado' : 'Desconectado'}
             </Badge>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowConfigModal(true)}
+              className="flex items-center gap-2"
+            >
+              <Cog className="w-4 h-4" />
+              Configurar API
+            </Button>
           </div>
         </div>
 
@@ -75,8 +113,8 @@ const Whatsapp = () => {
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-xs sm:text-sm font-medium text-gray-600">Contatos Ativos</CardTitle>
-                <div className="p-2 rounded-lg bg-purple-50">
-                  <Users className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
+                <div className="p-2 rounded-lg bg-green-50">
+                  <Users className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
                 </div>
               </div>
             </CardHeader>
@@ -104,35 +142,71 @@ const Whatsapp = () => {
                 <div className="flex items-center justify-between mb-4">
                   <span className="text-sm font-medium text-gray-700">Status Atual:</span>
                   <div className="flex items-center gap-2">
-                    <X className="w-4 h-4 sm:w-5 sm:h-5 text-red-500" />
-                    <span className="text-red-600 font-semibold text-sm">Desconectado</span>
+                    {isConnected ? (
+                      <>
+                        <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-green-500" />
+                        <span className="text-green-600 font-semibold text-sm">Conectado</span>
+                      </>
+                    ) : (
+                      <>
+                        <X className="w-4 h-4 sm:w-5 sm:h-5 text-red-500" />
+                        <span className="text-red-600 font-semibold text-sm">Desconectado</span>
+                      </>
+                    )}
                   </div>
                 </div>
                 
                 <div className="space-y-2 text-xs sm:text-sm text-gray-600">
-                  <p>• Escaneie o QR Code com seu WhatsApp</p>
+                  <p>• Configure a URL da API e chave de acesso</p>
+                  <p>• Conecte e escaneie o QR Code com seu WhatsApp</p>
                   <p>• Mantenha o dispositivo conectado à internet</p>
-                  <p>• Não faça logout do WhatsApp Web</p>
                 </div>
               </div>
 
               <div className="space-y-3">
-                <Button 
-                  className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white shadow-lg h-10 sm:h-12 text-sm"
-                  size="lg"
-                >
-                  <QrCode className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                  Conectar WhatsApp
-                </Button>
+                {!config.apiUrl || !config.apiKey ? (
+                  <Button 
+                    className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-lg h-10 sm:h-12 text-sm"
+                    size="lg"
+                    onClick={() => setShowConfigModal(true)}
+                  >
+                    <Cog className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                    Configurar API
+                  </Button>
+                ) : (
+                  <Button 
+                    className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white shadow-lg h-10 sm:h-12 text-sm"
+                    size="lg"
+                    onClick={connect}
+                    disabled={isConnecting}
+                  >
+                    <QrCode className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                    {isConnecting ? 'Conectando...' : 'Conectar WhatsApp'}
+                  </Button>
+                )}
 
                 <Button 
                   variant="outline" 
                   className="w-full border-gray-200 hover:bg-gray-50 h-10 sm:h-12 text-sm"
                   size="lg"
+                  onClick={checkStatus}
+                  disabled={isCheckingStatus || !config.apiUrl || !config.apiKey}
                 >
-                  <RefreshCw className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                  Verificar Status
+                  <RefreshCw className={`w-4 h-4 sm:w-5 sm:h-5 mr-2 ${isCheckingStatus ? 'animate-spin' : ''}`} />
+                  {isCheckingStatus ? 'Verificando...' : 'Verificar Status'}
                 </Button>
+
+                {isConnected && (
+                  <Button 
+                    variant="outline" 
+                    className="w-full border-green-200 text-green-700 hover:bg-green-50 h-10 sm:h-12 text-sm"
+                    size="lg"
+                    onClick={() => setShowTestModal(true)}
+                  >
+                    <Send className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                    Enviar Mensagem Teste
+                  </Button>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -201,6 +275,21 @@ const Whatsapp = () => {
           </Card>
         </div>
       </div>
+
+      {/* Modais */}
+      <WhatsAppConfigModal
+        isOpen={showConfigModal}
+        onClose={() => setShowConfigModal(false)}
+        config={config}
+        onSave={setConfig}
+      />
+
+      <WhatsAppTestMessage
+        isOpen={showTestModal}
+        onClose={() => setShowTestModal(false)}
+        onSend={handleTestMessage}
+        isSending={isSendingMessage}
+      />
     </DashboardLayout>
   );
 };
