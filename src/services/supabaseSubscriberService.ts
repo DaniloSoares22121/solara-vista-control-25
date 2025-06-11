@@ -55,7 +55,7 @@ export const subscriberService = {
 
     const { data, error } = await supabase
       .from('subscribers')
-      .insert([subscriberData])
+      .insert(subscriberData)
       .select()
       .single();
 
