@@ -42,7 +42,7 @@ const EnergyAccountForm = forwardRef<HTMLFormElement, EnergyAccountFormProps>(
     return (
       <Card>
         <CardHeader>
-          <CardTitle>3. Conta de Energia</CardTitle>
+          <CardTitle>2. Conta de Energia</CardTitle>
         </CardHeader>
         <CardContent>
           <Form {...form}>

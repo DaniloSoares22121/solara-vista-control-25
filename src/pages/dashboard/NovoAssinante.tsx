@@ -1,8 +1,9 @@
-
 import React, { useState, useRef } from 'react';
 import { ArrowLeft, Loader2, Save } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { useForm } from 'react-hook-form';
+import { Form } from '@/components/ui/form';
 import SubscriberForm from '@/components/forms/SubscriberForm';
 import EnergyAccountForm from '@/components/forms/EnergyAccountForm';
 import PlanContractForm from '@/components/forms/PlanContractForm';
@@ -10,7 +11,7 @@ import PlanDetailsForm from '@/components/forms/PlanDetailsForm';
 import NotificationSettingsForm from '@/components/forms/NotificationSettingsForm';
 import AttachmentsForm from '@/components/forms/AttachmentsForm';
 import { Step, Steps } from '@/components/ui/steps';
-import { SubscriberFormData, Address, PersonData, AdministratorData, EnergyAccount, PlanContract, PlanDetails, NotificationSettings } from '@/types/subscriber';
+import { SubscriberFormData } from '@/types/subscriber';
 import { useSubscribers } from '@/hooks/useSubscribers';
 
 interface NovoAssinanteProps {
@@ -148,28 +149,16 @@ const NovoAssinante = ({ onClose, initialData, onSubmit, isEditing = false }: No
     'Anexos',
   ];
 
+  // Formulário unificado para todos os dados
+  const form = useForm<SubscriberFormData>({
+    defaultValues: initialData || defaultFormData,
+    mode: 'onChange'
+  });
+
   const subscriberFormRef = useRef<HTMLFormElement>(null);
   const energyAccountFormRef = useRef<HTMLFormElement>(null);
   const planContractFormRef = useRef<HTMLFormElement>(null);
   const attachmentsFormRef = useRef<HTMLFormElement>(null);
-
-  // Inicializar com dados existentes se estiver editando
-  const [formData, setFormData] = useState<SubscriberFormData>(() => {
-    if (initialData) {
-      return {
-        concessionaria: initialData.concessionaria,
-        subscriber: initialData.subscriber,
-        administrator: initialData.administrator,
-        energyAccount: initialData.energyAccount,
-        planContract: initialData.planContract,
-        planDetails: initialData.planDetails,
-        notifications: initialData.notifications,
-        attachments: initialData.attachments || {}
-      };
-    }
-    
-    return defaultFormData;
-  });
 
   const validateForm = (step: number): boolean => {
     switch (step) {
@@ -209,35 +198,6 @@ const NovoAssinante = ({ onClose, initialData, onSubmit, isEditing = false }: No
     setCurrentStep((prev) => Math.max(prev - 1, 0));
   };
 
-  const handleSubscriberChange = (value: PersonData, concessionaria: string, administrator?: AdministratorData) => {
-    setFormData((prev) => ({ 
-      ...prev, 
-      subscriber: value,
-      concessionaria: concessionaria,
-      administrator: administrator
-    }));
-  };
-
-  const handleEnergyAccountChange = (value: EnergyAccount) => {
-    setFormData((prev) => ({ ...prev, energyAccount: value }));
-  };
-
-  const handlePlanContractChange = (value: PlanContract) => {
-    setFormData((prev) => ({ ...prev, planContract: value }));
-  };
-
-  const handlePlanDetailsChange = (value: PlanDetails) => {
-    setFormData((prev) => ({ ...prev, planDetails: value }));
-  };
-
-  const handleNotificationSettingsChange = (value: NotificationSettings) => {
-    setFormData((prev) => ({ ...prev, notifications: value }));
-  };
-
-  const handleAttachmentsChange = (value: SubscriberFormData['attachments']) => {
-    setFormData((prev) => ({ ...prev, attachments: value }));
-  };
-
   const handleSubmit = async () => {
     if (!validateAllForms()) {
       return;
@@ -245,6 +205,7 @@ const NovoAssinante = ({ onClose, initialData, onSubmit, isEditing = false }: No
 
     try {
       setIsSubmitting(true);
+      const formData = form.getValues();
       console.log('🚀 Dados do formulário antes de enviar:', JSON.stringify(formData, null, 2));
       
       if (isEditing && onSubmit) {
@@ -337,57 +298,75 @@ const NovoAssinante = ({ onClose, initialData, onSubmit, isEditing = false }: No
         </Steps>
 
         <div className="mt-6">
-          {currentStep === 0 && (
-            <SubscriberForm
-              ref={subscriberFormRef}
-              initialValues={formData.subscriber}
-              initialAdministrator={formData.administrator}
-              onChange={handleSubscriberChange}
-              concessionaria={formData.concessionaria}
-              isEditing={isEditing}
-            />
-          )}
-
-          {currentStep === 1 && (
-            <EnergyAccountForm
-              ref={energyAccountFormRef}
-              initialValues={formData.energyAccount}
-              onChange={handleEnergyAccountChange}
-              isEditing={isEditing}
-            />
-          )}
-
-          {currentStep === 2 && (
-            <div className="space-y-6">
-              <PlanContractForm
-                ref={planContractFormRef}
-                initialValues={formData.planContract}
-                onChange={handlePlanContractChange}
+          <Form {...form}>
+            {currentStep === 0 && (
+              <SubscriberForm
+                ref={subscriberFormRef}
+                initialValues={form.watch('subscriber')}
+                initialAdministrator={form.watch('administrator')}
+                onChange={(subscriberData, concessionaria, administrator) => {
+                  form.setValue('subscriber', subscriberData);
+                  form.setValue('concessionaria', concessionaria);
+                  if (administrator) {
+                    form.setValue('administrator', administrator);
+                  }
+                }}
+                concessionaria={form.watch('concessionaria')}
                 isEditing={isEditing}
               />
-              
-              <PlanDetailsForm
-                initialValues={formData.planDetails}
-                onChange={handlePlanDetailsChange}
-                isEditing={isEditing}
-              />
-              
-              <NotificationSettingsForm
-                initialValues={formData.notifications}
-                onChange={handleNotificationSettingsChange}
-                isEditing={isEditing}
-              />
-            </div>
-          )}
+            )}
 
-          {currentStep === 3 && (
-            <AttachmentsForm
-              ref={attachmentsFormRef}
-              initialValues={formData.attachments}
-              onChange={handleAttachmentsChange}
-              isEditing={isEditing}
-            />
-          )}
+            {currentStep === 1 && (
+              <EnergyAccountForm
+                ref={energyAccountFormRef}
+                initialValues={form.watch('energyAccount')}
+                onChange={(energyAccount) => {
+                  form.setValue('energyAccount', energyAccount);
+                }}
+                isEditing={isEditing}
+              />
+            )}
+
+            {currentStep === 2 && (
+              <div className="space-y-6">
+                <PlanContractForm
+                  ref={planContractFormRef}
+                  initialValues={form.watch('planContract')}
+                  onChange={(planContract) => {
+                    form.setValue('planContract', planContract);
+                  }}
+                  isEditing={isEditing}
+                />
+                
+                <PlanDetailsForm
+                  initialValues={form.watch('planDetails')}
+                  onChange={(planDetails) => {
+                    form.setValue('planDetails', planDetails);
+                  }}
+                  isEditing={isEditing}
+                />
+                
+                <NotificationSettingsForm
+                  initialValues={form.watch('notifications')}
+                  onChange={(notifications) => {
+                    form.setValue('notifications', notifications);
+                  }}
+                  isEditing={isEditing}
+                />
+              </div>
+            )}
+
+            {currentStep === 3 && (
+              <AttachmentsForm
+                ref={attachmentsFormRef}
+                initialValues={form.watch('attachments')}
+                onChange={(attachments) => {
+                  form.setValue('attachments', attachments);
+                }}
+                isEditing={isEditing}
+              />
+            )}
+          </Form>
         </div>
 
         <div className="flex justify-between mt-6">

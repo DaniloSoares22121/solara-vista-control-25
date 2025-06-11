@@ -21,13 +21,15 @@ const ContaEnergiaForm = ({ form }: ContaEnergiaFormProps) => {
   const realizarTroca = form.watch('energyAccount.realizarTrocaTitularidade');
   const tipoContaOriginal = form.watch('energyAccount.originalAccount.type');
   
-  // Puxar dados do assinante para auto-preenchimento
-  const subscriberData = form.watch('subscriber');
-  const subscriberAddress = form.watch('subscriber.address');
+  // Acessar dados do formulário completo para pegar dados do assinante
+  const allFormData = form.watch();
+  const subscriberData = allFormData.subscriber;
+  const subscriberAddress = allFormData.subscriber?.address;
   
   console.log('ContaEnergiaForm - realizarTroca:', realizarTroca);
   console.log('ContaEnergiaForm - tipoContaOriginal:', tipoContaOriginal);
   console.log('ContaEnergiaForm - subscriberData:', subscriberData);
+  console.log('ContaEnergiaForm - allFormData:', allFormData);
 
   // Auto-preencher campos sempre que o subscriberData mudar
   useEffect(() => {
