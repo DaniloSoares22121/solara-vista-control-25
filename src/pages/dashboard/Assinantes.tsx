@@ -16,12 +16,12 @@ import {
   AlertDialogHeader, 
   AlertDialogTitle 
 } from '@/components/ui/alert-dialog';
-import { Search, Plus, Filter, User, Users, MapPin, Activity, Download, Loader2, Phone, Mail, Calendar, Zap, Edit, Trash2 } from 'lucide-react';
+import { Search, Plus, Filter, User, Users, MapPin, Activity, Download, Loader2 } from 'lucide-react';
 import { useSubscribers } from '@/hooks/useSubscribers';
 import { SubscriberFormData } from '@/types/subscriber';
 import { toast } from 'sonner';
 import NovoAssinante from './NovoAssinante';
-import SubscriberDetails from '@/components/subscribers/SubscriberDetails';
+import SubscriberCard from '@/components/subscribers/SubscriberCard';
 import EditSubscriber from '@/components/subscribers/EditSubscriber';
 
 const Assinantes = () => {
@@ -69,25 +69,8 @@ const Assinantes = () => {
   // Calcular estatísticas
   const totalSubscribers = subscribers.length;
   const activeSubscribers = subscribers.filter(sub => sub.planContract.modalidadeCompensacao).length;
-  const totalUCs = subscribers.reduce((acc, sub) => acc + 1, 0); // Por enquanto 1 UC por assinante
-  const totalEconomy = 0; // Implementar cálculo de economia depois
-
-  // Formatação de data
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('pt-BR');
-  };
-
-  // Formatação de endereço
-  const formatAddress = (address: any) => {
-    if (!address) return 'Endereço não informado';
-    return `${address.endereco}, ${address.numero}${address.complemento ? `, ${address.complemento}` : ''} - ${address.bairro}, ${address.cidade}/${address.estado}`;
-  };
-
-  // Formatação de modalidade
-  const formatModalidade = (modalidade: string) => {
-    return modalidade === 'autoconsumo' ? 'Autoconsumo Remoto' : 'Geração Compartilhada';
-  };
+  const totalUCs = subscribers.reduce((acc, sub) => acc + 1, 0);
+  const totalEconomy = 0;
 
   return (
     <DashboardLayout>
@@ -264,114 +247,15 @@ const Assinantes = () => {
             </CardContent>
           </Card>
         ) : (
-          // Lista de assinantes com informações detalhadas e ações
+          // Lista de assinantes usando o novo card component
           <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-6">
             {filteredSubscribers.map((subscriber) => (
-              <Card key={subscriber.id} className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 bg-white">
-                <CardHeader className="border-b border-gray-100 pb-4">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <CardTitle className="text-lg font-bold text-gray-900 mb-1">
-                        {subscriber.subscriber.name}
-                      </CardTitle>
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <MapPin className="w-4 h-4" />
-                        <span className="font-medium">UC: {subscriber.energyAccount.originalAccount.uc}</span>
-                      </div>
-                    </div>
-                    <Badge 
-                      variant="secondary" 
-                      className={`${
-                        subscriber.planContract.modalidadeCompensacao === 'autoconsumo' 
-                          ? 'bg-blue-100 text-blue-700 border-blue-200' 
-                          : 'bg-green-100 text-green-700 border-green-200'
-                      }`}
-                    >
-                      {formatModalidade(subscriber.planContract.modalidadeCompensacao)}
-                    </Badge>
-                  </div>
-                </CardHeader>
-
-                <CardContent className="pt-4 space-y-4">
-                  {/* Contato */}
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2 text-sm">
-                      <Phone className="w-4 h-4 text-gray-400 flex-shrink-0" />
-                      <span className="text-gray-900">{subscriber.subscriber.telefone}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm">
-                      <Mail className="w-4 h-4 text-gray-400 flex-shrink-0" />
-                      <span className="text-gray-900 break-all">{subscriber.subscriber.email}</span>
-                    </div>
-                  </div>
-
-                  {/* Endereço */}
-                  <div className="border-t border-gray-100 pt-3">
-                    <div className="flex items-start gap-2 text-sm">
-                      <MapPin className="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" />
-                      <span className="text-gray-900 leading-relaxed">
-                        {formatAddress(subscriber.subscriber.address)}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Plano e Detalhes */}
-                  <div className="border-t border-gray-100 pt-3 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Zap className="w-4 h-4 text-yellow-500" />
-                        <span className="text-sm font-medium text-gray-700">Plano Contratado</span>
-                      </div>
-                      <span className="text-sm font-bold text-gray-900">
-                        {subscriber.planContract.kwhContratado.toLocaleString()} kWh/mês
-                      </span>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Calendar className="w-4 h-4 text-blue-500" />
-                        <span className="text-sm font-medium text-gray-700">Desde</span>
-                      </div>
-                      <span className="text-sm font-bold text-gray-900">
-                        {formatDate(subscriber.planContract.dataAdesao)}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Informações adicionais */}
-                  <div className="border-t border-gray-100 pt-3">
-                    <div className="flex items-center justify-between text-xs text-gray-500">
-                      <span>Desconto: {subscriber.planContract.desconto}%</span>
-                      <span>Faixa: {subscriber.planContract.faixaConsumo}</span>
-                    </div>
-                  </div>
-
-                  {/* Ações */}
-                  <div className="border-t border-gray-100 pt-3 flex gap-2 justify-end">
-                    <SubscriberDetails 
-                      subscriber={subscriber}
-                      onEdit={handleEdit}
-                      onDelete={(id) => setDeletingSubscriberId(id)}
-                    />
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => handleEdit(subscriber)}
-                    >
-                      <Edit className="w-4 h-4 mr-2" />
-                      Editar
-                    </Button>
-                    <Button 
-                      variant="destructive" 
-                      size="sm"
-                      onClick={() => setDeletingSubscriberId(subscriber.id)}
-                    >
-                      <Trash2 className="w-4 h-4 mr-2" />
-                      Excluir
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
+              <SubscriberCard
+                key={subscriber.id}
+                subscriber={subscriber}
+                onEdit={handleEdit}
+                onDelete={setDeletingSubscriberId}
+              />
             ))}
           </div>
         )}
