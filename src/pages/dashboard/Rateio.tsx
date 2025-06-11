@@ -5,10 +5,58 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Plus, Calculator, Users, Zap } from 'lucide-react';
 import { useRateio } from '@/hooks/useRateio';
+import RateioForm from '@/components/forms/RateioForm';
+import { RateioFormData, RateioData } from '@/types/rateio';
 
 const Rateio = () => {
   const { rateios, isLoading, error, createRateio } = useRateio();
   const [showForm, setShowForm] = useState(false);
+
+  const handleCreateRateio = async (formData: RateioFormData) => {
+    // Convert form data to RateioData format
+    const rateioData: Omit<RateioData, 'id'> = {
+      month: formData.date.month.toString().padStart(2, '0'),
+      year: formData.date.year.toString(),
+      status: 'pending',
+      totalAmount: 0, // Will be calculated later
+      subscribers: [], // Will be populated based on subscriberId
+      generatorId: formData.generatorId,
+      type: formData.type,
+      date: formData.date,
+      expectedGeneration: formData.expectedGeneration,
+    };
+
+    const result = await createRateio(rateioData);
+    if (result.success) {
+      setShowForm(false);
+    }
+  };
+
+  if (showForm) {
+    return (
+      <DashboardLayout>
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Novo Rateio</h1>
+              <p className="text-gray-600">Crie um novo rateio de energia</p>
+            </div>
+            <Button
+              onClick={() => setShowForm(false)}
+              variant="outline"
+            >
+              Voltar para Lista
+            </Button>
+          </div>
+          
+          <RateioForm 
+            onSubmit={handleCreateRateio}
+            onCancel={() => setShowForm(false)}
+          />
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout>
@@ -89,19 +137,46 @@ const Rateio = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-center py-12">
-                <Calculator className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  Nenhum rateio cadastrado
-                </h3>
-                <p className="text-gray-600 mb-6">
-                  Comece criando seu primeiro rateio de energia.
-                </p>
-                <Button onClick={() => setShowForm(true)} className="flex items-center space-x-2">
-                  <Plus className="w-4 h-4" />
-                  <span>Criar Primeiro Rateio</span>
-                </Button>
-              </div>
+              {rateios.length === 0 ? (
+                <div className="text-center py-12">
+                  <Calculator className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    Nenhum rateio cadastrado
+                  </h3>
+                  <p className="text-gray-600 mb-6">
+                    Comece criando seu primeiro rateio de energia.
+                  </p>
+                  <Button onClick={() => setShowForm(true)} className="flex items-center space-x-2">
+                    <Plus className="w-4 h-4" />
+                    <span>Criar Primeiro Rateio</span>
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {rateios.map((rateio) => (
+                    <div key={rateio.id} className="border rounded-lg p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h4 className="font-semibold">
+                            Rateio {rateio.month}/{rateio.year}
+                          </h4>
+                          <p className="text-sm text-gray-600">
+                            Status: {rateio.status}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-semibold">
+                            R$ {rateio.totalAmount.toFixed(2)}
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            {rateio.subscribers.length} assinantes
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
         )}
