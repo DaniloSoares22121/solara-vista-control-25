@@ -6,7 +6,7 @@ import { MaskedInput } from '@/components/ui/masked-input';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { UseFormReturn } from 'react-hook-form';
-import { EnergyAccount } from '@/types/subscriber';
+import { EnergyAccount, Address } from '@/types/subscriber';
 import AddressForm from '../AddressForm';
 
 interface EnergyAccountFormProps {
@@ -17,6 +17,21 @@ interface EnergyAccountFormProps {
 }
 
 const EnergyAccountForm = ({ data, onUpdate, onCepLookup, form }: EnergyAccountFormProps) => {
+  const handleAddressChange = (addressUpdate: Partial<Address>) => {
+    const currentAddress = data.address || {
+      cep: '',
+      street: '',
+      number: '',
+      complement: '',
+      neighborhood: '',
+      city: '',
+      state: '',
+    };
+    
+    const newAddress = { ...currentAddress, ...addressUpdate };
+    onUpdate({ address: newAddress });
+  };
+
   return (
     <div className="space-y-6">
       <h3 className="text-lg font-semibold">4. Cadastro Original da Conta de Energia</h3>
@@ -167,7 +182,7 @@ const EnergyAccountForm = ({ data, onUpdate, onCepLookup, form }: EnergyAccountF
           prefix="energyAccount.address" 
           title="Endereço da Conta de Energia"
           onCepChange={onCepLookup}
-          onAddressChange={(address) => onUpdate({ address })}
+          onAddressChange={handleAddressChange}
         />
       </div>
     </div>

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
@@ -6,7 +5,7 @@ import { MaskedInput } from '@/components/ui/masked-input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { UseFormReturn } from 'react-hook-form';
-import { CompanyData, AdministratorData } from '@/types/subscriber';
+import { CompanyData, AdministratorData, Address } from '@/types/subscriber';
 import AddressForm from '../AddressForm';
 import ContactsSection from './ContactsSection';
 
@@ -31,6 +30,36 @@ const CompanyDataForm = ({
   onRemoveContact,
   form
 }: CompanyDataFormProps) => {
+  const handleCompanyAddressChange = (addressUpdate: Partial<Address>) => {
+    const currentAddress = companyData?.address || {
+      cep: '',
+      street: '',
+      number: '',
+      complement: '',
+      neighborhood: '',
+      city: '',
+      state: '',
+    };
+    
+    const newAddress = { ...currentAddress, ...addressUpdate };
+    onUpdateCompany({ address: newAddress });
+  };
+
+  const handleAdministratorAddressChange = (addressUpdate: Partial<Address>) => {
+    const currentAddress = administratorData?.address || {
+      cep: '',
+      street: '',
+      number: '',
+      complement: '',
+      neighborhood: '',
+      city: '',
+      state: '',
+    };
+    
+    const newAddress = { ...currentAddress, ...addressUpdate };
+    onUpdateAdministrator({ address: newAddress });
+  };
+
   return (
     <div className="space-y-8">
       {/* Dados da Empresa */}
@@ -174,7 +203,7 @@ const CompanyDataForm = ({
           prefix="companyData.address" 
           title="Endereço da Empresa"
           onCepChange={(cep) => onCepLookup(cep, 'company')}
-          onAddressChange={(address) => onUpdateCompany({ address })}
+          onAddressChange={handleCompanyAddressChange}
         />
 
         <FormField
@@ -378,7 +407,7 @@ const CompanyDataForm = ({
           prefix="administratorData.address" 
           title="Endereço Residencial do Administrador"
           onCepChange={(cep) => onCepLookup(cep, 'administrator')}
-          onAddressChange={(address) => onUpdateAdministrator({ address })}
+          onAddressChange={handleAdministratorAddressChange}
         />
       </div>
     </div>
@@ -386,3 +415,5 @@ const CompanyDataForm = ({
 };
 
 export default CompanyDataForm;
+
+}

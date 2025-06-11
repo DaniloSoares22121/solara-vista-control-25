@@ -106,28 +106,64 @@ export const useSubscriberForm = () => {
       switch (addressType) {
         case 'personal':
           if (formData.personalData) {
+            const currentAddress = formData.personalData.address || {
+              cep: '',
+              street: '',
+              number: '',
+              complement: '',
+              neighborhood: '',
+              city: '',
+              state: '',
+            };
             updateFormData('personalData', {
-              address: { ...formData.personalData.address, ...addressUpdate }
+              address: { ...currentAddress, ...addressUpdate }
             });
           }
           break;
         case 'company':
           if (formData.companyData) {
+            const currentAddress = formData.companyData.address || {
+              cep: '',
+              street: '',
+              number: '',
+              complement: '',
+              neighborhood: '',
+              city: '',
+              state: '',
+            };
             updateFormData('companyData', {
-              address: { ...formData.companyData.address, ...addressUpdate }
+              address: { ...currentAddress, ...addressUpdate }
             });
           }
           break;
         case 'administrator':
           if (formData.administratorData) {
+            const currentAddress = formData.administratorData.address || {
+              cep: '',
+              street: '',
+              number: '',
+              complement: '',
+              neighborhood: '',
+              city: '',
+              state: '',
+            };
             updateFormData('administratorData', {
-              address: { ...formData.administratorData.address, ...addressUpdate }
+              address: { ...currentAddress, ...addressUpdate }
             });
           }
           break;
         case 'energy':
+          const currentEnergyAddress = formData.energyAccount.address || {
+            cep: '',
+            street: '',
+            number: '',
+            complement: '',
+            neighborhood: '',
+            city: '',
+            state: '',
+          };
           updateFormData('energyAccount', {
-            address: { ...formData.energyAccount.address, ...addressUpdate }
+            address: { ...currentEnergyAddress, ...addressUpdate }
           });
           break;
       }
