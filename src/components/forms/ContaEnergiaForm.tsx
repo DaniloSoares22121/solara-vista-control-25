@@ -23,6 +23,7 @@ const ContaEnergiaForm = ({ form, subscriberData }: ContaEnergiaFormProps) => {
   
   const hasAutoFilledRef = useRef(false);
   const isFillingRef = useRef(false);
+  const clickCountRef = useRef(0);
   const realizarTroca = form.watch('energyAccount.realizarTrocaTitularidade');
   const tipoContaOriginal = form.watch('energyAccount.originalAccount.type');
   
@@ -33,7 +34,7 @@ const ContaEnergiaForm = ({ form, subscriberData }: ContaEnergiaFormProps) => {
       return;
     }
 
-    console.log('Preenchendo conta de energia com dados do assinante...');
+    console.log(`Preenchendo conta de energia com dados do assinante... (click ${clickCountRef.current + 1})`);
     isFillingRef.current = true;
     
     // Usar batch para definir todos os valores de uma vez
@@ -90,29 +91,57 @@ const ContaEnergiaForm = ({ form, subscriberData }: ContaEnergiaFormProps) => {
       }
     }
 
-    // Aplicar todos os valores de uma vez sem triggering individual
+    // Aplicar todos os valores de uma vez
     Object.entries(updates).forEach(([path, value]) => {
-      form.setValue(path as any, value, { shouldValidate: false, shouldDirty: true });
+      form.setValue(path as any, value, { shouldValidate: true, shouldDirty: true, shouldTouch: true });
     });
 
     // Validar tudo de uma vez no final
     setTimeout(() => {
       form.trigger();
       isFillingRef.current = false;
-    }, 200);
+      clickCountRef.current++;
+      
+      // Se ainda não completou 5 cliques, continuar
+      if (clickCountRef.current < 5) {
+        setTimeout(() => {
+          preencherComDadosAssinante();
+        }, 500);
+      }
+    }, 300);
   }, [subscriberData, form]);
+
+  // Automação para clicar 5 vezes automaticamente
+  const executarAutomacao = useCallback(() => {
+    if (!subscriberData || hasAutoFilledRef.current) {
+      return;
+    }
+    
+    console.log('Iniciando automação de 5 cliques...');
+    hasAutoFilledRef.current = true;
+    clickCountRef.current = 0;
+    
+    // Aguardar um momento e começar a automação
+    setTimeout(() => {
+      preencherComDadosAssinante();
+    }, 1000);
+  }, [subscriberData, preencherComDadosAssinante]);
 
   // Preencher automaticamente assim que o componente monta e tem dados do assinante
   useEffect(() => {
-    if (subscriberData && !hasAutoFilledRef.current && !isFillingRef.current) {
-      console.log('Auto-preenchendo na montagem do componente...');
-      hasAutoFilledRef.current = true;
-      // Usar setTimeout de 1 segundo para garantir que o DOM está pronto
-      setTimeout(() => {
-        preencherComDadosAssinante();
-      }, 1000);
+    if (subscriberData && !hasAutoFilledRef.current) {
+      console.log('Auto-preenchendo na montagem do componente com automação...');
+      executarAutomacao();
     }
-  }, [subscriberData, preencherComDadosAssinante]);
+  }, [subscriberData, executarAutomacao]);
+
+  // Função manual do botão (reinicia a automação)
+  const handleManualClick = () => {
+    console.log('Clique manual - reiniciando automação...');
+    hasAutoFilledRef.current = false;
+    clickCountRef.current = 0;
+    executarAutomacao();
+  };
 
   return (
     <div className="space-y-6">
@@ -123,12 +152,12 @@ const ContaEnergiaForm = ({ form, subscriberData }: ContaEnergiaFormProps) => {
             type="button"
             variant="outline" 
             size="sm"
-            onClick={preencherComDadosAssinante}
+            onClick={handleManualClick}
             className="flex items-center gap-2"
             disabled={isFillingRef.current}
           >
             <Copy className="w-4 h-4" />
-            Preencher com dados do assinante
+            {isFillingRef.current ? 'Preenchendo...' : 'Preencher com dados do assinante'}
           </Button>
         )}
       </div>
