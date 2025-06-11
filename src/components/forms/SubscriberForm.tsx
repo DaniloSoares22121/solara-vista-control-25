@@ -1,7 +1,7 @@
 
 import React, { forwardRef, useImperativeHandle, useRef, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
-import { PersonData, Contact } from '@/types/subscriber';
+import { PersonData, Contact, AdministratorData } from '@/types/subscriber';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -12,16 +12,18 @@ import DadosPessoaJuridicaForm from './DadosPessoaJuridicaForm';
 
 interface SubscriberFormProps {
   initialValues: PersonData;
-  onChange: (value: PersonData, concessionaria: string) => void;
+  initialAdministrator?: AdministratorData;
+  onChange: (value: PersonData, concessionaria: string, administrator?: AdministratorData) => void;
   isEditing?: boolean;
   concessionaria?: string;
 }
 
 const SubscriberForm = forwardRef<HTMLFormElement, SubscriberFormProps>(
-  ({ initialValues, onChange, isEditing, concessionaria = '' }, ref) => {
+  ({ initialValues, initialAdministrator, onChange, isEditing, concessionaria = '' }, ref) => {
     const formRef = useRef<HTMLFormElement>(null);
     const [contacts, setContacts] = React.useState<Contact[]>(initialValues.contacts || []);
     const [currentConcessionaria, setCurrentConcessionaria] = React.useState(concessionaria);
+    const [administrator, setAdministrator] = React.useState<AdministratorData | undefined>(initialAdministrator);
 
     useImperativeHandle(ref, () => formRef.current!);
 
@@ -33,11 +35,14 @@ const SubscriberForm = forwardRef<HTMLFormElement, SubscriberFormProps>(
     const watchedValues = form.watch();
     const subscriberType = form.watch('type');
 
+    console.log('SubscriberForm - subscriberType:', subscriberType);
+    console.log('SubscriberForm - watchedValues:', watchedValues);
+
     // Atualizar dados quando form mudar
     useEffect(() => {
       const currentData = { ...watchedValues, contacts };
-      onChange(currentData, currentConcessionaria);
-    }, [watchedValues, contacts, currentConcessionaria, onChange]);
+      onChange(currentData, currentConcessionaria, administrator);
+    }, [watchedValues, contacts, currentConcessionaria, administrator, onChange]);
 
     // Atualizar form quando initialValues mudar
     useEffect(() => {
@@ -45,8 +50,17 @@ const SubscriberForm = forwardRef<HTMLFormElement, SubscriberFormProps>(
       setContacts(initialValues.contacts || []);
     }, [initialValues, form]);
 
+    // Atualizar administrator quando initialAdministrator mudar
+    useEffect(() => {
+      setAdministrator(initialAdministrator);
+    }, [initialAdministrator]);
+
     const handleContactsChange = (newContacts: Contact[]) => {
       setContacts(newContacts);
+    };
+
+    const handleAdministratorChange = (newAdministrator: AdministratorData | undefined) => {
+      setAdministrator(newAdministrator);
     };
 
     const handleConcessionariaChange = (value: string) => {
@@ -88,7 +102,10 @@ const SubscriberForm = forwardRef<HTMLFormElement, SubscriberFormProps>(
                       <FormControl>
                         <RadioGroup
                           value={field.value}
-                          onValueChange={field.onChange}
+                          onValueChange={(value) => {
+                            console.log('Radio button changed to:', value);
+                            field.onChange(value);
+                          }}
                           className="flex gap-6"
                         >
                           <div className="flex items-center space-x-2">
@@ -119,6 +136,8 @@ const SubscriberForm = forwardRef<HTMLFormElement, SubscriberFormProps>(
                   form={form} 
                   contacts={contacts}
                   onContactsChange={handleContactsChange}
+                  administrator={administrator}
+                  onAdministratorChange={handleAdministratorChange}
                 />
               )}
 

@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input';
 import { MaskedInput } from '@/components/ui/masked-input';
 import { Textarea } from '@/components/ui/textarea';
 import { UseFormReturn } from 'react-hook-form';
+import { AdministratorData } from '@/types/subscriber';
 import AddressForm from './AddressForm';
 import ContactsForm from './ContactsForm';
 import DadosAdministradorForm from './DadosAdministradorForm';
@@ -12,9 +13,17 @@ interface DadosPessoaJuridicaFormProps {
   form: UseFormReturn<any>;
   contacts: any[];
   onContactsChange: (contacts: any[]) => void;
+  administrator?: AdministratorData;
+  onAdministratorChange: (administrator: AdministratorData | undefined) => void;
 }
 
-const DadosPessoaJuridicaForm = ({ form, contacts, onContactsChange }: DadosPessoaJuridicaFormProps) => {
+const DadosPessoaJuridicaForm = ({ 
+  form, 
+  contacts, 
+  onContactsChange, 
+  administrator,
+  onAdministratorChange 
+}: DadosPessoaJuridicaFormProps) => {
   return (
     <div className="space-y-6">
       <h3 className="text-lg font-semibold">3B. Dados do Assinante (Pessoa Jurídica)</h3>
@@ -22,7 +31,7 @@ const DadosPessoaJuridicaForm = ({ form, contacts, onContactsChange }: DadosPess
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <FormField
           control={form.control}
-          name="subscriber.cpfCnpj"
+          name="cpfCnpj"
           render={({ field }) => (
             <FormItem>
               <FormLabel>CNPJ *</FormLabel>
@@ -40,7 +49,7 @@ const DadosPessoaJuridicaForm = ({ form, contacts, onContactsChange }: DadosPess
 
         <FormField
           control={form.control}
-          name="subscriber.numeroParceiroNegocio"
+          name="numeroParceiroNegocio"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Número Parceiro de Negócio *</FormLabel>
@@ -54,7 +63,7 @@ const DadosPessoaJuridicaForm = ({ form, contacts, onContactsChange }: DadosPess
 
         <FormField
           control={form.control}
-          name="subscriber.razaoSocial"
+          name="razaoSocial"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Razão Social *</FormLabel>
@@ -68,7 +77,7 @@ const DadosPessoaJuridicaForm = ({ form, contacts, onContactsChange }: DadosPess
 
         <FormField
           control={form.control}
-          name="subscriber.nomeFantasia"
+          name="nomeFantasia"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Nome Fantasia</FormLabel>
@@ -82,7 +91,7 @@ const DadosPessoaJuridicaForm = ({ form, contacts, onContactsChange }: DadosPess
 
         <FormField
           control={form.control}
-          name="subscriber.telefone"
+          name="telefone"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Telefone da empresa *</FormLabel>
@@ -100,7 +109,7 @@ const DadosPessoaJuridicaForm = ({ form, contacts, onContactsChange }: DadosPess
 
         <FormField
           control={form.control}
-          name="subscriber.email"
+          name="email"
           render={({ field }) => (
             <FormItem>
               <FormLabel>E-mail *</FormLabel>
@@ -113,11 +122,11 @@ const DadosPessoaJuridicaForm = ({ form, contacts, onContactsChange }: DadosPess
         />
       </div>
 
-      <AddressForm form={form} prefix="subscriber.address" title="Endereço da Empresa" />
+      <AddressForm form={form} prefix="address" title="Endereço da Empresa" />
 
       <FormField
         control={form.control}
-        name="subscriber.observacoes"
+        name="observacoes"
         render={({ field }) => (
           <FormItem>
             <FormLabel>Observações</FormLabel>
@@ -131,7 +140,10 @@ const DadosPessoaJuridicaForm = ({ form, contacts, onContactsChange }: DadosPess
 
       <ContactsForm contacts={contacts} onChange={onContactsChange} />
 
-      <DadosAdministradorForm form={form} />
+      <DadosAdministradorForm 
+        administrator={administrator} 
+        onChange={onAdministratorChange} 
+      />
     </div>
   );
 };
