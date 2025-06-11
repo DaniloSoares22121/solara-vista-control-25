@@ -1,13 +1,26 @@
+
 import React from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { Form } from '@/components/ui/form';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight, Save, CheckCircle, Clock, Users, FileText, Zap, Settings, Bell, Paperclip, Building2 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 import { useSubscriberForm } from '@/hooks/useSubscriberForm';
+import { 
+  Building, 
+  User, 
+  Zap, 
+  FileText, 
+  CreditCard, 
+  Settings, 
+  Bell, 
+  Paperclip,
+  ArrowLeft, 
+  ArrowRight,
+  CheckCircle,
+  AlertCircle
+} from 'lucide-react';
+
+// Import step components
 import ConcessionariaSelector from './ConcessionariaSelector';
 import SubscriberTypeSelector from './SubscriberTypeSelector';
 import PersonalDataForm from './PersonalDataForm';
@@ -19,12 +32,17 @@ import PlanDetailsForm from './PlanDetailsForm';
 import NotificationSettingsForm from './NotificationSettingsForm';
 import AttachmentsForm from './AttachmentsForm';
 
-const schema = z.object({
-  concessionaria: z.string().min(1, 'Concessionária é obrigatória'),
-  subscriberType: z.enum(['person', 'company'], {
-    required_error: 'Tipo de assinante é obrigatório',
-  }),
-});
+const steps = [
+  { id: 1, title: 'Concessionária', icon: Building },
+  { id: 2, title: 'Tipo', icon: User },
+  { id: 3, title: 'Dados', icon: FileText },
+  { id: 4, title: 'Conta', icon: Zap },
+  { id: 5, title: 'Titularidade', icon: CreditCard },
+  { id: 6, title: 'Plano', icon: Settings },
+  { id: 7, title: 'Detalhes', icon: Settings },
+  { id: 8, title: 'Notificações', icon: Bell },
+  { id: 9, title: 'Anexos', icon: Paperclip },
+];
 
 const SubscriberForm = () => {
   const {
@@ -41,47 +59,29 @@ const SubscriberForm = () => {
     submitForm,
   } = useSubscriberForm();
 
-  const form = useForm({
-    resolver: zodResolver(schema),
-    defaultValues: formData,
-    mode: 'onChange',
-  });
-
-  const totalSteps = 9;
-  const progress = (currentStep / totalSteps) * 100;
-
-  const stepTitles = [
-    { title: 'Concessionária', icon: Building2, color: 'from-emerald-500 to-green-600' },
-    { title: 'Tipo de Assinante', icon: Users, color: 'from-blue-500 to-blue-600' },
-    { title: 'Dados do Assinante', icon: FileText, color: 'from-indigo-500 to-indigo-600' },
-    { title: 'Conta de Energia', icon: Zap, color: 'from-amber-500 to-yellow-500' },
-    { title: 'Troca de Titularidade', icon: Clock, color: 'from-teal-500 to-cyan-500' },
-    { title: 'Contratação do Plano', icon: CheckCircle, color: 'from-green-500 to-emerald-600' },
-    { title: 'Detalhes do Plano', icon: Settings, color: 'from-slate-500 to-gray-600' },
-    { title: 'Notificações', icon: Bell, color: 'from-orange-500 to-red-500' },
-    { title: 'Anexos', icon: Paperclip, color: 'from-violet-500 to-purple-600' },
-  ];
-
-  const currentStepInfo = stepTitles[currentStep - 1];
-  const IconComponent = currentStepInfo.icon;
+  const progress = ((currentStep) / steps.length) * 100;
+  const canProceed = validateStep(currentStep);
 
   const handleNext = () => {
-    if (validateStep(currentStep)) {
-      setCurrentStep(Math.min(currentStep + 1, totalSteps));
+    if (canProceed && currentStep < steps.length) {
+      setCurrentStep(currentStep + 1);
     }
   };
 
   const handlePrevious = () => {
-    setCurrentStep(Math.max(currentStep - 1, 1));
-  };
-
-  const handleSubmit = async () => {
-    if (validateStep(currentStep) && currentStep === totalSteps) {
-      await submitForm();
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
     }
   };
 
-  const renderStepContent = () => {
+  const handleSubmit = async () => {
+    const result = await submitForm();
+    if (result.success) {
+      // Redirecionar ou mostrar sucesso
+    }
+  };
+
+  const renderCurrentStep = () => {
     switch (currentStep) {
       case 1:
         return (
@@ -102,10 +102,9 @@ const SubscriberForm = () => {
           <PersonalDataForm
             data={formData.personalData}
             onUpdate={(data) => updateFormData('personalData', data)}
-            onCepLookup={(cep) => handleCepLookup(cep, 'personal')}
+            onCepChange={(cep) => handleCepLookup(cep, 'personal')}
             onAddContact={() => addContact('personal')}
             onRemoveContact={(id) => removeContact('personal', id)}
-            form={form}
           />
         ) : (
           <CompanyDataForm
@@ -113,10 +112,9 @@ const SubscriberForm = () => {
             administratorData={formData.administratorData}
             onUpdateCompany={(data) => updateFormData('companyData', data)}
             onUpdateAdministrator={(data) => updateFormData('administratorData', data)}
-            onCepLookup={handleCepLookup}
+            onCepChange={(cep, type) => handleCepLookup(cep, type)}
             onAddContact={() => addContact('company')}
             onRemoveContact={(id) => removeContact('company', id)}
-            form={form}
           />
         );
       case 4:
@@ -124,9 +122,9 @@ const SubscriberForm = () => {
           <EnergyAccountForm
             data={formData.energyAccount}
             onUpdate={(data) => updateFormData('energyAccount', data)}
-            onCepLookup={(cep) => handleCepLookup(cep, 'energy')}
+            onCepChange={(cep) => handleCepLookup(cep, 'energy')}
             onAutoFill={autoFillEnergyAccount}
-            form={form}
+            subscriberType={formData.subscriberType}
           />
         );
       case 5:
@@ -134,7 +132,6 @@ const SubscriberForm = () => {
           <TitleTransferForm
             data={formData.titleTransfer}
             onUpdate={(data) => updateFormData('titleTransfer', data)}
-            form={form}
           />
         );
       case 6:
@@ -142,7 +139,6 @@ const SubscriberForm = () => {
           <PlanContractForm
             data={formData.planContract}
             onUpdate={(data) => updateFormData('planContract', data)}
-            form={form}
           />
         );
       case 7:
@@ -150,7 +146,6 @@ const SubscriberForm = () => {
           <PlanDetailsForm
             data={formData.planDetails}
             onUpdate={(data) => updateFormData('planDetails', data)}
-            form={form}
           />
         );
       case 8:
@@ -158,17 +153,15 @@ const SubscriberForm = () => {
           <NotificationSettingsForm
             data={formData.notificationSettings}
             onUpdate={(data) => updateFormData('notificationSettings', data)}
-            form={form}
           />
         );
       case 9:
         return (
           <AttachmentsForm
             data={formData.attachments}
-            subscriberType={formData.subscriberType}
-            willTransfer={formData.titleTransfer.willTransfer}
             onUpdate={(data) => updateFormData('attachments', data)}
-            form={form}
+            subscriberType={formData.subscriberType}
+            willTransferTitle={formData.titleTransfer.willTransfer}
           />
         );
       default:
@@ -177,173 +170,167 @@ const SubscriberForm = () => {
   };
 
   return (
-    <div className="max-w-5xl mx-auto space-y-8 p-6">
-      {/* Enhanced Header with Solar Theme */}
-      <div className="relative overflow-hidden rounded-3xl">
-        <div className="solar-gradient p-8 text-white relative">
-          <div className="absolute inset-0 bg-black/10"></div>
-          <div className="relative z-10">
-            <div className="text-center mb-6">
-              <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-white/20 backdrop-blur-sm mb-4 floating-animation">
-                <IconComponent className="w-10 h-10 text-white" />
-              </div>
-              <h1 className="text-4xl font-bold mb-2">Cadastro de Assinante</h1>
-              <p className="text-white/90 text-lg">Energia solar para um futuro sustentável</p>
+    <div className="min-h-screen bg-gray-50">
+      {/* Progress Header */}
+      <div className="bg-white border-b border-gray-200 shadow-sm">
+        <div className="max-w-6xl mx-auto px-6 py-4">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">Novo Assinante</h1>
+              <p className="text-gray-600">Etapa {currentStep} de {steps.length}</p>
             </div>
-            
-            {/* Enhanced Progress Section */}
-            <div className="space-y-4">
-              <div className="flex justify-between items-center text-sm">
-                <span className="font-medium">Etapa {currentStep} de {totalSteps}</span>
-                <span className="font-medium">{Math.round(progress)}% concluído</span>
-              </div>
-              
-              <div className="relative">
-                <Progress 
-                  value={progress} 
-                  className="h-3 bg-white/20 [&>div]:bg-white [&>div]:shadow-lg"
-                />
-                <div className="absolute top-1/2 left-0 transform -translate-y-1/2 w-full">
-                  {stepTitles.map((_, index) => (
+            <Badge variant="outline" className="text-green-700 border-green-300">
+              {Math.round(progress)}% Concluído
+            </Badge>
+          </div>
+          
+          <Progress value={progress} className="h-2 bg-gray-200">
+            <div 
+              className="h-full bg-green-600 transition-all duration-300" 
+              style={{ width: `${progress}%` }} 
+            />
+          </Progress>
+        </div>
+      </div>
+
+      {/* Steps Navigation */}
+      <div className="bg-white border-b border-gray-200">
+        <div className="max-w-6xl mx-auto px-6 py-4">
+          <div className="flex items-center justify-between overflow-x-auto">
+            {steps.map((step, index) => {
+              const StepIcon = step.icon;
+              const isActive = step.id === currentStep;
+              const isCompleted = step.id < currentStep;
+              const isValid = validateStep(step.id);
+
+              return (
+                <div key={step.id} className="flex items-center flex-shrink-0">
+                  <div className="flex flex-col items-center">
                     <div
-                      key={index}
-                      className={`absolute w-4 h-4 rounded-full border-2 border-white transform -translate-x-1/2 -translate-y-1/2 transition-all duration-300 ${
-                        index + 1 <= currentStep 
-                          ? 'bg-white shadow-lg scale-110' 
-                          : 'bg-white/30'
-                      }`}
-                      style={{ left: `${(index / (totalSteps - 1)) * 100}%` }}
+                      className={`
+                        w-10 h-10 rounded-full border-2 flex items-center justify-center transition-all duration-200
+                        ${isActive 
+                          ? 'border-green-600 bg-green-50' 
+                          : isCompleted 
+                            ? 'border-green-600 bg-green-600' 
+                            : 'border-gray-300 bg-white'
+                        }
+                      `}
+                    >
+                      {isCompleted ? (
+                        <CheckCircle className="w-5 h-5 text-white" />
+                      ) : (
+                        <StepIcon 
+                          className={`w-5 h-5 ${
+                            isActive ? 'text-green-600' : 'text-gray-400'
+                          }`} 
+                        />
+                      )}
+                    </div>
+                    <span 
+                      className={`
+                        text-xs mt-2 text-center w-16 truncate
+                        ${isActive ? 'text-green-600 font-medium' : 'text-gray-500'}
+                      `}
+                      title={step.title}
+                    >
+                      {step.title}
+                    </span>
+                  </div>
+                  {index < steps.length - 1 && (
+                    <div 
+                      className={`
+                        w-12 h-px mx-4 transition-colors duration-200
+                        ${isCompleted ? 'bg-green-600' : 'bg-gray-300'}
+                      `} 
                     />
-                  ))}
+                  )}
                 </div>
-              </div>
-              
-              <div className="text-center">
-                <div className={`inline-flex items-center px-6 py-3 rounded-full bg-gradient-to-r ${currentStepInfo.color} text-white font-semibold text-lg shadow-lg`}>
-                  <IconComponent className="w-5 h-5 mr-2" />
-                  {currentStepInfo.title}
-                </div>
-              </div>
-            </div>
+              );
+            })}
           </div>
         </div>
       </div>
 
-      {/* Enhanced Step Navigation */}
-      <div className="grid grid-cols-9 gap-2 mb-8">
-        {stepTitles.map((step, index) => {
-          const StepIcon = step.icon;
-          const stepNumber = index + 1;
-          const isActive = stepNumber === currentStep;
-          const isCompleted = stepNumber < currentStep;
-          const isAccessible = stepNumber <= currentStep;
-          
-          return (
-            <button
-              key={stepNumber}
-              onClick={() => isAccessible && setCurrentStep(stepNumber)}
-              disabled={!isAccessible}
-              className={`relative p-4 rounded-2xl transition-all duration-300 transform hover:scale-105 ${
-                isActive 
-                  ? `bg-gradient-to-br ${step.color} text-white shadow-xl scale-105` 
-                  : isCompleted
-                  ? 'bg-green-100 text-green-700 hover:bg-green-200 border-2 border-green-200'
-                  : isAccessible
-                  ? 'bg-blue-50 text-blue-600 hover:bg-blue-100 border-2 border-blue-200'
-                  : 'bg-gray-50 text-gray-400 cursor-not-allowed border-2 border-gray-200'
-              }`}
-            >
-              <div className="flex flex-col items-center space-y-2">
-                {isCompleted ? (
-                  <CheckCircle className="w-6 h-6" />
-                ) : (
-                  <StepIcon className="w-6 h-6" />
-                )}
-                <span className="text-xs font-medium text-center leading-tight">
-                  {step.title}
-                </span>
+      {/* Form Content */}
+      <div className="max-w-4xl mx-auto px-6 py-8">
+        <Card className="shadow-sm border-0">
+          <CardHeader className="bg-gray-50 border-b border-gray-200">
+            <CardTitle className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-green-600 rounded-lg flex items-center justify-center">
+                {React.createElement(steps[currentStep - 1].icon, {
+                  className: "w-5 h-5 text-white"
+                })}
               </div>
-              {isActive && (
-                <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-white rounded-full shadow-lg"></div>
-              )}
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Enhanced Form Content */}
-      <Form {...form}>
-        <Card className="shadow-2xl border-0 overflow-hidden">
-          <div className={`h-2 bg-gradient-to-r ${currentStepInfo.color}`}></div>
-          <CardContent className="p-8 bg-gradient-to-br from-white to-gray-50/50">
-            <div className="animate-fade-in">
-              {renderStepContent()}
-            </div>
+              <div>
+                <h2 className="text-xl font-semibold text-gray-900">
+                  {steps[currentStep - 1].title}
+                </h2>
+                <p className="text-gray-600 text-sm font-normal">
+                  Preencha as informações desta etapa
+                </p>
+              </div>
+            </CardTitle>
+          </CardHeader>
+          
+          <CardContent className="p-8">
+            {renderCurrentStep()}
           </CardContent>
         </Card>
-      </Form>
 
-      {/* Enhanced Navigation */}
-      <Card className="shadow-lg border-0 overflow-hidden">
-        <div className="bg-gradient-to-r from-gray-50 to-white">
-          <CardContent className="p-6">
-            <div className="flex justify-between items-center">
+        {/* Navigation Buttons */}
+        <div className="flex items-center justify-between mt-8">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handlePrevious}
+            disabled={currentStep === 1}
+            className="flex items-center space-x-2"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Anterior</span>
+          </Button>
+
+          <div className="flex items-center space-x-4">
+            {!canProceed && (
+              <div className="flex items-center space-x-2 text-amber-600">
+                <AlertCircle className="w-4 h-4" />
+                <span className="text-sm">Preencha os campos obrigatórios</span>
+              </div>
+            )}
+
+            {currentStep === steps.length ? (
+              <Button
+                onClick={handleSubmit}
+                disabled={!canProceed || isSubmitting}
+                className="bg-green-600 hover:bg-green-700 text-white flex items-center space-x-2"
+              >
+                {isSubmitting ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    <span>Salvando...</span>
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle className="w-4 h-4" />
+                    <span>Finalizar Cadastro</span>
+                  </>
+                )}
+              </Button>
+            ) : (
               <Button
                 type="button"
-                variant="outline"
-                onClick={handlePrevious}
-                disabled={currentStep === 1}
-                className="flex items-center space-x-2 px-6 py-3 rounded-xl border-2 hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:hover:scale-100"
+                onClick={handleNext}
+                disabled={!canProceed}
+                className="bg-green-600 hover:bg-green-700 text-white flex items-center space-x-2"
               >
-                <ChevronLeft className="w-5 h-5" />
-                <span className="font-medium">Anterior</span>
+                <span>Próximo</span>
+                <ArrowRight className="w-4 h-4" />
               </Button>
-
-              <div className="flex items-center space-x-4">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  className="flex items-center space-x-2 px-6 py-3 rounded-xl text-gray-600 hover:text-gray-700 hover:bg-gray-100 transition-all duration-200"
-                >
-                  <Save className="w-5 h-5" />
-                  <span className="font-medium">Salvar Rascunho</span>
-                </Button>
-
-                {currentStep === totalSteps ? (
-                  <Button
-                    type="button"
-                    onClick={handleSubmit}
-                    disabled={isSubmitting || !validateStep(currentStep)}
-                    className="flex items-center space-x-3 px-8 py-3 rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:hover:scale-100"
-                  >
-                    {isSubmitting ? (
-                      <>
-                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                        <span>Finalizando...</span>
-                      </>
-                    ) : (
-                      <>
-                        <CheckCircle className="w-5 h-5" />
-                        <span>Finalizar Cadastro</span>
-                      </>
-                    )}
-                  </Button>
-                ) : (
-                  <Button
-                    type="button"
-                    onClick={handleNext}
-                    disabled={!validateStep(currentStep)}
-                    className={`flex items-center space-x-3 px-8 py-3 rounded-xl bg-gradient-to-r ${currentStepInfo.color} text-white font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:hover:scale-100`}
-                  >
-                    <span>Próximo</span>
-                    <ChevronRight className="w-5 h-5" />
-                  </Button>
-                )}
-              </div>
-            </div>
-          </CardContent>
+            )}
+          </div>
         </div>
-      </Card>
+      </div>
     </div>
   );
 };
