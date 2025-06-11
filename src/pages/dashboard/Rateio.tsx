@@ -15,7 +15,8 @@ import { RateioSubscriber } from '@/types/rateio';
 import { 
   Search, Users, Calculator, History, Upload, FileText, CheckCircle, AlertCircle, 
   Percent, ArrowUpDown, TrendingUp, Zap, Download, Eye, Edit, Trash2, Save,
-  AlertTriangle, Info, PieChart, BarChart3, RefreshCw, Settings, Plus, Calendar
+  AlertTriangle, Info, PieChart, BarChart3, RefreshCw, Settings, Plus, Calendar,
+  ChevronRight, ArrowLeft, ArrowRight, Clock, Target, CheckSquare
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -57,6 +58,21 @@ const Rateio = () => {
   const [selectedHistoryRateio, setSelectedHistoryRateio] = useState<string | null>(null);
   const [autoCalculateMode, setAutoCalculateMode] = useState(false);
 
+  // Novo estado para controlar o fluxo de cadastro
+  const [currentStep, setCurrentStep] = useState(1);
+  const [formData, setFormData] = useState({
+    generatorId: '',
+    type: 'percentage' as 'percentage' | 'priority',
+    date: {
+      day: new Date().getDate(),
+      month: new Date().getMonth() + 1,
+      year: new Date().getFullYear()
+    },
+    expectedGeneration: 0,
+    notes: '',
+    attachmentUrl: ''
+  });
+
   // Filtrar geradoras
   const filteredGeneratorsConsulta = generators.filter(g => 
     g.owner?.name?.toLowerCase().includes(searchGeneratorConsulta.toLowerCase()) ||
@@ -78,6 +94,103 @@ const Rateio = () => {
     s.subscriber?.name?.toLowerCase().includes(searchSubscriber.toLowerCase()) ||
     s.energyAccount?.originalAccount?.uc?.includes(searchSubscriber)
   );
+
+  const nextStep = () => {
+    if (currentStep < 4) {
+      setCurrentStep(currentStep + 1);
+    }
+  };
+
+  const prevStep = () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
+
+  const handleGeneratorSelectStep = (generatorId: string) => {
+    const generator = selectGenerator(generatorId);
+    if (generator) {
+      setFormData(prev => ({
+        ...prev,
+        generatorId,
+        expectedGeneration: generator.generation
+      }));
+      setEditedSubscribers([]);
+      nextStep();
+    }
+  };
+
+  const handleRateioTypeSelect = (type: 'percentage' | 'priority') => {
+    setFormData(prev => ({ ...prev, type }));
+    nextStep();
+  };
+
+  const addSubscriberToRateio = (subscriberId: string) => {
+    const subscriber = selectSubscriber(subscriberId);
+    if (subscriber && !editedSubscribers.find(s => s.id === subscriberId)) {
+      const newSubscriber = {
+        ...subscriber,
+        percentage: formData.type === 'percentage' ? 0 : undefined,
+        priority: formData.type === 'priority' ? editedSubscribers.length + 1 : undefined,
+        allocatedEnergy: 0,
+        creditUsed: 0,
+        remainingCredit: subscriber.accumulatedCredit
+      };
+      setEditedSubscribers(prev => [...prev, newSubscriber]);
+      toast.success(`${subscriber.name} adicionado ao rateio`);
+    }
+  };
+
+  const resetWizard = () => {
+    setCurrentStep(1);
+    setFormData({
+      generatorId: '',
+      type: 'percentage',
+      date: {
+        day: new Date().getDate(),
+        month: new Date().getMonth() + 1,
+        year: new Date().getFullYear()
+      },
+      expectedGeneration: 0,
+      notes: '',
+      attachmentUrl: ''
+    });
+    setEditedSubscribers([]);
+    resetSelections();
+  };
+
+  const saveRateioWizard = async () => {
+    if (!selectedGenerator || editedSubscribers.length === 0) {
+      toast.error('Complete todos os passos antes de salvar');
+      return;
+    }
+
+    const validation = validateRateio(editedSubscribers, formData.type);
+    if (!validation.isValid) {
+      toast.error(validation.errors.join('; '));
+      return;
+    }
+
+    try {
+      const rateioData = {
+        generatorId: selectedGenerator.id,
+        generator: selectedGenerator,
+        type: formData.type,
+        date: formData.date,
+        expectedGeneration: formData.expectedGeneration,
+        subscribers: editedSubscribers,
+        attachmentUrl: formData.attachmentUrl,
+        notes: formData.notes,
+        status: 'completed' as const
+      };
+
+      await createRateio(rateioData);
+      resetWizard();
+      toast.success('Rateio criado com sucesso!');
+    } catch (error) {
+      // Erro já tratado no hook
+    }
+  };
 
   // Função para obter assinantes vinculados através de rateios
   const getSubscribersFromRateios = (generatorId: string): RateioSubscriber[] => {
@@ -498,311 +611,550 @@ const Rateio = () => {
             </Card>
           </TabsContent>
 
-          {/* Aba Cadastro Completamente Melhorada */}
+          {/* Aba Cadastro Completamente Redesenhada */}
           <TabsContent value="cadastro" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Calculator className="w-5 h-5" />
-                  Cadastrar Novo Rateio
-                  {editedSubscribers.length > 0 && (
-                    <Badge variant="outline">{editedSubscribers.length} assinantes</Badge>
+                <CardTitle className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Calculator className="w-5 h-5" />
+                    Novo Rateio - Assistente Guiado
+                  </div>
+                  {currentStep > 1 && (
+                    <Button variant="outline" size="sm" onClick={resetWizard}>
+                      <RefreshCw className="w-4 h-4 mr-1" />
+                      Recomeçar
+                    </Button>
                   )}
                 </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {/* Seleção da Geradora Melhorada */}
-                <div>
-                  <Label className="text-base font-medium">Selecionar Geradora</Label>
-                  <div className="relative mb-4">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                    <Input
-                      placeholder="Digite o nome ou apelido da geradora..."
-                      value={searchGeneratorCadastro}
-                      onChange={(e) => setSearchGeneratorCadastro(e.target.value)}
-                      className="pl-10"
-                    />
-                  </div>
-
-                  <div className="space-y-2 max-h-60 overflow-y-auto border rounded-lg p-2">
-                    {filteredGeneratorsCadastro.length === 0 ? (
-                      <p className="text-gray-500 text-center py-8">Nenhuma geradora encontrada</p>
-                    ) : (
-                      filteredGeneratorsCadastro.map((generator) => (
-                        <div
-                          key={generator.id}
-                          className={`p-4 border rounded-lg cursor-pointer transition-all hover:shadow-md ${
-                            selectedGenerator?.id === generator.id 
-                              ? 'bg-blue-50 border-blue-300 shadow-md' 
-                              : 'hover:bg-gray-50'
-                          }`}
-                          onClick={() => handleGeneratorSelect(generator.id, 'cadastro')}
-                        >
-                          <div className="flex justify-between items-start">
-                            <div>
-                              <div className="font-medium text-lg">
-                                {generator.plants?.[0]?.apelido || generator.owner?.name}
-                              </div>
-                              <div className="text-sm text-gray-500 mt-1">
-                                UC: {generator.plants?.[0]?.uc} | Geração: {generator.plants?.[0]?.geracaoProjetada?.toLocaleString()} kWh
-                              </div>
-                            </div>
-                            <Badge variant={generator.status === 'active' ? 'default' : 'secondary'}>
-                              {generator.status === 'active' ? 'Ativa' : 'Inativa'}
-                            </Badge>
-                          </div>
-                        </div>
-                      ))
-                    )}
-                  </div>
+                
+                {/* Progress Indicator */}
+                <div className="flex items-center justify-between mt-4 px-4">
+                  {[1, 2, 3, 4].map((step) => (
+                    <div key={step} className="flex items-center">
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 font-medium ${
+                        currentStep >= step 
+                          ? 'bg-blue-500 border-blue-500 text-white' 
+                          : currentStep === step 
+                            ? 'border-blue-500 text-blue-500 bg-blue-50'
+                            : 'border-gray-300 text-gray-400'
+                      }`}>
+                        {currentStep > step ? <CheckSquare className="w-5 h-5" /> : step}
+                      </div>
+                      {step < 4 && (
+                        <div className={`w-16 h-1 mx-2 ${
+                          currentStep > step ? 'bg-blue-500' : 'bg-gray-300'
+                        }`} />
+                      )}
+                    </div>
+                  ))}
                 </div>
-
-                {/* Informações da Geradora Selecionada */}
-                {selectedGenerator && (
-                  <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-6 rounded-lg border border-blue-200">
-                    <div className="flex items-center justify-between mb-4">
-                      <h3 className="font-semibold text-blue-900 text-lg flex items-center gap-2">
-                        <Zap className="w-5 h-5" />
-                        Geradora Selecionada
-                      </h3>
-                      <Button variant="outline" size="sm" onClick={() => resetSelections()}>
-                        <RefreshCw className="w-4 h-4 mr-1" />
-                        Trocar
-                      </Button>
+                
+                <div className="flex justify-between text-sm text-gray-600 mt-2 px-2">
+                  <span>Geradora</span>
+                  <span>Tipo</span>
+                  <span>Assinantes</span>
+                  <span>Revisar</span>
+                </div>
+              </CardHeader>
+              
+              <CardContent className="space-y-6">
+                {/* Passo 1: Selecionar Geradora */}
+                {currentStep === 1 && (
+                  <div className="space-y-6">
+                    <div className="text-center py-4">
+                      <Zap className="w-12 h-12 text-blue-500 mx-auto mb-3" />
+                      <h3 className="text-xl font-semibold mb-2">Selecione a Geradora</h3>
+                      <p className="text-gray-600">Escolha a geradora que será utilizada neste rateio</p>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                      <div className="bg-white p-4 rounded-lg shadow-sm">
-                        <span className="text-sm text-blue-600 font-medium">Apelido:</span>
-                        <p className="font-semibold text-lg">{selectedGenerator.nickname}</p>
+                    
+                    <div>
+                      <Label className="text-base font-medium mb-3 block">Buscar Geradora</Label>
+                      <div className="relative mb-4">
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                        <Input
+                          placeholder="Digite o nome ou apelido da geradora..."
+                          value={searchGeneratorCadastro}
+                          onChange={(e) => setSearchGeneratorCadastro(e.target.value)}
+                          className="pl-10"
+                        />
                       </div>
-                      <div className="bg-white p-4 rounded-lg shadow-sm">
-                        <span className="text-sm text-blue-600 font-medium">UC:</span>
-                        <p className="font-semibold text-lg">{selectedGenerator.uc}</p>
-                      </div>
-                      <div className="bg-white p-4 rounded-lg shadow-sm">
-                        <span className="text-sm text-blue-600 font-medium">Geração:</span>
-                        <p className="font-semibold text-lg">{selectedGenerator.generation.toLocaleString()} kWh</p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Seleção do Assinante */}
-                {selectedGenerator && (
-                  <div>
-                    <Label className="text-base font-medium">Adicionar Assinante</Label>
-                    <div className="relative mb-4">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                      <Input
-                        placeholder="Digite o nome ou UC do assinante..."
-                        value={searchSubscriber}
-                        onChange={(e) => setSearchSubscriber(e.target.value)}
-                        className="pl-10"
-                      />
                     </div>
 
-                    <div className="space-y-2 max-h-48 overflow-y-auto border rounded-lg p-2">
-                      {filteredSubscribers.length === 0 ? (
-                        <p className="text-gray-500 text-center py-4">Nenhum assinante encontrado</p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-96 overflow-y-auto">
+                      {filteredGeneratorsCadastro.length === 0 ? (
+                        <div className="col-span-full text-center py-8">
+                          <Zap className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                          <p className="text-gray-500">Nenhuma geradora encontrada</p>
+                        </div>
                       ) : (
-                        filteredSubscribers.map((subscriber) => (
-                          <div
-                            key={subscriber.id}
-                            className="p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
-                            onClick={() => handleSubscriberSelect(subscriber.id)}
+                        filteredGeneratorsCadastro.map((generator) => (
+                          <Card
+                            key={generator.id}
+                            className={`cursor-pointer transition-all hover:shadow-lg border-2 ${
+                              formData.generatorId === generator.id
+                                ? 'border-blue-500 bg-blue-50' 
+                                : 'border-gray-200 hover:border-blue-300'
+                            }`}
+                            onClick={() => handleGeneratorSelectStep(generator.id)}
                           >
-                            <div className="flex justify-between items-start">
-                              <div>
-                                <div className="font-medium">{subscriber.subscriber?.name}</div>
-                                <div className="text-sm text-gray-500">
-                                  UC: {subscriber.energyAccount?.originalAccount?.uc} | 
-                                  Consumo: {subscriber.planContract?.kwhContratado?.toLocaleString()} kWh/mês
+                            <CardContent className="p-4">
+                              <div className="flex items-center justify-between mb-3">
+                                <div className="flex items-center gap-3">
+                                  <div className="w-10 h-10 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-lg flex items-center justify-center">
+                                    <Zap className="w-5 h-5 text-white" />
+                                  </div>
+                                  <div>
+                                    <h4 className="font-semibold">
+                                      {generator.plants?.[0]?.apelido || generator.owner?.name}
+                                    </h4>
+                                    <p className="text-sm text-gray-500">
+                                      {generator.owner?.name}
+                                    </p>
+                                  </div>
+                                </div>
+                                <ChevronRight className="w-5 h-5 text-gray-400" />
+                              </div>
+                              
+                              <div className="space-y-2 text-sm">
+                                <div className="flex justify-between">
+                                  <span className="text-gray-600">UC:</span>
+                                  <span className="font-mono">{generator.plants?.[0]?.uc}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className="text-gray-600">Geração:</span>
+                                  <span className="font-semibold">{generator.plants?.[0]?.geracaoProjetada?.toLocaleString()} kWh</span>
                                 </div>
                               </div>
-                              <Plus className="w-5 h-5 text-green-500" />
-                            </div>
-                          </div>
+                            </CardContent>
+                          </Card>
                         ))
                       )}
                     </div>
                   </div>
                 )}
 
-                {/* Lista de Edição dos Assinantes Completamente Melhorada */}
-                {editedSubscribers.length > 0 && (
+                {/* Passo 2: Selecionar Tipo de Rateio */}
+                {currentStep === 2 && (
                   <div className="space-y-6">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-xl font-semibold flex items-center gap-2">
-                        <Settings className="w-5 h-5" />
-                        Configurar Rateio
-                      </h3>
-                      
-                      <div className="flex items-center gap-4">
-                        {/* Informações de Validação */}
-                        <div className="flex items-center gap-2">
-                          {rateioType === 'percentage' ? (
-                            <Badge variant={validation.isValid ? "default" : "destructive"} className="flex items-center gap-1">
-                              <Percent className="w-3 h-3" />
-                              {validation.isValid ? `${totalPercentage.toFixed(1)}%` : "Ajustar %"}
-                            </Badge>
-                          ) : (
-                            <Badge variant={validation.isValid ? "default" : "destructive"} className="flex items-center gap-1">
-                              <ArrowUpDown className="w-3 h-3" />
-                              {validation.isValid ? "Sequencial" : "Ajustar prioridades"}
-                            </Badge>
-                          )}
-                          
-                          {validation.warnings.length > 0 && (
-                            <Badge variant="outline" className="text-yellow-600 border-yellow-600">
-                              <AlertTriangle className="w-3 h-3 mr-1" />
-                              {validation.warnings.length} avisos
-                            </Badge>
-                          )}
-                        </div>
+                    <div className="text-center py-4">
+                      <Settings className="w-12 h-12 text-blue-500 mx-auto mb-3" />
+                      <h3 className="text-xl font-semibold mb-2">Tipo de Rateio</h3>
+                      <p className="text-gray-600">Como deseja distribuir a energia entre os assinantes?</p>
+                    </div>
 
-                        {/* Botões de Ação */}
-                        <div className="flex gap-2">
-                          <Button variant="outline" size="sm" onClick={handleAutoCalculate}>
-                            <RefreshCw className="w-4 h-4 mr-1" />
-                            Auto Calcular
-                          </Button>
-                          
+                    {selectedGenerator && (
+                      <div className="bg-blue-50 p-4 rounded-lg mb-6">
+                        <h4 className="font-semibold text-blue-900 mb-2">Geradora Selecionada:</h4>
+                        <p className="text-blue-800">{selectedGenerator.nickname}</p>
+                        <p className="text-sm text-blue-600">Geração: {selectedGenerator.generation.toLocaleString()} kWh</p>
+                      </div>
+                    )}
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <Card 
+                        className={`cursor-pointer transition-all hover:shadow-lg border-2 ${
+                          formData.type === 'percentage'
+                            ? 'border-blue-500 bg-blue-50' 
+                            : 'border-gray-200 hover:border-blue-300'
+                        }`}
+                        onClick={() => handleRateioTypeSelect('percentage')}
+                      >
+                        <CardContent className="p-6 text-center">
+                          <Percent className="w-12 h-12 text-blue-500 mx-auto mb-4" />
+                          <h4 className="text-lg font-semibold mb-2">Por Porcentagem</h4>
+                          <p className="text-gray-600 text-sm mb-4">
+                            Distribua a energia usando porcentagens fixas que devem somar 100%
+                          </p>
+                          <div className="bg-white p-3 rounded border text-xs">
+                            <strong>Exemplo:</strong> Assinante A (40%), B (35%), C (25%)
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      <Card 
+                        className={`cursor-pointer transition-all hover:shadow-lg border-2 ${
+                          formData.type === 'priority'
+                            ? 'border-blue-500 bg-blue-50' 
+                            : 'border-gray-200 hover:border-blue-300'
+                        }`}
+                        onClick={() => handleRateioTypeSelect('priority')}
+                      >
+                        <CardContent className="p-6 text-center">
+                          <ArrowUpDown className="w-12 h-12 text-purple-500 mx-auto mb-4" />
+                          <h4 className="text-lg font-semibold mb-2">Por Prioridade</h4>
+                          <p className="text-gray-600 text-sm mb-4">
+                            Distribua por ordem de prioridade (1º, 2º, 3º...) baseado no consumo
+                          </p>
+                          <div className="bg-white p-3 rounded border text-xs">
+                            <strong>Exemplo:</strong> 1º Assinante A, 2º Assinante B, 3º Assinante C
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div>
+                        <Label className="text-sm font-medium">Dia</Label>
+                        <Input
+                          type="number"
+                          value={formData.date.day}
+                          onChange={(e) => setFormData(prev => ({
+                            ...prev,
+                            date: {...prev.date, day: Number(e.target.value)}
+                          }))}
+                          min={1}
+                          max={31}
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-sm font-medium">Mês</Label>
+                        <Input
+                          type="number"
+                          value={formData.date.month}
+                          onChange={(e) => setFormData(prev => ({
+                            ...prev,
+                            date: {...prev.date, month: Number(e.target.value)}
+                          }))}
+                          min={1}
+                          max={12}
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-sm font-medium">Ano</Label>
+                        <Input
+                          type="number"
+                          value={formData.date.year}
+                          onChange={(e) => setFormData(prev => ({
+                            ...prev,
+                            date: {...prev.date, year: Number(e.target.value)}
+                          }))}
+                          min={2020}
+                          max={2030}
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <Label className="text-base font-medium">Geração Esperada (kWh)</Label>
+                      <Input
+                        type="number"
+                        value={formData.expectedGeneration}
+                        onChange={(e) => setFormData(prev => ({
+                          ...prev,
+                          expectedGeneration: Number(e.target.value)
+                        }))}
+                        min={0}
+                        step={1}
+                        className="mt-2"
+                      />
+                    </div>
+
+                    <div className="flex justify-between pt-4">
+                      <Button variant="outline" onClick={prevStep}>
+                        <ArrowLeft className="w-4 h-4 mr-2" />
+                        Voltar
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Passo 3: Adicionar Assinantes */}
+                {currentStep === 3 && (
+                  <div className="space-y-6">
+                    <div className="text-center py-4">
+                      <Users className="w-12 h-12 text-blue-500 mx-auto mb-3" />
+                      <h3 className="text-xl font-semibold mb-2">Adicionar Assinantes</h3>
+                      <p className="text-gray-600">Selecione os assinantes que participarão do rateio</p>
+                    </div>
+
+                    {/* Resumo dos passos anteriores */}
+                    <div className="bg-gray-50 p-4 rounded-lg grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <span className="text-sm text-gray-600">Geradora:</span>
+                        <p className="font-semibold">{selectedGenerator?.nickname}</p>
+                      </div>
+                      <div>
+                        <span className="text-sm text-gray-600">Tipo:</span>
+                        <p className="font-semibold">
+                          {formData.type === 'percentage' ? 'Por Porcentagem' : 'Por Prioridade'}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Busca de assinantes */}
+                    <div>
+                      <Label className="text-base font-medium mb-3 block">Buscar Assinantes</Label>
+                      <div className="relative">
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                        <Input
+                          placeholder="Digite o nome ou UC do assinante..."
+                          value={searchSubscriber}
+                          onChange={(e) => setSearchSubscriber(e.target.value)}
+                          className="pl-10"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Lista de assinantes para adicionar */}
+                    <div>
+                      <h4 className="font-medium mb-3">Assinantes Disponíveis</h4>
+                      <div className="space-y-2 max-h-48 overflow-y-auto border rounded-lg p-2">
+                        {filteredSubscribers.length === 0 ? (
+                          <p className="text-gray-500 text-center py-4">Nenhum assinante encontrado</p>
+                        ) : (
+                          filteredSubscribers.map((subscriber) => {
+                            const isAdded = editedSubscribers.some(s => s.id === subscriber.id);
+                            return (
+                              <div
+                                key={subscriber.id}
+                                className={`p-3 border rounded-lg cursor-pointer transition-colors ${
+                                  isAdded 
+                                    ? 'bg-green-50 border-green-300' 
+                                    : 'hover:bg-gray-50'
+                                }`}
+                                onClick={() => !isAdded && addSubscriberToRateio(subscriber.id)}
+                              >
+                                <div className="flex justify-between items-center">
+                                  <div>
+                                    <div className="font-medium">{subscriber.subscriber?.name}</div>
+                                    <div className="text-sm text-gray-500">
+                                      UC: {subscriber.energyAccount?.originalAccount?.uc} | 
+                                      Consumo: {subscriber.planContract?.kwhContratado?.toLocaleString()} kWh/mês
+                                    </div>
+                                  </div>
+                                  {isAdded ? (
+                                    <CheckCircle className="w-5 h-5 text-green-500" />
+                                  ) : (
+                                    <Plus className="w-5 h-5 text-blue-500" />
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Assinantes adicionados */}
+                    {editedSubscribers.length > 0 && (
+                      <div>
+                        <div className="flex items-center justify-between mb-3">
+                          <h4 className="font-medium">Assinantes Adicionados ({editedSubscribers.length})</h4>
                           <Button 
                             variant="outline" 
                             size="sm" 
-                            onClick={() => setShowValidationDetails(true)}
-                            className={validation.warnings.length > 0 ? "border-yellow-500 text-yellow-600" : ""}
+                            onClick={() => {
+                              const calculated = calculateAutoDistribution(editedSubscribers, formData.type, formData.expectedGeneration);
+                              setEditedSubscribers(calculated);
+                              toast.success('Distribuição calculada automaticamente');
+                            }}
                           >
-                            <Info className="w-4 h-4 mr-1" />
-                            Validações
+                            <Calculator className="w-4 h-4 mr-1" />
+                            Auto Calcular
                           </Button>
+                        </div>
+                        
+                        <div className="border rounded-lg overflow-hidden">
+                          <Table>
+                            <TableHeader className="bg-gray-50">
+                              <TableRow>
+                                <TableHead>Nome</TableHead>
+                                <TableHead>UC</TableHead>
+                                <TableHead>Consumo</TableHead>
+                                <TableHead className="bg-yellow-100">
+                                  {formData.type === 'percentage' ? 'Percentual (%)' : 'Prioridade'}
+                                </TableHead>
+                                <TableHead>Ações</TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {editedSubscribers.map((subscriber, index) => (
+                                <TableRow key={subscriber.id}>
+                                  <TableCell className="font-medium">{subscriber.name}</TableCell>
+                                  <TableCell className="font-mono text-sm">{subscriber.uc}</TableCell>
+                                  <TableCell>{subscriber.contractedConsumption.toLocaleString()} kWh</TableCell>
+                                  <TableCell className="bg-yellow-50">
+                                    <Input
+                                      type="number"
+                                      value={formData.type === 'percentage' ? subscriber.percentage || 0 : subscriber.priority || 1}
+                                      onChange={(e) => updateSubscriberValue(
+                                        index, 
+                                        formData.type === 'percentage' ? 'percentage' : 'priority', 
+                                        Number(e.target.value)
+                                      )}
+                                      className="w-20"
+                                      min={formData.type === 'percentage' ? 0 : 1}
+                                      max={formData.type === 'percentage' ? 100 : editedSubscribers.length}
+                                      step={formData.type === 'percentage' ? 0.01 : 1}
+                                    />
+                                  </TableCell>
+                                  <TableCell>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => removeSubscriber(index)}
+                                      className="text-red-600 hover:text-red-800"
+                                    >
+                                      <Trash2 className="w-4 h-4" />
+                                    </Button>
+                                  </TableCell>
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="flex justify-between pt-4">
+                      <Button variant="outline" onClick={prevStep}>
+                        <ArrowLeft className="w-4 h-4 mr-2" />
+                        Voltar
+                      </Button>
+                      <Button 
+                        onClick={nextStep} 
+                        disabled={editedSubscribers.length === 0}
+                        className="bg-blue-600 hover:bg-blue-700"
+                      >
+                        Continuar
+                        <ArrowRight className="w-4 h-4 ml-2" />
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Passo 4: Revisar e Salvar */}
+                {currentStep === 4 && (
+                  <div className="space-y-6">
+                    <div className="text-center py-4">
+                      <Target className="w-12 h-12 text-green-500 mx-auto mb-3" />
+                      <h3 className="text-xl font-semibold mb-2">Revisar Rateio</h3>
+                      <p className="text-gray-600">Confira os dados antes de finalizar</p>
+                    </div>
+
+                    {/* Resumo completo */}
+                    <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-6 rounded-lg border">
+                      <h4 className="font-semibold text-lg mb-4">Resumo do Rateio</h4>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div className="space-y-3">
+                          <div>
+                            <span className="text-sm text-gray-600">Geradora:</span>
+                            <p className="font-semibold">{selectedGenerator?.nickname}</p>
+                          </div>
+                          <div>
+                            <span className="text-sm text-gray-600">UC:</span>
+                            <p className="font-semibold font-mono">{selectedGenerator?.uc}</p>
+                          </div>
+                          <div>
+                            <span className="text-sm text-gray-600">Tipo de Rateio:</span>
+                            <p className="font-semibold">
+                              {formData.type === 'percentage' ? 'Por Porcentagem' : 'Por Prioridade'}
+                            </p>
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-3">
+                          <div>
+                            <span className="text-sm text-gray-600">Data:</span>
+                            <p className="font-semibold">
+                              {String(formData.date.day).padStart(2, '0')}/
+                              {String(formData.date.month).padStart(2, '0')}/
+                              {formData.date.year}
+                            </p>
+                          </div>
+                          <div>
+                            <span className="text-sm text-gray-600">Geração Esperada:</span>
+                            <p className="font-semibold">{formData.expectedGeneration.toLocaleString()} kWh</p>
+                          </div>
+                          <div>
+                            <span className="text-sm text-gray-600">Total de Assinantes:</span>
+                            <p className="font-semibold">{editedSubscribers.length}</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Validação */}
+                      {(() => {
+                        const validation = validateRateio(editedSubscribers, formData.type);
+                        return (
+                          <div className="mb-6">
+                            {validation.isValid ? (
+                              <div className="flex items-center gap-2 text-green-700 bg-green-50 p-3 rounded-lg">
+                                <CheckCircle className="w-5 h-5" />
+                                <span className="font-medium">Rateio válido e pronto para ser salvo!</span>
+                              </div>
+                            ) : (
+                              <div className="space-y-2">
+                                {validation.errors.map((error, index) => (
+                                  <div key={index} className="flex items-center gap-2 text-red-700 bg-red-50 p-3 rounded-lg">
+                                    <AlertCircle className="w-5 h-5" />
+                                    <span>{error}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                            
+                            {validation.warnings.length > 0 && (
+                              <div className="mt-2">
+                                {validation.warnings.map((warning, index) => (
+                                  <div key={index} className="flex items-center gap-2 text-yellow-700 bg-yellow-50 p-3 rounded-lg">
+                                    <AlertTriangle className="w-5 h-5" />
+                                    <span>{warning}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })()}
+
+                      {/* Tabela de assinantes */}
+                      <div>
+                        <h5 className="font-medium mb-3">Distribuição Final</h5>
+                        <div className="border rounded-lg overflow-hidden bg-white">
+                          <Table>
+                            <TableHeader className="bg-gray-50">
+                              <TableRow>
+                                <TableHead>Nome</TableHead>
+                                <TableHead>UC</TableHead>
+                                <TableHead>
+                                  {formData.type === 'percentage' ? 'Percentual' : 'Prioridade'}
+                                </TableHead>
+                                <TableHead>Energia Alocada</TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {editedSubscribers.map((subscriber) => (
+                                <TableRow key={subscriber.id}>
+                                  <TableCell className="font-medium">{subscriber.name}</TableCell>
+                                  <TableCell className="font-mono text-sm">{subscriber.uc}</TableCell>
+                                  <TableCell>
+                                    {formData.type === 'percentage' 
+                                      ? `${subscriber.percentage}%` 
+                                      : `${subscriber.priority}º`
+                                    }
+                                  </TableCell>
+                                  <TableCell>
+                                    {(subscriber.allocatedEnergy || 0).toLocaleString()} kWh
+                                  </TableCell>
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
                         </div>
                       </div>
                     </div>
 
-                    {/* Resumo do Rateio */}
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                      <Card className="p-4">
-                        <div className="flex items-center gap-2">
-                          <Users className="w-5 h-5 text-blue-500" />
-                          <div>
-                            <p className="text-sm text-gray-600">Assinantes</p>
-                            <p className="text-xl font-bold">{editedSubscribers.length}</p>
-                          </div>
-                        </div>
-                      </Card>
-                      
-                      <Card className="p-4">
-                        <div className="flex items-center gap-2">
-                          <Zap className="w-5 h-5 text-yellow-500" />
-                          <div>
-                            <p className="text-sm text-gray-600">Geração Esperada</p>
-                            <p className="text-xl font-bold">{expectedGeneration.toLocaleString()}</p>
-                          </div>
-                        </div>
-                      </Card>
-                      
-                      <Card className="p-4">
-                        <div className="flex items-center gap-2">
-                          <TrendingUp className="w-5 h-5 text-green-500" />
-                          <div>
-                            <p className="text-sm text-gray-600">Total Alocado</p>
-                            <p className="text-xl font-bold">{totalGeneration.toLocaleString()}</p>
-                          </div>
-                        </div>
-                      </Card>
-                      
-                      <Card className="p-4">
-                        <div className="flex items-center gap-2">
-                          <Percent className="w-5 h-5 text-purple-500" />
-                          <div>
-                            <p className="text-sm text-gray-600">Eficiência</p>
-                            <p className="text-xl font-bold">
-                              {expectedGeneration > 0 ? ((totalGeneration / expectedGeneration) * 100).toFixed(1) : 0}%
-                            </p>
-                          </div>
-                        </div>
-                      </Card>
-                    </div>
-
-                    {/* Tabela de Edição Melhorada */}
-                    <div className="border rounded-lg overflow-hidden">
-                      <Table>
-                        <TableHeader className="bg-gray-50">
-                          <TableRow>
-                            <TableHead className="font-semibold">Nome</TableHead>
-                            <TableHead className="font-semibold">UC</TableHead>
-                            <TableHead className="font-semibold">Consumo</TableHead>
-                            <TableHead className="font-semibold">Crédito</TableHead>
-                            <TableHead className="bg-yellow-100 font-semibold">
-                              {rateioType === 'percentage' ? 'Percentual (%)' : 'Prioridade'}
-                            </TableHead>
-                            <TableHead className="font-semibold">Energia Alocada</TableHead>
-                            <TableHead className="font-semibold">Ações</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {editedSubscribers.map((subscriber, index) => (
-                            <TableRow key={subscriber.id} className="hover:bg-gray-50">
-                              <TableCell className="font-medium">{subscriber.name}</TableCell>
-                              <TableCell className="font-mono text-sm">{subscriber.uc}</TableCell>
-                              <TableCell>{subscriber.contractedConsumption.toLocaleString()} kWh</TableCell>
-                              <TableCell>
-                                <Badge variant={subscriber.accumulatedCredit > 0 ? "default" : "secondary"}>
-                                  {subscriber.accumulatedCredit.toLocaleString()} kWh
-                                </Badge>
-                              </TableCell>
-                              <TableCell className="bg-yellow-50">
-                                <Input
-                                  type="number"
-                                  value={rateioType === 'percentage' ? subscriber.percentage || 0 : subscriber.priority || 1}
-                                  onChange={(e) => updateSubscriberValue(
-                                    index, 
-                                    rateioType === 'percentage' ? 'percentage' : 'priority', 
-                                    Number(e.target.value)
-                                  )}
-                                  className="w-24"
-                                  min={rateioType === 'percentage' ? 0 : 1}
-                                  max={rateioType === 'percentage' ? 100 : editedSubscribers.length}
-                                  step={rateioType === 'percentage' ? 0.01 : 1}
-                                />
-                              </TableCell>
-                              <TableCell>
-                                <div className="text-sm">
-                                  <div className="font-medium">
-                                    {(subscriber.allocatedEnergy || 0).toLocaleString()} kWh
-                                  </div>
-                                  {subscriber.creditUsed && subscriber.creditUsed > 0 && (
-                                    <div className="text-gray-500">
-                                      Crédito: {subscriber.creditUsed.toLocaleString()} kWh
-                                    </div>
-                                  )}
-                                </div>
-                              </TableCell>
-                              <TableCell>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => removeSubscriber(index)}
-                                  className="text-red-600 hover:text-red-800 hover:bg-red-50"
-                                >
-                                  <Trash2 className="w-4 h-4" />
-                                </Button>
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </div>
-
-                    {/* Observações e Anexos */}
+                    {/* Observações */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
                         <Label className="text-base font-medium">Observações</Label>
                         <Textarea
                           placeholder="Adicione observações sobre este rateio..."
-                          value={notes}
-                          onChange={(e) => setNotes(e.target.value)}
+                          value={formData.notes}
+                          onChange={(e) => setFormData(prev => ({...prev, notes: e.target.value}))}
                           className="mt-2"
                           rows={3}
                         />
@@ -812,37 +1164,43 @@ const Rateio = () => {
                         <Label className="text-base font-medium">Anexo (URL)</Label>
                         <Input
                           placeholder="URL do documento ou formulário..."
-                          value={attachmentUrl}
-                          onChange={(e) => setAttachmentUrl(e.target.value)}
+                          value={formData.attachmentUrl}
+                          onChange={(e) => setFormData(prev => ({...prev, attachmentUrl: e.target.value}))}
                           className="mt-2"
                         />
                       </div>
                     </div>
 
-                    {/* Botões de Ação Finais */}
-                    <div className="flex justify-end gap-4 pt-6 border-t">
-                      <Button variant="outline" onClick={resetForm}>
-                        <RefreshCw className="w-4 h-4 mr-2" />
-                        Limpar Tudo
+                    <div className="flex justify-between pt-6 border-t">
+                      <Button variant="outline" onClick={prevStep}>
+                        <ArrowLeft className="w-4 h-4 mr-2" />
+                        Voltar
                       </Button>
                       
-                      <Button 
-                        onClick={saveRateio} 
-                        disabled={!validation.isValid || loading}
-                        className="bg-green-600 hover:bg-green-700"
-                      >
-                        {loading ? (
-                          <>
-                            <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                            Salvando...
-                          </>
-                        ) : (
-                          <>
-                            <Save className="w-4 h-4 mr-2" />
-                            Salvar Rateio
-                          </>
-                        )}
-                      </Button>
+                      <div className="flex gap-3">
+                        <Button variant="outline" onClick={resetWizard}>
+                          <RefreshCw className="w-4 h-4 mr-2" />
+                          Recomeçar
+                        </Button>
+                        
+                        <Button 
+                          onClick={saveRateioWizard} 
+                          disabled={!validateRateio(editedSubscribers, formData.type).isValid || loading}
+                          className="bg-green-600 hover:bg-green-700"
+                        >
+                          {loading ? (
+                            <>
+                              <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                              Salvando...
+                            </>
+                          ) : (
+                            <>
+                              <Save className="w-4 h-4 mr-2" />
+                              Finalizar Rateio
+                            </>
+                          )}
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 )}
