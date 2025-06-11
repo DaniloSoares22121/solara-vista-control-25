@@ -36,12 +36,12 @@ const ContaEnergiaForm = ({ form, subscriberData }: ContaEnergiaFormProps) => {
     
     // Preencher tipo da conta
     if (subscriberData.type) {
-      form.setValue('energyAccount.originalAccount.type', subscriberData.type, { shouldValidate: true });
+      form.setValue('energyAccount.originalAccount.type', subscriberData.type, { shouldValidate: true, shouldDirty: true });
     }
 
     // Preencher CPF/CNPJ
     if (subscriberData.cpfCnpj) {
-      form.setValue('energyAccount.originalAccount.cpfCnpj', subscriberData.cpfCnpj, { shouldValidate: true });
+      form.setValue('energyAccount.originalAccount.cpfCnpj', subscriberData.cpfCnpj, { shouldValidate: true, shouldDirty: true });
     }
 
     // Preencher nome/razão social
@@ -49,17 +49,17 @@ const ContaEnergiaForm = ({ form, subscriberData }: ContaEnergiaFormProps) => {
       ? subscriberData.name 
       : subscriberData.razaoSocial || subscriberData.name;
     if (name) {
-      form.setValue('energyAccount.originalAccount.name', name, { shouldValidate: true });
+      form.setValue('energyAccount.originalAccount.name', name, { shouldValidate: true, shouldDirty: true });
     }
 
     // Preencher data de nascimento para pessoa física
     if (subscriberData.type === 'fisica' && subscriberData.dataNascimento) {
-      form.setValue('energyAccount.originalAccount.dataNascimento', subscriberData.dataNascimento, { shouldValidate: true });
+      form.setValue('energyAccount.originalAccount.dataNascimento', subscriberData.dataNascimento, { shouldValidate: true, shouldDirty: true });
     }
 
     // Preencher número do parceiro
     if (subscriberData.numeroParceiroNegocio) {
-      form.setValue('energyAccount.originalAccount.numeroParceiroUC', subscriberData.numeroParceiroNegocio, { shouldValidate: true });
+      form.setValue('energyAccount.originalAccount.numeroParceiroUC', subscriberData.numeroParceiroNegocio, { shouldValidate: true, shouldDirty: true });
     }
 
     // Preencher endereço completo
@@ -67,27 +67,32 @@ const ContaEnergiaForm = ({ form, subscriberData }: ContaEnergiaFormProps) => {
       const address = subscriberData.address;
       
       if (address.cep) {
-        form.setValue('energyAccount.originalAccount.address.cep', address.cep, { shouldValidate: true });
+        form.setValue('energyAccount.originalAccount.address.cep', address.cep, { shouldValidate: true, shouldDirty: true });
       }
       if (address.endereco) {
-        form.setValue('energyAccount.originalAccount.address.endereco', address.endereco, { shouldValidate: true });
+        form.setValue('energyAccount.originalAccount.address.endereco', address.endereco, { shouldValidate: true, shouldDirty: true });
       }
       if (address.numero) {
-        form.setValue('energyAccount.originalAccount.address.numero', address.numero, { shouldValidate: true });
+        form.setValue('energyAccount.originalAccount.address.numero', address.numero, { shouldValidate: true, shouldDirty: true });
       }
       if (address.complemento) {
-        form.setValue('energyAccount.originalAccount.address.complemento', address.complemento, { shouldValidate: true });
+        form.setValue('energyAccount.originalAccount.address.complemento', address.complemento, { shouldValidate: true, shouldDirty: true });
       }
       if (address.bairro) {
-        form.setValue('energyAccount.originalAccount.address.bairro', address.bairro, { shouldValidate: true });
+        form.setValue('energyAccount.originalAccount.address.bairro', address.bairro, { shouldValidate: true, shouldDirty: true });
       }
       if (address.cidade) {
-        form.setValue('energyAccount.originalAccount.address.cidade', address.cidade, { shouldValidate: true });
+        form.setValue('energyAccount.originalAccount.address.cidade', address.cidade, { shouldValidate: true, shouldDirty: true });
       }
       if (address.estado) {
-        form.setValue('energyAccount.originalAccount.address.estado', address.estado, { shouldValidate: true });
+        form.setValue('energyAccount.originalAccount.address.estado', address.estado, { shouldValidate: true, shouldDirty: true });
       }
     }
+
+    // Forçar validação de todos os campos preenchidos
+    setTimeout(() => {
+      form.trigger();
+    }, 100);
   }, [subscriberData, form]);
 
   // Preencher automaticamente assim que o componente monta e tem dados do assinante
