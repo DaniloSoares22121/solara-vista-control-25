@@ -170,7 +170,7 @@ const ContaEnergiaForm = ({ form, subscriberData }: ContaEnergiaFormProps) => {
           name="energyAccount.originalAccount.type"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Tipo de Pessoa na Conta *</FormLabel>
+              <FormLabel>Tipo de Pessoa na Conta</FormLabel>
               <FormControl>
                 <RadioGroup
                   value={field.value}
@@ -199,7 +199,7 @@ const ContaEnergiaForm = ({ form, subscriberData }: ContaEnergiaFormProps) => {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>
-                  {tipoContaOriginal === 'fisica' ? 'CPF' : 'CNPJ'} na Conta de Energia *
+                  {tipoContaOriginal === 'fisica' ? 'CPF' : 'CNPJ'} na Conta de Energia
                 </FormLabel>
                 <FormControl>
                   {tipoContaOriginal === 'fisica' ? (
@@ -227,7 +227,7 @@ const ContaEnergiaForm = ({ form, subscriberData }: ContaEnergiaFormProps) => {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>
-                  {tipoContaOriginal === 'fisica' ? 'Nome da PF' : 'Nome da Empresa'} na Conta de Energia *
+                  {tipoContaOriginal === 'fisica' ? 'Nome da PF' : 'Nome da Empresa'} na Conta de Energia
                 </FormLabel>
                 <FormControl>
                   <Input 
@@ -261,7 +261,7 @@ const ContaEnergiaForm = ({ form, subscriberData }: ContaEnergiaFormProps) => {
             name="energyAccount.originalAccount.uc"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>UC - Unidade Consumidora *</FormLabel>
+                <FormLabel>UC - Unidade Consumidora</FormLabel>
                 <FormControl>
                   <Input {...field} placeholder="Digite a UC" />
                 </FormControl>
@@ -275,7 +275,7 @@ const ContaEnergiaForm = ({ form, subscriberData }: ContaEnergiaFormProps) => {
             name="energyAccount.originalAccount.numeroParceiroUC"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Número do Parceiro *</FormLabel>
+                <FormLabel>Número do Parceiro</FormLabel>
                 <FormControl>
                   <Input {...field} placeholder="Digite o número do parceiro" />
                 </FormControl>
@@ -294,7 +294,7 @@ const ContaEnergiaForm = ({ form, subscriberData }: ContaEnergiaFormProps) => {
               name="energyAccount.originalAccount.address.cep"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>CEP *</FormLabel>
+                  <FormLabel>CEP</FormLabel>
                   <FormControl>
                     <MaskedInput {...field} mask="99999-999" placeholder="00000-000" />
                   </FormControl>
@@ -308,7 +308,7 @@ const ContaEnergiaForm = ({ form, subscriberData }: ContaEnergiaFormProps) => {
               name="energyAccount.originalAccount.address.endereco"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Endereço *</FormLabel>
+                  <FormLabel>Endereço</FormLabel>
                   <FormControl>
                     <Input {...field} placeholder="Digite o endereço" />
                   </FormControl>
@@ -322,7 +322,7 @@ const ContaEnergiaForm = ({ form, subscriberData }: ContaEnergiaFormProps) => {
               name="energyAccount.originalAccount.address.numero"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Número *</FormLabel>
+                  <FormLabel>Número</FormLabel>
                   <FormControl>
                     <Input {...field} placeholder="Digite o número" />
                   </FormControl>
@@ -350,7 +350,7 @@ const ContaEnergiaForm = ({ form, subscriberData }: ContaEnergiaFormProps) => {
               name="energyAccount.originalAccount.address.bairro"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Bairro *</FormLabel>
+                  <FormLabel>Bairro</FormLabel>
                   <FormControl>
                     <Input {...field} placeholder="Digite o bairro" />
                   </FormControl>
@@ -364,7 +364,7 @@ const ContaEnergiaForm = ({ form, subscriberData }: ContaEnergiaFormProps) => {
               name="energyAccount.originalAccount.address.cidade"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Cidade *</FormLabel>
+                  <FormLabel>Cidade</FormLabel>
                   <FormControl>
                     <Input {...field} placeholder="Digite a cidade" />
                   </FormControl>
@@ -378,7 +378,7 @@ const ContaEnergiaForm = ({ form, subscriberData }: ContaEnergiaFormProps) => {
               name="energyAccount.originalAccount.address.estado"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Estado *</FormLabel>
+                  <FormLabel>Estado</FormLabel>
                   <FormControl>
                     <Input {...field} placeholder="Digite o estado" />
                   </FormControl>
