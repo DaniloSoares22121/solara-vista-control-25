@@ -12,7 +12,8 @@ import {
   Zap, 
   Edit, 
   Trash2,
-  Eye
+  Eye,
+  CreditCard
 } from 'lucide-react';
 import { SubscriberFormData } from '@/types/subscriber';
 import SubscriberDetails from './SubscriberDetails';
@@ -80,7 +81,7 @@ const SubscriberCard = ({ subscriber, onEdit, onDelete }: SubscriberCardProps) =
           </div>
         </div>
 
-        {/* Dados do Plano */}
+        {/* Informações do Plano */}
         <div className="border-t border-gray-100 pt-3 space-y-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -103,54 +104,61 @@ const SubscriberCard = ({ subscriber, onEdit, onDelete }: SubscriberCardProps) =
           </div>
 
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-gray-600">Desconto</span>
+            <div className="flex items-center gap-2">
+              <CreditCard className="w-4 h-4 text-green-500" />
+              <span className="text-sm font-medium text-gray-600">Desconto</span>
+            </div>
             <span className="text-sm font-bold text-green-600">
               {subscriber.planContract.desconto}%
             </span>
           </div>
         </div>
 
-        {/* Endereço */}
-        <div className="border-t border-gray-100 pt-3">
+        {/* Informações da Conta */}
+        <div className="border-t border-gray-100 pt-3 space-y-2">
           <div className="flex items-start gap-2">
             <MapPin className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
             <div className="flex-1">
-              <span className="text-xs text-gray-500">Endereço:</span>
+              <span className="text-xs text-gray-500 font-medium">Endereço da UC:</span>
               <p className="text-sm text-gray-900 leading-relaxed">
                 {subscriber.subscriber.address.endereco}, {subscriber.subscriber.address.numero}
                 {subscriber.subscriber.address.complemento && `, ${subscriber.subscriber.address.complemento}`}
                 <br />
-                {subscriber.subscriber.address.bairro}, {subscriber.subscriber.address.cidade}/{subscriber.subscriber.address.estado}
+                <span className="text-xs text-gray-500">
+                  {subscriber.subscriber.address.bairro}, {subscriber.subscriber.address.cidade}/{subscriber.subscriber.address.estado}
+                </span>
               </p>
             </div>
           </div>
         </div>
 
-        {/* Ações - Agora sempre visíveis */}
-        <div className="border-t border-gray-100 pt-3 flex gap-2">
-          <SubscriberDetails 
-            subscriber={subscriber}
-            onEdit={onEdit}
-            onDelete={onDelete}
-          />
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={() => onEdit(subscriber)}
-            className="hover:bg-blue-50 hover:border-blue-200"
-          >
-            <Edit className="w-4 h-4 mr-2" />
-            Editar
-          </Button>
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={() => onDelete(subscriber.id)}
-            className="hover:bg-red-50 hover:border-red-200 hover:text-red-600"
-          >
-            <Trash2 className="w-4 h-4 mr-2" />
-            Excluir
-          </Button>
+        {/* Ações */}
+        <div className="border-t border-gray-100 pt-3">
+          <div className="flex gap-2">
+            <SubscriberDetails 
+              subscriber={subscriber}
+              onEdit={onEdit}
+              onDelete={onDelete}
+            />
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => onEdit(subscriber)}
+              className="flex-1 hover:bg-blue-50 hover:border-blue-200 hover:text-blue-600"
+            >
+              <Edit className="w-4 h-4 mr-2" />
+              Editar
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => onDelete(subscriber.id)}
+              className="flex-1 hover:bg-red-50 hover:border-red-200 hover:text-red-600"
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              Excluir
+            </Button>
+          </div>
         </div>
       </CardContent>
     </Card>
