@@ -2,6 +2,7 @@
 import { useState, useCallback } from 'react';
 import { SubscriberFormData, Contact, Address } from '@/types/subscriber';
 import { useCepLookup } from '@/hooks/useCepLookup';
+import { useSubscribers } from '@/hooks/useSubscribers';
 import { toast } from 'sonner';
 
 const defaultNotificationSettings = {
@@ -84,6 +85,7 @@ export const useSubscriberForm = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { lookupCep } = useCepLookup();
+  const { createSubscriber } = useSubscribers();
 
   const updateFormData = useCallback((section: keyof SubscriberFormData, data: any) => {
     setFormData(prev => ({
@@ -105,21 +107,21 @@ export const useSubscriberForm = () => {
 
       switch (addressType) {
         case 'personal':
-          if (formData.personalData) {
+          if (formData.personalData?.address) {
             updateFormData('personalData', {
               address: { ...formData.personalData.address, ...addressUpdate }
             });
           }
           break;
         case 'company':
-          if (formData.companyData) {
+          if (formData.companyData?.address) {
             updateFormData('companyData', {
               address: { ...formData.companyData.address, ...addressUpdate }
             });
           }
           break;
         case 'administrator':
-          if (formData.administratorData) {
+          if (formData.administratorData?.address) {
             updateFormData('administratorData', {
               address: { ...formData.administratorData.address, ...addressUpdate }
             });
@@ -227,14 +229,16 @@ export const useSubscriberForm = () => {
   const submitForm = useCallback(async () => {
     setIsSubmitting(true);
     try {
-      // Aqui você implementaria a lógica de envio para o backend
-      console.log('Enviando formulário:', formData);
+      const result = await createSubscriber(formData);
       
-      // Simular delay de envio
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      toast.success('Assinante cadastrado com sucesso!');
-      return { success: true };
+      if (result.success) {
+        // Reset form after successful submission
+        setFormData(initialFormData);
+        setCurrentStep(1);
+        return { success: true, id: result.id };
+      } else {
+        return { success: false, error: result.error };
+      }
     } catch (error) {
       console.error('Erro ao enviar formulário:', error);
       toast.error('Erro ao cadastrar assinante. Tente novamente.');
@@ -242,7 +246,7 @@ export const useSubscriberForm = () => {
     } finally {
       setIsSubmitting(false);
     }
-  }, [formData]);
+  }, [formData, createSubscriber]);
 
   return {
     formData,

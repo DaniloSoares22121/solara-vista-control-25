@@ -46,21 +46,25 @@ const AddressForm = ({ form, prefix, title, onCepChange, onAddressChange }: Addr
   ];
 
   return (
-    <div className="space-y-4">
-      <h4 className="text-md font-semibold text-gray-900">{title}</h4>
+    <div className="space-y-6">
+      <div className="border-l-4 border-primary pl-4">
+        <h4 className="text-lg font-semibold text-gray-900">{title}</h4>
+        <p className="text-sm text-gray-600 mt-1">Preencha os dados do endereço</p>
+      </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <FormField
           control={form.control}
           name={`${prefix}.cep`}
           render={({ field }) => (
             <FormItem>
-              <FormLabel>CEP *</FormLabel>
+              <FormLabel className="text-sm font-medium text-gray-700">CEP *</FormLabel>
               <FormControl>
                 <MaskedInput 
                   {...field} 
                   mask="99999-999" 
                   placeholder="00000-000" 
+                  className="border-gray-300 focus:border-primary focus:ring-primary"
                   onChange={(e) => {
                     field.onChange(e);
                     const cep = e.target.value.replace(/\D/g, '');
@@ -83,11 +87,12 @@ const AddressForm = ({ form, prefix, title, onCepChange, onAddressChange }: Addr
           name={`${prefix}.street`}
           render={({ field }) => (
             <FormItem className="md:col-span-2">
-              <FormLabel>Endereço *</FormLabel>
+              <FormLabel className="text-sm font-medium text-gray-700">Endereço *</FormLabel>
               <FormControl>
                 <Input 
                   {...field} 
-                  placeholder="Digite o endereço" 
+                  placeholder="Digite o endereço completo" 
+                  className="border-gray-300 focus:border-primary focus:ring-primary"
                   onChange={(e) => {
                     field.onChange(e);
                     if (onAddressChange) {
@@ -106,11 +111,12 @@ const AddressForm = ({ form, prefix, title, onCepChange, onAddressChange }: Addr
           name={`${prefix}.number`}
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Número *</FormLabel>
+              <FormLabel className="text-sm font-medium text-gray-700">Número *</FormLabel>
               <FormControl>
                 <Input 
                   {...field} 
                   placeholder="Nº" 
+                  className="border-gray-300 focus:border-primary focus:ring-primary"
                   onChange={(e) => {
                     field.onChange(e);
                     if (onAddressChange) {
@@ -129,11 +135,12 @@ const AddressForm = ({ form, prefix, title, onCepChange, onAddressChange }: Addr
           name={`${prefix}.complement`}
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Complemento</FormLabel>
+              <FormLabel className="text-sm font-medium text-gray-700">Complemento</FormLabel>
               <FormControl>
                 <Input 
                   {...field} 
                   placeholder="Apto, Casa, etc." 
+                  className="border-gray-300 focus:border-primary focus:ring-primary"
                   onChange={(e) => {
                     field.onChange(e);
                     if (onAddressChange) {
@@ -152,11 +159,12 @@ const AddressForm = ({ form, prefix, title, onCepChange, onAddressChange }: Addr
           name={`${prefix}.neighborhood`}
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Bairro *</FormLabel>
+              <FormLabel className="text-sm font-medium text-gray-700">Bairro *</FormLabel>
               <FormControl>
                 <Input 
                   {...field} 
                   placeholder="Digite o bairro" 
+                  className="border-gray-300 focus:border-primary focus:ring-primary"
                   onChange={(e) => {
                     field.onChange(e);
                     if (onAddressChange) {
@@ -175,11 +183,12 @@ const AddressForm = ({ form, prefix, title, onCepChange, onAddressChange }: Addr
           name={`${prefix}.city`}
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Cidade *</FormLabel>
+              <FormLabel className="text-sm font-medium text-gray-700">Cidade *</FormLabel>
               <FormControl>
                 <Input 
                   {...field} 
                   placeholder="Digite a cidade" 
+                  className="border-gray-300 focus:border-primary focus:ring-primary"
                   onChange={(e) => {
                     field.onChange(e);
                     if (onAddressChange) {
@@ -198,7 +207,7 @@ const AddressForm = ({ form, prefix, title, onCepChange, onAddressChange }: Addr
           name={`${prefix}.state`}
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Estado *</FormLabel>
+              <FormLabel className="text-sm font-medium text-gray-700">Estado *</FormLabel>
               <FormControl>
                 <Select 
                   value={field.value} 
@@ -209,8 +218,8 @@ const AddressForm = ({ form, prefix, title, onCepChange, onAddressChange }: Addr
                     }
                   }}
                 >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione" />
+                  <SelectTrigger className="border-gray-300 focus:border-primary focus:ring-primary">
+                    <SelectValue placeholder="Selecione o estado" />
                   </SelectTrigger>
                   <SelectContent>
                     {states.map(state => (
