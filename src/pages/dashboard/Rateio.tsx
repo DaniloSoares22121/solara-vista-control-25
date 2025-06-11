@@ -16,7 +16,7 @@ import { RateioSubscriber } from '@/types/rateio';
 import { 
   Search, Users, Calculator, History, Upload, FileText, CheckCircle, AlertCircle, 
   Percent, ArrowUpDown, TrendingUp, Zap, Download, Eye, Edit, Trash2, Save,
-  AlertTriangle, Info, PieChart, BarChart3, RefreshCw, Settings, Plus
+  AlertTriangle, Info, PieChart, BarChart3, RefreshCw, Settings, Plus, Calendar
 } from 'lucide-react';
 import { toast } from 'sonner';
 
