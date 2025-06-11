@@ -181,18 +181,18 @@ const SubscriberForm = () => {
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Header */}
-      <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
+      <Card className="bg-gradient-to-r from-green-50 to-green-50 border-green-200">
         <CardHeader>
-          <CardTitle className="text-2xl font-bold text-center text-blue-900">
+          <CardTitle className="text-2xl font-bold text-center text-green-900">
             Cadastro de Assinante
           </CardTitle>
           <div className="space-y-2">
-            <div className="flex justify-between text-sm text-blue-700">
+            <div className="flex justify-between text-sm text-green-700">
               <span>Etapa {currentStep} de {totalSteps}</span>
               <span>{Math.round(progress)}% concluído</span>
             </div>
             <Progress value={progress} className="w-full" />
-            <p className="text-center text-sm font-medium text-blue-800">
+            <p className="text-center text-sm font-medium text-green-800">
               {stepTitles[currentStep - 1]}
             </p>
           </div>
@@ -257,7 +257,7 @@ const SubscriberForm = () => {
                   type="button"
                   onClick={handleNext}
                   disabled={!validateStep(currentStep)}
-                  className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700"
+                  className="flex items-center space-x-2 bg-green-600 hover:bg-green-700"
                 >
                   <span>Próximo</span>
                   <ChevronRight className="w-4 h-4" />
