@@ -160,6 +160,10 @@ const NovoAssinante = ({ onClose, initialData, onSubmit, isEditing = false }: No
   const planContractFormRef = useRef<HTMLFormElement>(null);
   const attachmentsFormRef = useRef<HTMLFormElement>(null);
 
+  // Watch subscriber data to pass to energy account form
+  const currentSubscriberData = form.watch('subscriber');
+  console.log('NovoAssinante - currentSubscriberData:', currentSubscriberData);
+
   const validateForm = (step: number): boolean => {
     switch (step) {
       case 0:
@@ -320,6 +324,7 @@ const NovoAssinante = ({ onClose, initialData, onSubmit, isEditing = false }: No
               <EnergyAccountForm
                 ref={energyAccountFormRef}
                 initialValues={form.watch('energyAccount')}
+                subscriberData={currentSubscriberData}
                 onChange={(energyAccount) => {
                   form.setValue('energyAccount', energyAccount);
                 }}

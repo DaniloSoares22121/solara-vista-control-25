@@ -10,13 +10,15 @@ interface EnergyAccountFormProps {
   initialValues: EnergyAccount;
   onChange: (value: EnergyAccount) => void;
   isEditing?: boolean;
+  subscriberData?: any;
 }
 
 const EnergyAccountForm = forwardRef<HTMLFormElement, EnergyAccountFormProps>(
-  ({ initialValues, onChange, isEditing }, ref) => {
+  ({ initialValues, onChange, isEditing, subscriberData }, ref) => {
     const formRef = useRef<HTMLFormElement>(null);
     
     console.log('EnergyAccountForm - initialValues:', initialValues);
+    console.log('EnergyAccountForm - subscriberData:', subscriberData);
     
     const form = useForm({
       defaultValues: initialValues,
@@ -47,7 +49,7 @@ const EnergyAccountForm = forwardRef<HTMLFormElement, EnergyAccountFormProps>(
         <CardContent>
           <Form {...form}>
             <form ref={formRef} className="space-y-4">
-              <ContaEnergiaForm form={form} />
+              <ContaEnergiaForm form={form} subscriberData={subscriberData} />
               <input type="hidden" name="energyAccount" required />
             </form>
           </Form>
