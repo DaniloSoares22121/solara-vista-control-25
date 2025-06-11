@@ -13,12 +13,22 @@ interface PlanoContratadoFormProps {
 }
 
 const PlanoContratadoForm = ({ form }: PlanoContratadoFormProps) => {
-  const faixaConsumo = form.watch('planContract.faixaConsumo');
-  const fidelidade = form.watch('planContract.fidelidade');
-  const anosFidelidade = form.watch('planContract.anosFidelidade');
-  const kwhVendedor = form.watch('planContract.kwhVendedor');
+  // Watch all form values directly
+  const formValues = form.watch();
+  
+  // Extract values with proper fallbacks
+  const faixaConsumo = formValues?.planContract?.faixaConsumo || '';
+  const fidelidade = formValues?.planContract?.fidelidade || '';
+  const anosFidelidade = formValues?.planContract?.anosFidelidade || '';
+  const kwhVendedor = formValues?.planContract?.kwhVendedor || 0;
 
-  console.log('Form values:', { faixaConsumo, fidelidade, anosFidelidade, kwhVendedor });
+  console.log('PlanoContratadoForm - Form values:', { 
+    faixaConsumo, 
+    fidelidade, 
+    anosFidelidade, 
+    kwhVendedor,
+    fullFormValues: formValues
+  });
 
   // Função para determinar a faixa de consumo automaticamente baseada no kWh do vendedor
   const determinarFaixaConsumo = (kwh: number): string => {
@@ -52,7 +62,7 @@ const PlanoContratadoForm = ({ form }: PlanoContratadoFormProps) => {
             <FormItem>
               <FormLabel>Modalidade de Compensação *</FormLabel>
               <FormControl>
-                <Select value={field.value} onValueChange={field.onChange}>
+                <Select value={field.value || ''} onValueChange={field.onChange}>
                   <SelectTrigger>
                     <SelectValue placeholder="Selecione a modalidade" />
                   </SelectTrigger>
@@ -74,7 +84,7 @@ const PlanoContratadoForm = ({ form }: PlanoContratadoFormProps) => {
             <FormItem>
               <FormLabel>Data de Adesão *</FormLabel>
               <FormControl>
-                <Input {...field} type="date" />
+                <Input {...field} type="date" value={field.value || ''} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -89,9 +99,9 @@ const PlanoContratadoForm = ({ form }: PlanoContratadoFormProps) => {
               <FormLabel>kWh Vendedor Informou *</FormLabel>
               <FormControl>
                 <Input 
-                  {...field} 
                   type="number" 
                   placeholder="Valor informado pelo vendedor"
+                  value={field.value || ''}
                   onChange={(e) => {
                     const value = parseFloat(e.target.value) || 0;
                     field.onChange(value);
@@ -117,10 +127,13 @@ const PlanoContratadoForm = ({ form }: PlanoContratadoFormProps) => {
               <FormLabel>kWh Contratado *</FormLabel>
               <FormControl>
                 <Input 
-                  {...field} 
                   type="number" 
                   placeholder="Valor definido pelo gestor"
-                  onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                  value={field.value || ''}
+                  onChange={(e) => {
+                    const value = parseFloat(e.target.value) || 0;
+                    field.onChange(value);
+                  }}
                   min="0"
                 />
               </FormControl>
@@ -137,7 +150,7 @@ const PlanoContratadoForm = ({ form }: PlanoContratadoFormProps) => {
           <FormItem>
             <FormLabel>Faixa de Consumo *</FormLabel>
             <FormControl>
-              <Select value={field.value} onValueChange={field.onChange}>
+              <Select value={field.value || ''} onValueChange={field.onChange}>
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione a faixa de consumo" />
                 </SelectTrigger>
@@ -168,7 +181,7 @@ const PlanoContratadoForm = ({ form }: PlanoContratadoFormProps) => {
             <FormLabel>Tipo de Fidelidade *</FormLabel>
             <FormControl>
               <RadioGroup
-                value={field.value}
+                value={field.value || ''}
                 onValueChange={field.onChange}
                 className="flex space-x-6"
               >
@@ -196,7 +209,7 @@ const PlanoContratadoForm = ({ form }: PlanoContratadoFormProps) => {
               <FormLabel>Anos de Fidelidade *</FormLabel>
               <FormControl>
                 <RadioGroup
-                  value={field.value}
+                  value={field.value || ''}
                   onValueChange={field.onChange}
                   className="flex space-x-6"
                 >
