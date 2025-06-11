@@ -85,10 +85,22 @@ export const useSubscriberForm = () => {
   const { lookupCep } = useCepLookup();
 
   const updateFormData = useCallback((section: keyof SubscriberFormData, data: any) => {
-    setFormData(prev => ({
-      ...prev,
-      [section]: typeof data === 'object' && data !== null ? { ...prev[section], ...data } : data,
-    }));
+    setFormData(prev => {
+      const currentSectionData = prev[section];
+      
+      // Ensure we're only spreading object types
+      if (typeof data === 'object' && data !== null && typeof currentSectionData === 'object' && currentSectionData !== null) {
+        return {
+          ...prev,
+          [section]: { ...currentSectionData, ...data }
+        };
+      } else {
+        return {
+          ...prev,
+          [section]: data
+        };
+      }
+    });
   }, []);
 
   const handleCepLookup = useCallback(async (cep: string, addressType: 'personal' | 'company' | 'administrator' | 'energy') => {
