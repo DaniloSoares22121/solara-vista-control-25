@@ -1,5 +1,6 @@
-import React, { useState, useRef } from 'react';
-import { ArrowLeft, Loader2, Save } from 'lucide-react';
+
+import React, { useState, useRef, useCallback } from 'react';
+import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { useForm } from 'react-hook-form';
@@ -10,9 +11,13 @@ import PlanContractForm from '@/components/forms/PlanContractForm';
 import PlanDetailsForm from '@/components/forms/PlanDetailsForm';
 import NotificationSettingsForm from '@/components/forms/NotificationSettingsForm';
 import AttachmentsForm from '@/components/forms/AttachmentsForm';
-import { Step, Steps } from '@/components/ui/steps';
+import FormProgress from '@/components/forms/FormProgress';
+import FormValidationSummary from '@/components/forms/FormValidationSummary';
+import AutoSaveIndicator from '@/components/forms/AutoSaveIndicator';
+import StepNavigationButtons from '@/components/forms/StepNavigationButtons';
 import { SubscriberFormData } from '@/types/subscriber';
 import { useSubscribers } from '@/hooks/useSubscribers';
+import { useAutoSave } from '@/hooks/useAutoSave';
 
 interface NovoAssinanteProps {
   onClose: () => void;
@@ -140,8 +145,9 @@ const NovoAssinante = ({ onClose, initialData, onSubmit, isEditing = false }: No
   
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [completedSteps, setCompletedSteps] = useState<boolean[]>([false, false, false, false]);
+  const [hasErrors, setHasErrors] = useState<boolean[]>([false, false, false, false]);
   
-  // 4 etapas - removendo a etapa separada do administrador
   const steps = [
     'Dados do Assinante',
     'Conta de Energia',
@@ -149,7 +155,6 @@ const NovoAssinante = ({ onClose, initialData, onSubmit, isEditing = false }: No
     'Anexos',
   ];
 
-  // Formulário unificado para todos os dados
   const form = useForm<SubscriberFormData>({
     defaultValues: initialData || defaultFormData,
     mode: 'onChange'
@@ -160,46 +165,102 @@ const NovoAssinante = ({ onClose, initialData, onSubmit, isEditing = false }: No
   const planContractFormRef = useRef<HTMLFormElement>(null);
   const attachmentsFormRef = useRef<HTMLFormElement>(null);
 
-  // Watch subscriber data to pass to energy account form
   const currentSubscriberData = form.watch('subscriber');
-  console.log('NovoAssinante - currentSubscriberData:', currentSubscriberData);
+
+  // Auto-save functionality
+  const autoSaveData = useCallback(async (data: SubscriberFormData) => {
+    const key = `novo-assinante-draft-${isEditing ? initialData?.id : 'new'}`;
+    localStorage.setItem(key, JSON.stringify(data));
+  }, [isEditing, initialData?.id]);
+
+  const { status: autoSaveStatus, lastSaved } = useAutoSave({
+    data: form.watch(),
+    onSave: autoSaveData,
+    enabled: true
+  });
+
+  // Load draft on mount
+  React.useEffect(() => {
+    if (!initialData) {
+      const key = `novo-assinante-draft-new`;
+      const draft = localStorage.getItem(key);
+      if (draft) {
+        try {
+          const draftData = JSON.parse(draft);
+          form.reset(draftData);
+          toast.info('Rascunho carregado automaticamente');
+        } catch (error) {
+          console.error('Error loading draft:', error);
+        }
+      }
+    }
+  }, [form, initialData]);
 
   const validateForm = (step: number): boolean => {
+    const formData = form.getValues();
+    const errors: string[] = [];
+
     switch (step) {
       case 0:
-        return subscriberFormRef.current?.checkValidity() || false;
+        if (!formData.concessionaria) errors.push('Concessionária');
+        if (!formData.subscriber?.type) errors.push('Tipo de pessoa');
+        if (!formData.subscriber?.cpfCnpj) errors.push('CPF/CNPJ');
+        if (!formData.subscriber?.name && !formData.subscriber?.razaoSocial) errors.push('Nome/Razão Social');
+        break;
       case 1:
-        return energyAccountFormRef.current?.checkValidity() || false;
+        if (!formData.energyAccount?.originalAccount?.uc) errors.push('UC');
+        if (!formData.energyAccount?.originalAccount?.cpfCnpj) errors.push('CPF/CNPJ da conta');
+        break;
       case 2:
-        return planContractFormRef.current?.checkValidity() || false;
+        if (!formData.planContract?.dataAdesao) errors.push('Data de adesão');
+        if (!formData.planContract?.modalidadeCompensacao) errors.push('Modalidade');
+        break;
       case 3:
-        return attachmentsFormRef.current?.checkValidity() || true; // Opcional
-      default:
-        return false;
+        // Anexos são opcionais
+        break;
     }
+
+    const newHasErrors = [...hasErrors];
+    newHasErrors[step] = errors.length > 0;
+    setHasErrors(newHasErrors);
+
+    if (errors.length > 0) {
+      toast.error(`Preencha os campos obrigatórios: ${errors.join(', ')}`);
+      return false;
+    }
+
+    const newCompletedSteps = [...completedSteps];
+    newCompletedSteps[step] = true;
+    setCompletedSteps(newCompletedSteps);
+
+    return true;
   };
 
   const validateAllForms = (): boolean => {
-    for (let i = 0; i < steps.length; i++) {
+    let allValid = true;
+    const allErrors: any[] = [];
+
+    for (let i = 0; i < steps.length - 1; i++) { // Skip last step (attachments)
       if (!validateForm(i)) {
-        setCurrentStep(i);
-        toast.error(`Preencha os campos obrigatórios da etapa ${i + 1}`);
-        return false;
+        allValid = false;
       }
     }
-    return true;
+
+    return allValid;
   };
 
   const nextStep = () => {
     if (validateForm(currentStep)) {
       setCurrentStep((prev) => Math.min(prev + 1, steps.length - 1));
-    } else {
-      toast.error('Preencha todos os campos obrigatórios!');
     }
   };
 
   const prevStep = () => {
     setCurrentStep((prev) => Math.max(prev - 1, 0));
+  };
+
+  const goToStep = (step: number) => {
+    setCurrentStep(step);
   };
 
   const handleSubmit = async () => {
@@ -210,18 +271,21 @@ const NovoAssinante = ({ onClose, initialData, onSubmit, isEditing = false }: No
     try {
       setIsSubmitting(true);
       const formData = form.getValues();
-      console.log('🚀 Dados do formulário antes de enviar:', JSON.stringify(formData, null, 2));
       
       if (isEditing && onSubmit) {
         await onSubmit(formData);
       } else {
         const id = await createSubscriber(formData);
-        console.log('✅ Assinante cadastrado com sucesso! ID:', id);
+        
+        // Clear draft after successful creation
+        const key = `novo-assinante-draft-new`;
+        localStorage.removeItem(key);
+        
         toast.success('Assinante cadastrado com sucesso!');
         onClose();
       }
     } catch (error: any) {
-      console.error('❌ Erro ao processar assinante:', error);
+      console.error('Erro ao processar assinante:', error);
       
       let errorMessage = 'Erro desconhecido';
       if (error?.message) {
@@ -236,11 +300,12 @@ const NovoAssinante = ({ onClose, initialData, onSubmit, isEditing = false }: No
     }
   };
 
+  const isNextDisabled = hasErrors[currentStep];
+
   return (
     <div className={isEditing ? "" : "min-h-screen bg-gray-50"}>
-      {/* Header - só renderiza se não estiver editando */}
       {!isEditing && (
-        <div className="sticky top-0 z-10 bg-white border-b border-gray-200 shadow-sm">
+        <div className="bg-white border-b border-gray-200 shadow-sm">
           <div className="flex items-center justify-between p-4 sm:p-6">
             <div className="flex items-center gap-3">
               <Button
@@ -263,45 +328,27 @@ const NovoAssinante = ({ onClose, initialData, onSubmit, isEditing = false }: No
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
-              <Button
-                variant="outline"
-                onClick={onClose}
-                disabled={isSubmitting}
-                className="hidden sm:flex"
-              >
-                Cancelar
-              </Button>
-              <Button
-                onClick={handleSubmit}
-                disabled={isSubmitting}
-                className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white shadow-lg hover:shadow-xl transition-all duration-200"
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Cadastrando...
-                  </>
-                ) : (
-                  <>
-                    <Save className="w-4 h-4 mr-2" />
-                    Cadastrar Assinante
-                  </>
-                )}
-              </Button>
-            </div>
+            <AutoSaveIndicator status={autoSaveStatus} lastSaved={lastSaved} />
           </div>
         </div>
       )}
 
-      <div className="p-4 sm:p-6">
-        <Steps current={currentStep}>
-          {steps.map((step, index) => (
-            <Step key={index} title={step} />
-          ))}
-        </Steps>
+      <FormProgress 
+        steps={steps}
+        currentStep={currentStep}
+        completedSteps={completedSteps}
+        hasErrors={hasErrors}
+      />
 
-        <div className="mt-6">
+      <div className="max-w-4xl mx-auto p-4 sm:p-6 pb-24">
+        <div className="mb-6">
+          <FormValidationSummary 
+            errors={[]}
+            onGoToStep={goToStep}
+          />
+        </div>
+
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200">
           <Form {...form}>
             {currentStep === 0 && (
               <SubscriberForm
@@ -333,7 +380,7 @@ const NovoAssinante = ({ onClose, initialData, onSubmit, isEditing = false }: No
             )}
 
             {currentStep === 2 && (
-              <div className="space-y-6">
+              <div className="p-6 space-y-6">
                 <PlanContractForm
                   ref={planContractFormRef}
                   initialValues={form.watch('planContract')}
@@ -373,48 +420,18 @@ const NovoAssinante = ({ onClose, initialData, onSubmit, isEditing = false }: No
             )}
           </Form>
         </div>
-
-        <div className="flex justify-between mt-6">
-          <Button
-            variant="secondary"
-            onClick={prevStep}
-            disabled={currentStep === 0 || isSubmitting}
-          >
-            Anterior
-          </Button>
-          <div className="flex gap-2">
-            {/* Só mostra o botão Próximo se não for a última etapa */}
-            {currentStep !== steps.length - 1 && (
-              <Button
-                onClick={nextStep}
-                disabled={isSubmitting}
-              >
-                Próximo
-              </Button>
-            )}
-            {/* Só mostra o botão de finalizar na última etapa */}
-            {currentStep === steps.length - 1 && (
-              <Button
-                onClick={handleSubmit}
-                disabled={isSubmitting}
-                className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white shadow-lg hover:shadow-xl transition-all duration-200"
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    {isEditing ? 'Atualizando...' : 'Cadastrando...'}
-                  </>
-                ) : (
-                  <>
-                    <Save className="w-4 h-4 mr-2" />
-                    {isEditing ? 'Atualizar Assinante' : 'Cadastrar Assinante'}
-                  </>
-                )}
-              </Button>
-            )}
-          </div>
-        </div>
       </div>
+
+      <StepNavigationButtons
+        currentStep={currentStep}
+        totalSteps={steps.length}
+        onPrevious={prevStep}
+        onNext={nextStep}
+        onSubmit={handleSubmit}
+        isSubmitting={isSubmitting}
+        isNextDisabled={isNextDisabled}
+        isEditing={isEditing}
+      />
     </div>
   );
 };
