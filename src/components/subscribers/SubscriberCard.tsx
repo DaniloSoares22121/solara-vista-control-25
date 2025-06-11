@@ -13,7 +13,8 @@ import {
   Edit, 
   Trash2,
   Eye,
-  CreditCard
+  CreditCard,
+  Building
 } from 'lucide-react';
 import { SubscriberFormData } from '@/types/subscriber';
 import SubscriberDetails from './SubscriberDetails';
@@ -52,7 +53,7 @@ const SubscriberCard = ({ subscriber, onEdit, onDelete }: SubscriberCardProps) =
                 {subscriber.subscriber.name}
               </h3>
               <div className="flex items-center gap-2 mt-1">
-                <MapPin className="w-4 h-4 text-gray-400" />
+                <Building className="w-4 h-4 text-gray-400" />
                 <span className="text-sm font-medium text-gray-600">
                   UC: {subscriber.energyAccount.originalAccount.uc}
                 </span>
@@ -71,13 +72,19 @@ const SubscriberCard = ({ subscriber, onEdit, onDelete }: SubscriberCardProps) =
       <CardContent className="pt-0 space-y-4">
         {/* Informações de Contato */}
         <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <Phone className="w-4 h-4 text-gray-400" />
-            <span className="text-sm text-gray-900">{subscriber.subscriber.telefone}</span>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Phone className="w-4 h-4 text-blue-500" />
+              <span className="text-sm font-medium text-gray-600">Telefone</span>
+            </div>
+            <span className="text-sm font-bold text-gray-900">{subscriber.subscriber.telefone}</span>
           </div>
-          <div className="flex items-center gap-2">
-            <Mail className="w-4 h-4 text-gray-400" />
-            <span className="text-sm text-gray-900 truncate">{subscriber.subscriber.email}</span>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Mail className="w-4 h-4 text-green-500" />
+              <span className="text-sm font-medium text-gray-600">Email</span>
+            </div>
+            <span className="text-sm font-bold text-gray-900 truncate max-w-[180px]">{subscriber.subscriber.email}</span>
           </div>
         </div>
 
@@ -115,7 +122,7 @@ const SubscriberCard = ({ subscriber, onEdit, onDelete }: SubscriberCardProps) =
         </div>
 
         {/* Informações da Conta */}
-        <div className="border-t border-gray-100 pt-3 space-y-2">
+        <div className="border-t border-gray-100 pt-3">
           <div className="flex items-start gap-2">
             <MapPin className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
             <div className="flex-1">
@@ -144,7 +151,7 @@ const SubscriberCard = ({ subscriber, onEdit, onDelete }: SubscriberCardProps) =
               variant="outline" 
               size="sm"
               onClick={() => onEdit(subscriber)}
-              className="flex-1 hover:bg-blue-50 hover:border-blue-200 hover:text-blue-600"
+              className="flex-1 hover:bg-blue-50 hover:border-blue-200 hover:text-blue-600 transition-colors"
             >
               <Edit className="w-4 h-4 mr-2" />
               Editar
@@ -153,7 +160,7 @@ const SubscriberCard = ({ subscriber, onEdit, onDelete }: SubscriberCardProps) =
               variant="outline" 
               size="sm"
               onClick={() => onDelete(subscriber.id)}
-              className="flex-1 hover:bg-red-50 hover:border-red-200 hover:text-red-600"
+              className="flex-1 hover:bg-red-50 hover:border-red-200 hover:text-red-600 transition-colors"
             >
               <Trash2 className="w-4 h-4 mr-2" />
               Excluir
