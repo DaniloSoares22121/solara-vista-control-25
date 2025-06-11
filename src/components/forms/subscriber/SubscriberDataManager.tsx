@@ -32,7 +32,7 @@ const SubscriberDataManager = ({
   console.log('SubscriberDataManager - subscriberType:', subscriberType);
   console.log('SubscriberDataManager - watchedValues:', watchedValues);
 
-  // Update parent when form changes
+  // Single effect to handle all changes
   useEffect(() => {
     const updatedData = { 
       ...watchedValues, 
@@ -42,7 +42,7 @@ const SubscriberDataManager = ({
     onChange(updatedData, administrator);
   }, [watchedValues, contacts, administrator, subscriberType, onChange]);
 
-  // Reset form when subscriber type changes
+  // Reset form only when subscriber type changes, not on every render
   useEffect(() => {
     const resetData = {
       ...initialData,
@@ -57,8 +57,12 @@ const SubscriberDataManager = ({
         profissao: ''
       })
     };
-    form.reset(resetData);
-  }, [subscriberType, form, initialData]);
+    
+    // Only reset if the type actually changed
+    if (form.getValues('type') !== subscriberType) {
+      form.reset(resetData);
+    }
+  }, [subscriberType]); // Remove form and initialData from dependencies
 
   const handleContactsChange = (newContacts: Contact[]) => {
     setContacts(newContacts);

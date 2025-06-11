@@ -32,17 +32,6 @@ const SubscriberForm = forwardRef<HTMLFormElement, SubscriberFormProps>(
       onChange(subscriberData, currentConcessionaria, administrator);
     }, [subscriberData, currentConcessionaria, administrator, onChange]);
 
-    // Update form when initial values change
-    useEffect(() => {
-      setSubscriberData(initialValues);
-      setSubscriberType(initialValues.type || 'fisica');
-    }, [initialValues]);
-
-    // Update administrator when initial administrator changes
-    useEffect(() => {
-      setAdministrator(initialAdministrator);
-    }, [initialAdministrator]);
-
     const handleSubscriberTypeChange = (newType: 'fisica' | 'juridica') => {
       console.log('Subscriber type changing to:', newType);
       setSubscriberType(newType);
@@ -78,7 +67,7 @@ const SubscriberForm = forwardRef<HTMLFormElement, SubscriberFormProps>(
 
             <SubscriberDataManager
               subscriberType={subscriberType}
-              initialData={subscriberData}
+              initialData={{...initialValues, type: subscriberType}}
               initialAdministrator={administrator}
               onChange={handleSubscriberDataChange}
             />
