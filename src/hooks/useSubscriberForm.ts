@@ -1,3 +1,4 @@
+
 import { useState, useCallback } from 'react';
 import { SubscriberFormData, Contact, Address } from '@/types/subscriber';
 import { useCepLookup } from '@/hooks/useCepLookup';
@@ -85,22 +86,10 @@ export const useSubscriberForm = () => {
   const { lookupCep } = useCepLookup();
 
   const updateFormData = useCallback((section: keyof SubscriberFormData, data: any) => {
-    setFormData(prev => {
-      const currentSectionData = prev[section];
-      
-      // Ensure we're only spreading object types
-      if (typeof data === 'object' && data !== null && typeof currentSectionData === 'object' && currentSectionData !== null) {
-        return {
-          ...prev,
-          [section]: { ...currentSectionData, ...data }
-        };
-      } else {
-        return {
-          ...prev,
-          [section]: data
-        };
-      }
-    });
+    setFormData(prev => ({
+      ...prev,
+      [section]: typeof data === 'object' && data !== null ? { ...prev[section], ...data } : data,
+    }));
   }, []);
 
   const handleCepLookup = useCallback(async (cep: string, addressType: 'personal' | 'company' | 'administrator' | 'energy') => {
@@ -116,40 +105,30 @@ export const useSubscriberForm = () => {
 
       switch (addressType) {
         case 'personal':
-          if (formData.personalData?.address) {
-            const currentAddress = formData.personalData.address;
-            const newAddress: Address = { ...currentAddress, ...addressUpdate };
+          if (formData.personalData) {
             updateFormData('personalData', {
-              address: newAddress
+              address: { ...formData.personalData.address, ...addressUpdate }
             });
           }
           break;
         case 'company':
-          if (formData.companyData?.address) {
-            const currentAddress = formData.companyData.address;
-            const newAddress: Address = { ...currentAddress, ...addressUpdate };
+          if (formData.companyData) {
             updateFormData('companyData', {
-              address: newAddress
+              address: { ...formData.companyData.address, ...addressUpdate }
             });
           }
           break;
         case 'administrator':
-          if (formData.administratorData?.address) {
-            const currentAddress = formData.administratorData.address;
-            const newAddress: Address = { ...currentAddress, ...addressUpdate };
+          if (formData.administratorData) {
             updateFormData('administratorData', {
-              address: newAddress
+              address: { ...formData.administratorData.address, ...addressUpdate }
             });
           }
           break;
         case 'energy':
-          if (formData.energyAccount.address) {
-            const currentEnergyAddress = formData.energyAccount.address;
-            const newAddress: Address = { ...currentEnergyAddress, ...addressUpdate };
-            updateFormData('energyAccount', {
-              address: newAddress
-            });
-          }
+          updateFormData('energyAccount', {
+            address: { ...formData.energyAccount.address, ...addressUpdate }
+          });
           break;
       }
     }
@@ -198,34 +177,16 @@ export const useSubscriberForm = () => {
         holderName: formData.personalData.fullName,
         birthDate: formData.personalData.birthDate,
         partnerNumber: formData.personalData.partnerNumber,
-        address: formData.personalData.address ? { ...formData.personalData.address } : {
-          cep: '',
-          street: '',
-          number: '',
-          complement: '',
-          neighborhood: '',
-          city: '',
-          state: '',
-        },
+        address: { ...formData.personalData.address },
       });
-      toast.success('Dados preenchidos automaticamente!');
     } else if (formData.subscriberType === 'company' && formData.companyData) {
       updateFormData('energyAccount', {
         holderType: 'company',
         cpfCnpj: formData.companyData.cnpj,
         holderName: formData.companyData.companyName,
         partnerNumber: formData.companyData.partnerNumber,
-        address: formData.companyData.address ? { ...formData.companyData.address } : {
-          cep: '',
-          street: '',
-          number: '',
-          complement: '',
-          neighborhood: '',
-          city: '',
-          state: '',
-        },
+        address: { ...formData.companyData.address },
       });
-      toast.success('Dados preenchidos automaticamente!');
     }
   }, [formData, updateFormData]);
 

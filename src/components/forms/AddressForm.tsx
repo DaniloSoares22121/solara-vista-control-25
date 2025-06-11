@@ -1,3 +1,4 @@
+
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { MaskedInput } from '@/components/ui/masked-input';
@@ -11,10 +12,9 @@ interface AddressFormProps {
   title: string;
   onCepChange?: (cep: string) => void;
   onAddressChange?: (address: Partial<Address>) => void;
-  className?: string;
 }
 
-const AddressForm = ({ form, prefix, title, onCepChange, onAddressChange, className }: AddressFormProps) => {
+const AddressForm = ({ form, prefix, title, onCepChange, onAddressChange }: AddressFormProps) => {
   const states = [
     { value: 'AC', label: 'Acre' },
     { value: 'AL', label: 'Alagoas' },
@@ -46,7 +46,7 @@ const AddressForm = ({ form, prefix, title, onCepChange, onAddressChange, classN
   ];
 
   return (
-    <div className={className || "space-y-4"}>
+    <div className="space-y-4">
       <h4 className="text-md font-semibold text-gray-900">{title}</h4>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

@@ -6,7 +6,7 @@ import { MaskedInput } from '@/components/ui/masked-input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { UseFormReturn } from 'react-hook-form';
-import { CompanyData, AdministratorData, Address } from '@/types/subscriber';
+import { CompanyData, AdministratorData } from '@/types/subscriber';
 import AddressForm from '../AddressForm';
 import ContactsSection from './ContactsSection';
 
@@ -31,36 +31,6 @@ const CompanyDataForm = ({
   onRemoveContact,
   form
 }: CompanyDataFormProps) => {
-  const handleCompanyAddressChange = (addressUpdate: Partial<Address>) => {
-    const currentAddress = companyData?.address || {
-      cep: '',
-      street: '',
-      number: '',
-      complement: '',
-      neighborhood: '',
-      city: '',
-      state: '',
-    };
-    
-    const newAddress: Address = { ...currentAddress, ...addressUpdate };
-    onUpdateCompany({ address: newAddress });
-  };
-
-  const handleAdministratorAddressChange = (addressUpdate: Partial<Address>) => {
-    const currentAddress = administratorData?.address || {
-      cep: '',
-      street: '',
-      number: '',
-      complement: '',
-      neighborhood: '',
-      city: '',
-      state: '',
-    };
-    
-    const newAddress: Address = { ...currentAddress, ...addressUpdate };
-    onUpdateAdministrator({ address: newAddress });
-  };
-
   return (
     <div className="space-y-8">
       {/* Dados da Empresa */}
@@ -204,7 +174,7 @@ const CompanyDataForm = ({
           prefix="companyData.address" 
           title="Endereço da Empresa"
           onCepChange={(cep) => onCepLookup(cep, 'company')}
-          onAddressChange={handleCompanyAddressChange}
+          onAddressChange={(address) => onUpdateCompany({ address })}
         />
 
         <FormField
@@ -408,7 +378,7 @@ const CompanyDataForm = ({
           prefix="administratorData.address" 
           title="Endereço Residencial do Administrador"
           onCepChange={(cep) => onCepLookup(cep, 'administrator')}
-          onAddressChange={handleAdministratorAddressChange}
+          onAddressChange={(address) => onUpdateAdministrator({ address })}
         />
       </div>
     </div>
