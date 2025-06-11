@@ -22,44 +22,45 @@ const ContaEnergiaForm = ({ form, subscriberData }: ContaEnergiaFormProps) => {
   console.log('ContaEnergiaForm - subscriberData recebido:', subscriberData);
   
   const hasAutoFilledRef = useRef(false);
+  const isFillingRef = useRef(false);
   const realizarTroca = form.watch('energyAccount.realizarTrocaTitularidade');
   const tipoContaOriginal = form.watch('energyAccount.originalAccount.type');
   
   // Função para preencher automaticamente com dados do assinante
   const preencherComDadosAssinante = useCallback(() => {
-    if (!subscriberData) {
-      console.log('Nenhum dado do assinante disponível');
+    if (!subscriberData || isFillingRef.current) {
+      console.log('Nenhum dado do assinante disponível ou já preenchendo');
       return;
     }
 
     console.log('Preenchendo conta de energia com dados do assinante...');
+    isFillingRef.current = true;
     
-    // Preencher tipo da conta
+    // Usar batch para definir todos os valores de uma vez
+    const updates = {};
+    
+    // Preparar todos os valores
     if (subscriberData.type) {
-      form.setValue('energyAccount.originalAccount.type', subscriberData.type, { shouldValidate: true, shouldDirty: true });
+      updates['energyAccount.originalAccount.type'] = subscriberData.type;
     }
 
-    // Preencher CPF/CNPJ
     if (subscriberData.cpfCnpj) {
-      form.setValue('energyAccount.originalAccount.cpfCnpj', subscriberData.cpfCnpj, { shouldValidate: true, shouldDirty: true });
+      updates['energyAccount.originalAccount.cpfCnpj'] = subscriberData.cpfCnpj;
     }
 
-    // Preencher nome/razão social
     const name = subscriberData.type === 'fisica' 
       ? subscriberData.name 
       : subscriberData.razaoSocial || subscriberData.name;
     if (name) {
-      form.setValue('energyAccount.originalAccount.name', name, { shouldValidate: true, shouldDirty: true });
+      updates['energyAccount.originalAccount.name'] = name;
     }
 
-    // Preencher data de nascimento para pessoa física
     if (subscriberData.type === 'fisica' && subscriberData.dataNascimento) {
-      form.setValue('energyAccount.originalAccount.dataNascimento', subscriberData.dataNascimento, { shouldValidate: true, shouldDirty: true });
+      updates['energyAccount.originalAccount.dataNascimento'] = subscriberData.dataNascimento;
     }
 
-    // Preencher número do parceiro
     if (subscriberData.numeroParceiroNegocio) {
-      form.setValue('energyAccount.originalAccount.numeroParceiroUC', subscriberData.numeroParceiroNegocio, { shouldValidate: true, shouldDirty: true });
+      updates['energyAccount.originalAccount.numeroParceiroUC'] = subscriberData.numeroParceiroNegocio;
     }
 
     // Preencher endereço completo
@@ -67,37 +68,43 @@ const ContaEnergiaForm = ({ form, subscriberData }: ContaEnergiaFormProps) => {
       const address = subscriberData.address;
       
       if (address.cep) {
-        form.setValue('energyAccount.originalAccount.address.cep', address.cep, { shouldValidate: true, shouldDirty: true });
+        updates['energyAccount.originalAccount.address.cep'] = address.cep;
       }
       if (address.endereco) {
-        form.setValue('energyAccount.originalAccount.address.endereco', address.endereco, { shouldValidate: true, shouldDirty: true });
+        updates['energyAccount.originalAccount.address.endereco'] = address.endereco;
       }
       if (address.numero) {
-        form.setValue('energyAccount.originalAccount.address.numero', address.numero, { shouldValidate: true, shouldDirty: true });
+        updates['energyAccount.originalAccount.address.numero'] = address.numero;
       }
       if (address.complemento) {
-        form.setValue('energyAccount.originalAccount.address.complemento', address.complemento, { shouldValidate: true, shouldDirty: true });
+        updates['energyAccount.originalAccount.address.complemento'] = address.complemento;
       }
       if (address.bairro) {
-        form.setValue('energyAccount.originalAccount.address.bairro', address.bairro, { shouldValidate: true, shouldDirty: true });
+        updates['energyAccount.originalAccount.address.bairro'] = address.bairro;
       }
       if (address.cidade) {
-        form.setValue('energyAccount.originalAccount.address.cidade', address.cidade, { shouldValidate: true, shouldDirty: true });
+        updates['energyAccount.originalAccount.address.cidade'] = address.cidade;
       }
       if (address.estado) {
-        form.setValue('energyAccount.originalAccount.address.estado', address.estado, { shouldValidate: true, shouldDirty: true });
+        updates['energyAccount.originalAccount.address.estado'] = address.estado;
       }
     }
 
-    // Forçar validação de todos os campos preenchidos
+    // Aplicar todos os valores de uma vez sem triggering individual
+    Object.entries(updates).forEach(([path, value]) => {
+      form.setValue(path as any, value, { shouldValidate: false, shouldDirty: true });
+    });
+
+    // Validar tudo de uma vez no final
     setTimeout(() => {
       form.trigger();
-    }, 100);
+      isFillingRef.current = false;
+    }, 200);
   }, [subscriberData, form]);
 
   // Preencher automaticamente assim que o componente monta e tem dados do assinante
   useEffect(() => {
-    if (subscriberData && !hasAutoFilledRef.current) {
+    if (subscriberData && !hasAutoFilledRef.current && !isFillingRef.current) {
       console.log('Auto-preenchendo na montagem do componente...');
       hasAutoFilledRef.current = true;
       // Usar setTimeout de 1 segundo para garantir que o DOM está pronto
@@ -118,6 +125,7 @@ const ContaEnergiaForm = ({ form, subscriberData }: ContaEnergiaFormProps) => {
             size="sm"
             onClick={preencherComDadosAssinante}
             className="flex items-center gap-2"
+            disabled={isFillingRef.current}
           >
             <Copy className="w-4 h-4" />
             Preencher com dados do assinante
