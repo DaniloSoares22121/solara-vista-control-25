@@ -39,7 +39,7 @@ const SubscriberCard = ({ subscriber, onEdit, onDelete }: SubscriberCardProps) =
   };
 
   return (
-    <Card className="border-0 shadow-md hover:shadow-lg transition-all duration-300 bg-white group">
+    <Card className="border-0 shadow-md hover:shadow-lg transition-all duration-300 bg-white">
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
@@ -126,8 +126,8 @@ const SubscriberCard = ({ subscriber, onEdit, onDelete }: SubscriberCardProps) =
           </div>
         </div>
 
-        {/* Ações */}
-        <div className="border-t border-gray-100 pt-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+        {/* Ações - Agora sempre visíveis */}
+        <div className="border-t border-gray-100 pt-3 flex gap-2">
           <SubscriberDetails 
             subscriber={subscriber}
             onEdit={onEdit}

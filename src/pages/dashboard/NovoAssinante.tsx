@@ -271,9 +271,8 @@ const NovoAssinante = ({ onClose, initialData, onSubmit, isEditing = false }: No
         const id = await createSubscriber(formData);
         console.log('✅ Assinante cadastrado com sucesso! ID:', id);
         toast.success('Assinante cadastrado com sucesso!');
+        onClose();
       }
-      
-      onClose();
     } catch (error: any) {
       console.error('❌ Erro ao processar assinante:', error);
       
@@ -291,59 +290,62 @@ const NovoAssinante = ({ onClose, initialData, onSubmit, isEditing = false }: No
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="sticky top-0 z-10 bg-white border-b border-gray-200 shadow-sm">
-        <div className="flex items-center justify-between p-4 sm:p-6">
-          <div className="flex items-center gap-3">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onClose}
-              className="hover:bg-gray-100"
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Voltar
-            </Button>
-            <div className="h-6 w-px bg-gray-300" />
-            <div>
-              <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
-                {isEditing ? 'Editar Assinante' : 'Novo Assinante'}
-              </h1>
-              <p className="text-sm text-gray-600">
-                {isEditing ? 'Atualize os dados do assinante' : 'Cadastre um novo assinante de energia solar'}
-              </p>
+    <div className={isEditing ? "" : "min-h-screen bg-gray-50"}>
+      {/* Header - só renderiza se não estiver editando */}
+      {!isEditing && (
+        <div className="sticky top-0 z-10 bg-white border-b border-gray-200 shadow-sm">
+          <div className="flex items-center justify-between p-4 sm:p-6">
+            <div className="flex items-center gap-3">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onClose}
+                className="hover:bg-gray-100"
+              >
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Voltar
+              </Button>
+              <div className="h-6 w-px bg-gray-300" />
+              <div>
+                <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
+                  Novo Assinante
+                </h1>
+                <p className="text-sm text-gray-600">
+                  Cadastre um novo assinante de energia solar
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <Button
+                variant="outline"
+                onClick={onClose}
+                disabled={isSubmitting}
+                className="hidden sm:flex"
+              >
+                Cancelar
+              </Button>
+              <Button
+                onClick={handleSubmit}
+                disabled={isSubmitting}
+                className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Cadastrando...
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-4 h-4 mr-2" />
+                    Cadastrar Assinante
+                  </>
+                )}
+              </Button>
             </div>
           </div>
-
-          <div className="flex items-center gap-3">
-            <Button
-              variant="outline"
-              onClick={onClose}
-              disabled={isSubmitting}
-              className="hidden sm:flex"
-            >
-              Cancelar
-            </Button>
-            <Button
-              onClick={handleSubmit}
-              disabled={isSubmitting}
-              className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white shadow-lg hover:shadow-xl transition-all duration-200"
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  {isEditing ? 'Atualizando...' : 'Cadastrando...'}
-                </>
-              ) : (
-                <>
-                  <Save className="w-4 h-4 mr-2" />
-                  {isEditing ? 'Atualizar Assinante' : 'Cadastrar Assinante'}
-                </>
-              )}
-            </Button>
-          </div>
         </div>
-      </div>
+      )}
 
       <div className="p-4 sm:p-6">
         <Steps current={currentStep}>
@@ -434,31 +436,33 @@ const NovoAssinante = ({ onClose, initialData, onSubmit, isEditing = false }: No
           >
             Anterior
           </Button>
-          <Button
-            onClick={nextStep}
-            disabled={currentStep === steps.length - 1 || isSubmitting}
-          >
-            Próximo
-          </Button>
-          {currentStep === steps.length - 1 && (
+          <div className="flex gap-2">
             <Button
-              onClick={handleSubmit}
-              disabled={isSubmitting}
-              className="ml-4 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+              onClick={nextStep}
+              disabled={currentStep === steps.length - 1 || isSubmitting}
             >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  {isEditing ? 'Atualizando...' : 'Cadastrando...'}
-                </>
-              ) : (
-                <>
-                  <Save className="w-4 h-4 mr-2" />
-                  {isEditing ? 'Atualizar Assinante' : 'Cadastrar Assinante'}
-                </>
-              )}
+              Próximo
             </Button>
-          )}
+            {currentStep === steps.length - 1 && (
+              <Button
+                onClick={handleSubmit}
+                disabled={isSubmitting}
+                className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    {isEditing ? 'Atualizando...' : 'Cadastrando...'}
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-4 h-4 mr-2" />
+                    {isEditing ? 'Atualizar Assinante' : 'Cadastrar Assinante'}
+                  </>
+                )}
+              </Button>
+            )}
+          </div>
         </div>
       </div>
     </div>
