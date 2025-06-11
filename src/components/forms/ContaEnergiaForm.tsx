@@ -1,4 +1,5 @@
 
+
 import React, { useEffect } from 'react';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
@@ -88,6 +89,14 @@ const ContaEnergiaForm = ({ form, subscriberData }: ContaEnergiaFormProps) => {
       }
     }
   };
+
+  // Executar preenchimento automático quando componente montar e tiver dados do assinante
+  useEffect(() => {
+    if (subscriberData) {
+      console.log('Executando preenchimento automático...');
+      preencherComDadosAssinante();
+    }
+  }, [subscriberData]);
 
   return (
     <div className="space-y-6">
@@ -364,3 +373,4 @@ const ContaEnergiaForm = ({ form, subscriberData }: ContaEnergiaFormProps) => {
 };
 
 export default ContaEnergiaForm;
+
