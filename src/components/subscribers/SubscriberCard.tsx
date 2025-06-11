@@ -10,8 +10,6 @@ import {
   Mail, 
   Calendar, 
   Zap, 
-  Edit, 
-  Trash2,
   Eye,
   CreditCard,
   Building
@@ -139,33 +137,13 @@ const SubscriberCard = ({ subscriber, onEdit, onDelete }: SubscriberCardProps) =
           </div>
         </div>
 
-        {/* Ações */}
+        {/* Ação */}
         <div className="border-t border-gray-100 pt-3">
-          <div className="flex gap-2">
-            <SubscriberDetails 
-              subscriber={subscriber}
-              onEdit={onEdit}
-              onDelete={onDelete}
-            />
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={() => onEdit(subscriber)}
-              className="flex-1 hover:bg-blue-50 hover:border-blue-200 hover:text-blue-600 transition-colors"
-            >
-              <Edit className="w-4 h-4 mr-2" />
-              Editar
-            </Button>
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={() => onDelete(subscriber.id)}
-              className="flex-1 hover:bg-red-50 hover:border-red-200 hover:text-red-600 transition-colors"
-            >
-              <Trash2 className="w-4 h-4 mr-2" />
-              Excluir
-            </Button>
-          </div>
+          <SubscriberDetails 
+            subscriber={subscriber}
+            onEdit={onEdit}
+            onDelete={onDelete}
+          />
         </div>
       </CardContent>
     </Card>

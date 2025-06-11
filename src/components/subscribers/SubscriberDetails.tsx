@@ -15,7 +15,6 @@ import {
   Zap, 
   FileText, 
   Settings, 
-  Bell,
   Edit,
   Trash2,
   Eye
@@ -44,7 +43,10 @@ const SubscriberDetails = ({ subscriber, onEdit, onDelete }: SubscriberDetailsPr
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm">
+        <Button 
+          className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+          size="sm"
+        >
           <Eye className="w-4 h-4 mr-2" />
           Ver Detalhes
         </Button>
