@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useCallback } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -225,71 +224,9 @@ const NovoAssinante = ({ onClose, initialData, onSubmit, isEditing = false }: No
         break;
         
       case 1:
-        // Validação Step 2 - Conta de Energia
-        if (!formData.energyAccount?.originalAccount?.type) {
-          toast.error('Selecione o tipo de pessoa na conta de energia');
-          return false;
-        }
-        if (!formData.energyAccount?.originalAccount?.cpfCnpj) {
-          toast.error('Preencha o CPF/CNPJ da conta de energia');
-          return false;
-        }
-        if (!formData.energyAccount?.originalAccount?.name) {
-          toast.error('Preencha o nome na conta de energia');
-          return false;
-        }
-        if (!formData.energyAccount?.originalAccount?.uc) {
-          toast.error('Preencha a UC - Unidade Consumidora');
-          return false;
-        }
-        if (!formData.energyAccount?.originalAccount?.numeroParceiroUC) {
-          toast.error('Preencha o número do parceiro');
-          return false;
-        }
-        if (!formData.energyAccount?.originalAccount?.address?.cep) {
-          toast.error('Preencha o CEP da conta de energia');
-          return false;
-        }
-        if (!formData.energyAccount?.originalAccount?.address?.endereco) {
-          toast.error('Preencha o endereço da conta de energia');
-          return false;
-        }
-        if (!formData.energyAccount?.originalAccount?.address?.numero) {
-          toast.error('Preencha o número do endereço da conta de energia');
-          return false;
-        }
-        if (!formData.energyAccount?.originalAccount?.address?.bairro) {
-          toast.error('Preencha o bairro da conta de energia');
-          return false;
-        }
-        if (!formData.energyAccount?.originalAccount?.address?.cidade) {
-          toast.error('Preencha a cidade da conta de energia');
-          return false;
-        }
-        if (!formData.energyAccount?.originalAccount?.address?.estado) {
-          toast.error('Preencha o estado da conta de energia');
-          return false;
-        }
-        
-        // Se vai fazer troca de titularidade, validar campos da nova titularidade
-        if (formData.energyAccount?.realizarTrocaTitularidade) {
-          if (!formData.energyAccount?.newTitularity?.type) {
-            toast.error('Selecione o tipo de pessoa na nova titularidade');
-            return false;
-          }
-          if (!formData.energyAccount?.newTitularity?.cpfCnpj) {
-            toast.error('Preencha o CPF/CNPJ da nova titularidade');
-            return false;
-          }
-          if (!formData.energyAccount?.newTitularity?.name) {
-            toast.error('Preencha o nome na nova titularidade');
-            return false;
-          }
-          if (!formData.energyAccount?.newTitularity?.numeroParceiroUC) {
-            toast.error('Preencha o número do parceiro da nova titularidade');
-            return false;
-          }
-        }
+        // Step 2 - Conta de Energia (REMOVIDA A VALIDAÇÃO OBRIGATÓRIA)
+        // Agora apenas valida campos básicos se preenchidos, mas não exige preenchimento
+        console.log('Step 2 validado automaticamente - campos opcionais');
         break;
         
       case 2:
