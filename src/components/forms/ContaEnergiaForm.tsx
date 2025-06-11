@@ -95,10 +95,10 @@ const ContaEnergiaForm = ({ form, subscriberData }: ContaEnergiaFormProps) => {
     if (subscriberData && !hasAutoFilledRef.current) {
       console.log('Auto-preenchendo na montagem do componente...');
       hasAutoFilledRef.current = true;
-      // Usar setTimeout para garantir que o DOM está pronto
+      // Usar setTimeout de 1 segundo para garantir que o DOM está pronto
       setTimeout(() => {
         preencherComDadosAssinante();
-      }, 100);
+      }, 1000);
     }
   }, [subscriberData, preencherComDadosAssinante]);
 
