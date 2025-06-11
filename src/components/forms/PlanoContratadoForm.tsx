@@ -16,6 +16,7 @@ const PlanoContratadoForm = ({ form }: PlanoContratadoFormProps) => {
   const faixaConsumo = form.watch('planContract.faixaConsumo');
   const fidelidade = form.watch('planContract.fidelidade');
   const anosFidelidade = form.watch('planContract.anosFidelidade');
+  const kwhVendedor = form.watch('planContract.kwhVendedor');
 
   const discountRates = {
     '400-599': { sem: 13, com: { '1': 15, '2': 20 } },
@@ -23,6 +24,16 @@ const PlanoContratadoForm = ({ form }: PlanoContratadoFormProps) => {
     '1100-3099': { sem: 18, com: { '1': 20, '2': 22 } },
     '3100-7000': { sem: 20, com: { '1': 22, '2': 25 } },
     '7000+': { sem: 22, com: { '1': 25, '2': 27 } }
+  };
+
+  // Função para determinar a faixa de consumo automaticamente baseada no kWh do vendedor
+  const determinarFaixaConsumo = (kwh: number): string => {
+    if (kwh >= 400 && kwh <= 599) return '400-599';
+    if (kwh >= 600 && kwh <= 1099) return '600-1099';
+    if (kwh >= 1100 && kwh <= 3099) return '1100-3099';
+    if (kwh >= 3100 && kwh <= 7000) return '3100-7000';
+    if (kwh > 7000) return '7000+';
+    return '400-599'; // default
   };
 
   const getCurrentDiscount = () => {
@@ -36,6 +47,16 @@ const PlanoContratadoForm = ({ form }: PlanoContratadoFormProps) => {
     }
     return 0;
   };
+
+  // Atualizar automaticamente a faixa de consumo quando o kWh do vendedor mudar
+  React.useEffect(() => {
+    if (kwhVendedor && kwhVendedor > 0) {
+      const novaFaixa = determinarFaixaConsumo(kwhVendedor);
+      if (novaFaixa !== faixaConsumo) {
+        form.setValue('planContract.faixaConsumo', novaFaixa);
+      }
+    }
+  }, [kwhVendedor, faixaConsumo, form]);
 
   // Atualizar o desconto automaticamente quando as seleções mudarem
   React.useEffect(() => {
@@ -95,10 +116,19 @@ const PlanoContratadoForm = ({ form }: PlanoContratadoFormProps) => {
                   {...field} 
                   type="number" 
                   placeholder="Valor informado pelo vendedor"
-                  onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                  onChange={(e) => {
+                    const value = parseFloat(e.target.value) || 0;
+                    field.onChange(value);
+                  }}
+                  min="0"
                 />
               </FormControl>
               <FormMessage />
+              {kwhVendedor > 0 && kwhVendedor < 400 && (
+                <p className="text-sm text-amber-600">
+                  ⚠️ Consumo abaixo de 400 kWh. Faixa mínima será aplicada.
+                </p>
+              )}
             </FormItem>
           )}
         />
@@ -115,6 +145,7 @@ const PlanoContratadoForm = ({ form }: PlanoContratadoFormProps) => {
                   type="number" 
                   placeholder="Valor definido pelo gestor"
                   onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                  min="0"
                 />
               </FormControl>
               <FormMessage />
@@ -144,6 +175,11 @@ const PlanoContratadoForm = ({ form }: PlanoContratadoFormProps) => {
               </Select>
             </FormControl>
             <FormMessage />
+            {kwhVendedor > 0 && (
+              <p className="text-sm text-muted-foreground">
+                Baseado no kWh informado pelo vendedor: {kwhVendedor} kWh
+              </p>
+            )}
           </FormItem>
         )}
       />

@@ -1,4 +1,3 @@
-
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -139,6 +138,9 @@ const DiscountTable = ({
             : 'hover:bg-gray-50 border border-transparent'
         }`}
         onClick={() => !isEditing && handleCellClick(faixa, type)}
+        role="button"
+        tabIndex={0}
+        aria-label={`Desconto de ${value}% para ${getFaixaDisplay(faixa)} ${type === 'sem' ? 'sem fidelidade' : `com ${type} ano${type === '1' ? '' : 's'} de fidelidade`}${isHighlighted ? ' - Selecionado' : ''}`}
       >
         {isEditing ? (
           <Input
@@ -151,6 +153,7 @@ const DiscountTable = ({
             min="0"
             max="100"
             autoFocus
+            aria-label={`Editando desconto para ${getFaixaDisplay(faixa)}`}
           />
         ) : (
           <div className={`inline-flex items-center justify-center ${isHighlighted ? 'font-bold' : ''}`}>
@@ -158,9 +161,9 @@ const DiscountTable = ({
               {value}%
             </span>
             {isHighlighted && (
-              <span className="ml-2 text-green-600">✓</span>
+              <span className="ml-2 text-green-600" aria-label="Selecionado">✓</span>
             )}
-            <span className="ml-1 text-xs text-gray-400 opacity-0 group-hover:opacity-100">✏️</span>
+            <span className="ml-1 text-xs text-gray-400 opacity-0 group-hover:opacity-100" aria-hidden="true">✏️</span>
           </div>
         )}
       </TableCell>
@@ -200,7 +203,7 @@ const DiscountTable = ({
                 }`}>
                   {getFaixaDisplay(faixa)}
                   {faixa === faixaConsumo && (
-                    <span className="ml-2 text-green-600">← Selecionada</span>
+                    <span className="ml-2 text-green-600" aria-label="Faixa selecionada">← Selecionada</span>
                   )}
                 </TableCell>
                 {renderEditableCell(faixa, 'sem', valores.sem)}
@@ -214,7 +217,7 @@ const DiscountTable = ({
         {faixaConsumo && (
           <div className="mt-4 p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border-2 border-green-200 shadow-md">
             <h4 className="font-semibold text-green-800 mb-2 flex items-center gap-2">
-              <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+              <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" aria-hidden="true"></span>
               Sua Seleção Atual:
             </h4>
             <div className="text-sm text-green-700 space-y-1">
@@ -229,6 +232,12 @@ const DiscountTable = ({
             </div>
           </div>
         )}
+
+        {/* Legenda para acessibilidade */}
+        <div className="mt-4 text-xs text-gray-500">
+          <p>💡 <strong>Como usar:</strong> Selecione as opções no formulário acima para ver o desconto destacado na tabela.</p>
+          <p>✏️ <strong>Edição:</strong> Clique em qualquer porcentagem para editar os valores de desconto.</p>
+        </div>
       </CardContent>
     </Card>
   );
