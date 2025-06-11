@@ -146,7 +146,6 @@ const NovoAssinante = ({ onClose, initialData, onSubmit, isEditing = false }: No
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [completedSteps, setCompletedSteps] = useState<boolean[]>([false, false, false, false]);
-  const [hasErrors, setHasErrors] = useState<boolean[]>([false, false, false, false]);
   
   const steps = [
     'Dados do Assinante',
@@ -198,51 +197,137 @@ const NovoAssinante = ({ onClose, initialData, onSubmit, isEditing = false }: No
 
   const validateForm = (step: number): boolean => {
     const formData = form.getValues();
-    const errors: string[] = [];
+    console.log('Validando step:', step, 'com dados:', formData);
 
     switch (step) {
       case 0:
-        if (!formData.concessionaria) errors.push('Concessionária');
-        if (!formData.subscriber?.type) errors.push('Tipo de pessoa');
-        if (!formData.subscriber?.cpfCnpj) errors.push('CPF/CNPJ');
-        if (!formData.subscriber?.name && !formData.subscriber?.razaoSocial) errors.push('Nome/Razão Social');
+        // Validação Step 1 - Dados do Assinante
+        if (!formData.concessionaria) {
+          toast.error('Selecione uma concessionária');
+          return false;
+        }
+        if (!formData.subscriber?.type) {
+          toast.error('Selecione o tipo de pessoa');
+          return false;
+        }
+        if (!formData.subscriber?.cpfCnpj) {
+          toast.error('Preencha o CPF/CNPJ');
+          return false;
+        }
+        if (formData.subscriber.type === 'fisica' && !formData.subscriber?.name) {
+          toast.error('Preencha o nome');
+          return false;
+        }
+        if (formData.subscriber.type === 'juridica' && !formData.subscriber?.razaoSocial) {
+          toast.error('Preencha a razão social');
+          return false;
+        }
         break;
+        
       case 1:
-        if (!formData.energyAccount?.originalAccount?.uc) errors.push('UC');
-        if (!formData.energyAccount?.originalAccount?.cpfCnpj) errors.push('CPF/CNPJ da conta');
+        // Validação Step 2 - Conta de Energia
+        if (!formData.energyAccount?.originalAccount?.type) {
+          toast.error('Selecione o tipo de pessoa na conta de energia');
+          return false;
+        }
+        if (!formData.energyAccount?.originalAccount?.cpfCnpj) {
+          toast.error('Preencha o CPF/CNPJ da conta de energia');
+          return false;
+        }
+        if (!formData.energyAccount?.originalAccount?.name) {
+          toast.error('Preencha o nome na conta de energia');
+          return false;
+        }
+        if (!formData.energyAccount?.originalAccount?.uc) {
+          toast.error('Preencha a UC - Unidade Consumidora');
+          return false;
+        }
+        if (!formData.energyAccount?.originalAccount?.numeroParceiroUC) {
+          toast.error('Preencha o número do parceiro');
+          return false;
+        }
+        if (!formData.energyAccount?.originalAccount?.address?.cep) {
+          toast.error('Preencha o CEP da conta de energia');
+          return false;
+        }
+        if (!formData.energyAccount?.originalAccount?.address?.endereco) {
+          toast.error('Preencha o endereço da conta de energia');
+          return false;
+        }
+        if (!formData.energyAccount?.originalAccount?.address?.numero) {
+          toast.error('Preencha o número do endereço da conta de energia');
+          return false;
+        }
+        if (!formData.energyAccount?.originalAccount?.address?.bairro) {
+          toast.error('Preencha o bairro da conta de energia');
+          return false;
+        }
+        if (!formData.energyAccount?.originalAccount?.address?.cidade) {
+          toast.error('Preencha a cidade da conta de energia');
+          return false;
+        }
+        if (!formData.energyAccount?.originalAccount?.address?.estado) {
+          toast.error('Preencha o estado da conta de energia');
+          return false;
+        }
+        
+        // Se vai fazer troca de titularidade, validar campos da nova titularidade
+        if (formData.energyAccount?.realizarTrocaTitularidade) {
+          if (!formData.energyAccount?.newTitularity?.type) {
+            toast.error('Selecione o tipo de pessoa na nova titularidade');
+            return false;
+          }
+          if (!formData.energyAccount?.newTitularity?.cpfCnpj) {
+            toast.error('Preencha o CPF/CNPJ da nova titularidade');
+            return false;
+          }
+          if (!formData.energyAccount?.newTitularity?.name) {
+            toast.error('Preencha o nome na nova titularidade');
+            return false;
+          }
+          if (!formData.energyAccount?.newTitularity?.numeroParceiroUC) {
+            toast.error('Preencha o número do parceiro da nova titularidade');
+            return false;
+          }
+        }
         break;
+        
       case 2:
-        if (!formData.planContract?.dataAdesao) errors.push('Data de adesão');
-        if (!formData.planContract?.modalidadeCompensacao) errors.push('Modalidade');
+        // Validação Step 3 - Plano e Notificações
+        if (!formData.planContract?.dataAdesao) {
+          toast.error('Preencha a data de adesão');
+          return false;
+        }
+        if (!formData.planContract?.modalidadeCompensacao) {
+          toast.error('Selecione a modalidade de compensação');
+          return false;
+        }
         break;
+        
       case 3:
         // Anexos são opcionais
         break;
     }
 
-    const newHasErrors = [...hasErrors];
-    newHasErrors[step] = errors.length > 0;
-    setHasErrors(newHasErrors);
-
-    if (errors.length > 0) {
-      toast.error(`Preencha os campos obrigatórios: ${errors.join(', ')}`);
-      return false;
-    }
-
+    // Marcar step como concluído
     const newCompletedSteps = [...completedSteps];
     newCompletedSteps[step] = true;
     setCompletedSteps(newCompletedSteps);
-
+    
+    console.log('Step', step, 'validado com sucesso');
     return true;
   };
 
   const validateAllForms = (): boolean => {
+    console.log('Validando todos os formulários...');
     let allValid = true;
-    const allErrors: any[] = [];
 
     for (let i = 0; i < steps.length - 1; i++) { // Skip last step (attachments)
       if (!validateForm(i)) {
         allValid = false;
+        // Se um step falhar, ir para ele
+        setCurrentStep(i);
+        break;
       }
     }
 
@@ -250,8 +335,12 @@ const NovoAssinante = ({ onClose, initialData, onSubmit, isEditing = false }: No
   };
 
   const nextStep = () => {
+    console.log('Tentando avançar do step:', currentStep);
     if (validateForm(currentStep)) {
+      console.log('Validação passou, avançando para próximo step');
       setCurrentStep((prev) => Math.min(prev + 1, steps.length - 1));
+    } else {
+      console.log('Validação falhou, não pode avançar');
     }
   };
 
@@ -300,7 +389,8 @@ const NovoAssinante = ({ onClose, initialData, onSubmit, isEditing = false }: No
     }
   };
 
-  const isNextDisabled = hasErrors[currentStep];
+  // Remover a verificação hasErrors que estava impedindo o avanço
+  const isNextDisabled = false;
 
   return (
     <div className={isEditing ? "" : "min-h-screen bg-gray-50"}>
@@ -337,7 +427,7 @@ const NovoAssinante = ({ onClose, initialData, onSubmit, isEditing = false }: No
         steps={steps}
         currentStep={currentStep}
         completedSteps={completedSteps}
-        hasErrors={hasErrors}
+        hasErrors={[false, false, false, false]}
       />
 
       <div className="max-w-4xl mx-auto p-4 sm:p-6 pb-24">
@@ -356,6 +446,7 @@ const NovoAssinante = ({ onClose, initialData, onSubmit, isEditing = false }: No
                 initialValues={form.watch('subscriber')}
                 initialAdministrator={form.watch('administrator')}
                 onChange={(subscriberData, concessionaria, administrator) => {
+                  console.log('SubscriberForm onChange:', { subscriberData, concessionaria, administrator });
                   form.setValue('subscriber', subscriberData);
                   form.setValue('concessionaria', concessionaria);
                   if (administrator) {
@@ -373,6 +464,7 @@ const NovoAssinante = ({ onClose, initialData, onSubmit, isEditing = false }: No
                 initialValues={form.watch('energyAccount')}
                 subscriberData={currentSubscriberData}
                 onChange={(energyAccount) => {
+                  console.log('EnergyAccountForm onChange:', energyAccount);
                   form.setValue('energyAccount', energyAccount);
                 }}
                 isEditing={isEditing}
