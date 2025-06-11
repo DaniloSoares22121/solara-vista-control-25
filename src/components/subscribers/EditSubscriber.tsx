@@ -2,7 +2,6 @@
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { ArrowLeft, Loader2, Save } from 'lucide-react';
 import { toast } from 'sonner';
 import { SubscriberFormData } from '@/types/subscriber';
@@ -37,7 +36,7 @@ const EditSubscriber = ({ isOpen, onClose, subscriber }: EditSubscriberProps) =>
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-7xl max-h-[95vh] overflow-hidden p-0">
+      <DialogContent className="max-w-7xl max-h-[95vh] p-0 overflow-hidden">
         <div className="h-full flex flex-col">
           {/* Header personalizado */}
           <div className="sticky top-0 z-10 bg-white border-b border-gray-200 shadow-sm">
@@ -75,17 +74,15 @@ const EditSubscriber = ({ isOpen, onClose, subscriber }: EditSubscriberProps) =>
             </div>
           </div>
           
-          {/* Conteúdo */}
-          <ScrollArea className="flex-1">
-            <div className="p-6">
-              <NovoAssinante 
-                onClose={onClose}
-                initialData={subscriber}
-                onSubmit={handleUpdate}
-                isEditing={true}
-              />
-            </div>
-          </ScrollArea>
+          {/* Conteúdo com scroll */}
+          <div className="flex-1 overflow-y-auto">
+            <NovoAssinante 
+              onClose={onClose}
+              initialData={subscriber}
+              onSubmit={handleUpdate}
+              isEditing={true}
+            />
+          </div>
         </div>
       </DialogContent>
     </Dialog>

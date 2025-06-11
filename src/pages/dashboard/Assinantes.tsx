@@ -267,7 +267,9 @@ const Assinantes = () => {
           <SheetHeader className="sr-only">
             <SheetTitle>Novo Assinante</SheetTitle>
           </SheetHeader>
-          <NovoAssinante onClose={handleCloseModal} />
+          <div className="h-full overflow-y-auto">
+            <NovoAssinante onClose={handleCloseModal} />
+          </div>
         </SheetContent>
       </Sheet>
 

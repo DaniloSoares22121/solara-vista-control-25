@@ -1,8 +1,8 @@
+
 import React, { useState, useRef } from 'react';
 import { ArrowLeft, Loader2, Save } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import ConcessionariaForm from '@/components/forms/ConcessionariaForm';
 import SubscriberForm from '@/components/forms/SubscriberForm';
 import AdministratorForm from '@/components/forms/AdministratorForm';
 import EnergyAccountForm from '@/components/forms/EnergyAccountForm';
@@ -141,7 +141,6 @@ const NovoAssinante = ({ onClose, initialData, onSubmit, isEditing = false }: No
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const steps = [
-    'Concessionária',
     'Assinante',
     'Administrador',
     'Conta de Energia',
@@ -151,7 +150,6 @@ const NovoAssinante = ({ onClose, initialData, onSubmit, isEditing = false }: No
     'Anexos',
   ];
 
-  const concessionariaFormRef = useRef<HTMLFormElement>(null);
   const subscriberFormRef = useRef<HTMLFormElement>(null);
   const administratorFormRef = useRef<HTMLFormElement>(null);
   const energyAccountFormRef = useRef<HTMLFormElement>(null);
@@ -181,20 +179,18 @@ const NovoAssinante = ({ onClose, initialData, onSubmit, isEditing = false }: No
   const validateForm = (step: number): boolean => {
     switch (step) {
       case 0:
-        return concessionariaFormRef.current?.checkValidity() || false;
-      case 1:
         return subscriberFormRef.current?.checkValidity() || false;
-      case 2:
+      case 1:
         return administratorFormRef.current?.checkValidity() || true; // Opcional
-      case 3:
+      case 2:
         return energyAccountFormRef.current?.checkValidity() || false;
-      case 4:
+      case 3:
         return planContractFormRef.current?.checkValidity() || false;
-      case 5:
+      case 4:
         return planDetailsFormRef.current?.checkValidity() || false;
-      case 6:
+      case 5:
         return notificationSettingsFormRef.current?.checkValidity() || false;
-      case 7:
+      case 6:
         return attachmentsFormRef.current?.checkValidity() || true; // Opcional
       default:
         return false;
@@ -356,24 +352,17 @@ const NovoAssinante = ({ onClose, initialData, onSubmit, isEditing = false }: No
 
         <div className="mt-6">
           {currentStep === 0 && (
-            <ConcessionariaForm
-              ref={concessionariaFormRef}
-              value={formData.concessionaria}
-              onChange={handleConcessionariaChange}
+            <SubscriberForm
+              ref={subscriberFormRef}
+              initialValues={formData.subscriber}
+              onChange={handleSubscriberChange}
+              concessionaria={formData.concessionaria}
+              onConcessionariaChange={handleConcessionariaChange}
               isEditing={isEditing}
             />
           )}
 
           {currentStep === 1 && (
-            <SubscriberForm
-              ref={subscriberFormRef}
-              initialValues={formData.subscriber}
-              onChange={handleSubscriberChange}
-              isEditing={isEditing}
-            />
-          )}
-
-          {currentStep === 2 && (
             <AdministratorForm
               ref={administratorFormRef}
               initialValues={formData.administrator}
@@ -382,7 +371,7 @@ const NovoAssinante = ({ onClose, initialData, onSubmit, isEditing = false }: No
             />
           )}
 
-          {currentStep === 3 && (
+          {currentStep === 2 && (
             <EnergyAccountForm
               ref={energyAccountFormRef}
               initialValues={formData.energyAccount}
@@ -391,7 +380,7 @@ const NovoAssinante = ({ onClose, initialData, onSubmit, isEditing = false }: No
             />
           )}
 
-          {currentStep === 4 && (
+          {currentStep === 3 && (
             <PlanContractForm
               ref={planContractFormRef}
               initialValues={formData.planContract}
@@ -400,7 +389,7 @@ const NovoAssinante = ({ onClose, initialData, onSubmit, isEditing = false }: No
             />
           )}
 
-          {currentStep === 5 && (
+          {currentStep === 4 && (
             <PlanDetailsForm
               ref={planDetailsFormRef}
               initialValues={formData.planDetails}
@@ -409,7 +398,7 @@ const NovoAssinante = ({ onClose, initialData, onSubmit, isEditing = false }: No
             />
           )}
 
-          {currentStep === 6 && (
+          {currentStep === 5 && (
             <NotificationSettingsForm
               ref={notificationSettingsFormRef}
               initialValues={formData.notifications}
@@ -418,7 +407,7 @@ const NovoAssinante = ({ onClose, initialData, onSubmit, isEditing = false }: No
             />
           )}
 
-          {currentStep === 7 && (
+          {currentStep === 6 && (
             <AttachmentsForm
               ref={attachmentsFormRef}
               initialValues={formData.attachments}

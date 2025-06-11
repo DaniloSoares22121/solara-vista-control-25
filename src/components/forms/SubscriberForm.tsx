@@ -15,10 +15,12 @@ interface SubscriberFormProps {
   initialValues: PersonData;
   onChange: (value: PersonData) => void;
   isEditing?: boolean;
+  concessionaria?: string;
+  onConcessionariaChange?: (value: string) => void;
 }
 
 const SubscriberForm = forwardRef<HTMLFormElement, SubscriberFormProps>(
-  ({ initialValues, onChange, isEditing }, ref) => {
+  ({ initialValues, onChange, isEditing, concessionaria, onConcessionariaChange }, ref) => {
     const formRef = useRef<HTMLFormElement>(null);
     const [contacts, setContacts] = React.useState<Contact[]>(initialValues.contacts || []);
 
@@ -51,11 +53,27 @@ const SubscriberForm = forwardRef<HTMLFormElement, SubscriberFormProps>(
     return (
       <Card>
         <CardHeader>
-          <CardTitle>2. Dados do Assinante</CardTitle>
+          <CardTitle>Dados do Assinante</CardTitle>
         </CardHeader>
         <CardContent>
           <Form {...form}>
             <form ref={formRef} className="space-y-6">
+              {/* Seleção da Concessionária */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold">Concessionária</h3>
+                <div className="space-y-2">
+                  <Label htmlFor="concessionaria">Concessionária *</Label>
+                  <Select value={concessionaria} onValueChange={onConcessionariaChange} required>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione a concessionária" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="equatorial-goias">Equatorial Goiás</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
               {/* Tipo de Pessoa */}
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold">Tipo de Pessoa</h3>
@@ -103,6 +121,7 @@ const SubscriberForm = forwardRef<HTMLFormElement, SubscriberFormProps>(
 
               {/* Campo hidden obrigatório para validação */}
               <input type="hidden" name="subscriber" required />
+              <input type="hidden" name="concessionaria" value={concessionaria} required />
             </form>
           </Form>
         </CardContent>
