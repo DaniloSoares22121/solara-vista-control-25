@@ -16,7 +16,7 @@ const Assinantes = () => {
         <div className="space-y-6 p-4 sm:p-6">
           <div className="flex items-center justify-between">
             <div className="space-y-1">
-              <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
+              <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-green-600 to-green-600 bg-clip-text text-transparent">
                 Novo Assinante
               </h1>
               <p className="text-gray-600">Cadastre um novo assinante no sistema</p>
@@ -52,9 +52,9 @@ const Assinantes = () => {
       value: '0',
       description: 'Com contratos vigentes',
       icon: UserCheck,
-      iconColor: 'text-blue-600',
-      bgColor: 'bg-blue-50',
-      borderColor: 'border-blue-200',
+      iconColor: 'text-green-600',
+      bgColor: 'bg-green-50',
+      borderColor: 'border-green-200',
       trend: '+0%'
     },
     {
@@ -71,11 +71,11 @@ const Assinantes = () => {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6 p-4 sm:p-6 min-h-screen bg-gradient-to-br from-green-50/30 to-blue-50/30">
+      <div className="space-y-6 p-4 sm:p-6 min-h-screen bg-gradient-to-br from-green-50/30 to-green-50/30">
         {/* Header */}
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div className="space-y-1">
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-green-600 to-green-600 bg-clip-text text-transparent">
               Assinantes
             </h1>
             <p className="text-gray-600 text-sm sm:text-base lg:text-lg">
@@ -145,7 +145,7 @@ const Assinantes = () => {
 
         {/* Main Content */}
         <Card className="border-0 shadow-xl bg-white/90 backdrop-blur-sm">
-          <CardHeader className="border-b border-gray-100 bg-gradient-to-r from-green-50 to-blue-50">
+          <CardHeader className="border-b border-gray-100 bg-gradient-to-r from-green-50 to-green-50">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
                 <CardTitle className="text-lg sm:text-xl font-bold text-gray-900 flex items-center space-x-2">
@@ -168,15 +168,15 @@ const Assinantes = () => {
             <div className="flex items-center justify-center py-16 sm:py-20">
               <div className="text-center space-y-6">
                 <div className="relative">
-                  <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-green-100 to-blue-100 rounded-full flex items-center justify-center mx-auto shadow-lg">
+                  <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-green-100 to-green-100 rounded-full flex items-center justify-center mx-auto shadow-lg">
                     <Users className="h-10 w-10 sm:h-12 sm:w-12 text-green-600" />
                   </div>
-                  <div className="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-r from-green-400 to-blue-400 rounded-full flex items-center justify-center">
+                  <div className="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-r from-green-400 to-green-400 rounded-full flex items-center justify-center">
                     <Plus className="h-3 w-3 text-white" />
                   </div>
                 </div>
                 <div className="space-y-3">
-                  <h3 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-green-700 to-blue-700 bg-clip-text text-transparent">
+                  <h3 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-green-700 to-green-700 bg-clip-text text-transparent">
                     Nenhum assinante cadastrado
                   </h3>
                   <p className="text-gray-600 text-sm sm:text-base max-w-md mx-auto leading-relaxed">
@@ -193,7 +193,7 @@ const Assinantes = () => {
                   </Button>
                   <Button 
                     variant="outline" 
-                    className="border-blue-200 text-blue-700 hover:bg-blue-50"
+                    className="border-green-200 text-green-700 hover:bg-green-50"
                   >
                     Ver Tutorial
                   </Button>
