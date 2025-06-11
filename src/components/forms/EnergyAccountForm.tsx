@@ -3,6 +3,7 @@ import React, { forwardRef, useImperativeHandle, useRef, useState, useEffect } f
 import { EnergyAccount } from '@/types/subscriber';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useForm } from 'react-hook-form';
+import { Form } from '@/components/ui/form';
 import ContaEnergiaForm from './ContaEnergiaForm';
 
 interface EnergyAccountFormProps {
@@ -40,10 +41,12 @@ const EnergyAccountForm = forwardRef<HTMLFormElement, EnergyAccountFormProps>(
           <CardTitle>4. Conta de Energia</CardTitle>
         </CardHeader>
         <CardContent>
-          <form ref={formRef} className="space-y-4">
-            <ContaEnergiaForm form={form} />
-            <input type="hidden" name="energyAccount" required />
-          </form>
+          <Form {...form}>
+            <form ref={formRef} className="space-y-4">
+              <ContaEnergiaForm form={form} />
+              <input type="hidden" name="energyAccount" required />
+            </form>
+          </Form>
         </CardContent>
       </Card>
     );

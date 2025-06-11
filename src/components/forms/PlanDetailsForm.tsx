@@ -3,6 +3,7 @@ import React, { forwardRef, useImperativeHandle, useRef, useState, useEffect } f
 import { PlanDetails } from '@/types/subscriber';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useForm } from 'react-hook-form';
+import { Form } from '@/components/ui/form';
 import DetalhesPlanoForm from './DetalhesPlanoForm';
 
 interface PlanDetailsFormProps {
@@ -40,10 +41,12 @@ const PlanDetailsForm = forwardRef<HTMLFormElement, PlanDetailsFormProps>(
           <CardTitle>6. Detalhes do Plano</CardTitle>
         </CardHeader>
         <CardContent>
-          <form ref={formRef} className="space-y-4">
-            <DetalhesPlanoForm form={form} />
-            <input type="hidden" name="planDetails" required />
-          </form>
+          <Form {...form}>
+            <form ref={formRef} className="space-y-4">
+              <DetalhesPlanoForm form={form} />
+              <input type="hidden" name="planDetails" required />
+            </form>
+          </Form>
         </CardContent>
       </Card>
     );
