@@ -5,15 +5,32 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import { Search, Plus, Filter, User, Users, MapPin, Activity, Download, Loader2, Phone, Mail, Calendar, Zap } from 'lucide-react';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { 
+  AlertDialog, 
+  AlertDialogAction, 
+  AlertDialogCancel, 
+  AlertDialogContent, 
+  AlertDialogDescription, 
+  AlertDialogFooter, 
+  AlertDialogHeader, 
+  AlertDialogTitle 
+} from '@/components/ui/alert-dialog';
+import { Search, Plus, Filter, User, Users, MapPin, Activity, Download, Loader2, Phone, Mail, Calendar, Zap, Edit, Trash2 } from 'lucide-react';
 import { useSubscribers } from '@/hooks/useSubscribers';
+import { SubscriberFormData } from '@/types/subscriber';
+import { toast } from 'sonner';
 import NovoAssinante from './NovoAssinante';
+import SubscriberDetails from '@/components/subscribers/SubscriberDetails';
+import EditSubscriber from '@/components/subscribers/EditSubscriber';
 
 const Assinantes = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const { subscribers, loading } = useSubscribers();
+  const [editingSubscriber, setEditingSubscriber] = useState<(SubscriberFormData & { id: string }) | null>(null);
+  const [deletingSubscriberId, setDeletingSubscriberId] = useState<string | null>(null);
+  
+  const { subscribers, loading, deleteSubscriber } = useSubscribers();
 
   const handleOpenModal = () => {
     setIsModalOpen(true);
@@ -21,6 +38,25 @@ const Assinantes = () => {
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
+  };
+
+  const handleEdit = (subscriber: SubscriberFormData & { id: string }) => {
+    setEditingSubscriber(subscriber);
+  };
+
+  const handleCloseEdit = () => {
+    setEditingSubscriber(null);
+  };
+
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteSubscriber(id);
+      toast.success('Assinante removido com sucesso!');
+      setDeletingSubscriberId(null);
+    } catch (error) {
+      console.error('Erro ao remover assinante:', error);
+      toast.error('Erro ao remover assinante');
+    }
   };
 
   // Filtrar assinantes baseado no termo de busca
@@ -228,7 +264,7 @@ const Assinantes = () => {
             </CardContent>
           </Card>
         ) : (
-          // Lista de assinantes com informações detalhadas
+          // Lista de assinantes com informações detalhadas e ações
           <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-6">
             {filteredSubscribers.map((subscriber) => (
               <Card key={subscriber.id} className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 bg-white">
@@ -309,6 +345,31 @@ const Assinantes = () => {
                       <span>Faixa: {subscriber.planContract.faixaConsumo}</span>
                     </div>
                   </div>
+
+                  {/* Ações */}
+                  <div className="border-t border-gray-100 pt-3 flex gap-2 justify-end">
+                    <SubscriberDetails 
+                      subscriber={subscriber}
+                      onEdit={handleEdit}
+                      onDelete={(id) => setDeletingSubscriberId(id)}
+                    />
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => handleEdit(subscriber)}
+                    >
+                      <Edit className="w-4 h-4 mr-2" />
+                      Editar
+                    </Button>
+                    <Button 
+                      variant="destructive" 
+                      size="sm"
+                      onClick={() => setDeletingSubscriberId(subscriber.id)}
+                    >
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      Excluir
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             ))}
@@ -325,6 +386,34 @@ const Assinantes = () => {
           <NovoAssinante onClose={handleCloseModal} />
         </SheetContent>
       </Sheet>
+
+      {/* Dialog for Edit Subscriber */}
+      <EditSubscriber 
+        isOpen={!!editingSubscriber}
+        onClose={handleCloseEdit}
+        subscriber={editingSubscriber}
+      />
+
+      {/* Confirmation Dialog for Delete */}
+      <AlertDialog open={!!deletingSubscriberId} onOpenChange={() => setDeletingSubscriberId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir este assinante? Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={() => deletingSubscriberId && handleDelete(deletingSubscriberId)}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </DashboardLayout>
   );
 };
