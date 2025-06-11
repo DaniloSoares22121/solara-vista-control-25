@@ -18,13 +18,7 @@ const PlanoContratadoForm = ({ form }: PlanoContratadoFormProps) => {
   const anosFidelidade = form.watch('planContract.anosFidelidade');
   const kwhVendedor = form.watch('planContract.kwhVendedor');
 
-  const discountRates = {
-    '400-599': { sem: 13, com: { '1': 15, '2': 20 } },
-    '600-1099': { sem: 15, com: { '1': 18, '2': 20 } },
-    '1100-3099': { sem: 18, com: { '1': 20, '2': 22 } },
-    '3100-7000': { sem: 20, com: { '1': 22, '2': 25 } },
-    '7000+': { sem: 22, com: { '1': 25, '2': 27 } }
-  };
+  console.log('Form values:', { faixaConsumo, fidelidade, anosFidelidade, kwhVendedor });
 
   // Função para determinar a faixa de consumo automaticamente baseada no kWh do vendedor
   const determinarFaixaConsumo = (kwh: number): string => {
@@ -36,18 +30,6 @@ const PlanoContratadoForm = ({ form }: PlanoContratadoFormProps) => {
     return '400-599'; // default
   };
 
-  const getCurrentDiscount = () => {
-    if (!faixaConsumo || !fidelidade) return 0;
-    
-    const rates = discountRates[faixaConsumo as keyof typeof discountRates];
-    if (fidelidade === 'sem') {
-      return rates.sem;
-    } else if (fidelidade === 'com' && anosFidelidade) {
-      return rates.com[anosFidelidade as '1' | '2'];
-    }
-    return 0;
-  };
-
   // Atualizar automaticamente a faixa de consumo quando o kWh do vendedor mudar
   React.useEffect(() => {
     if (kwhVendedor && kwhVendedor > 0) {
@@ -57,12 +39,6 @@ const PlanoContratadoForm = ({ form }: PlanoContratadoFormProps) => {
       }
     }
   }, [kwhVendedor, faixaConsumo, form]);
-
-  // Atualizar o desconto automaticamente quando as seleções mudarem
-  React.useEffect(() => {
-    const currentDiscount = getCurrentDiscount();
-    form.setValue('planContract.desconto', currentDiscount);
-  }, [faixaConsumo, fidelidade, anosFidelidade, form]);
 
   return (
     <div className="space-y-6">

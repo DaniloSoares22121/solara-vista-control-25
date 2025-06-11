@@ -1,3 +1,4 @@
+
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -41,23 +42,6 @@ const DiscountTable = ({
 
   const rates = discountRates || defaultRates;
 
-  const getDescontoOptions = () => {
-    return rates[faixaConsumo as keyof typeof rates] || rates['400-599'];
-  };
-
-  const descontoOptions = getDescontoOptions();
-  
-  const getCurrentDiscount = () => {
-    if (fidelidade === 'sem') {
-      return descontoOptions.sem;
-    } else if (fidelidade === 'com' && anosFidelidade) {
-      return descontoOptions.com[anosFidelidade as '1' | '2'];
-    }
-    return 0;
-  };
-
-  const currentDiscount = getCurrentDiscount();
-
   const getFaixaDisplay = (faixa: string) => {
     const displays = {
       '400-599': '400 kWh a 599 kWh',
@@ -69,16 +53,44 @@ const DiscountTable = ({
     return displays[faixa as keyof typeof displays] || faixa;
   };
 
-  // Função para verificar se uma célula específica deve ser destacada
+  // Função melhorada para verificar se uma célula específica deve ser destacada
   const isCellHighlighted = (faixa: string, type: string) => {
-    if (faixa !== faixaConsumo) return false;
+    console.log('Checking highlight for:', { faixa, type, faixaConsumo, fidelidade, anosFidelidade });
     
-    if (type === 'sem' && fidelidade === 'sem') return true;
-    if (type === '1' && fidelidade === 'com' && anosFidelidade === '1') return true;
-    if (type === '2' && fidelidade === 'com' && anosFidelidade === '2') return true;
+    // Primeiro verifica se é a faixa correta
+    if (!faixaConsumo || faixa !== faixaConsumo) {
+      return false;
+    }
+    
+    // Verifica sem fidelidade
+    if (type === 'sem' && fidelidade === 'sem') {
+      return true;
+    }
+    
+    // Verifica com fidelidade
+    if (fidelidade === 'com' && anosFidelidade) {
+      if (type === '1' && anosFidelidade === '1') return true;
+      if (type === '2' && anosFidelidade === '2') return true;
+    }
     
     return false;
   };
+
+  const getCurrentDiscount = () => {
+    if (!faixaConsumo || !fidelidade) return 0;
+    
+    const faixaData = rates[faixaConsumo];
+    if (!faixaData) return 0;
+    
+    if (fidelidade === 'sem') {
+      return faixaData.sem;
+    } else if (fidelidade === 'com' && anosFidelidade) {
+      return faixaData.com[anosFidelidade as '1' | '2'];
+    }
+    return 0;
+  };
+
+  const currentDiscount = getCurrentDiscount();
 
   const handleCellClick = (faixa: string, type: string) => {
     const cellId = `${faixa}-${type}`;
@@ -130,12 +142,14 @@ const DiscountTable = ({
     const isEditing = editingCell === cellId;
     const isHighlighted = isCellHighlighted(faixa, type);
 
+    console.log('Rendering cell:', { faixa, type, isHighlighted, faixaConsumo, fidelidade, anosFidelidade });
+
     return (
       <TableCell 
-        className={`cursor-pointer transition-all duration-300 ${
+        className={`cursor-pointer transition-all duration-300 text-center ${
           isHighlighted 
-            ? 'bg-gradient-to-r from-green-100 to-emerald-100 border-2 border-green-400 font-bold text-green-800 shadow-lg transform scale-105' 
-            : 'hover:bg-gray-50 border border-transparent'
+            ? 'bg-green-100 border-2 border-green-500 font-bold text-green-800 shadow-lg scale-105 relative' 
+            : 'hover:bg-gray-50 border border-gray-200'
         }`}
         onClick={() => !isEditing && handleCellClick(faixa, type)}
         role="button"
@@ -156,12 +170,12 @@ const DiscountTable = ({
             aria-label={`Editando desconto para ${getFaixaDisplay(faixa)}`}
           />
         ) : (
-          <div className={`inline-flex items-center justify-center ${isHighlighted ? 'font-bold' : ''}`}>
-            <span className={`${isHighlighted ? 'text-green-800 text-lg' : ''}`}>
+          <div className={`inline-flex items-center justify-center gap-2 ${isHighlighted ? 'font-bold' : ''}`}>
+            <span className={`text-lg ${isHighlighted ? 'text-green-800' : 'text-gray-700'}`}>
               {value}%
             </span>
             {isHighlighted && (
-              <span className="ml-2 text-green-600" aria-label="Selecionado">✓</span>
+              <span className="text-green-600 text-xl" aria-label="Selecionado">✓</span>
             )}
             <span className="ml-1 text-xs text-gray-400 opacity-0 group-hover:opacity-100" aria-hidden="true">✏️</span>
           </div>
@@ -179,13 +193,18 @@ const DiscountTable = ({
         </CardTitle>
       </CardHeader>
       <CardContent>
+        {/* Debug info - remover depois */}
+        <div className="mb-4 p-2 bg-gray-100 rounded text-xs">
+          <strong>Debug:</strong> Faixa: "{faixaConsumo}" | Fidelidade: "{fidelidade}" | Anos: "{anosFidelidade}"
+        </div>
+
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead>Faixa de Consumo</TableHead>
-              <TableHead>Sem Fidelidade</TableHead>
-              <TableHead>1 Ano de Fidelidade</TableHead>
-              <TableHead>2 Anos de Fidelidade</TableHead>
+              <TableHead className="text-center">Sem Fidelidade</TableHead>
+              <TableHead className="text-center">1 Ano de Fidelidade</TableHead>
+              <TableHead className="text-center">2 Anos de Fidelidade</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
