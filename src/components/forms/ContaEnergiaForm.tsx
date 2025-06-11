@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useCallback } from 'react';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
@@ -21,7 +20,6 @@ const ContaEnergiaForm = ({ form, subscriberData }: ContaEnergiaFormProps) => {
   console.log('ContaEnergiaForm rendering...');
   console.log('ContaEnergiaForm - subscriberData recebido:', subscriberData);
   
-  const buttonRef = useRef<HTMLButtonElement>(null);
   const hasAutoFilledRef = useRef(false);
   const realizarTroca = form.watch('energyAccount.realizarTrocaTitularidade');
   const tipoContaOriginal = form.watch('energyAccount.originalAccount.type');
@@ -91,20 +89,14 @@ const ContaEnergiaForm = ({ form, subscriberData }: ContaEnergiaFormProps) => {
     }
   }, [subscriberData, form]);
 
-  // Executar preenchimento automático apenas uma vez quando o componente montar
+  // Preencher automaticamente apenas uma vez quando tiver dados do assinante
   useEffect(() => {
     if (subscriberData && !hasAutoFilledRef.current) {
-      console.log('Executando clique automático no botão...');
+      console.log('Preenchendo automaticamente com dados do assinante...');
       hasAutoFilledRef.current = true;
-      
-      // Simular clique no botão automaticamente
-      setTimeout(() => {
-        if (buttonRef.current) {
-          buttonRef.current.click();
-        }
-      }, 100); // Pequeno delay para garantir que o componente está totalmente renderizado
+      preencherComDadosAssinante();
     }
-  }, []); // Array de dependências vazio para executar apenas na montagem
+  }, [subscriberData, preencherComDadosAssinante]);
 
   return (
     <div className="space-y-6">
@@ -112,7 +104,6 @@ const ContaEnergiaForm = ({ form, subscriberData }: ContaEnergiaFormProps) => {
         <h3 className="text-lg font-semibold">Adicionar Conta de Energia UC</h3>
         {subscriberData && (
           <Button 
-            ref={buttonRef}
             type="button"
             variant="outline" 
             size="sm"
@@ -382,3 +373,5 @@ const ContaEnergiaForm = ({ form, subscriberData }: ContaEnergiaFormProps) => {
 };
 
 export default ContaEnergiaForm;
+
+</edits_to_apply>
