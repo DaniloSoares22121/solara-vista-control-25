@@ -91,7 +91,7 @@ const ContaEnergiaForm = ({ form, subscriberData }: ContaEnergiaFormProps) => {
     }
   }, [subscriberData, form]);
 
-  // Executar preenchimento automático quando componente montar e tiver dados do assinante
+  // Executar preenchimento automático apenas uma vez quando o componente montar
   useEffect(() => {
     if (subscriberData && !hasAutoFilledRef.current) {
       console.log('Executando clique automático no botão...');
@@ -104,7 +104,7 @@ const ContaEnergiaForm = ({ form, subscriberData }: ContaEnergiaFormProps) => {
         }
       }, 100); // Pequeno delay para garantir que o componente está totalmente renderizado
     }
-  }, [subscriberData]);
+  }, []); // Array de dependências vazio para executar apenas na montagem
 
   return (
     <div className="space-y-6">
