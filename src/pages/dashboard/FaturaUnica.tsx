@@ -1,4 +1,3 @@
-
 import DashboardLayout from '@/components/DashboardLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -12,6 +11,7 @@ import { FileText, Users, Search, Edit3, Download, Zap, Clock, Check, Eye, Timer
 import { useState, useEffect } from 'react';
 import { useSubscribers } from '@/hooks/useSubscribers';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
 interface FaturaResponse {
   fatura_url: string;
@@ -134,34 +134,33 @@ const FaturaUnica = () => {
 
       console.log('Consultando fatura com dados:', apiData);
 
-      // Simular chamada para API (substituir pela URL real)
-      const response = await fetch('https://ab9d-2804-2904-44c-1d00-dcf6-f52f-d71-c571.ngrok-free.app/baixar-fatura', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(apiData)
+      // Chamar a edge function do Supabase
+      const { data: result, error } = await supabase.functions.invoke('baixar-fatura', {
+        body: apiData
       });
 
-      const result: FaturaResponse = await response.json();
+      if (error) {
+        console.error('Erro na edge function:', error);
+        throw new Error(error.message || 'Erro ao consultar fatura');
+      }
 
-      if (response.ok) {
-        setFaturaResult(result);
-        
-        // Se for de um assinante cadastrado, salvar na validação
-        if (isFromAssinante && selectedAssinante) {
-          // Aqui você salvaria na base de dados para aparecer em "Faturas em Validação"
-          console.log('Salvando fatura para validação:', {
-            assinanteId: selectedAssinante.id,
-            faturaUrl: result.fatura_url,
-            ...dados
-          });
-          toast.success('Fatura consultada e enviada para validação!');
-        } else {
-          toast.success('Fatura consultada com sucesso!');
-        }
+      if (result.error) {
+        throw new Error(result.error);
+      }
+
+      setFaturaResult(result);
+      
+      // Se for de um assinante cadastrado, salvar na validação
+      if (isFromAssinante && selectedAssinante) {
+        // Aqui você salvaria na base de dados para aparecer em "Faturas em Validação"
+        console.log('Salvando fatura para validação:', {
+          assinanteId: selectedAssinante.id,
+          faturaUrl: result.fatura_url,
+          ...dados
+        });
+        toast.success('Fatura consultada e enviada para validação!');
       } else {
-        throw new Error(result.message || 'Erro ao consultar fatura');
+        toast.success('Fatura consultada com sucesso!');
       }
 
       clearInterval(progressInterval);
@@ -549,3 +548,5 @@ const FaturaUnica = () => {
 };
 
 export default FaturaUnica;
+
+}
