@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
@@ -6,6 +5,8 @@ import { MaskedInput } from '@/components/ui/masked-input';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
+import { Button } from '@/components/ui/button';
+import { Copy } from 'lucide-react';
 import { UseFormReturn } from 'react-hook-form';
 import AddressForm from './AddressForm';
 import NovaTitularidadeForm from './NovaTitularidadeForm';
@@ -22,62 +23,71 @@ const ContaEnergiaForm = ({ form, subscriberData }: ContaEnergiaFormProps) => {
   const realizarTroca = form.watch('energyAccount.realizarTrocaTitularidade');
   const tipoContaOriginal = form.watch('energyAccount.originalAccount.type');
   
-  // Auto-preencher dados quando subscriberData estiver disponível
-  useEffect(() => {
-    if (subscriberData && subscriberData.cpfCnpj) {
-      console.log('Auto-preenchendo dados da conta de energia...');
-      
-      // Auto-preencher tipo da conta
-      if (subscriberData.type) {
-        console.log('Preenchendo tipo:', subscriberData.type);
-        form.setValue('energyAccount.originalAccount.type', subscriberData.type, { shouldValidate: true });
-      }
-
-      // Auto-preencher CPF/CNPJ
-      if (subscriberData.cpfCnpj) {
-        console.log('Preenchendo CPF/CNPJ:', subscriberData.cpfCnpj);
-        form.setValue('energyAccount.originalAccount.cpfCnpj', subscriberData.cpfCnpj, { shouldValidate: true });
-      }
-
-      // Auto-preencher nome/razão social
-      const name = subscriberData.type === 'fisica' 
-        ? subscriberData.name 
-        : subscriberData.razaoSocial || subscriberData.name;
-      if (name) {
-        console.log('Preenchendo nome:', name);
-        form.setValue('energyAccount.originalAccount.name', name, { shouldValidate: true });
-      }
-
-      // Auto-preencher data de nascimento para pessoa física
-      if (subscriberData.type === 'fisica' && subscriberData.dataNascimento) {
-        console.log('Preenchendo data nascimento:', subscriberData.dataNascimento);
-        form.setValue('energyAccount.originalAccount.dataNascimento', subscriberData.dataNascimento, { shouldValidate: true });
-      }
-
-      // Auto-preencher número do parceiro
-      if (subscriberData.numeroParceiroNegocio) {
-        console.log('Preenchendo número parceiro:', subscriberData.numeroParceiroNegocio);
-        form.setValue('energyAccount.originalAccount.numeroParceiroUC', subscriberData.numeroParceiroNegocio, { shouldValidate: true });
-      }
-
-      // Auto-preencher endereço
-      if (subscriberData.address) {
-        console.log('Preenchendo endereço:', subscriberData.address);
-        form.setValue('energyAccount.originalAccount.address.cep', subscriberData.address.cep || '', { shouldValidate: true });
-        form.setValue('energyAccount.originalAccount.address.endereco', subscriberData.address.endereco || '', { shouldValidate: true });
-        form.setValue('energyAccount.originalAccount.address.numero', subscriberData.address.numero || '', { shouldValidate: true });
-        form.setValue('energyAccount.originalAccount.address.complemento', subscriberData.address.complemento || '', { shouldValidate: true });
-        form.setValue('energyAccount.originalAccount.address.bairro', subscriberData.address.bairro || '', { shouldValidate: true });
-        form.setValue('energyAccount.originalAccount.address.cidade', subscriberData.address.cidade || '', { shouldValidate: true });
-        form.setValue('energyAccount.originalAccount.address.estado', subscriberData.address.estado || '', { shouldValidate: true });
-      }
+  // Função para preencher automaticamente com dados do assinante
+  const preencherComDadosAssinante = () => {
+    if (!subscriberData) {
+      console.log('Nenhum dado do assinante disponível');
+      return;
     }
-  }, [subscriberData, form]);
+
+    console.log('Preenchendo conta de energia com dados do assinante...');
+    
+    // Preencher tipo da conta
+    if (subscriberData.type) {
+      form.setValue('energyAccount.originalAccount.type', subscriberData.type, { shouldValidate: true });
+    }
+
+    // Preencher CPF/CNPJ
+    if (subscriberData.cpfCnpj) {
+      form.setValue('energyAccount.originalAccount.cpfCnpj', subscriberData.cpfCnpj, { shouldValidate: true });
+    }
+
+    // Preencher nome/razão social
+    const name = subscriberData.type === 'fisica' 
+      ? subscriberData.name 
+      : subscriberData.razaoSocial || subscriberData.name;
+    if (name) {
+      form.setValue('energyAccount.originalAccount.name', name, { shouldValidate: true });
+    }
+
+    // Preencher data de nascimento para pessoa física
+    if (subscriberData.type === 'fisica' && subscriberData.dataNascimento) {
+      form.setValue('energyAccount.originalAccount.dataNascimento', subscriberData.dataNascimento, { shouldValidate: true });
+    }
+
+    // Preencher número do parceiro
+    if (subscriberData.numeroParceiroNegocio) {
+      form.setValue('energyAccount.originalAccount.numeroParceiroUC', subscriberData.numeroParceiroNegocio, { shouldValidate: true });
+    }
+
+    // Preencher endereço
+    if (subscriberData.address) {
+      form.setValue('energyAccount.originalAccount.address.cep', subscriberData.address.cep || '', { shouldValidate: true });
+      form.setValue('energyAccount.originalAccount.address.endereco', subscriberData.address.endereco || '', { shouldValidate: true });
+      form.setValue('energyAccount.originalAccount.address.numero', subscriberData.address.numero || '', { shouldValidate: true });
+      form.setValue('energyAccount.originalAccount.address.complemento', subscriberData.address.complemento || '', { shouldValidate: true });
+      form.setValue('energyAccount.originalAccount.address.bairro', subscriberData.address.bairro || '', { shouldValidate: true });
+      form.setValue('energyAccount.originalAccount.address.cidade', subscriberData.address.cidade || '', { shouldValidate: true });
+      form.setValue('energyAccount.originalAccount.address.estado', subscriberData.address.estado || '', { shouldValidate: true });
+    }
+  };
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold">Adicionar Conta de Energia UC</h3>
+        {subscriberData && (
+          <Button 
+            type="button"
+            variant="outline" 
+            size="sm"
+            onClick={preencherComDadosAssinante}
+            className="flex items-center gap-2"
+          >
+            <Copy className="w-4 h-4" />
+            Preencher com dados do assinante
+          </Button>
+        )}
       </div>
       
       <div className="space-y-6 border p-4 rounded-lg">
