@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Percent, Edit3, Check, X, Zap, TrendingUp, Star } from 'lucide-react';
+import { Percent, Edit3, Check, X, Zap, TrendingUp, Star, Calculator, Target } from 'lucide-react';
 
 interface DiscountTableProps {
   informedKwh: number;
@@ -71,9 +71,9 @@ const DiscountTable = ({ informedKwh, loyalty, onDiscountSelect }: DiscountTable
 
   const getLoyaltyBadgeColor = () => {
     switch (loyalty) {
-      case 'oneYear': return 'bg-blue-100 text-blue-800';
-      case 'twoYears': return 'bg-purple-100 text-purple-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'oneYear': return 'bg-blue-100 text-blue-800 border-blue-200';
+      case 'twoYears': return 'bg-emerald-100 text-emerald-800 border-emerald-200';
+      default: return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   };
 
@@ -92,7 +92,7 @@ const DiscountTable = ({ informedKwh, loyalty, onDiscountSelect }: DiscountTable
         <CardHeader className="bg-gradient-to-br from-green-50 to-emerald-50 border-b">
           <CardTitle className="flex items-center space-x-3">
             <div className="p-2 bg-green-100 rounded-lg">
-              <Percent className="w-6 h-6 text-green-600" />
+              <Calculator className="w-6 h-6 text-green-600" />
             </div>
             <div>
               <h3 className="text-xl font-bold text-green-900">Tabela de Descontos</h3>
@@ -105,10 +105,28 @@ const DiscountTable = ({ informedKwh, loyalty, onDiscountSelect }: DiscountTable
             <table className="w-full">
               <thead>
                 <tr className="bg-gradient-to-r from-gray-50 to-gray-100 border-b">
-                  <th className="text-left p-4 font-semibold text-gray-700">Faixa de Consumo (kWh)</th>
-                  <th className="text-center p-4 font-semibold text-gray-700">Desconto Base (%)</th>
-                  <th className="text-center p-4 font-semibold text-gray-700">Desconto Total (%)</th>
-                  <th className="text-center p-4 font-semibold text-gray-700">Ações</th>
+                  <th className="text-left p-4 font-semibold text-gray-700 flex items-center space-x-2">
+                    <Zap className="w-4 h-4" />
+                    <span>Faixa de Consumo (kWh)</span>
+                  </th>
+                  <th className="text-center p-4 font-semibold text-gray-700">
+                    <div className="flex items-center justify-center space-x-2">
+                      <Percent className="w-4 h-4" />
+                      <span>Desconto Base (%)</span>
+                    </div>
+                  </th>
+                  <th className="text-center p-4 font-semibold text-gray-700">
+                    <div className="flex items-center justify-center space-x-2">
+                      <Target className="w-4 h-4" />
+                      <span>Desconto Total (%)</span>
+                    </div>
+                  </th>
+                  <th className="text-center p-4 font-semibold text-gray-700">
+                    <div className="flex items-center justify-center space-x-2">
+                      <Edit3 className="w-4 h-4" />
+                      <span>Ações</span>
+                    </div>
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -131,7 +149,7 @@ const DiscountTable = ({ informedKwh, loyalty, onDiscountSelect }: DiscountTable
                           <span className="font-medium text-gray-900">{discount.range}</span>
                           {isApplicable && (
                             <Badge className="bg-green-100 text-green-800 border-green-200">
-                              <Zap className="w-3 h-3 mr-1" />
+                              <Target className="w-3 h-3 mr-1" />
                               Aplicável
                             </Badge>
                           )}
@@ -160,7 +178,7 @@ const DiscountTable = ({ informedKwh, loyalty, onDiscountSelect }: DiscountTable
                               size="sm"
                               variant="outline"
                               onClick={handleCancel}
-                              className="p-2"
+                              className="p-2 hover:bg-red-50 hover:border-red-300 hover:text-red-600"
                             >
                               <X className="w-4 h-4" />
                             </Button>
@@ -208,19 +226,23 @@ const DiscountTable = ({ informedKwh, loyalty, onDiscountSelect }: DiscountTable
       {/* Resumo do Desconto Aplicado */}
       {informedKwh > 0 && (
         <Card className="shadow-lg border-0 overflow-hidden">
-          <div className="h-1 bg-gradient-to-r from-blue-500 to-purple-500"></div>
-          <CardContent className="p-6 bg-gradient-to-br from-blue-50 to-purple-50">
+          <div className="h-1 bg-gradient-to-r from-blue-500 to-indigo-500"></div>
+          <CardContent className="p-6 bg-gradient-to-br from-blue-50 to-indigo-50">
             <div className="text-center space-y-4">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full text-white mb-2">
-                <Percent className="w-8 h-8" />
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full text-white mb-2">
+                <Target className="w-8 h-8" />
               </div>
               <div>
-                <h4 className="text-lg font-semibold text-gray-900 mb-2">Desconto Aplicado</h4>
+                <h4 className="text-lg font-semibold text-gray-900 mb-2 flex items-center justify-center space-x-2">
+                  <Calculator className="w-5 h-5" />
+                  <span>Desconto Aplicado</span>
+                </h4>
                 <div className="space-y-2">
-                  <p className="text-gray-600">
-                    Para <span className="font-semibold text-gray-900">{informedKwh} kWh</span> informados
+                  <p className="text-gray-600 flex items-center justify-center space-x-2">
+                    <Zap className="w-4 h-4" />
+                    <span>Para <span className="font-semibold text-gray-900">{informedKwh} kWh</span> informados</span>
                   </p>
-                  <div className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
+                  <div className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">
                     {selectedDiscount}%
                   </div>
                   {getLoyaltyBonus() > 0 && (

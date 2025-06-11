@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -7,7 +6,7 @@ import { Form } from '@/components/ui/form';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight, Save, CheckCircle, Clock, Users, FileText, Zap, Settings, Bell, Paperclip } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Save, CheckCircle, Clock, Users, FileText, Zap, Settings, Bell, Paperclip, Building2 } from 'lucide-react';
 import { useSubscriberForm } from '@/hooks/useSubscriberForm';
 import ConcessionariaSelector from './ConcessionariaSelector';
 import SubscriberTypeSelector from './SubscriberTypeSelector';
@@ -52,15 +51,15 @@ const SubscriberForm = () => {
   const progress = (currentStep / totalSteps) * 100;
 
   const stepTitles = [
-    { title: 'Concessionária', icon: Zap, color: 'from-emerald-500 to-teal-500' },
-    { title: 'Tipo de Assinante', icon: Users, color: 'from-blue-500 to-cyan-500' },
-    { title: 'Dados do Assinante', icon: Users, color: 'from-purple-500 to-pink-500' },
-    { title: 'Conta de Energia', icon: Zap, color: 'from-amber-500 to-orange-500' },
-    { title: 'Troca de Titularidade', icon: FileText, color: 'from-rose-500 to-pink-500' },
-    { title: 'Contratação do Plano', icon: CheckCircle, color: 'from-green-500 to-emerald-500' },
-    { title: 'Detalhes do Plano', icon: Settings, color: 'from-indigo-500 to-purple-500' },
-    { title: 'Notificações', icon: Bell, color: 'from-yellow-500 to-amber-500' },
-    { title: 'Anexos', icon: Paperclip, color: 'from-teal-500 to-cyan-500' },
+    { title: 'Concessionária', icon: Building2, color: 'from-emerald-500 to-green-600' },
+    { title: 'Tipo de Assinante', icon: Users, color: 'from-blue-500 to-blue-600' },
+    { title: 'Dados do Assinante', icon: FileText, color: 'from-indigo-500 to-indigo-600' },
+    { title: 'Conta de Energia', icon: Zap, color: 'from-amber-500 to-yellow-500' },
+    { title: 'Troca de Titularidade', icon: Clock, color: 'from-teal-500 to-cyan-500' },
+    { title: 'Contratação do Plano', icon: CheckCircle, color: 'from-green-500 to-emerald-600' },
+    { title: 'Detalhes do Plano', icon: Settings, color: 'from-slate-500 to-gray-600' },
+    { title: 'Notificações', icon: Bell, color: 'from-orange-500 to-red-500' },
+    { title: 'Anexos', icon: Paperclip, color: 'from-violet-500 to-purple-600' },
   ];
 
   const currentStepInfo = stepTitles[currentStep - 1];
@@ -248,10 +247,10 @@ const SubscriberForm = () => {
                 isActive 
                   ? `bg-gradient-to-br ${step.color} text-white shadow-xl scale-105` 
                   : isCompleted
-                  ? 'bg-green-100 text-green-700 hover:bg-green-200'
+                  ? 'bg-green-100 text-green-700 hover:bg-green-200 border-2 border-green-200'
                   : isAccessible
-                  ? 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                  : 'bg-gray-50 text-gray-400 cursor-not-allowed'
+                  ? 'bg-blue-50 text-blue-600 hover:bg-blue-100 border-2 border-blue-200'
+                  : 'bg-gray-50 text-gray-400 cursor-not-allowed border-2 border-gray-200'
               }`}
             >
               <div className="flex flex-col items-center space-y-2">

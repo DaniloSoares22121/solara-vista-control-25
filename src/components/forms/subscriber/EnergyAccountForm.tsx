@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { UseFormReturn } from 'react-hook-form';
 import { EnergyAccount, Address } from '@/types/subscriber';
 import AddressForm from '../AddressForm';
-import { Zap, User, Building, Copy, CheckCircle, Calendar, Hash, FileText, MapPin } from 'lucide-react';
+import { Zap, User, Building, Copy, CheckCircle, Calendar, Hash, FileText, MapPin, UserCheck, Building2 } from 'lucide-react';
 
 interface EnergyAccountFormProps {
   data: EnergyAccount;
@@ -46,16 +46,21 @@ const EnergyAccountForm = ({ data, onUpdate, onCepLookup, onAutoFill, form }: En
     <div className="space-y-8">
       {/* Header com ação de auto-preenchimento */}
       <Card className="shadow-lg border-0 overflow-hidden">
-        <div className="h-1 bg-gradient-to-r from-amber-500 to-orange-500"></div>
-        <CardHeader className="bg-gradient-to-br from-amber-50 to-orange-50">
+        <div className="h-1 bg-gradient-to-r from-amber-500 to-yellow-500"></div>
+        <CardHeader className="bg-gradient-to-br from-amber-50 to-yellow-50">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <div className="p-3 bg-amber-100 rounded-xl">
                 <Zap className="w-8 h-8 text-amber-600" />
               </div>
               <div>
-                <CardTitle className="text-2xl font-bold text-amber-900">4. Conta de Energia</CardTitle>
-                <p className="text-amber-700 mt-1">Dados da conta de energia elétrica</p>
+                <CardTitle className="text-2xl font-bold text-amber-900 flex items-center space-x-2">
+                  <span>4. Conta de Energia</span>
+                </CardTitle>
+                <p className="text-amber-700 mt-1 flex items-center space-x-1">
+                  <FileText className="w-4 h-4" />
+                  <span>Dados da conta de energia elétrica</span>
+                </p>
               </div>
             </div>
             <Button
@@ -74,7 +79,7 @@ const EnergyAccountForm = ({ data, onUpdate, onCepLookup, onAutoFill, form }: En
       <Card className="shadow-lg border-0">
         <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 border-b">
           <CardTitle className="flex items-center space-x-2 text-gray-900">
-            <User className="w-5 h-5" />
+            <UserCheck className="w-5 h-5" />
             <span>Tipo de Titular</span>
           </CardTitle>
         </CardHeader>
@@ -100,10 +105,10 @@ const EnergyAccountForm = ({ data, onUpdate, onCepLookup, onAutoFill, form }: En
                         <span className="font-medium">Pessoa Física</span>
                       </Label>
                     </div>
-                    <div className="flex items-center space-x-3 p-4 border-2 rounded-xl hover:bg-purple-50 hover:border-purple-300 transition-all duration-200">
+                    <div className="flex items-center space-x-3 p-4 border-2 rounded-xl hover:bg-emerald-50 hover:border-emerald-300 transition-all duration-200">
                       <RadioGroupItem value="company" id="company-holder" />
                       <Label htmlFor="company-holder" className="flex items-center space-x-2 cursor-pointer">
-                        <Building className="w-5 h-5 text-purple-600" />
+                        <Building2 className="w-5 h-5 text-emerald-600" />
                         <span className="font-medium">Pessoa Jurídica</span>
                       </Label>
                     </div>
