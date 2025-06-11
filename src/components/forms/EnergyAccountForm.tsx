@@ -18,7 +18,7 @@ const EnergyAccountForm = forwardRef<HTMLFormElement, EnergyAccountFormProps>(
     const formRef = useRef<HTMLFormElement>(null);
     
     console.log('EnergyAccountForm - initialValues:', initialValues);
-    console.log('EnergyAccountForm - subscriberData:', subscriberData);
+    console.log('EnergyAccountForm - subscriberData recebido:', subscriberData);
     
     const form = useForm({
       defaultValues: initialValues,
@@ -45,6 +45,9 @@ const EnergyAccountForm = forwardRef<HTMLFormElement, EnergyAccountFormProps>(
       <Card>
         <CardHeader>
           <CardTitle>2. Conta de Energia</CardTitle>
+          <p className="text-sm text-gray-600">
+            Os dados do assinante serão preenchidos automaticamente. Confirme e complete as informações da conta de energia.
+          </p>
         </CardHeader>
         <CardContent>
           <Form {...form}>

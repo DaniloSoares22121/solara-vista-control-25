@@ -15,9 +15,17 @@ interface NovaTitularidadeFormProps {
 const NovaTitularidadeForm = ({ form }: NovaTitularidadeFormProps) => {
   const tipoNovaTitularidade = form.watch('energyAccount.newTitularity.type');
   const trocaConcluida = form.watch('energyAccount.newTitularity.trocaConcluida');
+  const ucOriginal = form.watch('energyAccount.originalAccount.uc');
 
   console.log('NovaTitularidadeForm - tipoNovaTitularidade:', tipoNovaTitularidade);
   console.log('NovaTitularidadeForm - trocaConcluida:', trocaConcluida);
+
+  // Auto-preencher UC com o valor da conta original
+  React.useEffect(() => {
+    if (ucOriginal) {
+      form.setValue('energyAccount.newTitularity.uc', ucOriginal);
+    }
+  }, [ucOriginal, form]);
 
   return (
     <div className="space-y-6 border p-4 rounded-lg bg-blue-50">
@@ -57,7 +65,7 @@ const NovaTitularidadeForm = ({ form }: NovaTitularidadeFormProps) => {
           render={({ field }) => (
             <FormItem>
               <FormLabel>
-                {tipoNovaTitularidade === 'fisica' ? 'CPF' : 'CNPJ'} da Nova Titularidade *
+                {tipoNovaTitularidade === 'fisica' ? 'CPF' : 'CNPJ'} na Conta de Energia *
               </FormLabel>
               <FormControl>
                 {tipoNovaTitularidade === 'fisica' ? (
@@ -85,12 +93,12 @@ const NovaTitularidadeForm = ({ form }: NovaTitularidadeFormProps) => {
           render={({ field }) => (
             <FormItem>
               <FormLabel>
-                {tipoNovaTitularidade === 'fisica' ? 'Nome da Pessoa Física' : 'Razão Social'} da Nova Titularidade *
+                {tipoNovaTitularidade === 'fisica' ? 'Nome da PF' : 'Nome da Empresa'} na Conta de Energia *
               </FormLabel>
               <FormControl>
                 <Input 
                   {...field} 
-                  placeholder={tipoNovaTitularidade === 'fisica' ? 'Digite o nome' : 'Digite a razão social'} 
+                  placeholder={tipoNovaTitularidade === 'fisica' ? 'Digite o nome' : 'Digite o nome da empresa'} 
                 />
               </FormControl>
               <FormMessage />
@@ -104,7 +112,7 @@ const NovaTitularidadeForm = ({ form }: NovaTitularidadeFormProps) => {
             name="energyAccount.newTitularity.dataNascimento"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Data de Nascimento da Nova Titularidade</FormLabel>
+                <FormLabel>Data de Nascimento na Conta de Energia</FormLabel>
                 <FormControl>
                   <Input {...field} type="date" />
                 </FormControl>
@@ -123,12 +131,13 @@ const NovaTitularidadeForm = ({ form }: NovaTitularidadeFormProps) => {
               <FormControl>
                 <Input 
                   {...field} 
-                  placeholder="Mesmo UC da conta original" 
-                  value={form.watch('energyAccount.originalAccount.uc') || ''}
+                  placeholder="Puxado da conta original" 
                   disabled
+                  className="bg-gray-100"
                 />
               </FormControl>
               <FormMessage />
+              <p className="text-xs text-gray-500">UC será o mesmo da conta original</p>
             </FormItem>
           )}
         />
@@ -138,7 +147,7 @@ const NovaTitularidadeForm = ({ form }: NovaTitularidadeFormProps) => {
           name="energyAccount.newTitularity.numeroParceiroUC"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Número do Parceiro da Nova Titularidade *</FormLabel>
+              <FormLabel>Número do Parceiro *</FormLabel>
               <FormControl>
                 <Input {...field} placeholder="Digite o número do parceiro" />
               </FormControl>
@@ -153,8 +162,8 @@ const NovaTitularidadeForm = ({ form }: NovaTitularidadeFormProps) => {
         name="energyAccount.newTitularity.trocaConcluida"
         render={({ field }) => (
           <FormItem>
-            <div className="flex items-center justify-between">
-              <FormLabel>Troca de Titularidade Concluída?</FormLabel>
+            <div className="flex items-center justify-between p-4 border rounded-lg bg-white">
+              <FormLabel className="text-base font-medium">Troca de Titularidade Concluída?</FormLabel>
               <FormControl>
                 <Switch
                   checked={field.value || false}
@@ -162,45 +171,53 @@ const NovaTitularidadeForm = ({ form }: NovaTitularidadeFormProps) => {
                 />
               </FormControl>
             </div>
+            <p className="text-xs text-gray-500 ml-4">
+              Deixe desmarcado inicialmente. Após concluir a troca na distribuidora, volte aqui e marque como concluída.
+            </p>
             <FormMessage />
           </FormItem>
         )}
       />
 
       {trocaConcluida && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="energyAccount.newTitularity.dataTroca"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Data da Troca de Titularidade *</FormLabel>
-                <FormControl>
-                  <Input {...field} type="date" />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+        <div className="space-y-4 p-4 border rounded-lg bg-green-50">
+          <h5 className="text-sm font-semibold text-green-800">Informações da Troca Concluída</h5>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="energyAccount.newTitularity.dataTroca"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Data da Troca de Titularidade *</FormLabel>
+                  <FormControl>
+                    <Input {...field} type="date" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-          <FormField
-            control={form.control}
-            name="energyAccount.newTitularity.protocoloAnexo"
-            render={({ field: { onChange, value, ...field } }) => (
-              <FormItem>
-                <FormLabel>Protocolo de Troca de Titularidade</FormLabel>
-                <FormControl>
-                  <Input 
-                    {...field}
-                    type="file"
-                    accept=".pdf,.jpg,.jpeg,.png"
-                    onChange={(e) => onChange(e.target.files?.[0] || null)}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+            <FormField
+              control={form.control}
+              name="energyAccount.newTitularity.protocoloAnexo"
+              render={({ field: { onChange, value, ...field } }) => (
+                <FormItem>
+                  <FormLabel>Protocolo de Troca de Titularidade</FormLabel>
+                  <FormControl>
+                    <Input 
+                      {...field}
+                      type="file"
+                      accept=".pdf,.jpg,.jpeg,.png"
+                      onChange={(e) => onChange(e.target.files?.[0] || null)}
+                    />
+                  </FormControl>
+                  <p className="text-xs text-gray-500">Anexe o protocolo da distribuidora (PDF, JPG, JPEG, PNG)</p>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
         </div>
       )}
     </div>

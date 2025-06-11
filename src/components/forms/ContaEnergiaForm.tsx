@@ -145,12 +145,12 @@ const ContaEnergiaForm = ({ form, subscriberData }: ContaEnergiaFormProps) => {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>
-                  {tipoContaOriginal === 'fisica' ? 'Nome da Pessoa Física' : 'Razão Social'} na Conta *
+                  {tipoContaOriginal === 'fisica' ? 'Nome da PF' : 'Nome da Empresa'} na Conta de Energia *
                 </FormLabel>
                 <FormControl>
                   <Input 
                     {...field} 
-                    placeholder={tipoContaOriginal === 'fisica' ? 'Digite o nome' : 'Digite a razão social'} 
+                    placeholder={tipoContaOriginal === 'fisica' ? 'Digite o nome' : 'Digite o nome da empresa'} 
                   />
                 </FormControl>
                 <FormMessage />
@@ -164,7 +164,7 @@ const ContaEnergiaForm = ({ form, subscriberData }: ContaEnergiaFormProps) => {
               name="energyAccount.originalAccount.dataNascimento"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Data de Nascimento na conta de Energia</FormLabel>
+                  <FormLabel>Data de Nascimento na Conta de Energia</FormLabel>
                   <FormControl>
                     <Input {...field} type="date" />
                   </FormControl>
@@ -203,7 +203,109 @@ const ContaEnergiaForm = ({ form, subscriberData }: ContaEnergiaFormProps) => {
           />
         </div>
 
-        <AddressForm form={form} prefix="energyAccount.originalAccount.address" title="Endereço da Conta de Energia" />
+        <div className="space-y-4">
+          <h5 className="text-sm font-medium">Endereço da Conta de Energia</h5>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="energyAccount.originalAccount.address.cep"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>CEP *</FormLabel>
+                  <FormControl>
+                    <MaskedInput {...field} mask="99999-999" placeholder="00000-000" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="energyAccount.originalAccount.address.endereco"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Endereço *</FormLabel>
+                  <FormControl>
+                    <Input {...field} placeholder="Digite o endereço" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="energyAccount.originalAccount.address.numero"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Número *</FormLabel>
+                  <FormControl>
+                    <Input {...field} placeholder="Digite o número" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="energyAccount.originalAccount.address.complemento"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Complemento</FormLabel>
+                  <FormControl>
+                    <Input {...field} placeholder="Digite o complemento" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="energyAccount.originalAccount.address.bairro"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Bairro *</FormLabel>
+                  <FormControl>
+                    <Input {...field} placeholder="Digite o bairro" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="energyAccount.originalAccount.address.cidade"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Cidade *</FormLabel>
+                  <FormControl>
+                    <Input {...field} placeholder="Digite a cidade" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="energyAccount.originalAccount.address.estado"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Estado *</FormLabel>
+                  <FormControl>
+                    <Input {...field} placeholder="Digite o estado" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+        </div>
       </div>
 
       <div className="space-y-4">
@@ -212,8 +314,8 @@ const ContaEnergiaForm = ({ form, subscriberData }: ContaEnergiaFormProps) => {
           name="energyAccount.realizarTrocaTitularidade"
           render={({ field }) => (
             <FormItem>
-              <div className="flex items-center justify-between">
-                <FormLabel>Realizará Troca de Titularidade?</FormLabel>
+              <div className="flex items-center justify-between p-4 border rounded-lg">
+                <FormLabel className="text-base font-medium">Realizará Troca de Titularidade?</FormLabel>
                 <FormControl>
                   <Switch
                     checked={field.value}
