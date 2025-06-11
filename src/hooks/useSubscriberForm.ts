@@ -1,6 +1,8 @@
+
 import { useState, useCallback } from 'react';
 import { SubscriberFormData, Contact, Address } from '@/types/subscriber';
 import { useCepLookup } from '@/hooks/useCepLookup';
+import { subscriberService } from '@/services/supabaseSubscriberService';
 import { toast } from 'sonner';
 
 const defaultNotificationSettings = {
@@ -266,13 +268,13 @@ export const useSubscriberForm = () => {
   const submitForm = useCallback(async () => {
     setIsSubmitting(true);
     try {
-      // Aqui você implementaria a lógica de envio para o backend
-      console.log('Enviando formulário:', formData);
-      
-      // Simular delay de envio
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
+      await subscriberService.createSubscriber(formData);
       toast.success('Assinante cadastrado com sucesso!');
+      
+      // Reset form
+      setFormData(initialFormData);
+      setCurrentStep(1);
+      
       return { success: true };
     } catch (error) {
       console.error('Erro ao enviar formulário:', error);

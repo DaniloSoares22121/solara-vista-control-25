@@ -6,9 +6,45 @@ import { Button } from '@/components/ui/button';
 import { Plus, Users, Search, Filter, UserCheck, UserX, TrendingUp } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import SubscriberForm from '@/components/forms/subscriber/SubscriberForm';
+import SubscribersTable from '@/components/subscribers/SubscribersTable';
+import { useSubscribers } from '@/hooks/useSubscribers';
+import { SubscriberRecord } from '@/services/supabaseSubscriberService';
 
 const Assinantes = () => {
   const [showForm, setShowForm] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const { subscribers, isLoading, deleteSubscriber } = useSubscribers();
+
+  // Filter subscribers based on search term
+  const filteredSubscribers = subscribers.filter(subscriber => {
+    const name = subscriber.subscriber?.fullName || subscriber.subscriber?.companyName || '';
+    const document = subscriber.subscriber?.cpf || subscriber.subscriber?.cnpj || '';
+    const email = subscriber.subscriber?.email || '';
+    
+    const searchLower = searchTerm.toLowerCase();
+    return (
+      name.toLowerCase().includes(searchLower) ||
+      document.includes(searchTerm) ||
+      email.toLowerCase().includes(searchLower)
+    );
+  });
+
+  const handleEdit = (subscriber: SubscriberRecord) => {
+    console.log('Editar assinante:', subscriber);
+    // TODO: Implementar edição
+    setShowForm(true);
+  };
+
+  const handleView = (subscriber: SubscriberRecord) => {
+    console.log('Visualizar assinante:', subscriber);
+    // TODO: Implementar visualização detalhada
+  };
+
+  const handleDelete = (id: string) => {
+    if (confirm('Tem certeza que deseja remover este assinante?')) {
+      deleteSubscriber(id);
+    }
+  };
 
   if (showForm) {
     return (
@@ -36,10 +72,14 @@ const Assinantes = () => {
     );
   }
 
+  const totalSubscribers = subscribers.length;
+  const activeSubscribers = subscribers.filter(s => s.status === 'active').length;
+  const pendingSubscribers = subscribers.filter(s => s.status === 'pending').length;
+
   const statsCards = [
     {
       title: 'Total de Assinantes',
-      value: '0',
+      value: totalSubscribers.toString(),
       description: 'Assinantes cadastrados',
       icon: Users,
       iconColor: 'text-green-600',
@@ -49,7 +89,7 @@ const Assinantes = () => {
     },
     {
       title: 'Assinantes Ativos',
-      value: '0',
+      value: activeSubscribers.toString(),
       description: 'Com contratos vigentes',
       icon: UserCheck,
       iconColor: 'text-green-600',
@@ -59,7 +99,7 @@ const Assinantes = () => {
     },
     {
       title: 'Aguardando Ativação',
-      value: '0',
+      value: pendingSubscribers.toString(),
       description: 'Pendentes de aprovação',
       icon: UserX,
       iconColor: 'text-orange-600',
@@ -128,7 +168,9 @@ const Assinantes = () => {
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <Input
-                  placeholder="Buscar assinantes por nome, CPF ou email..."
+                  placeholder="Buscar assinantes por nome, CPF/CNPJ ou email..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10 border-gray-200 focus:border-green-400 focus:ring-green-400"
                 />
               </div>
@@ -143,65 +185,26 @@ const Assinantes = () => {
           </CardContent>
         </Card>
 
-        {/* Main Content */}
-        <Card className="border-0 shadow-xl bg-white/90 backdrop-blur-sm">
-          <CardHeader className="border-b border-gray-100 bg-gradient-to-r from-green-50 to-green-50">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div>
-                <CardTitle className="text-lg sm:text-xl font-bold text-gray-900 flex items-center space-x-2">
-                  <Users className="w-5 h-5 text-green-600" />
-                  <span>Lista de Assinantes</span>
-                </CardTitle>
-                <p className="text-gray-600 mt-1 text-sm">
-                  Gerencie todos os assinantes cadastrados no sistema
-                </p>
-              </div>
-              <Button 
-                variant="outline" 
-                className="text-green-600 border-green-200 hover:bg-green-50 w-fit"
-              >
-                Exportar Lista
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent className="p-6 sm:p-8">
-            <div className="flex items-center justify-center py-16 sm:py-20">
-              <div className="text-center space-y-6">
-                <div className="relative">
-                  <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-green-100 to-green-100 rounded-full flex items-center justify-center mx-auto shadow-lg">
-                    <Users className="h-10 w-10 sm:h-12 sm:w-12 text-green-600" />
-                  </div>
-                  <div className="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-r from-green-400 to-green-400 rounded-full flex items-center justify-center">
-                    <Plus className="h-3 w-3 text-white" />
-                  </div>
-                </div>
-                <div className="space-y-3">
-                  <h3 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-green-700 to-green-700 bg-clip-text text-transparent">
-                    Nenhum assinante cadastrado
-                  </h3>
-                  <p className="text-gray-600 text-sm sm:text-base max-w-md mx-auto leading-relaxed">
-                    Comece criando seu primeiro assinante no sistema. Adicione clientes interessados em energia solar e gerencie seus contratos.
-                  </p>
-                </div>
-                <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
-                  <Button 
-                    onClick={() => setShowForm(true)} 
-                    className="flex items-center space-x-2 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
-                  >
-                    <Plus className="w-4 h-4" />
-                    <span>Cadastrar Primeiro Assinante</span>
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    className="border-green-200 text-green-700 hover:bg-green-50"
-                  >
-                    Ver Tutorial
-                  </Button>
+        {/* Subscribers Table */}
+        {isLoading ? (
+          <Card className="border-0 shadow-xl bg-white/90 backdrop-blur-sm">
+            <CardContent className="p-8">
+              <div className="flex items-center justify-center py-16">
+                <div className="text-center space-y-4">
+                  <div className="w-8 h-8 border-4 border-green-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
+                  <p className="text-gray-600">Carregando assinantes...</p>
                 </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        ) : (
+          <SubscribersTable
+            subscribers={filteredSubscribers}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            onView={handleView}
+          />
+        )}
       </div>
     </DashboardLayout>
   );
