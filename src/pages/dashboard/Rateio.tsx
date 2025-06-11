@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -79,6 +78,22 @@ const Rateio = () => {
     s.subscriber?.name?.toLowerCase().includes(searchSubscriber.toLowerCase()) ||
     s.energyAccount?.originalAccount?.uc?.includes(searchSubscriber)
   );
+
+  // Função para obter assinantes vinculados através de rateios
+  const getSubscribersFromRateios = (generatorId: string): RateioSubscriber[] => {
+    const generatorRateios = rateios.filter(r => r.generatorId === generatorId);
+    const subscribersMap = new Map<string, RateioSubscriber>();
+    
+    generatorRateios.forEach(rateio => {
+      rateio.subscribers.forEach(subscriber => {
+        if (!subscribersMap.has(subscriber.id)) {
+          subscribersMap.set(subscriber.id, subscriber);
+        }
+      });
+    });
+    
+    return Array.from(subscribersMap.values());
+  };
 
   const handleGeneratorSelect = (generatorId: string, tab: string) => {
     const generator = selectGenerator(generatorId);
@@ -266,14 +281,18 @@ const Rateio = () => {
             </TabsTrigger>
           </TabsList>
 
-          {/* Aba Consulta Melhorada */}
+          {/* Aba Consulta Atualizada */}
           <TabsContent value="consulta" className="space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Users className="w-5 h-5" />
-                  Consultar Assinantes por Geradora
-                  <Badge variant="outline">{subscribersByGenerator.length} assinantes</Badge>
+                  Assinantes por Geradora
+                  {selectedGenerator && (
+                    <Badge variant="outline">
+                      {getSubscribersFromRateios(selectedGenerator.id).length} assinantes vinculados
+                    </Badge>
+                  )}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -293,58 +312,95 @@ const Rateio = () => {
                 </div>
 
                 {/* Lista de Geradoras para Consulta */}
-                <div className="space-y-2 max-h-60 overflow-y-auto border rounded-lg p-2">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {filteredGeneratorsConsulta.length === 0 ? (
-                    <p className="text-gray-500 text-center py-8">Nenhuma geradora encontrada</p>
+                    <div className="col-span-full text-center py-8">
+                      <Zap className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                      <p className="text-gray-500">Nenhuma geradora encontrada</p>
+                    </div>
                   ) : (
-                    filteredGeneratorsConsulta.map((generator) => (
-                      <div
-                        key={generator.id}
-                        className={`p-4 border rounded-lg cursor-pointer transition-all hover:shadow-md ${
-                          selectedGenerator?.id === generator.id 
-                            ? 'bg-blue-50 border-blue-300 shadow-md' 
-                            : 'hover:bg-gray-50'
-                        }`}
-                        onClick={() => handleGeneratorSelect(generator.id, 'consulta')}
-                      >
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <div className="font-medium text-lg">
-                              {generator.plants?.[0]?.apelido || generator.owner?.name}
+                    filteredGeneratorsConsulta.map((generator) => {
+                      const subscribersVinculados = getSubscribersFromRateios(generator.id);
+                      const totalRateios = getRateiosByGenerator(generator.id).length;
+                      
+                      return (
+                        <Card
+                          key={generator.id}
+                          className={`cursor-pointer transition-all hover:shadow-lg border-2 ${
+                            selectedGenerator?.id === generator.id 
+                              ? 'border-blue-500 bg-blue-50' 
+                              : 'border-gray-200 hover:border-blue-300'
+                          }`}
+                          onClick={() => handleGeneratorSelect(generator.id, 'consulta')}
+                        >
+                          <CardContent className="p-6">
+                            <div className="flex items-start justify-between mb-4">
+                              <div className="flex items-center gap-3">
+                                <div className="w-12 h-12 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-lg flex items-center justify-center">
+                                  <Zap className="w-6 h-6 text-white" />
+                                </div>
+                                <div>
+                                  <h3 className="font-semibold text-lg">
+                                    {generator.plants?.[0]?.apelido || generator.owner?.name}
+                                  </h3>
+                                  <p className="text-sm text-gray-500">
+                                    {generator.owner?.name}
+                                  </p>
+                                </div>
+                              </div>
+                              <Badge variant={generator.status === 'active' ? 'default' : 'secondary'}>
+                                {generator.status === 'active' ? 'Ativa' : 'Inativa'}
+                              </Badge>
                             </div>
-                            <div className="text-sm text-gray-500 mt-1">
-                              UC: {generator.plants?.[0]?.uc} | Geração: {generator.plants?.[0]?.geracaoProjetada?.toLocaleString()} kWh
+                            
+                            <div className="space-y-3">
+                              <div className="flex justify-between text-sm">
+                                <span className="text-gray-600">UC:</span>
+                                <span className="font-mono">{generator.plants?.[0]?.uc}</span>
+                              </div>
+                              <div className="flex justify-between text-sm">
+                                <span className="text-gray-600">Geração:</span>
+                                <span className="font-semibold">{generator.plants?.[0]?.geracaoProjetada?.toLocaleString()} kWh</span>
+                              </div>
+                              <div className="flex justify-between text-sm">
+                                <span className="text-gray-600">Assinantes:</span>
+                                <Badge variant="outline" className="bg-green-50 text-green-700">
+                                  {subscribersVinculados.length} vinculados
+                                </Badge>
+                              </div>
+                              <div className="flex justify-between text-sm">
+                                <span className="text-gray-600">Rateios:</span>
+                                <Badge variant="outline" className="bg-blue-50 text-blue-700">
+                                  {totalRateios} realizados
+                                </Badge>
+                              </div>
                             </div>
-                            <div className="text-xs text-gray-400 mt-1">
-                              Proprietário: {generator.owner?.name}
-                            </div>
-                          </div>
-                          <Badge variant={generator.status === 'active' ? 'default' : 'secondary'}>
-                            {generator.status === 'active' ? 'Ativa' : 'Inativa'}
-                          </Badge>
-                        </div>
-                      </div>
-                    ))
+                          </CardContent>
+                        </Card>
+                      );
+                    })
                   )}
                 </div>
 
-                {/* Informações da Geradora Selecionada Melhoradas */}
+                {/* Informações da Geradora Selecionada */}
                 {selectedGenerator && (
                   <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-6 rounded-lg border border-blue-200">
                     <div className="flex items-center justify-between mb-4">
                       <h3 className="font-semibold text-blue-900 text-lg flex items-center gap-2">
                         <Zap className="w-5 h-5" />
-                        Geradora Selecionada
+                        {selectedGenerator.nickname}
                       </h3>
-                      <Badge variant="default" className="bg-blue-600">
-                        {subscribersByGenerator.length} assinantes vinculados
-                      </Badge>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                      <div className="bg-white p-4 rounded-lg shadow-sm">
-                        <span className="text-sm text-blue-600 font-medium">Apelido:</span>
-                        <p className="font-semibold text-lg">{selectedGenerator.nickname}</p>
+                      <div className="flex gap-2">
+                        <Badge variant="default" className="bg-blue-600">
+                          {getSubscribersFromRateios(selectedGenerator.id).length} assinantes vinculados
+                        </Badge>
+                        <Button variant="outline" size="sm" onClick={() => resetSelections()}>
+                          <RefreshCw className="w-4 h-4 mr-1" />
+                          Limpar Seleção
+                        </Button>
                       </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                       <div className="bg-white p-4 rounded-lg shadow-sm">
                         <span className="text-sm text-blue-600 font-medium">UC:</span>
                         <p className="font-semibold text-lg">{selectedGenerator.uc}</p>
@@ -353,85 +409,89 @@ const Rateio = () => {
                         <span className="text-sm text-blue-600 font-medium">Geração:</span>
                         <p className="font-semibold text-lg">{selectedGenerator.generation.toLocaleString()} kWh</p>
                       </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Lista de Assinantes Melhorada */}
-                {subscribersByGenerator.length > 0 && (
-                  <div>
-                    <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-lg font-semibold flex items-center gap-2">
-                        <Users className="w-5 h-5" />
-                        Assinantes Cadastrados
-                      </h3>
-                      <div className="flex gap-2">
-                        <Button variant="outline" size="sm">
-                          <Download className="w-4 h-4 mr-1" />
-                          Exportar
-                        </Button>
-                        <Button variant="outline" size="sm">
-                          <BarChart3 className="w-4 h-4 mr-1" />
-                          Relatório
-                        </Button>
+                      <div className="bg-white p-4 rounded-lg shadow-sm">
+                        <span className="text-sm text-blue-600 font-medium">Rateios:</span>
+                        <p className="font-semibold text-lg">{getRateiosByGenerator(selectedGenerator.id).length}</p>
                       </div>
                     </div>
-                    
-                    <div className="border rounded-lg overflow-hidden">
-                      <Table>
-                        <TableHeader className="bg-gray-50">
-                          <TableRow>
-                            <TableHead className="font-semibold">Nome</TableHead>
-                            <TableHead className="font-semibold">UC</TableHead>
-                            <TableHead className="font-semibold">Consumo Contratado</TableHead>
-                            <TableHead className="font-semibold">Crédito Acumulado</TableHead>
-                            <TableHead className="font-semibold">Participação</TableHead>
-                            <TableHead className="font-semibold">Última Fatura</TableHead>
-                            <TableHead className="font-semibold">Status</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {subscribersByGenerator.map((subscriber) => (
-                            <TableRow key={subscriber.id} className="hover:bg-gray-50">
-                              <TableCell className="font-medium">{subscriber.name}</TableCell>
-                              <TableCell className="font-mono text-sm">{subscriber.uc}</TableCell>
-                              <TableCell>
-                                <div className="flex items-center gap-1">
-                                  <TrendingUp className="w-4 h-4 text-green-500" />
-                                  {subscriber.contractedConsumption.toLocaleString()} kWh/mês
-                                </div>
-                              </TableCell>
-                              <TableCell>
-                                <Badge variant={subscriber.accumulatedCredit > 0 ? "default" : "secondary"}>
-                                  {subscriber.accumulatedCredit.toLocaleString()} kWh
-                                </Badge>
-                              </TableCell>
-                              <TableCell>
-                                <div className="flex items-center gap-1">
-                                  {subscriber.percentage ? (
-                                    <>
-                                      <Percent className="w-3 h-3 text-blue-500" />
-                                      {subscriber.percentage}%
-                                    </>
-                                  ) : (
-                                    <>
-                                      <ArrowUpDown className="w-3 h-3 text-purple-500" />
-                                      Prioridade {subscriber.priority}
-                                    </>
-                                  )}
-                                </div>
-                              </TableCell>
-                              <TableCell className="text-sm">{subscriber.lastInvoice}</TableCell>
-                              <TableCell>
-                                <Badge variant="outline" className="text-green-600 border-green-600">
-                                  Ativo
-                                </Badge>
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </div>
+
+                    {/* Lista de Assinantes Vinculados */}
+                    {(() => {
+                      const subscribersVinculados = getSubscribersFromRateios(selectedGenerator.id);
+                      
+                      if (subscribersVinculados.length === 0) {
+                        return (
+                          <div className="text-center py-8">
+                            <Users className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                            <h4 className="text-lg font-medium text-gray-900 mb-2">Nenhum assinante vinculado</h4>
+                            <p className="text-gray-500">Esta geradora ainda não possui assinantes em rateios.</p>
+                          </div>
+                        );
+                      }
+
+                      return (
+                        <div>
+                          <h4 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                            <Users className="w-5 h-5" />
+                            Assinantes Vinculados
+                          </h4>
+                          
+                          <div className="border rounded-lg overflow-hidden bg-white">
+                            <Table>
+                              <TableHeader className="bg-gray-50">
+                                <TableRow>
+                                  <TableHead className="font-semibold">Nome</TableHead>
+                                  <TableHead className="font-semibold">UC</TableHead>
+                                  <TableHead className="font-semibold">Consumo Contratado</TableHead>
+                                  <TableHead className="font-semibold">Crédito Acumulado</TableHead>
+                                  <TableHead className="font-semibold">Última Participação</TableHead>
+                                  <TableHead className="font-semibold">Status</TableHead>
+                                </TableRow>
+                              </TableHeader>
+                              <TableBody>
+                                {subscribersVinculados.map((subscriber) => (
+                                  <TableRow key={subscriber.id} className="hover:bg-gray-50">
+                                    <TableCell className="font-medium">{subscriber.name}</TableCell>
+                                    <TableCell className="font-mono text-sm">{subscriber.uc}</TableCell>
+                                    <TableCell>
+                                      <div className="flex items-center gap-1">
+                                        <TrendingUp className="w-4 h-4 text-green-500" />
+                                        {subscriber.contractedConsumption.toLocaleString()} kWh/mês
+                                      </div>
+                                    </TableCell>
+                                    <TableCell>
+                                      <Badge variant={subscriber.accumulatedCredit > 0 ? "default" : "secondary"}>
+                                        {subscriber.accumulatedCredit.toLocaleString()} kWh
+                                      </Badge>
+                                    </TableCell>
+                                    <TableCell>
+                                      <div className="flex items-center gap-1">
+                                        {subscriber.percentage ? (
+                                          <>
+                                            <Percent className="w-3 h-3 text-blue-500" />
+                                            {subscriber.percentage}%
+                                          </>
+                                        ) : (
+                                          <>
+                                            <ArrowUpDown className="w-3 h-3 text-purple-500" />
+                                            Prioridade {subscriber.priority}
+                                          </>
+                                        )}
+                                      </div>
+                                    </TableCell>
+                                    <TableCell>
+                                      <Badge variant="outline" className="text-green-600 border-green-600">
+                                        Ativo
+                                      </Badge>
+                                    </TableCell>
+                                  </TableRow>
+                                ))}
+                              </TableBody>
+                            </Table>
+                          </div>
+                        </div>
+                      );
+                    })()}
                   </div>
                 )}
               </CardContent>
@@ -712,7 +772,7 @@ const Rateio = () => {
                                   <div className="font-medium">
                                     {(subscriber.allocatedEnergy || 0).toLocaleString()} kWh
                                   </div>
-                                  {subscriber.creditUsed > 0 && (
+                                  {subscriber.creditUsed && subscriber.creditUsed > 0 && (
                                     <div className="text-gray-500">
                                       Crédito: {subscriber.creditUsed.toLocaleString()} kWh
                                     </div>
