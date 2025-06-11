@@ -4,73 +4,10 @@ import DashboardLayout from '@/components/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-import { 
-  AlertDialog, 
-  AlertDialogAction, 
-  AlertDialogCancel, 
-  AlertDialogContent, 
-  AlertDialogDescription, 
-  AlertDialogFooter, 
-  AlertDialogHeader, 
-  AlertDialogTitle 
-} from '@/components/ui/alert-dialog';
-import { Search, Plus, Filter, User, Users, MapPin, Activity, Download, Loader2 } from 'lucide-react';
-import { useSubscribers } from '@/hooks/useSubscribers';
-import { SubscriberFormData } from '@/types/subscriber';
-import { toast } from 'sonner';
-import NovoAssinante from './NovoAssinante';
-import SubscriberCard from '@/components/subscribers/SubscriberCard';
-import EditSubscriber from '@/components/subscribers/EditSubscriber';
+import { Search, Plus, Filter, User, Users, MapPin, Activity, Download } from 'lucide-react';
 
 const Assinantes = () => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [editingSubscriber, setEditingSubscriber] = useState<(SubscriberFormData & { id: string }) | null>(null);
-  const [deletingSubscriberId, setDeletingSubscriberId] = useState<string | null>(null);
-  
-  const { subscribers, loading, deleteSubscriber } = useSubscribers();
-
-  const handleOpenModal = () => {
-    setIsModalOpen(true);
-  };
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-  };
-
-  const handleEdit = (subscriber: SubscriberFormData & { id: string }) => {
-    setEditingSubscriber(subscriber);
-  };
-
-  const handleCloseEdit = () => {
-    setEditingSubscriber(null);
-  };
-
-  const handleDelete = async (id: string) => {
-    try {
-      await deleteSubscriber(id);
-      toast.success('Assinante removido com sucesso!');
-      setDeletingSubscriberId(null);
-    } catch (error) {
-      console.error('Erro ao remover assinante:', error);
-      toast.error('Erro ao remover assinante');
-    }
-  };
-
-  // Filtrar assinantes baseado no termo de busca
-  const filteredSubscribers = subscribers.filter(subscriber => 
-    subscriber.subscriber.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    subscriber.subscriber.cpfCnpj.includes(searchTerm) ||
-    subscriber.energyAccount.originalAccount.uc.includes(searchTerm)
-  );
-
-  // Calcular estatísticas
-  const totalSubscribers = subscribers.length;
-  const activeSubscribers = subscribers.filter(sub => sub.planContract.modalidadeCompensacao).length;
-  const totalUCs = subscribers.reduce((acc, sub) => acc + 1, 0);
-  const totalEconomy = 0;
 
   return (
     <DashboardLayout>
@@ -95,15 +32,9 @@ const Assinantes = () => {
               Exportar
             </Button>
             <Button 
-              onClick={handleOpenModal}
-              disabled={loading}
               className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white shadow-lg hover:shadow-xl transition-all duration-200 px-4 sm:px-6 py-2 sm:py-3 text-sm"
             >
-              {loading ? (
-                <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 mr-2 animate-spin" />
-              ) : (
-                <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-              )}
+              <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
               Novo Assinante
             </Button>
           </div>
@@ -121,7 +52,7 @@ const Assinantes = () => {
               </div>
             </CardHeader>
             <CardContent className="pt-0">
-              <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">{totalSubscribers}</div>
+              <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">0</div>
               <p className="text-xs sm:text-sm text-gray-500">Clientes cadastrados</p>
             </CardContent>
           </Card>
@@ -136,7 +67,7 @@ const Assinantes = () => {
               </div>
             </CardHeader>
             <CardContent className="pt-0">
-              <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">{activeSubscribers}</div>
+              <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">0</div>
               <p className="text-xs sm:text-sm text-gray-500">Com geração ativa</p>
             </CardContent>
           </Card>
@@ -151,7 +82,7 @@ const Assinantes = () => {
               </div>
             </CardHeader>
             <CardContent className="pt-0">
-              <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">{totalUCs}</div>
+              <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">0</div>
               <p className="text-xs sm:text-sm text-gray-500">Unidades consumidoras</p>
             </CardContent>
           </Card>
@@ -166,7 +97,7 @@ const Assinantes = () => {
               </div>
             </CardHeader>
             <CardContent className="pt-0">
-              <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">R$ {totalEconomy.toLocaleString()}</div>
+              <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">R$ 0</div>
               <p className="text-xs sm:text-sm text-gray-500">Este mês</p>
             </CardContent>
           </Card>
@@ -194,112 +125,39 @@ const Assinantes = () => {
           </CardContent>
         </Card>
 
-        {/* Loading State */}
-        {loading && (
-          <Card className="border-0 shadow-lg bg-white">
-            <CardContent className="flex items-center justify-center py-12">
-              <Loader2 className="w-8 h-8 animate-spin text-green-600" />
-              <span className="ml-2 text-gray-600">Carregando assinantes...</span>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Enhanced Empty State or Subscribers List */}
-        {!loading && filteredSubscribers.length === 0 ? (
-          <Card className="border-0 shadow-lg bg-white">
-            <CardContent className="flex flex-col items-center justify-center py-12 sm:py-20 px-4">
-              <div className="relative mb-6 sm:mb-8">
-                <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-green-100 to-green-200 rounded-full flex items-center justify-center">
-                  <User className="w-10 h-10 sm:w-12 sm:h-12 text-green-600" />
-                </div>
-                <div className="absolute -top-2 -right-2">
-                  <Badge variant="secondary" className="bg-green-100 text-green-700 border-green-200 text-xs">
-                    {searchTerm ? 'Não encontrado' : 'Vazio'}
-                  </Badge>
-                </div>
+        {/* Empty State */}
+        <Card className="border-0 shadow-lg bg-white">
+          <CardContent className="flex flex-col items-center justify-center py-12 sm:py-20 px-4">
+            <div className="relative mb-6 sm:mb-8">
+              <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-green-100 to-green-200 rounded-full flex items-center justify-center">
+                <User className="w-10 h-10 sm:w-12 sm:h-12 text-green-600" />
               </div>
+            </div>
+            
+            <div className="text-center space-y-3 sm:space-y-4 max-w-md">
+              <h3 className="text-xl sm:text-2xl font-bold text-gray-900">
+                Nenhum assinante encontrado
+              </h3>
+              <p className="text-gray-500 leading-relaxed text-sm sm:text-base">
+                Comece adicionando seus primeiros assinantes para gerenciar suas unidades consumidoras e acompanhar a economia de energia.
+              </p>
               
-              <div className="text-center space-y-3 sm:space-y-4 max-w-md">
-                <h3 className="text-xl sm:text-2xl font-bold text-gray-900">
-                  {searchTerm ? 'Nenhum resultado encontrado' : 'Nenhum assinante encontrado'}
-                </h3>
-                <p className="text-gray-500 leading-relaxed text-sm sm:text-base">
-                  {searchTerm 
-                    ? 'Tente ajustar sua pesquisa ou limpar os filtros.'
-                    : 'Comece adicionando seus primeiros assinantes para gerenciar suas unidades consumidoras e acompanhar a economia de energia.'
-                  }
-                </p>
-                
-                <div className="flex flex-col sm:flex-row gap-3 pt-2 sm:pt-4 justify-center">
-                  <Button 
-                    onClick={handleOpenModal}
-                    className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white shadow-lg px-6 sm:px-8 py-2 sm:py-3 text-sm"
-                  >
-                    <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                    Adicionar Assinante
-                  </Button>
-                  <Button variant="outline" className="border-gray-200 hover:bg-gray-50 px-6 sm:px-8 py-2 sm:py-3 text-sm">
-                    <Download className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                    Importar Lista
-                  </Button>
-                </div>
+              <div className="flex flex-col sm:flex-row gap-3 pt-2 sm:pt-4 justify-center">
+                <Button 
+                  className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white shadow-lg px-6 sm:px-8 py-2 sm:py-3 text-sm"
+                >
+                  <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                  Adicionar Assinante
+                </Button>
+                <Button variant="outline" className="border-gray-200 hover:bg-gray-50 px-6 sm:px-8 py-2 sm:py-3 text-sm">
+                  <Download className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                  Importar Lista
+                </Button>
               </div>
-            </CardContent>
-          </Card>
-        ) : (
-          // Lista de assinantes usando o novo card component
-          <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-6">
-            {filteredSubscribers.map((subscriber) => (
-              <SubscriberCard
-                key={subscriber.id}
-                subscriber={subscriber}
-                onEdit={handleEdit}
-                onDelete={setDeletingSubscriberId}
-              />
-            ))}
-          </div>
-        )}
+            </div>
+          </CardContent>
+        </Card>
       </div>
-
-      {/* Sheet for New Subscriber */}
-      <Sheet open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <SheetContent side="right" className="w-full sm:max-w-7xl p-0 overflow-hidden">
-          <SheetHeader className="sr-only">
-            <SheetTitle>Novo Assinante</SheetTitle>
-          </SheetHeader>
-          <div className="h-full overflow-y-auto">
-            <NovoAssinante onClose={handleCloseModal} />
-          </div>
-        </SheetContent>
-      </Sheet>
-
-      {/* Dialog for Edit Subscriber */}
-      <EditSubscriber 
-        isOpen={!!editingSubscriber}
-        onClose={handleCloseEdit}
-        subscriber={editingSubscriber}
-      />
-
-      {/* Confirmation Dialog for Delete */}
-      <AlertDialog open={!!deletingSubscriberId} onOpenChange={() => setDeletingSubscriberId(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
-            <AlertDialogDescription>
-              Tem certeza que deseja excluir este assinante? Esta ação não pode ser desfeita.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={() => deletingSubscriberId && handleDelete(deletingSubscriberId)}
-              className="bg-red-600 hover:bg-red-700"
-            >
-              Excluir
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </DashboardLayout>
   );
 };
