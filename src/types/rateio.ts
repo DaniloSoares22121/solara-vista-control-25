@@ -33,19 +33,22 @@ export interface RateioCalculation {
 
 export interface RateioData {
   id?: string;
-  generatorId: string;
-  generator: RateioGenerator;
-  type: 'percentage' | 'priority';
-  date: {
+  month: string;
+  year: string;
+  status: 'pending' | 'processed' | 'completed';
+  totalAmount: number;
+  subscribers: RateioSubscriber[];
+  generatorId?: string;
+  generator?: RateioGenerator;
+  type?: 'percentage' | 'priority';
+  date?: {
     day: number;
     month: number;
     year: number;
   };
-  expectedGeneration: number;
+  expectedGeneration?: number;
   actualGeneration?: number;
-  subscribers: RateioSubscriber[];
   calculations?: RateioCalculation[];
-  status: 'draft' | 'pending' | 'completed' | 'cancelled';
   createdAt?: string;
   updatedAt?: string;
   attachmentUrl?: string;

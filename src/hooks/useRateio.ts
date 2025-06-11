@@ -1,14 +1,6 @@
 
 import { useState, useEffect } from 'react';
-
-interface RateioData {
-  id: string;
-  month: string;
-  year: string;
-  status: 'pending' | 'processed' | 'completed';
-  totalAmount: number;
-  subscribers: any[];
-}
+import { RateioData } from '@/types/rateio';
 
 export const useRateio = () => {
   const [rateios, setRateios] = useState<RateioData[]>([]);

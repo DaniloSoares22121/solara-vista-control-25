@@ -6,15 +6,12 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { UseFormReturn } from 'react-hook-form';
 import AddressForm from './AddressForm';
-import ContactsForm from './ContactsForm';
 
 interface DadosPessoaFisicaFormProps {
   form: UseFormReturn<any>;
-  contacts: any[];
-  onContactsChange: (contacts: any[]) => void;
 }
 
-const DadosPessoaFisicaForm = ({ form, contacts, onContactsChange }: DadosPessoaFisicaFormProps) => {
+const DadosPessoaFisicaForm = ({ form }: DadosPessoaFisicaFormProps) => {
   return (
     <div className="space-y-6">
       <h3 className="text-lg font-semibold">3A. Dados do Assinante (Pessoa Física)</h3>
@@ -166,8 +163,6 @@ const DadosPessoaFisicaForm = ({ form, contacts, onContactsChange }: DadosPessoa
           </FormItem>
         )}
       />
-
-      <ContactsForm contacts={contacts} onChange={onContactsChange} />
     </div>
   );
 };
