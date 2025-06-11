@@ -118,7 +118,7 @@ const SubscriberForm = () => {
             administratorData={formData.administratorData}
             onUpdateCompany={(data) => updateFormData('companyData', data)}
             onUpdateAdministrator={(data) => updateFormData('administratorData', data)}
-            onCepChange={(cep, type) => handleCepLookup(cep, type)}
+            onCepLookup={(cep, type) => handleCepLookup(cep, type)}
             onAddContact={() => addContact('company')}
             onRemoveContact={(id) => removeContact('company', id)}
             form={form}
