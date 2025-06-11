@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
@@ -60,15 +61,31 @@ const ContaEnergiaForm = ({ form, subscriberData }: ContaEnergiaFormProps) => {
       form.setValue('energyAccount.originalAccount.numeroParceiroUC', subscriberData.numeroParceiroNegocio, { shouldValidate: true });
     }
 
-    // Preencher endereço
+    // Preencher endereço completo
     if (subscriberData.address) {
-      form.setValue('energyAccount.originalAccount.address.cep', subscriberData.address.cep || '', { shouldValidate: true });
-      form.setValue('energyAccount.originalAccount.address.endereco', subscriberData.address.endereco || '', { shouldValidate: true });
-      form.setValue('energyAccount.originalAccount.address.numero', subscriberData.address.numero || '', { shouldValidate: true });
-      form.setValue('energyAccount.originalAccount.address.complemento', subscriberData.address.complemento || '', { shouldValidate: true });
-      form.setValue('energyAccount.originalAccount.address.bairro', subscriberData.address.bairro || '', { shouldValidate: true });
-      form.setValue('energyAccount.originalAccount.address.cidade', subscriberData.address.cidade || '', { shouldValidate: true });
-      form.setValue('energyAccount.originalAccount.address.estado', subscriberData.address.estado || '', { shouldValidate: true });
+      const address = subscriberData.address;
+      
+      if (address.cep) {
+        form.setValue('energyAccount.originalAccount.address.cep', address.cep, { shouldValidate: true });
+      }
+      if (address.endereco) {
+        form.setValue('energyAccount.originalAccount.address.endereco', address.endereco, { shouldValidate: true });
+      }
+      if (address.numero) {
+        form.setValue('energyAccount.originalAccount.address.numero', address.numero, { shouldValidate: true });
+      }
+      if (address.complemento) {
+        form.setValue('energyAccount.originalAccount.address.complemento', address.complemento, { shouldValidate: true });
+      }
+      if (address.bairro) {
+        form.setValue('energyAccount.originalAccount.address.bairro', address.bairro, { shouldValidate: true });
+      }
+      if (address.cidade) {
+        form.setValue('energyAccount.originalAccount.address.cidade', address.cidade, { shouldValidate: true });
+      }
+      if (address.estado) {
+        form.setValue('energyAccount.originalAccount.address.estado', address.estado, { shouldValidate: true });
+      }
     }
   };
 
