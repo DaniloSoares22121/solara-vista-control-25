@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { SubscriberFormData } from '@/types/subscriber';
+import { UseFormReturn } from 'react-hook-form';
 import ConcessionariaSelector from '../forms/subscriber/ConcessionariaSelector';
 import SubscriberTypeSelector from '../forms/subscriber/SubscriberTypeSelector';
 import PersonalDataForm from '../forms/subscriber/PersonalDataForm';
@@ -21,13 +22,82 @@ interface SubscriberStepsProps {
   autoFillEnergyAccount: () => void;
 }
 
-// Mock form object que implementa todas as propriedades necessárias do UseFormReturn
-const createMockForm = (formData: SubscriberFormData) => ({
-  control: { _formValues: formData },
+// Mock form object que implementa corretamente UseFormReturn
+const createMockForm = (formData: SubscriberFormData): UseFormReturn<any> => ({
+  control: { 
+    _formValues: formData,
+    _subjects: {
+      values: { next: () => {}, subscribe: () => ({ unsubscribe: () => {} }) },
+      array: { next: () => {}, subscribe: () => ({ unsubscribe: () => {} }) },
+      state: { next: () => {}, subscribe: () => ({ unsubscribe: () => {} }) }
+    },
+    _names: { mount: new Set(), unMount: new Set(), array: new Set(), focus: '', watch: new Set() },
+    _state: {
+      mount: false,
+      action: false,
+      watch: false,
+      isValid: false,
+      isDirty: false,
+      isSubmitting: false,
+      submitCount: 0,
+      touchedFields: {},
+      dirtyFields: {},
+      validatingFields: {},
+      errors: {}
+    },
+    _formState: {
+      isValid: true,
+      isDirty: false,
+      isSubmitting: false,
+      isLoading: false,
+      isSubmitted: false,
+      isSubmitSuccessful: false,
+      isValidating: false,
+      submitCount: 0,
+      touchedFields: {},
+      dirtyFields: {},
+      validatingFields: {},
+      errors: {},
+      defaultValues: formData
+    },
+    _fields: {},
+    _defaultValues: formData,
+    _options: { mode: 'onChange' as const, reValidateMode: 'onChange' as const, resolver: undefined },
+    _stateFlags: { mount: false, action: false, watch: false, isValid: false }
+  } as any,
   setValue: () => {},
-  watch: () => {},
-  getValues: () => formData,
-  getFieldState: () => ({ invalid: false, isTouched: false, isDirty: false, error: undefined }),
+  watch: (...args: any[]) => {
+    if (args.length === 0) return formData;
+    if (typeof args[0] === 'string') {
+      const path = args[0];
+      return path.split('.').reduce((obj, key) => obj?.[key], formData);
+    }
+    if (Array.isArray(args[0])) {
+      return args[0].map((path: string) => 
+        path.split('.').reduce((obj, key) => obj?.[key], formData)
+      );
+    }
+    return undefined;
+  },
+  getValues: (fieldName?: string | string[]) => {
+    if (!fieldName) return formData;
+    if (typeof fieldName === 'string') {
+      return fieldName.split('.').reduce((obj, key) => obj?.[key], formData);
+    }
+    if (Array.isArray(fieldName)) {
+      return fieldName.reduce((result, name) => {
+        result[name] = name.split('.').reduce((obj, key) => obj?.[key], formData);
+        return result;
+      }, {} as any);
+    }
+    return formData;
+  },
+  getFieldState: () => ({ 
+    invalid: false, 
+    isTouched: false, 
+    isDirty: false, 
+    error: undefined 
+  }),
   setError: () => {},
   clearErrors: () => {},
   trigger: () => Promise.resolve(true),
@@ -43,12 +113,18 @@ const createMockForm = (formData: SubscriberFormData) => ({
     submitCount: 0,
     touchedFields: {},
     dirtyFields: {},
+    validatingFields: {},
     defaultValues: formData
   },
   reset: () => {},
   handleSubmit: () => () => {},
   unregister: () => {},
-  register: () => ({ name: '', onChange: () => {}, onBlur: () => {}, ref: () => {} }),
+  register: () => ({ 
+    name: '', 
+    onChange: () => {}, 
+    onBlur: () => {}, 
+    ref: () => {} 
+  }),
   setFocus: () => {},
   resetField: () => {}
 });
