@@ -183,7 +183,7 @@ const SubscribersTable = ({ subscribers, onEdit, onDelete, onView }: Subscribers
                     </h3>
                     <div className="flex items-center gap-3">
                       {getStatusBadge(subscriber.status)}
-                      <Badge variant="outline" className="text-xs font-medium bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 border-blue-200">
+                      <Badge variant="outline" className="text-xs font-medium bg-gradient-to-r from-green-50 to-emerald-50 text-green-700 border-green-200">
                         {subscriber.subscriber?.fullName ? 'Pessoa Física' : 'Pessoa Jurídica'}
                       </Badge>
                     </div>
@@ -194,13 +194,13 @@ const SubscribersTable = ({ subscribers, onEdit, onDelete, onView }: Subscribers
             
             <CardContent className="pt-0 space-y-4 pb-6">
               {/* Unidade Consumidora */}
-              <div className="flex items-center space-x-3 p-3 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl">
-                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-xl flex items-center justify-center shadow-md">
+              <div className="flex items-center space-x-3 p-3 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl">
+                <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl flex items-center justify-center shadow-md">
                   <Zap className="w-5 h-5 text-white" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-xs text-blue-600 font-medium mb-1">Unidade Consumidora</p>
-                  <p className="text-sm font-mono font-bold text-blue-800 truncate">{getEnergyAccount(subscriber)}</p>
+                  <p className="text-xs text-green-600 font-medium mb-1">Unidade Consumidora</p>
+                  <p className="text-sm font-mono font-bold text-green-800 truncate">{getEnergyAccount(subscriber)}</p>
                 </div>
               </div>
 
@@ -238,14 +238,14 @@ const SubscribersTable = ({ subscribers, onEdit, onDelete, onView }: Subscribers
               </div>
 
               {/* Plano */}
-              <div className="p-3 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl border border-indigo-100">
+              <div className="p-3 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-100">
                 <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-xl flex items-center justify-center shadow-md">
+                  <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl flex items-center justify-center shadow-md">
                     <FileText className="w-5 h-5 text-white" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-xs text-indigo-600 font-medium mb-1">Plano Contratado</p>
-                    <p className="text-sm font-bold text-indigo-800 truncate">{getPlanInfo(subscriber)}</p>
+                    <p className="text-xs text-green-600 font-medium mb-1">Plano Contratado</p>
+                    <p className="text-sm font-bold text-green-800 truncate">{getPlanInfo(subscriber)}</p>
                   </div>
                 </div>
               </div>
@@ -265,7 +265,7 @@ const SubscribersTable = ({ subscribers, onEdit, onDelete, onView }: Subscribers
                   variant="ghost"
                   size="sm"
                   onClick={(e) => handleEditClick(e, subscriber)}
-                  className="h-10 w-10 p-0 hover:bg-blue-100 hover:text-blue-700 transition-all duration-300 rounded-xl shadow-sm hover:shadow-md"
+                  className="h-10 w-10 p-0 hover:bg-green-100 hover:text-green-700 transition-all duration-300 rounded-xl shadow-sm hover:shadow-md"
                   title="Editar"
                 >
                   <Edit className="h-5 w-5" />

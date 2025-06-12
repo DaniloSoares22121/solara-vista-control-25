@@ -12,7 +12,7 @@ const AutoSaveIndicator = ({ status, lastSaved }: AutoSaveIndicatorProps) => {
   const getIcon = () => {
     switch (status) {
       case 'saving':
-        return <Save className="w-4 h-4 animate-pulse text-blue-500" />;
+        return <Save className="w-4 h-4 animate-pulse text-green-500" />;
       case 'saved':
         return <Check className="w-4 h-4 text-green-500" />;
       case 'error':
@@ -40,7 +40,7 @@ const AutoSaveIndicator = ({ status, lastSaved }: AutoSaveIndicatorProps) => {
   return (
     <div className={cn(
       "flex items-center gap-2 text-sm px-3 py-1 rounded-full transition-all duration-200",
-      status === 'saving' && "bg-blue-50 text-blue-700",
+      status === 'saving' && "bg-green-50 text-green-700",
       status === 'saved' && "bg-green-50 text-green-700",
       status === 'error' && "bg-red-50 text-red-700"
     )}>
