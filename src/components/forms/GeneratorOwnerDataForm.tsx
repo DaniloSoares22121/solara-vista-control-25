@@ -6,6 +6,7 @@ import { MaskedInput } from '@/components/ui/masked-input';
 import { UseFormReturn } from 'react-hook-form';
 import { GeneratorFormData } from '@/types/generator';
 import AddressForm from './AddressForm';
+import { User, Building2, Phone, Mail } from 'lucide-react';
 
 interface GeneratorOwnerDataFormProps {
   form: UseFormReturn<GeneratorFormData>;
@@ -14,169 +15,248 @@ interface GeneratorOwnerDataFormProps {
 
 const GeneratorOwnerDataForm = ({ form, ownerType }: GeneratorOwnerDataFormProps) => {
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-3 mb-4">
-        <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center">
-          <span className="text-white font-bold text-sm">2</span>
+    <div className="space-y-8">
+      {/* Identificação */}
+      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-xl border border-blue-100">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center shadow-lg">
+            {ownerType === 'fisica' ? (
+              <User className="w-5 h-5 text-white" />
+            ) : (
+              <Building2 className="w-5 h-5 text-white" />
+            )}
+          </div>
+          <div>
+            <h3 className="text-xl font-bold text-blue-900">
+              Identificação do {ownerType === 'fisica' ? 'Proprietário' : 'Empresa'}
+            </h3>
+            <p className="text-blue-600 text-sm">
+              {ownerType === 'fisica' 
+                ? 'Dados pessoais do proprietário da geradora' 
+                : 'Dados da empresa proprietária da geradora'}
+            </p>
+          </div>
         </div>
-        <h3 className="text-xl font-semibold text-gray-900">Dados do Dono da Usina</h3>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <FormField
+            control={form.control}
+            name="owner.cpfCnpj"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-sm font-semibold text-gray-700">
+                  {ownerType === 'fisica' ? 'CPF' : 'CNPJ'} *
+                </FormLabel>
+                <FormControl>
+                  <MaskedInput 
+                    {...field} 
+                    mask={ownerType === 'fisica' ? '999.999.999-99' : '99.999.999/9999-99'}
+                    placeholder={ownerType === 'fisica' ? '000.000.000-00' : '00.000.000/0000-00'}
+                    className="transition-all duration-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="owner.numeroParceiroNegocio"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-sm font-semibold text-gray-700">
+                  Número Parceiro de Negócio *
+                </FormLabel>
+                <FormControl>
+                  <Input 
+                    placeholder="Digite o número" 
+                    {...field} 
+                    className="transition-all duration-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {ownerType === 'fisica' ? (
+            <>
+              <FormField
+                control={form.control}
+                name="owner.name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-semibold text-gray-700">
+                      Nome Completo do Titular *
+                    </FormLabel>
+                    <FormControl>
+                      <Input 
+                        placeholder="Nome completo" 
+                        {...field} 
+                        className="transition-all duration-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="owner.dataNascimento"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-semibold text-gray-700">
+                      Data de Nascimento *
+                    </FormLabel>
+                    <FormControl>
+                      <MaskedInput 
+                        {...field} 
+                        mask="99/99/9999"
+                        placeholder="DD/MM/AAAA"
+                        className="transition-all duration-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </>
+          ) : (
+            <>
+              <FormField
+                control={form.control}
+                name="owner.razaoSocial"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-semibold text-gray-700">
+                      Razão Social *
+                    </FormLabel>
+                    <FormControl>
+                      <Input 
+                        placeholder="Razão social da empresa" 
+                        {...field} 
+                        className="transition-all duration-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="owner.nomeFantasia"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-semibold text-gray-700">
+                      Nome Fantasia
+                    </FormLabel>
+                    <FormControl>
+                      <Input 
+                        placeholder="Nome fantasia" 
+                        {...field} 
+                        className="transition-all duration-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </>
+          )}
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <FormField
-          control={form.control}
-          name="owner.cpfCnpj"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>{ownerType === 'fisica' ? 'CPF' : 'CNPJ'} *</FormLabel>
-              <FormControl>
-                <MaskedInput 
-                  {...field} 
-                  mask={ownerType === 'fisica' ? '999.999.999-99' : '99.999.999/9999-99'}
-                  placeholder={ownerType === 'fisica' ? '000.000.000-00' : '00.000.000/0000-00'}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+      {/* Contato */}
+      <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-6 rounded-xl border border-green-100">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-10 h-10 bg-green-500 rounded-xl flex items-center justify-center shadow-lg">
+            <Phone className="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <h3 className="text-xl font-bold text-green-900">Informações de Contato</h3>
+            <p className="text-green-600 text-sm">Telefone e e-mail para comunicação</p>
+          </div>
+        </div>
 
-        <FormField
-          control={form.control}
-          name="owner.numeroParceiroNegocio"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Número Parceiro de Negócio *</FormLabel>
-              <FormControl>
-                <Input placeholder="Digite o número" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <FormField
+            control={form.control}
+            name="owner.telefone"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-sm font-semibold text-gray-700">Telefone *</FormLabel>
+                <FormControl>
+                  <MaskedInput 
+                    {...field} 
+                    mask="(99) 99999-9999"
+                    placeholder="(00) 00000-0000"
+                    className="transition-all duration-200 focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-        {ownerType === 'fisica' ? (
-          <>
-            <FormField
-              control={form.control}
-              name="owner.name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Nome Completo do Titular *</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Nome completo" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="owner.dataNascimento"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Data de Nascimento *</FormLabel>
-                  <FormControl>
-                    <MaskedInput 
+          <FormField
+            control={form.control}
+            name="owner.email"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-sm font-semibold text-gray-700">E-mail *</FormLabel>
+                <FormControl>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                    <Input 
+                      type="email" 
+                      placeholder="email@exemplo.com" 
                       {...field} 
-                      mask="99/99/9999"
-                      placeholder="DD/MM/AAAA"
+                      className="pl-10 transition-all duration-200 focus:ring-2 focus:ring-green-500 focus:border-green-500"
                     />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </>
-        ) : (
-          <>
-            <FormField
-              control={form.control}
-              name="owner.razaoSocial"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Razão Social *</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Razão social da empresa" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="owner.nomeFantasia"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Nome Fantasia</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Nome fantasia" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </>
-        )}
-
-        <FormField
-          control={form.control}
-          name="owner.telefone"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Telefone *</FormLabel>
-              <FormControl>
-                <MaskedInput 
-                  {...field} 
-                  mask="(99) 99999-9999"
-                  placeholder="(00) 00000-0000"
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="owner.email"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>E-mail *</FormLabel>
-              <FormControl>
-                <Input type="email" placeholder="email@exemplo.com" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+                  </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
       </div>
 
+      {/* Endereço */}
       <AddressForm 
         form={form} 
         prefix="owner.address" 
-        title="Endereço do Dono da Usina"
+        title="Endereço do Proprietário"
+        className="bg-gradient-to-r from-purple-50 to-violet-50 p-6 rounded-xl border border-purple-100"
       />
 
-      <FormField
-        control={form.control}
-        name="owner.observacoes"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Observações</FormLabel>
-            <FormControl>
-              <Textarea 
-                placeholder="Observações adicionais..." 
-                {...field} 
-                rows={3}
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
+      {/* Observações */}
+      <div className="bg-gradient-to-r from-amber-50 to-orange-50 p-6 rounded-xl border border-amber-100">
+        <FormField
+          control={form.control}
+          name="owner.observacoes"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                <div className="w-2 h-6 bg-amber-500 rounded"></div>
+                Observações
+              </FormLabel>
+              <FormControl>
+                <Textarea 
+                  placeholder="Observações adicionais sobre o proprietário..." 
+                  {...field} 
+                  rows={4}
+                  className="transition-all duration-200 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 resize-none"
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      </div>
     </div>
   );
 };

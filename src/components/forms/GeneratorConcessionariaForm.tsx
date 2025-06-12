@@ -3,6 +3,7 @@ import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/comp
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { UseFormReturn } from 'react-hook-form';
 import { GeneratorFormData } from '@/types/generator';
+import { Zap } from 'lucide-react';
 
 interface GeneratorConcessionariaFormProps {
   form: UseFormReturn<GeneratorFormData>;
@@ -10,12 +11,15 @@ interface GeneratorConcessionariaFormProps {
 
 const GeneratorConcessionariaForm = ({ form }: GeneratorConcessionariaFormProps) => {
   return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-3 mb-4">
-        <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
-          <span className="text-white font-bold text-sm">1</span>
+    <div className="bg-gradient-to-r from-yellow-50 to-amber-50 p-6 rounded-xl border border-yellow-100">
+      <div className="flex items-center gap-3 mb-6">
+        <div className="w-10 h-10 bg-yellow-500 rounded-xl flex items-center justify-center shadow-lg">
+          <Zap className="w-5 h-5 text-white" />
         </div>
-        <h3 className="text-xl font-semibold text-gray-900">Concessionária</h3>
+        <div>
+          <h3 className="text-xl font-bold text-yellow-900">Concessionária de Energia</h3>
+          <p className="text-yellow-600 text-sm">Selecione a distribuidora de energia elétrica</p>
+        </div>
       </div>
 
       <FormField
@@ -23,15 +27,20 @@ const GeneratorConcessionariaForm = ({ form }: GeneratorConcessionariaFormProps)
         name="concessionaria"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Concessionária *</FormLabel>
-            <Select onValueChange={field.onChange} defaultValue={field.value}>
+            <FormLabel className="text-sm font-semibold text-gray-700">Concessionária *</FormLabel>
+            <Select onValueChange={field.onChange} value={field.value}>
               <FormControl>
-                <SelectTrigger>
+                <SelectTrigger className="h-12 transition-all duration-200 focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500">
                   <SelectValue placeholder="Selecione a concessionária" />
                 </SelectTrigger>
               </FormControl>
               <SelectContent>
-                <SelectItem value="equatorial-goias">Equatorial Goiás</SelectItem>
+                <SelectItem value="equatorial-goias">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    Equatorial Goiás
+                  </div>
+                </SelectItem>
               </SelectContent>
             </Select>
             <FormMessage />
