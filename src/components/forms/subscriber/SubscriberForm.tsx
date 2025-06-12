@@ -58,8 +58,6 @@ const SubscriberForm: React.FC<SubscriberFormProps> = ({
 
   const handleCepLookupWrapper = useCallback((cep: string, addressType: 'personal' | 'company' | 'administrator' | 'energy') => {
     console.log('🔍 Fazendo lookup do CEP:', cep, 'para tipo:', addressType);
-    
-    // Use the addressType directly without incorrect mapping
     handleCepLookup(cep, addressType);
   }, [handleCepLookup]);
 
@@ -113,19 +111,21 @@ const SubscriberForm: React.FC<SubscriberFormProps> = ({
       title: formData.subscriberType === 'person' ? 'Dados Pessoais' : 'Dados da Empresa',
       component: formData.subscriberType === 'person' ? (
         <PersonalDataForm 
-          formData={formData} 
-          updateFormData={updateFormData}
-          handleCepLookup={handleCepLookupWrapper}
-          addContact={addContact}
-          removeContact={removeContact}
+          data={formData.personalData} 
+          onUpdate={(data) => updateFormData('personalData', data)}
+          onCepLookup={(cep) => handleCepLookupWrapper(cep, 'personal')}
+          onAddContact={() => addContact('personal')}
+          onRemoveContact={(contactId) => removeContact('personal', contactId)}
+          form={{ control: { _formValues: formData }, setValue: () => {}, watch: () => {} } as any}
         />
       ) : (
         <CompanyDataForm 
-          formData={formData} 
-          updateFormData={updateFormData}
-          handleCepLookup={handleCepLookupWrapper}
-          addContact={addContact}
-          removeContact={removeContact}
+          data={formData.companyData} 
+          onUpdate={(data) => updateFormData('companyData', data)}
+          onCepLookup={(cep) => handleCepLookupWrapper(cep, 'company')}
+          onAddContact={() => addContact('company')}
+          onRemoveContact={(contactId) => removeContact('company', contactId)}
+          form={{ control: { _formValues: formData }, setValue: () => {}, watch: () => {} } as any}
         />
       )
     },
@@ -133,51 +133,58 @@ const SubscriberForm: React.FC<SubscriberFormProps> = ({
       number: 4, 
       title: 'Conta de Energia', 
       component: <EnergyAccountForm 
-        formData={formData} 
-        updateFormData={updateFormData}
-        handleCepLookup={handleCepLookupWrapper}
-        autoFillEnergyAccount={autoFillEnergyAccount}
+        data={formData.energyAccount} 
+        onUpdate={(data) => updateFormData('energyAccount', data)}
+        onCepLookup={(cep) => handleCepLookupWrapper(cep, 'energy')}
+        onAutoFill={autoFillEnergyAccount}
+        form={{ control: { _formValues: formData }, setValue: () => {}, watch: () => {} } as any}
       /> 
     },
     { 
       number: 5, 
       title: 'Transferência de Titularidade', 
       component: <TitleTransferForm 
-        formData={formData} 
-        updateFormData={updateFormData} 
+        data={formData.titleTransfer} 
+        onUpdate={(data) => updateFormData('titleTransfer', data)}
+        form={{ control: { _formValues: formData }, setValue: () => {}, watch: () => {} } as any}
       /> 
     },
     { 
       number: 6, 
       title: 'Contrato do Plano', 
       component: <PlanContractForm 
-        formData={formData} 
-        updateFormData={updateFormData} 
+        data={formData.planContract} 
+        onUpdate={(data) => updateFormData('planContract', data)}
+        form={{ control: { _formValues: formData }, setValue: () => {}, watch: () => {} } as any}
       /> 
     },
     { 
       number: 7, 
       title: 'Detalhes do Plano', 
       component: <PlanDetailsForm 
-        formData={formData} 
-        updateFormData={updateFormData} 
+        data={formData.planDetails} 
+        onUpdate={(data) => updateFormData('planDetails', data)}
+        form={{ control: { _formValues: formData }, setValue: () => {}, watch: () => {} } as any}
       /> 
     },
     { 
       number: 8, 
       title: 'Configurações de Notificação', 
       component: <NotificationSettingsForm 
-        formData={formData} 
-        updateFormData={updateFormData} 
+        data={formData.notificationSettings} 
+        onUpdate={(data) => updateFormData('notificationSettings', data)}
+        form={{ control: { _formValues: formData }, setValue: () => {}, watch: () => {} } as any}
       /> 
     },
     { 
       number: 9, 
       title: 'Anexos', 
       component: <AttachmentsForm 
-        formData={formData} 
-        updateFormData={updateFormData} 
-        isEditing={isEditing} 
+        data={formData.attachments} 
+        subscriberType={formData.subscriberType}
+        willTransfer={formData.titleTransfer?.willTransfer || false}
+        onUpdate={(data) => updateFormData('attachments', data)}
+        form={{ control: { _formValues: formData }, setValue: () => {}, watch: () => {} } as any}
       /> 
     },
   ];
@@ -187,7 +194,7 @@ const SubscriberForm: React.FC<SubscriberFormProps> = ({
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <FormProgress currentStep={currentStep} totalSteps={steps.length} />
+        <FormProgress currentStep={currentStep} stepsCount={steps.length} />
         <div className="flex items-center gap-2">
           <AutoSaveIndicator status="saved" />
           {!isEditing && (
@@ -205,9 +212,9 @@ const SubscriberForm: React.FC<SubscriberFormProps> = ({
       </div>
 
       <FormValidationSummary 
-        formData={formData} 
+        errors={[]}
         currentStep={currentStep} 
-        validateStep={validateStep}
+        onStepClick={setCurrentStep}
       />
 
       {currentStepData && (
@@ -226,7 +233,7 @@ const SubscriberForm: React.FC<SubscriberFormProps> = ({
         onNext={() => setCurrentStep(prev => prev + 1)}
         onSubmit={handleSubmit}
         isSubmitting={isSubmitting}
-        validateStep={validateStep}
+        canProceed={validateStep(currentStep)}
         isEditing={isEditing}
       />
     </div>
