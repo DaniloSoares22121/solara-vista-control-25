@@ -14,7 +14,6 @@ import AttachmentsForm from '../forms/subscriber/AttachmentsForm';
 
 interface SubscriberStepsProps {
   formData: SubscriberFormData;
-  currentStep: number;
   updateFormData: (section: keyof SubscriberFormData, data: unknown) => void;
   handleCepLookup: (cep: string, addressType: 'personal' | 'company' | 'administrator' | 'energy') => void;
   addContact: (type: 'personal' | 'company') => void;
@@ -22,11 +21,37 @@ interface SubscriberStepsProps {
   autoFillEnergyAccount: () => void;
 }
 
-interface FormProps {
-  control: { _formValues: SubscriberFormData };
-  setValue: () => void;
-  watch: () => void;
-}
+// Mock form object que implementa todas as propriedades necessárias do UseFormReturn
+const createMockForm = (formData: SubscriberFormData) => ({
+  control: { _formValues: formData },
+  setValue: () => {},
+  watch: () => {},
+  getValues: () => formData,
+  getFieldState: () => ({ invalid: false, isTouched: false, isDirty: false, error: undefined }),
+  setError: () => {},
+  clearErrors: () => {},
+  trigger: () => Promise.resolve(true),
+  formState: {
+    errors: {},
+    isValid: true,
+    isSubmitting: false,
+    isLoading: false,
+    isDirty: false,
+    isSubmitted: false,
+    isSubmitSuccessful: false,
+    isValidating: false,
+    submitCount: 0,
+    touchedFields: {},
+    dirtyFields: {},
+    defaultValues: formData
+  },
+  reset: () => {},
+  handleSubmit: () => () => {},
+  unregister: () => {},
+  register: () => ({ name: '', onChange: () => {}, onBlur: () => {}, ref: () => {} }),
+  setFocus: () => {},
+  resetField: () => {}
+});
 
 export const useSubscriberSteps = ({
   formData,
@@ -35,14 +60,9 @@ export const useSubscriberSteps = ({
   addContact,
   removeContact,
   autoFillEnergyAccount
-}: Omit<SubscriberStepsProps, 'currentStep'>) => {
+}: SubscriberStepsProps) => {
   
-  // Form mock para compatibilidade com componentes legados
-  const formProps: FormProps = { 
-    control: { _formValues: formData }, 
-    setValue: () => {}, 
-    watch: () => {} 
-  };
+  const mockForm = createMockForm(formData);
 
   const steps = [
     { 
@@ -71,7 +91,7 @@ export const useSubscriberSteps = ({
           onCepLookup={(cep) => handleCepLookup(cep, 'personal')}
           onAddContact={() => addContact('personal')}
           onRemoveContact={(contactId) => removeContact('personal', contactId)}
-          form={formProps}
+          form={mockForm}
         />
       ) : (
         <CompanyDataForm 
@@ -82,7 +102,7 @@ export const useSubscriberSteps = ({
           onCepLookup={(cep, type) => handleCepLookup(cep, type)}
           onAddContact={() => addContact('company')}
           onRemoveContact={(contactId) => removeContact('company', contactId)}
-          form={formProps}
+          form={mockForm}
         />
       )
     },
@@ -94,7 +114,7 @@ export const useSubscriberSteps = ({
         onUpdate={(data) => updateFormData('energyAccount', data)}
         onCepLookup={(cep) => handleCepLookup(cep, 'energy')}
         onAutoFill={autoFillEnergyAccount}
-        form={formProps}
+        form={mockForm}
       /> 
     },
     { 
@@ -103,7 +123,7 @@ export const useSubscriberSteps = ({
       component: <TitleTransferForm 
         data={formData.titleTransfer} 
         onUpdate={(data) => updateFormData('titleTransfer', data)}
-        form={formProps}
+        form={mockForm}
       /> 
     },
     { 
@@ -112,7 +132,7 @@ export const useSubscriberSteps = ({
       component: <PlanContractForm 
         data={formData.planContract} 
         onUpdate={(data) => updateFormData('planContract', data)}
-        form={formProps}
+        form={mockForm}
       /> 
     },
     { 
@@ -121,7 +141,7 @@ export const useSubscriberSteps = ({
       component: <PlanDetailsForm 
         data={formData.planDetails} 
         onUpdate={(data) => updateFormData('planDetails', data)}
-        form={formProps}
+        form={mockForm}
       /> 
     },
     { 
@@ -130,7 +150,7 @@ export const useSubscriberSteps = ({
       component: <NotificationSettingsForm 
         data={formData.notificationSettings} 
         onUpdate={(data) => updateFormData('notificationSettings', data)}
-        form={formProps}
+        form={mockForm}
       /> 
     },
     { 
@@ -141,7 +161,7 @@ export const useSubscriberSteps = ({
         subscriberType={formData.subscriberType}
         willTransfer={formData.titleTransfer?.willTransfer || false}
         onUpdate={(data) => updateFormData('attachments', data)}
-        form={formProps}
+        form={mockForm}
       /> 
     },
   ];
