@@ -120,9 +120,11 @@ const SubscriberForm: React.FC<SubscriberFormProps> = ({
         />
       ) : (
         <CompanyDataForm 
-          data={formData.companyData} 
-          onUpdate={(data) => updateFormData('companyData', data)}
-          onCepLookup={(cep) => handleCepLookupWrapper(cep, 'company')}
+          companyData={formData.companyData} 
+          administratorData={formData.administratorData}
+          onUpdateCompany={(data) => updateFormData('companyData', data)}
+          onUpdateAdministrator={(data) => updateFormData('administratorData', data)}
+          onCepLookup={(cep, type) => handleCepLookupWrapper(cep, type)}
           onAddContact={() => addContact('company')}
           onRemoveContact={(contactId) => removeContact('company', contactId)}
           form={{ control: { _formValues: formData }, setValue: () => {}, watch: () => {} } as any}
@@ -189,12 +191,21 @@ const SubscriberForm: React.FC<SubscriberFormProps> = ({
     },
   ];
 
+  const stepTitles = steps.map(step => step.title);
+  const completedSteps = steps.map((_, index) => index < currentStep);
+  const hasErrors = steps.map(() => false); // You can implement error checking logic here
+
   const currentStepData = steps.find(step => step.number === currentStep);
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <FormProgress currentStep={currentStep} stepsCount={steps.length} />
+        <FormProgress 
+          steps={stepTitles}
+          currentStep={currentStep} 
+          completedSteps={completedSteps}
+          hasErrors={hasErrors}
+        />
         <div className="flex items-center gap-2">
           <AutoSaveIndicator status="saved" />
           {!isEditing && (
@@ -213,8 +224,7 @@ const SubscriberForm: React.FC<SubscriberFormProps> = ({
 
       <FormValidationSummary 
         errors={[]}
-        currentStep={currentStep} 
-        onStepClick={setCurrentStep}
+        onGoToStep={setCurrentStep}
       />
 
       {currentStepData && (
@@ -233,7 +243,7 @@ const SubscriberForm: React.FC<SubscriberFormProps> = ({
         onNext={() => setCurrentStep(prev => prev + 1)}
         onSubmit={handleSubmit}
         isSubmitting={isSubmitting}
-        canProceed={validateStep(currentStep)}
+        isNextDisabled={!validateStep(currentStep)}
         isEditing={isEditing}
       />
     </div>
