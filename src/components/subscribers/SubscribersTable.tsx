@@ -152,7 +152,7 @@ const SubscribersTable = ({ subscribers, onEdit, onDelete, onView }: Subscribers
         </CardHeader>
       </Card>
 
-      {/* Cards Grid - Melhorado */}
+      {/* Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {subscribers.map((subscriber) => (
           <Card 
@@ -250,7 +250,7 @@ const SubscribersTable = ({ subscribers, onEdit, onDelete, onView }: Subscribers
                 </div>
               </div>
 
-              {/* Actions */}
+              {/* Actions - Removido o botão aplicar desconto */}
               <div className="flex items-center justify-end space-x-2 pt-4 border-t border-gray-100">
                 <Button
                   variant="ghost"

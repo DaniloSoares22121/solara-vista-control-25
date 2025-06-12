@@ -33,6 +33,8 @@ export const faturaValidacaoService = {
     const { data: user } = await supabase.auth.getUser();
     if (!user.user) throw new Error('Usuário não autenticado');
 
+    console.log('Criando fatura validação com dados:', data);
+
     const { data: result, error } = await supabase
       .from('faturas_validacao')
       .insert({
@@ -47,11 +49,13 @@ export const faturaValidacaoService = {
       throw error;
     }
 
-    // Type assertion para garantir compatibilidade com nossa interface
+    console.log('Fatura validação criada com sucesso:', result);
     return result as FaturaValidacao;
   },
 
   async getFaturasValidacao(): Promise<FaturaValidacao[]> {
+    console.log('Buscando faturas de validação...');
+    
     const { data, error } = await supabase
       .from('faturas_validacao')
       .select('*')
@@ -62,19 +66,26 @@ export const faturaValidacaoService = {
       throw error;
     }
 
-    // Type assertion para garantir compatibilidade com nossa interface
+    console.log('Faturas encontradas:', data?.length || 0);
     return (data || []) as FaturaValidacao[];
   },
 
   async updateStatusFatura(id: string, status: 'pendente' | 'aprovada' | 'rejeitada'): Promise<void> {
+    console.log('Atualizando status da fatura:', id, 'para:', status);
+    
     const { error } = await supabase
       .from('faturas_validacao')
-      .update({ status })
+      .update({ 
+        status,
+        updated_at: new Date().toISOString()
+      })
       .eq('id', id);
 
     if (error) {
       console.error('Erro ao atualizar status da fatura:', error);
       throw error;
     }
+
+    console.log('Status da fatura atualizado com sucesso');
   }
 };

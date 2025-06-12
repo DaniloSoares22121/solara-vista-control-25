@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -53,56 +54,71 @@ const SubscriberForm = ({ existingData, onSuccess }: SubscriberFormProps) => {
     mode: 'onChange',
   });
 
-  // Sincronizar o estado do formulário com os dados
+  // Sincronizar o estado do formulário com os dados existentes
   useEffect(() => {
-    console.log('Sincronizando dados do formulário:', formData);
+    console.log('Dados existentes para edição:', existingData);
+    console.log('Dados do formulário atual:', formData);
     
-    // Atualizar os valores do formulário quando formData mudar
+    if (existingData && isEditing) {
+      // Preencher com dados da base de dados do assinante existente
+      if (existingData.concessionaria) {
+        form.setValue('concessionaria', existingData.concessionaria);
+        updateFormData('concessionaria', existingData.concessionaria);
+      }
+      
+      // Determinar tipo de assinante baseado nos dados
+      const subscriberType = existingData.subscriber?.fullName ? 'person' : 'company';
+      form.setValue('subscriberType', subscriberType);
+      updateFormData('subscriberType', subscriberType);
+      
+      // Preencher dados pessoais/empresa
+      if (existingData.subscriber) {
+        if (subscriberType === 'person') {
+          updateFormData('personalData', existingData.subscriber);
+        } else {
+          updateFormData('companyData', existingData.subscriber);
+        }
+      }
+      
+      // Preencher administrador
+      if (existingData.administrator) {
+        updateFormData('administratorData', existingData.administrator);
+      }
+      
+      // Preencher conta de energia
+      if (existingData.energy_account) {
+        updateFormData('energyAccount', existingData.energy_account);
+      }
+      
+      // Preencher contrato do plano
+      if (existingData.plan_contract) {
+        updateFormData('planContract', existingData.plan_contract);
+      }
+      
+      // Preencher detalhes do plano
+      if (existingData.plan_details) {
+        updateFormData('planDetails', existingData.plan_details);
+      }
+      
+      // Preencher notificações
+      if (existingData.notifications) {
+        updateFormData('notificationSettings', existingData.notifications);
+      }
+      
+      // Preencher anexos
+      if (existingData.attachments) {
+        updateFormData('attachments', existingData.attachments);
+      }
+    }
+  }, [existingData, isEditing, form, updateFormData]);
+
+  // Sincronizar formulário react-hook-form com formData
+  useEffect(() => {
     if (formData.concessionaria) {
       form.setValue('concessionaria', formData.concessionaria);
     }
     if (formData.subscriberType) {
       form.setValue('subscriberType', formData.subscriberType);
-    }
-    
-    // Sincronizar dados pessoais
-    if (formData.personalData) {
-      const personalData = formData.personalData;
-      Object.keys(personalData).forEach(key => {
-        const value = personalData[key as keyof typeof personalData];
-        if (value !== null && value !== undefined) {
-          if (key === 'address' && typeof value === 'object') {
-            Object.keys(value).forEach(addressKey => {
-              const addressValue = value[addressKey as keyof typeof value];
-              if (addressValue) {
-                form.setValue(`personalData.address.${addressKey}` as any, addressValue);
-              }
-            });
-          } else {
-            form.setValue(`personalData.${key}` as any, value);
-          }
-        }
-      });
-    }
-    
-    // Sincronizar dados da conta de energia
-    if (formData.energyAccount) {
-      const energyAccount = formData.energyAccount;
-      Object.keys(energyAccount).forEach(key => {
-        const value = energyAccount[key as keyof typeof energyAccount];
-        if (value !== null && value !== undefined) {
-          if (key === 'address' && typeof value === 'object') {
-            Object.keys(value).forEach(addressKey => {
-              const addressValue = value[addressKey as keyof typeof value];
-              if (addressValue) {
-                form.setValue(`energyAccount.address.${addressKey}` as any, addressValue);
-              }
-            });
-          } else {
-            form.setValue(`energyAccount.${key}` as any, value);
-          }
-        }
-      });
     }
   }, [formData, form]);
 
@@ -237,12 +253,12 @@ const SubscriberForm = ({ existingData, onSuccess }: SubscriberFormProps) => {
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Header */}
-      <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
+      <Card className="bg-gradient-to-r from-green-50 to-emerald-50 border-green-200">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold text-blue-900">
+          <CardTitle className="text-2xl font-bold text-green-900">
             {isEditing ? 'Editar Assinante' : 'Cadastro de Assinante'}
           </CardTitle>
-          <div className="flex justify-between items-center mt-4 text-sm text-blue-700">
+          <div className="flex justify-between items-center mt-4 text-sm text-green-700">
             <span>Etapa {currentStep} de {totalSteps}</span>
             <span className="font-medium">{stepTitles[currentStep - 1]}</span>
           </div>
@@ -256,7 +272,7 @@ const SubscriberForm = ({ existingData, onSuccess }: SubscriberFormProps) => {
                     index + 1 < currentStep
                       ? 'bg-green-500 text-white'
                       : index + 1 === currentStep
-                      ? 'bg-blue-500 text-white'
+                      ? 'bg-green-500 text-white'
                       : 'bg-gray-200 text-gray-600'
                   }`}
                 >
@@ -326,7 +342,7 @@ const SubscriberForm = ({ existingData, onSuccess }: SubscriberFormProps) => {
                   type="button"
                   onClick={handleNext}
                   disabled={!validateStep(currentStep)}
-                  className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700"
+                  className="flex items-center space-x-2 bg-green-600 hover:bg-green-700"
                 >
                   <span>Próximo</span>
                   <ChevronRight className="w-4 h-4" />
