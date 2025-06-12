@@ -95,7 +95,7 @@ const GeneratorDetails = ({ generator, onEdit, onDelete, onClose }: GeneratorDet
               <Button 
                 variant="outline"
                 onClick={() => setShowDeleteDialog(true)}
-                className="border-red-300 text-red-100 hover:bg-red-500/20"
+                className="border-red-300 text-red-100 hover:bg-red-500/20 hover:border-red-200"
               >
                 <Trash2 className="w-4 h-4 mr-2" />
                 Excluir
