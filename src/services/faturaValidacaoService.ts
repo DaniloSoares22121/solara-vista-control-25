@@ -47,7 +47,8 @@ export const faturaValidacaoService = {
       throw error;
     }
 
-    return result;
+    // Type assertion para garantir compatibilidade com nossa interface
+    return result as FaturaValidacao;
   },
 
   async getFaturasValidacao(): Promise<FaturaValidacao[]> {
@@ -61,7 +62,8 @@ export const faturaValidacaoService = {
       throw error;
     }
 
-    return data || [];
+    // Type assertion para garantir compatibilidade com nossa interface
+    return (data || []) as FaturaValidacao[];
   },
 
   async updateStatusFatura(id: string, status: 'pendente' | 'aprovada' | 'rejeitada'): Promise<void> {
