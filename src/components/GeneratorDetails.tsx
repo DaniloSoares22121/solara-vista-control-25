@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -98,6 +99,14 @@ const GeneratorDetails = ({ generator, onEdit, onDelete, onClose }: GeneratorDet
               >
                 <Trash2 className="w-4 h-4 mr-2" />
                 Excluir
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="icon"
+                onClick={onClose}
+                className="text-white hover:bg-white/20 rounded-xl"
+              >
+                <X className="w-5 h-5" />
               </Button>
             </div>
           </div>
