@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Users, Edit, Trash2, Eye, Phone, Mail, Building2, User, FileText, MapPin, Calendar, Zap } from 'lucide-react';
+import { Users, Edit, Trash2, Eye, Phone, Mail, Building2, User, FileText, Zap } from 'lucide-react';
 import { SubscriberRecord } from '@/services/supabaseSubscriberService';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -26,24 +26,6 @@ const SubscribersTable = ({ subscribers, onEdit, onDelete, onView }: Subscribers
     return 'Nome não cadastrado';
   };
 
-  const getSubscriberDocument = (subscriber: SubscriberRecord) => {
-    if (subscriber.subscriber?.cpf) {
-      return subscriber.subscriber.cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
-    }
-    if (subscriber.subscriber?.cnpj) {
-      return subscriber.subscriber.cnpj.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
-    }
-    return 'Documento não cadastrado';
-  };
-
-  const getSubscriberAddress = (subscriber: SubscriberRecord) => {
-    const address = subscriber.subscriber?.address;
-    if (address?.street && address?.city && address?.state) {
-      return `${address.street}, ${address.number || 'S/N'} - ${address.neighborhood || ''}, ${address.city} - ${address.state}`;
-    }
-    return 'Endereço não cadastrado';
-  };
-
   const getEnergyAccount = (subscriber: SubscriberRecord) => {
     const account = subscriber.energy_account;
     if (account?.uc) {
@@ -58,25 +40,6 @@ const SubscribersTable = ({ subscribers, onEdit, onDelete, onView }: Subscribers
       return `${plan.informedKwh} kWh/mês`;
     }
     return 'Plano não cadastrado';
-  };
-
-  const getCompensationMode = (subscriber: SubscriberRecord) => {
-    const plan = subscriber.plan_contract;
-    if (plan?.compensationMode === 'autoConsumption') {
-      return 'AutoConsumo Remoto';
-    }
-    if (plan?.compensationMode === 'sharedGeneration') {
-      return 'Geração Compartilhada';
-    }
-    return 'Modalidade não informada';
-  };
-
-  const getContractDate = (subscriber: SubscriberRecord) => {
-    const plan = subscriber.plan_contract;
-    if (plan?.adhesionDate) {
-      return format(new Date(plan.adhesionDate), 'dd/MM/yyyy', { locale: ptBR });
-    }
-    return 'Data não informada';
   };
 
   const getStatusBadge = (status: string) => {
@@ -204,81 +167,44 @@ const SubscribersTable = ({ subscribers, onEdit, onDelete, onView }: Subscribers
               </div>
             </CardHeader>
             
-            <CardContent className="pt-0 space-y-4">
+            <CardContent className="pt-0 space-y-3">
               {/* Unidade Consumidora */}
               <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Zap className="w-4 h-4 text-blue-600" />
+                <div className="w-6 h-6 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Zap className="w-3 h-3 text-blue-600" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-xs text-gray-500 font-medium">Unidade Consumidora</p>
                   <p className="text-sm font-mono text-gray-900 truncate">{getEnergyAccount(subscriber)}</p>
                 </div>
               </div>
 
               {/* Telefone */}
               <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Phone className="w-4 h-4 text-green-600" />
+                <div className="w-6 h-6 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Phone className="w-3 h-3 text-green-600" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-xs text-gray-500 font-medium">Telefone</p>
                   <p className="text-sm text-gray-900 truncate">{subscriber.subscriber?.phone || 'Não informado'}</p>
                 </div>
               </div>
 
               {/* Email */}
               <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Mail className="w-4 h-4 text-purple-600" />
+                <div className="w-6 h-6 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Mail className="w-3 h-3 text-purple-600" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-xs text-gray-500 font-medium">E-mail</p>
                   <p className="text-sm text-gray-900 truncate">{subscriber.subscriber?.email || 'Não informado'}</p>
                 </div>
               </div>
 
-              {/* Endereço */}
-              <div className="flex items-start space-x-2">
-                <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <MapPin className="w-4 h-4 text-orange-600" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs text-gray-500 font-medium">Endereço</p>
-                  <p className="text-sm text-gray-900 line-clamp-2">{getSubscriberAddress(subscriber)}</p>
-                </div>
-              </div>
-
-              {/* Plano Contratado */}
+              {/* Plano */}
               <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <FileText className="w-4 h-4 text-indigo-600" />
+                <div className="w-6 h-6 bg-indigo-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <FileText className="w-3 h-3 text-indigo-600" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-xs text-gray-500 font-medium">Plano Contratado</p>
                   <p className="text-sm font-semibold text-gray-900 truncate">{getPlanInfo(subscriber)}</p>
-                </div>
-              </div>
-
-              {/* Modalidade */}
-              <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-cyan-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Zap className="w-4 h-4 text-cyan-600" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs text-gray-500 font-medium">Modalidade</p>
-                  <p className="text-sm text-gray-900 truncate">{getCompensationMode(subscriber)}</p>
-                </div>
-              </div>
-
-              {/* Desde */}
-              <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Calendar className="w-4 h-4 text-red-600" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs text-gray-500 font-medium">Desde</p>
-                  <p className="text-sm text-gray-900 truncate">{getContractDate(subscriber)}</p>
                 </div>
               </div>
 
