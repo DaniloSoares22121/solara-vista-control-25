@@ -1,4 +1,3 @@
-
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { MaskedInput } from '@/components/ui/masked-input';
@@ -8,6 +7,7 @@ import { GeneratorFormData } from '@/types/generator';
 import { CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { createClient } from '@supabase/supabase-js';
 
 interface GeneratorDistributorLoginFormProps {
   form: UseFormReturn<GeneratorFormData>;
@@ -64,7 +64,7 @@ const GeneratorDistributorLoginForm = ({ form }: GeneratorDistributorLoginFormPr
     try {
       const requestBody: any = {
         uc: uc,
-        documento: cpfCnpj.replace(/\D/g, ''), // Remove formatação
+        documento: cpfCnpj,
       };
 
       // Adicionar data de nascimento se for CPF
@@ -72,46 +72,38 @@ const GeneratorDistributorLoginForm = ({ form }: GeneratorDistributorLoginFormPr
         requestBody.data_nascimento = dataNascimento;
       }
 
-      const response = await fetch('https://3335-177-148-182-183.ngrok-free.app/verificar', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestBody),
+      // Usar a edge function do Supabase ao invés de fazer requisição direta
+      const { createClient } = await import('@supabase/supabase-js');
+      const supabase = createClient(
+        import.meta.env.VITE_SUPABASE_URL,
+        import.meta.env.VITE_SUPABASE_ANON_KEY
+      );
+
+      const { data, error } = await supabase.functions.invoke('verificar-credenciais', {
+        body: requestBody
       });
 
-      const data = await response.json();
+      if (error) {
+        throw error;
+      }
 
-      if (response.ok) {
-        if (data.status === 'success' && data.result === true) {
-          setValidationResult({
-            isValid: true,
-            message: data.message || 'Credenciais validadas com sucesso!',
-          });
-          toast({
-            title: "Sucesso!",
-            description: "Credenciais validadas com sucesso.",
-          });
-        } else {
-          setValidationResult({
-            isValid: false,
-            message: data.message || 'Falha na validação das credenciais.',
-          });
-          toast({
-            title: "Falha na validação",
-            description: data.message || 'Credenciais inválidas.',
-            variant: "destructive",
-          });
-        }
-      } else {
-        // Erro de validação (400) ou servidor (500)
+      if (data.status === 'success' && data.result === true) {
         setValidationResult({
-          isValid: false,
-          message: data.message || 'Erro na validação.',
+          isValid: true,
+          message: data.message || 'Credenciais validadas com sucesso!',
         });
         toast({
-          title: "Erro na validação",
-          description: data.message || 'Erro ao validar credenciais.',
+          title: "Sucesso!",
+          description: "Credenciais validadas com sucesso.",
+        });
+      } else {
+        setValidationResult({
+          isValid: false,
+          message: data.message || 'Falha na validação das credenciais.',
+        });
+        toast({
+          title: "Falha na validação",
+          description: data.message || 'Credenciais inválidas.',
           variant: "destructive",
         });
       }
