@@ -43,13 +43,13 @@ export const subscriberService = {
     const subscriberData = {
       user_id: user.id,
       concessionaria: formData.concessionaria,
-      subscriber: formData.subscriberType === 'person' ? formData.personalData : formData.companyData,
-      administrator: formData.administratorData,
-      energy_account: formData.energyAccount,
-      plan_contract: formData.planContract,
-      plan_details: formData.planDetails,
-      notifications: formData.notificationSettings,
-      attachments: formData.attachments,
+      subscriber: JSON.parse(JSON.stringify(formData.subscriberType === 'person' ? formData.personalData : formData.companyData)),
+      administrator: JSON.parse(JSON.stringify(formData.administratorData)),
+      energy_account: JSON.parse(JSON.stringify(formData.energyAccount)),
+      plan_contract: JSON.parse(JSON.stringify(formData.planContract)),
+      plan_details: JSON.parse(JSON.stringify(formData.planDetails)),
+      notifications: JSON.parse(JSON.stringify(formData.notificationSettings)),
+      attachments: JSON.parse(JSON.stringify(formData.attachments)),
       status: 'active'
     };
 
@@ -74,14 +74,14 @@ export const subscriberService = {
 
     if (formData.concessionaria) updateData.concessionaria = formData.concessionaria;
     if (formData.personalData || formData.companyData) {
-      updateData.subscriber = formData.personalData || formData.companyData;
+      updateData.subscriber = JSON.parse(JSON.stringify(formData.personalData || formData.companyData));
     }
-    if (formData.administratorData) updateData.administrator = formData.administratorData;
-    if (formData.energyAccount) updateData.energy_account = formData.energyAccount;
-    if (formData.planContract) updateData.plan_contract = formData.planContract;
-    if (formData.planDetails) updateData.plan_details = formData.planDetails;
-    if (formData.notificationSettings) updateData.notifications = formData.notificationSettings;
-    if (formData.attachments) updateData.attachments = formData.attachments;
+    if (formData.administratorData) updateData.administrator = JSON.parse(JSON.stringify(formData.administratorData));
+    if (formData.energyAccount) updateData.energy_account = JSON.parse(JSON.stringify(formData.energyAccount));
+    if (formData.planContract) updateData.plan_contract = JSON.parse(JSON.stringify(formData.planContract));
+    if (formData.planDetails) updateData.plan_details = JSON.parse(JSON.stringify(formData.planDetails));
+    if (formData.notificationSettings) updateData.notifications = JSON.parse(JSON.stringify(formData.notificationSettings));
+    if (formData.attachments) updateData.attachments = JSON.parse(JSON.stringify(formData.attachments));
 
     const { data, error } = await supabase
       .from('subscribers')
