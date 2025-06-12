@@ -1,8 +1,8 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { Plus, Users, FileText, Zap, TrendingUp, Activity, Power } from 'lucide-react';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { useGenerators } from '@/hooks/useGenerators';
@@ -229,19 +229,19 @@ const Geradoras = () => {
           onSuccess={handleNewGeneratorSuccess}
         />
 
-        {/* Modal de Detalhes da Geradora */}
-        {selectedGenerator && (
-          <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-7xl max-h-[90vh] overflow-hidden">
+        {/* Sheet de Detalhes da Geradora */}
+        <Sheet open={!!selectedGenerator} onOpenChange={handleCloseDetails}>
+          <SheetContent side="right" className="w-full sm:max-w-4xl p-0 overflow-hidden">
+            {selectedGenerator && (
               <GeneratorDetails
                 generator={selectedGenerator}
                 onEdit={handleEdit}
                 onDelete={handleDelete}
                 onClose={handleCloseDetails}
               />
-            </div>
-          </div>
-        )}
+            )}
+          </SheetContent>
+        </Sheet>
       </div>
     </DashboardLayout>
   );
