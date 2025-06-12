@@ -54,6 +54,12 @@ export const CepInput = ({
 
   return (
     <div className="space-y-2">
+      {cepFound && (
+        <div className="flex items-center space-x-2 text-sm text-green-600 bg-green-50 p-2 rounded-lg border border-green-200">
+          <CheckCircle className="h-4 w-4" />
+          <span>CEP encontrado! Endereço preenchido automaticamente.</span>
+        </div>
+      )}
       <div className="relative">
         <Input
           value={value}
@@ -68,12 +74,6 @@ export const CepInput = ({
           </div>
         )}
       </div>
-      {cepFound && (
-        <div className="flex items-center space-x-2 text-sm text-green-600 bg-green-50 p-2 rounded-lg border border-green-200">
-          <CheckCircle className="h-4 w-4" />
-          <span>CEP encontrado! Endereço preenchido automaticamente.</span>
-        </div>
-      )}
     </div>
   );
 };
