@@ -1,3 +1,4 @@
+
 import { useState, useCallback, useEffect } from 'react';
 import { SubscriberFormData, Contact, Address } from '@/types/subscriber';
 import { useCepLookup } from '@/hooks/useCepLookup';
@@ -204,13 +205,27 @@ export const useSubscriberForm = (existingData?: any) => {
         administratorData: administrator || initialFormData.administratorData,
         energyAccount: energyAccount || initialFormData.energyAccount,
         titleTransfer: existingData.title_transfer || initialFormData.titleTransfer,
-        planContract: planContract || initialFormData.planContract,
-        planDetails: planDetails || initialFormData.planDetails,
+        planContract: planContract ? {
+          selectedPlan: planContract.selectedPlan || '',
+          compensationMode: planContract.compensationMode || 'autoConsumption',
+          adhesionDate: planContract.adhesionDate || '',
+          informedKwh: planContract.informedKwh || 0,
+          contractedKwh: planContract.contractedKwh || 0,
+          loyalty: planContract.loyalty || 'none',
+          discountPercentage: planContract.discountPercentage || 0,
+        } : initialFormData.planContract,
+        planDetails: planDetails ? {
+          paysPisAndCofins: planDetails.paysPisAndCofins !== undefined ? planDetails.paysPisAndCofins : true,
+          paysWireB: planDetails.paysWireB !== undefined ? planDetails.paysWireB : false,
+          addDistributorValue: planDetails.addDistributorValue !== undefined ? planDetails.addDistributorValue : false,
+          exemptFromPayment: planDetails.exemptFromPayment !== undefined ? planDetails.exemptFromPayment : false,
+        } : initialFormData.planDetails,
         notificationSettings: notifications || defaultNotificationSettings,
         attachments: existingData.attachments || {},
       };
       
       console.log('Dados carregados para edição:', loadedData);
+      console.log('Dados do plano carregados:', loadedData.planContract);
       setFormData(loadedData);
       setIsEditing(true);
     }
