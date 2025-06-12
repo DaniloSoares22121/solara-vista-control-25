@@ -1,4 +1,6 @@
 
+import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import DashboardLayout from '@/components/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -6,9 +8,69 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Search, FileCheck, FileX, Clock, CheckCircle, XCircle, Filter } from 'lucide-react';
+import { Search, FileCheck, FileX, Clock, CheckCircle, XCircle, Filter, Eye, Download, ThumbsUp, ThumbsDown } from 'lucide-react';
+import { faturaValidacaoService, FaturaValidacao } from '@/services/faturaValidacaoService';
+import { toast } from 'sonner';
 
 const FaturaValidacao = () => {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+
+  const { data: faturas = [], isLoading, refetch } = useQuery({
+    queryKey: ['faturas-validacao'],
+    queryFn: faturaValidacaoService.getFaturasValidacao,
+  });
+
+  const filteredFaturas = faturas.filter(fatura => {
+    const matchesSearch = searchTerm === '' || 
+      fatura.uc.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      fatura.documento.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesStatus = statusFilter === 'all' || fatura.status === statusFilter;
+    
+    return matchesSearch && matchesStatus;
+  });
+
+  const pendentes = faturas.filter(f => f.status === 'pendente').length;
+  const aprovadas = faturas.filter(f => f.status === 'aprovada').length;
+  const rejeitadas = faturas.filter(f => f.status === 'rejeitada').length;
+  const total = faturas.length;
+  const taxaAprovacao = total > 0 ? Math.round((aprovadas / total) * 100) : 0;
+
+  const handleUpdateStatus = async (id: string, status: 'aprovada' | 'rejeitada') => {
+    try {
+      await faturaValidacaoService.updateStatusFatura(id, status);
+      toast.success(`Fatura ${status === 'aprovada' ? 'aprovada' : 'rejeitada'} com sucesso!`);
+      refetch();
+    } catch (error) {
+      console.error('Erro ao atualizar status:', error);
+      toast.error('Erro ao atualizar status da fatura');
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'pendente':
+        return <Badge variant="secondary" className="bg-orange-100 text-orange-700 border-orange-200">Pendente</Badge>;
+      case 'aprovada':
+        return <Badge variant="secondary" className="bg-green-100 text-green-700 border-green-200">Aprovada</Badge>;
+      case 'rejeitada':
+        return <Badge variant="secondary" className="bg-red-100 text-red-700 border-red-200">Rejeitada</Badge>;
+      default:
+        return <Badge variant="secondary">{status}</Badge>;
+    }
+  };
+
   return (
     <DashboardLayout>
       <div className="space-y-6 sm:space-y-8 p-4 sm:p-6">
@@ -29,7 +91,7 @@ const FaturaValidacao = () => {
           <div className="flex items-center gap-3">
             <Badge variant="secondary" className="bg-orange-100 text-orange-700 border-orange-200 px-3 py-2 text-xs sm:text-sm">
               <Clock className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
-              Pendentes: 0
+              Pendentes: {pendentes}
             </Badge>
           </div>
         </div>
@@ -46,7 +108,7 @@ const FaturaValidacao = () => {
               </div>
             </CardHeader>
             <CardContent className="pt-0">
-              <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">0</div>
+              <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">{pendentes}</div>
               <p className="text-xs sm:text-sm text-gray-500">Faturas pendentes</p>
             </CardContent>
           </Card>
@@ -61,8 +123,8 @@ const FaturaValidacao = () => {
               </div>
             </CardHeader>
             <CardContent className="pt-0">
-              <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">0</div>
-              <p className="text-xs sm:text-sm text-gray-500">Aprovadas hoje</p>
+              <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">{aprovadas}</div>
+              <p className="text-xs sm:text-sm text-gray-500">Aprovadas</p>
             </CardContent>
           </Card>
 
@@ -76,7 +138,7 @@ const FaturaValidacao = () => {
               </div>
             </CardHeader>
             <CardContent className="pt-0">
-              <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">0</div>
+              <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">{rejeitadas}</div>
               <p className="text-xs sm:text-sm text-gray-500">Necessitam correção</p>
             </CardContent>
           </Card>
@@ -91,8 +153,8 @@ const FaturaValidacao = () => {
               </div>
             </CardHeader>
             <CardContent className="pt-0">
-              <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">0%</div>
-              <p className="text-xs sm:text-sm text-gray-500">Este mês</p>
+              <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">{taxaAprovacao}%</div>
+              <p className="text-xs sm:text-sm text-gray-500">Este período</p>
             </CardContent>
           </Card>
         </div>
@@ -104,19 +166,22 @@ const FaturaValidacao = () => {
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
                 <Input
-                  placeholder="Buscar faturas por cliente, número ou referência..."
+                  placeholder="Buscar por UC ou documento..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10 sm:pl-12 h-10 sm:h-12 border-gray-200 focus:border-orange-500 focus:ring-orange-500 bg-gray-50 text-sm"
                 />
               </div>
               <div className="flex gap-2 lg:gap-4">
-                <Select defaultValue="pendentes">
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
                   <SelectTrigger className="w-full sm:w-48 h-10 sm:h-12 border-gray-200 text-sm">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="pendentes">Pendentes</SelectItem>
-                    <SelectItem value="validadas">Validadas</SelectItem>
-                    <SelectItem value="rejeitadas">Rejeitadas</SelectItem>
+                    <SelectItem value="all">Todos os Status</SelectItem>
+                    <SelectItem value="pendente">Pendentes</SelectItem>
+                    <SelectItem value="aprovada">Aprovadas</SelectItem>
+                    <SelectItem value="rejeitada">Rejeitadas</SelectItem>
                   </SelectContent>
                 </Select>
                 <Button variant="outline" className="h-10 sm:h-12 px-4 sm:px-6 border-gray-200 hover:bg-gray-50 text-sm whitespace-nowrap">
@@ -131,42 +196,102 @@ const FaturaValidacao = () => {
         {/* Enhanced Table */}
         <Card className="border-0 shadow-lg bg-white">
           <CardHeader className="border-b border-gray-100">
-            <CardTitle className="text-lg sm:text-xl font-bold text-gray-900">Faturas para Validação</CardTitle>
+            <CardTitle className="text-lg sm:text-xl font-bold text-gray-900">
+              Faturas para Validação ({filteredFaturas.length})
+            </CardTitle>
           </CardHeader>
           <CardContent className="p-0">
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-gray-50 border-b border-gray-200">
-                    <TableHead className="font-semibold text-gray-700 py-3 sm:py-4 text-xs sm:text-sm">Cliente</TableHead>
-                    <TableHead className="font-semibold text-gray-700 text-xs sm:text-sm">Nº Fatura</TableHead>
-                    <TableHead className="font-semibold text-gray-700 text-xs sm:text-sm">Referência</TableHead>
-                    <TableHead className="font-semibold text-gray-700 text-xs sm:text-sm">Valor</TableHead>
-                    <TableHead className="font-semibold text-gray-700 text-xs sm:text-sm">Data Captura</TableHead>
-                    <TableHead className="font-semibold text-gray-700 text-xs sm:text-sm">Status</TableHead>
-                    <TableHead className="font-semibold text-gray-700 text-xs sm:text-sm">Ações</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  <TableRow>
-                    <TableCell colSpan={7} className="text-center py-12 sm:py-20">
-                      <div className="flex flex-col items-center justify-center space-y-4">
-                        <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center">
-                          <FileX className="w-8 h-8 sm:w-10 sm:h-10 text-gray-400" />
-                        </div>
-                        <div className="space-y-2">
-                          <h3 className="text-lg sm:text-xl font-semibold text-gray-900">Nenhuma fatura pendente</h3>
-                          <p className="text-gray-500 text-sm sm:text-base">Todas as faturas capturadas foram processadas</p>
-                        </div>
-                        <Badge variant="secondary" className="bg-green-100 text-green-700 border-green-200 text-xs sm:text-sm">
-                          Tudo em dia ✓
-                        </Badge>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                </TableBody>
-              </Table>
-            </div>
+            {isLoading ? (
+              <div className="flex items-center justify-center py-12">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600"></div>
+              </div>
+            ) : filteredFaturas.length === 0 ? (
+              <div className="flex items-center justify-center py-12 sm:py-20">
+                <div className="flex flex-col items-center justify-center space-y-4">
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center">
+                    <FileX className="w-8 h-8 sm:w-10 sm:h-10 text-gray-400" />
+                  </div>
+                  <div className="space-y-2">
+                    <h3 className="text-lg sm:text-xl font-semibold text-gray-900">
+                      {searchTerm || statusFilter !== 'all' ? 'Nenhuma fatura encontrada' : 'Nenhuma fatura pendente'}
+                    </h3>
+                    <p className="text-gray-500 text-sm sm:text-base">
+                      {searchTerm || statusFilter !== 'all' 
+                        ? 'Tente ajustar os filtros de busca' 
+                        : 'Todas as faturas capturadas foram processadas'
+                      }
+                    </p>
+                  </div>
+                  {!searchTerm && statusFilter === 'all' && (
+                    <Badge variant="secondary" className="bg-green-100 text-green-700 border-green-200 text-xs sm:text-sm">
+                      Tudo em dia ✓
+                    </Badge>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-gray-50 border-b border-gray-200">
+                      <TableHead className="font-semibold text-gray-700 py-3 sm:py-4 text-xs sm:text-sm">UC</TableHead>
+                      <TableHead className="font-semibold text-gray-700 text-xs sm:text-sm">Documento</TableHead>
+                      <TableHead className="font-semibold text-gray-700 text-xs sm:text-sm">Tipo</TableHead>
+                      <TableHead className="font-semibold text-gray-700 text-xs sm:text-sm">Data Captura</TableHead>
+                      <TableHead className="font-semibold text-gray-700 text-xs sm:text-sm">Status</TableHead>
+                      <TableHead className="font-semibold text-gray-700 text-xs sm:text-sm">Ações</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredFaturas.map((fatura) => (
+                      <TableRow key={fatura.id} className="hover:bg-gray-50">
+                        <TableCell className="font-medium text-xs sm:text-sm">{fatura.uc}</TableCell>
+                        <TableCell className="text-xs sm:text-sm">{fatura.documento}</TableCell>
+                        <TableCell className="text-xs sm:text-sm">
+                          <Badge variant="outline" className="text-xs">
+                            {fatura.tipo_pessoa === 'fisica' ? 'PF' : 'PJ'}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-xs sm:text-sm">{formatDate(fatura.created_at)}</TableCell>
+                        <TableCell>{getStatusBadge(fatura.status)}</TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-1 sm:gap-2">
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              onClick={() => window.open(fatura.fatura_url, '_blank')}
+                              className="p-1 sm:p-2 h-7 sm:h-8 w-7 sm:w-8"
+                            >
+                              <Eye className="w-3 h-3 sm:w-4 sm:h-4" />
+                            </Button>
+                            {fatura.status === 'pendente' && (
+                              <>
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm"
+                                  onClick={() => handleUpdateStatus(fatura.id, 'aprovada')}
+                                  className="p-1 sm:p-2 h-7 sm:h-8 w-7 sm:w-8 text-green-600 hover:text-green-700 hover:bg-green-50"
+                                >
+                                  <ThumbsUp className="w-3 h-3 sm:w-4 sm:h-4" />
+                                </Button>
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm"
+                                  onClick={() => handleUpdateStatus(fatura.id, 'rejeitada')}
+                                  className="p-1 sm:p-2 h-7 sm:h-8 w-7 sm:w-8 text-red-600 hover:text-red-700 hover:bg-red-50"
+                                >
+                                  <ThumbsDown className="w-3 h-3 sm:w-4 sm:h-4" />
+                                </Button>
+                              </>
+                            )}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
