@@ -26,6 +26,7 @@ interface SubscriberStepsProps {
 const createMockForm = (formData: SubscriberFormData): UseFormReturn<any> => ({
   control: { 
     _formValues: formData,
+    _getWatch: () => formData,
     _subjects: {
       values: { next: () => {}, subscribe: () => ({ unsubscribe: () => {} }) },
       array: { next: () => {}, subscribe: () => ({ unsubscribe: () => {} }) },
@@ -63,7 +64,33 @@ const createMockForm = (formData: SubscriberFormData): UseFormReturn<any> => ({
     _fields: {},
     _defaultValues: formData,
     _options: { mode: 'onChange' as const, reValidateMode: 'onChange' as const, resolver: undefined },
-    _stateFlags: { mount: false, action: false, watch: false, isValid: false }
+    _stateFlags: { mount: false, action: false, watch: false, isValid: false },
+    _getDirty: () => ({}),
+    _getFieldArray: () => ({ _f: { name: '', keyName: '' } }),
+    _updateValid: () => {},
+    _removeUnmounted: () => {},
+    _updateFieldArray: () => {},
+    _reset: () => {},
+    _resetDefaultValues: () => {},
+    _updateFormState: () => {},
+    _disableForm: () => {},
+    _executeSchema: () => Promise.resolve({ errors: {}, values: {} }),
+    _getFormState: () => ({ isValid: true, isDirty: false, isSubmitting: false, isLoading: false, isSubmitted: false, isSubmitSuccessful: false, isValidating: false, submitCount: 0, touchedFields: {}, dirtyFields: {}, validatingFields: {}, errors: {}, defaultValues: formData, disabled: false }),
+    _updateDisabledField: () => {},
+    register: () => ({ name: '', onChange: () => Promise.resolve(), onBlur: () => Promise.resolve(), ref: () => {} }),
+    unregister: () => {},
+    getFieldState: () => ({ invalid: false, isTouched: false, isDirty: false, isValidating: false, error: undefined }),
+    handleSubmit: () => () => Promise.resolve(),
+    reset: () => {},
+    setError: () => {},
+    clearErrors: () => {},
+    setValue: () => {},
+    setFocus: () => {},
+    watch: () => formData,
+    trigger: () => Promise.resolve(true),
+    formState: { isValid: true, isDirty: false, isSubmitting: false, isLoading: false, isSubmitted: false, isSubmitSuccessful: false, isValidating: false, submitCount: 0, touchedFields: {}, dirtyFields: {}, validatingFields: {}, errors: {}, defaultValues: formData, disabled: false },
+    resetField: () => {},
+    getValues: () => formData
   } as any,
   setValue: () => {},
   watch: (...args: any[]) => {
