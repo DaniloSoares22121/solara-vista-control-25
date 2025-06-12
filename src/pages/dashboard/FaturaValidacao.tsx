@@ -10,11 +10,14 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Search, FileCheck, FileX, Clock, CheckCircle, XCircle, Filter, Eye, Download, ThumbsUp, ThumbsDown } from 'lucide-react';
 import { faturaValidacaoService, type FaturaValidacao as FaturaValidacaoType } from '@/services/faturaValidacaoService';
+import FaturaViewModal from '@/components/FaturaViewModal';
 import { toast } from 'sonner';
 
 const FaturaValidacao = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [selectedFatura, setSelectedFatura] = useState<FaturaValidacaoType | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const { data: faturas = [], isLoading, refetch } = useQuery({
     queryKey: ['faturas-validacao'],
@@ -40,12 +43,21 @@ const FaturaValidacao = () => {
   const handleUpdateStatus = async (id: string, status: 'aprovada' | 'rejeitada') => {
     try {
       await faturaValidacaoService.updateStatusFatura(id, status);
-      toast.success(`Fatura ${status === 'aprovada' ? 'aprovada' : 'rejeitada'} com sucesso!`);
+      if (status === 'aprovada') {
+        toast.success('Fatura aprovada e movida para faturas emitidas!');
+      } else {
+        toast.success('Fatura rejeitada com sucesso!');
+      }
       refetch();
     } catch (error) {
       console.error('Erro ao atualizar status:', error);
       toast.error('Erro ao atualizar status da fatura');
     }
+  };
+
+  const handleViewFatura = (fatura: FaturaValidacaoType) => {
+    setSelectedFatura(fatura);
+    setIsModalOpen(true);
   };
 
   const formatDate = (dateString: string) => {
@@ -259,10 +271,11 @@ const FaturaValidacao = () => {
                             <Button 
                               variant="ghost" 
                               size="sm"
-                              onClick={() => window.open(fatura.fatura_url, '_blank')}
-                              className="p-1 sm:p-2 h-7 sm:h-8 w-7 sm:w-8"
+                              onClick={() => handleViewFatura(fatura)}
+                              className="p-1 sm:p-2 h-7 sm:h-8 w-7 sm:w-8 hover:bg-blue-50"
+                              title="Visualizar fatura"
                             >
-                              <Eye className="w-3 h-3 sm:w-4 sm:h-4" />
+                              <Eye className="w-3 h-3 sm:w-4 sm:h-4 text-blue-600" />
                             </Button>
                             {fatura.status === 'pendente' && (
                               <>
@@ -271,6 +284,7 @@ const FaturaValidacao = () => {
                                   size="sm"
                                   onClick={() => handleUpdateStatus(fatura.id, 'aprovada')}
                                   className="p-1 sm:p-2 h-7 sm:h-8 w-7 sm:w-8 text-green-600 hover:text-green-700 hover:bg-green-50"
+                                  title="Aprovar fatura"
                                 >
                                   <ThumbsUp className="w-3 h-3 sm:w-4 sm:h-4" />
                                 </Button>
@@ -279,6 +293,7 @@ const FaturaValidacao = () => {
                                   size="sm"
                                   onClick={() => handleUpdateStatus(fatura.id, 'rejeitada')}
                                   className="p-1 sm:p-2 h-7 sm:h-8 w-7 sm:w-8 text-red-600 hover:text-red-700 hover:bg-red-50"
+                                  title="Rejeitar fatura"
                                 >
                                   <ThumbsDown className="w-3 h-3 sm:w-4 sm:h-4" />
                                 </Button>
@@ -294,6 +309,20 @@ const FaturaValidacao = () => {
             )}
           </CardContent>
         </Card>
+
+        {/* Modal para visualizar fatura */}
+        {selectedFatura && (
+          <FaturaViewModal
+            isOpen={isModalOpen}
+            onClose={() => {
+              setIsModalOpen(false);
+              setSelectedFatura(null);
+            }}
+            faturaUrl={selectedFatura.fatura_url}
+            documento={selectedFatura.documento}
+            uc={selectedFatura.uc}
+          />
+        )}
       </div>
     </DashboardLayout>
   );

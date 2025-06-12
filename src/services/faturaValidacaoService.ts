@@ -28,6 +28,24 @@ export interface CreateFaturaValidacao {
   message?: string;
 }
 
+export interface FaturaEmitida {
+  id: string;
+  user_id: string;
+  subscriber_id?: string;
+  uc: string;
+  documento: string;
+  tipo_pessoa: 'fisica' | 'juridica';
+  fatura_url: string;
+  valor_total?: number;
+  referencia?: string;
+  numero_fatura?: string;
+  data_emissao: string;
+  data_vencimento?: string;
+  status_pagamento: 'pendente' | 'pago' | 'vencido';
+  created_at: string;
+  updated_at: string;
+}
+
 export const faturaValidacaoService = {
   async createFaturaValidacao(data: CreateFaturaValidacao): Promise<FaturaValidacao> {
     const { data: user } = await supabase.auth.getUser();
@@ -59,6 +77,7 @@ export const faturaValidacaoService = {
     const { data, error } = await supabase
       .from('faturas_validacao')
       .select('*')
+      .eq('status', 'pendente')
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -73,19 +92,85 @@ export const faturaValidacaoService = {
   async updateStatusFatura(id: string, status: 'pendente' | 'aprovada' | 'rejeitada'): Promise<void> {
     console.log('Atualizando status da fatura:', id, 'para:', status);
     
-    const { error } = await supabase
-      .from('faturas_validacao')
-      .update({ 
-        status,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', id);
+    // Se aprovada, move para faturas emitidas
+    if (status === 'aprovada') {
+      // Busca a fatura para mover
+      const { data: fatura, error: fetchError } = await supabase
+        .from('faturas_validacao')
+        .select('*')
+        .eq('id', id)
+        .single();
 
-    if (error) {
-      console.error('Erro ao atualizar status da fatura:', error);
-      throw error;
+      if (fetchError) {
+        console.error('Erro ao buscar fatura para aprovação:', fetchError);
+        throw fetchError;
+      }
+
+      // Cria entrada na tabela de faturas emitidas
+      const { error: insertError } = await supabase
+        .from('faturas_emitidas')
+        .insert({
+          user_id: fatura.user_id,
+          subscriber_id: fatura.subscriber_id,
+          uc: fatura.uc,
+          documento: fatura.documento,
+          tipo_pessoa: fatura.tipo_pessoa,
+          fatura_url: fatura.fatura_url,
+          numero_fatura: `FAT-${Date.now()}`,
+          referencia: new Date().toLocaleDateString('pt-BR', { month: '2-digit', year: 'numeric' }),
+          valor_total: 0, // Valor padrão, pode ser atualizado depois
+          data_emissao: new Date().toISOString(),
+          status_pagamento: 'pendente'
+        });
+
+      if (insertError) {
+        console.error('Erro ao criar fatura emitida:', insertError);
+        throw insertError;
+      }
+
+      // Remove da tabela de validação
+      const { error: deleteError } = await supabase
+        .from('faturas_validacao')
+        .delete()
+        .eq('id', id);
+
+      if (deleteError) {
+        console.error('Erro ao remover fatura da validação:', deleteError);
+        throw deleteError;
+      }
+    } else {
+      // Apenas atualiza o status
+      const { error } = await supabase
+        .from('faturas_validacao')
+        .update({ 
+          status,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', id);
+
+      if (error) {
+        console.error('Erro ao atualizar status da fatura:', error);
+        throw error;
+      }
     }
 
     console.log('Status da fatura atualizado com sucesso');
+  },
+
+  async getFaturasEmitidas(): Promise<FaturaEmitida[]> {
+    console.log('Buscando faturas emitidas...');
+    
+    const { data, error } = await supabase
+      .from('faturas_emitidas')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Erro ao buscar faturas emitidas:', error);
+      throw error;
+    }
+
+    console.log('Faturas emitidas encontradas:', data?.length || 0);
+    return (data || []) as FaturaEmitida[];
   }
 };
