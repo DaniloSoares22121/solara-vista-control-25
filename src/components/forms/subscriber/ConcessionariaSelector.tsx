@@ -9,12 +9,19 @@ interface ConcessionariaSelectorProps {
 }
 
 const ConcessionariaSelector = ({ value, onChange }: ConcessionariaSelectorProps) => {
+  // Define automaticamente como Equatorial Goiás se não houver valor
+  React.useEffect(() => {
+    if (!value) {
+      onChange('equatorial-goias');
+    }
+  }, [value, onChange]);
+
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold">Seleção da Concessionária</h3>
       <div className="space-y-2">
         <Label htmlFor="concessionaria">Concessionária *</Label>
-        <Select value={value} onValueChange={onChange} required>
+        <Select value={value || 'equatorial-goias'} onValueChange={onChange} required>
           <SelectTrigger>
             <SelectValue placeholder="Selecione a concessionária" />
           </SelectTrigger>

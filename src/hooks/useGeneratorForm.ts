@@ -10,7 +10,7 @@ export const useGeneratorForm = () => {
 
   const form = useForm<GeneratorFormData>({
     defaultValues: {
-      concessionaria: '',
+      concessionaria: 'equatorial-goias', // Valor padrão já definido
       owner: {
         type: 'fisica',
         cpfCnpj: '',
@@ -93,7 +93,39 @@ export const useGeneratorForm = () => {
     setIsLoading(true);
     try {
       await createGenerator(data);
-      form.reset();
+      form.reset({
+        concessionaria: 'equatorial-goias', // Mantém o valor padrão após reset
+        owner: {
+          type: 'fisica',
+          cpfCnpj: '',
+          numeroParceiroNegocio: '',
+          name: '',
+          address: {
+            cep: '',
+            endereco: '',
+            numero: '',
+            complemento: '',
+            bairro: '',
+            cidade: '',
+            estado: ''
+          },
+          telefone: '',
+          email: '',
+          observacoes: ''
+        },
+        plants: [],
+        distributorLogin: {
+          uc: '',
+          cpfCnpj: ''
+        },
+        paymentData: {
+          banco: '',
+          agencia: '',
+          conta: '',
+          pix: ''
+        },
+        attachments: {}
+      });
     } finally {
       setIsLoading(false);
     }
