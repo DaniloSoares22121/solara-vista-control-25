@@ -306,7 +306,7 @@ const FaturaUnica = () => {
                     <Select
                       value={manualData.tipo}
                       onValueChange={(value: 'fisica' | 'juridica') => 
-                        setManualData(prev => ({ ...prev, tipo: value }))
+                        setManualData(prev => ({ ...prev, tipo: value, dataNascimento: value === 'juridica' ? '' : prev.dataNascimento }))
                       }
                     >
                       <SelectTrigger className="h-10 sm:h-12 border-gray-200 text-sm">
