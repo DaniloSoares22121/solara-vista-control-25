@@ -77,13 +77,7 @@ const NewGeneratorModal = ({ isOpen, onClose, onSuccess }: NewGeneratorModalProp
       number: ownerType === 'juridica' ? 5 : 4, 
       title: 'Usinas', 
       icon: Zap,
-      component: (
-        <GeneratorPlantsForm 
-          form={form}
-          onAddPlant={addPlant}
-          onRemovePlant={removePlant}
-        />
-      )
+      component: <GeneratorPlantsForm form={form} />
     },
     { 
       number: ownerType === 'juridica' ? 6 : 5, 
