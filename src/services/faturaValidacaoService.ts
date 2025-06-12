@@ -77,7 +77,6 @@ export const faturaValidacaoService = {
     const { data, error } = await supabase
       .from('faturas_validacao')
       .select('*')
-      .eq('status', 'pendente')
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -128,15 +127,18 @@ export const faturaValidacaoService = {
         throw insertError;
       }
 
-      // Remove da tabela de validação
-      const { error: deleteError } = await supabase
+      // Atualiza o status para aprovada (mas não remove ainda)
+      const { error: updateError } = await supabase
         .from('faturas_validacao')
-        .delete()
+        .update({ 
+          status: 'aprovada',
+          updated_at: new Date().toISOString()
+        })
         .eq('id', id);
 
-      if (deleteError) {
-        console.error('Erro ao remover fatura da validação:', deleteError);
-        throw deleteError;
+      if (updateError) {
+        console.error('Erro ao atualizar status da fatura:', updateError);
+        throw updateError;
       }
     } else {
       // Apenas atualiza o status

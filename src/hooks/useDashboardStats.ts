@@ -55,7 +55,7 @@ export const useDashboardStats = () => {
           throw generatorsError;
         }
 
-        // Buscar faturas em validação
+        // Buscar TODAS as faturas em validação (não apenas pendentes)
         const { data: faturasValidacao, error: validacaoError } = await supabase
           .from('faturas_validacao')
           .select('id, status');
@@ -68,7 +68,7 @@ export const useDashboardStats = () => {
         // Buscar faturas emitidas
         const { data: faturasEmitidas, error: emitidasError } = await supabase
           .from('faturas_emitidas')
-          .select('id, status_pagamento, valor_total, created_at')
+          .select('id, status_pagamento, valor_total, created_at, numero_fatura, uc')
           .order('created_at', { ascending: false })
           .limit(10);
 
@@ -77,11 +77,16 @@ export const useDashboardStats = () => {
           throw emitidasError;
         }
 
-        // Calcular estatísticas
+        // Calcular estatísticas corrigidas
         const totalAssinantes = subscribers?.length || 0;
         const totalGeradoras = generators?.length || 0;
+        
+        // Contar faturas por status nas validações
         const faturasPendentes = faturasValidacao?.filter(f => f.status === 'pendente').length || 0;
-        const faturasProcessadas = faturasValidacao?.filter(f => f.status === 'aprovada').length || 0;
+        const faturasAprovadas = faturasValidacao?.filter(f => f.status === 'aprovada').length || 0;
+        const faturasRejeitadas = faturasValidacao?.filter(f => f.status === 'rejeitada').length || 0;
+        
+        // Faturas emitidas
         const totalFaturasEmitidas = faturasEmitidas?.length || 0;
         const faturasPagas = faturasEmitidas?.filter(f => f.status_pagamento === 'pago').length || 0;
         
@@ -90,13 +95,15 @@ export const useDashboardStats = () => {
           return total + (Number(fatura.valor_total) || 0);
         }, 0) || 0;
 
-        const totalFaturas = faturasPendentes + faturasProcessadas + totalFaturasEmitidas;
+        // Total geral de faturas (validação + emitidas)
+        const totalFaturas = (faturasValidacao?.length || 0) + totalFaturasEmitidas;
 
         console.log('Estatísticas calculadas:', {
           totalAssinantes,
           totalGeradoras,
           faturasPendentes,
-          faturasProcessadas,
+          faturasAprovadas,
+          faturasRejeitadas,
           totalFaturasEmitidas,
           faturasPagas,
           valorTotal,
@@ -109,7 +116,7 @@ export const useDashboardStats = () => {
           totalAssinantes,
           totalGeradoras,
           faturasPendentes,
-          faturasProcessadas,
+          faturasProcessadas: faturasAprovadas, // Faturas aprovadas = processadas
           faturasEmitidas: totalFaturasEmitidas,
           faturasPagas,
           recentFaturas: faturasEmitidas || []
