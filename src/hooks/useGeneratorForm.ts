@@ -1,5 +1,6 @@
 
 import { useState } from 'react';
+import { useForm } from 'react-hook-form';
 import { GeneratorFormData } from '@/types/generator';
 import { useGenerators } from '@/hooks/useGenerators';
 
@@ -7,46 +8,41 @@ export const useGeneratorForm = () => {
   const { createGenerator } = useGenerators();
   const [isLoading, setIsLoading] = useState(false);
 
-  const [formData, setFormData] = useState<GeneratorFormData>({
-    concessionaria: '',
-    owner: {
-      type: 'fisica',
-      cpfCnpj: '',
-      numeroParceiroNegocio: '',
-      name: '',
-      address: {
-        cep: '',
-        endereco: '',
-        numero: '',
-        complemento: '',
-        bairro: '',
-        cidade: '',
-        estado: ''
+  const form = useForm<GeneratorFormData>({
+    defaultValues: {
+      concessionaria: '',
+      owner: {
+        type: 'fisica',
+        cpfCnpj: '',
+        numeroParceiroNegocio: '',
+        name: '',
+        address: {
+          cep: '',
+          endereco: '',
+          numero: '',
+          complemento: '',
+          bairro: '',
+          cidade: '',
+          estado: ''
+        },
+        telefone: '',
+        email: '',
+        observacoes: ''
       },
-      telefone: '',
-      email: '',
-      observacoes: ''
-    },
-    plants: [],
-    distributorLogin: {
-      uc: '',
-      cpfCnpj: ''
-    },
-    paymentData: {
-      banco: '',
-      agencia: '',
-      conta: '',
-      pix: ''
-    },
-    attachments: {}
+      plants: [],
+      distributorLogin: {
+        uc: '',
+        cpfCnpj: ''
+      },
+      paymentData: {
+        banco: '',
+        agencia: '',
+        conta: '',
+        pix: ''
+      },
+      attachments: {}
+    }
   });
-
-  const updateFormData = (field: string, value: any) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
-  };
 
   const handleCepLookup = async (cep: string, type: string, index?: number) => {
     // TODO: Implementar lookup de CEP
@@ -54,6 +50,7 @@ export const useGeneratorForm = () => {
   };
 
   const addPlant = () => {
+    const currentPlants = form.getValues('plants');
     const newPlant = {
       apelido: '',
       uc: '',
@@ -84,65 +81,26 @@ export const useGeneratorForm = () => {
       observacoesInstalacao: ''
     };
 
-    setFormData(prev => ({
-      ...prev,
-      plants: [...prev.plants, newPlant]
-    }));
+    form.setValue('plants', [...currentPlants, newPlant]);
   };
 
   const removePlant = (index: number) => {
-    setFormData(prev => ({
-      ...prev,
-      plants: prev.plants.filter((_, i) => i !== index)
-    }));
+    const currentPlants = form.getValues('plants');
+    form.setValue('plants', currentPlants.filter((_, i) => i !== index));
   };
 
-  const saveGenerator = async () => {
+  const saveGenerator = async (data: GeneratorFormData) => {
     setIsLoading(true);
     try {
-      await createGenerator(formData);
-      // Reset form after successful save
-      setFormData({
-        concessionaria: '',
-        owner: {
-          type: 'fisica',
-          cpfCnpj: '',
-          numeroParceiroNegocio: '',
-          name: '',
-          address: {
-            cep: '',
-            endereco: '',
-            numero: '',
-            complemento: '',
-            bairro: '',
-            cidade: '',
-            estado: ''
-          },
-          telefone: '',
-          email: '',
-          observacoes: ''
-        },
-        plants: [],
-        distributorLogin: {
-          uc: '',
-          cpfCnpj: ''
-        },
-        paymentData: {
-          banco: '',
-          agencia: '',
-          conta: '',
-          pix: ''
-        },
-        attachments: {}
-      });
+      await createGenerator(data);
+      form.reset();
     } finally {
       setIsLoading(false);
     }
   };
 
   return {
-    formData,
-    updateFormData,
+    form,
     handleCepLookup,
     addPlant,
     removePlant,

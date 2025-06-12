@@ -2,9 +2,9 @@
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Form } from '@/components/ui/form';
 import { 
   ChevronLeft, 
   ChevronRight, 
@@ -14,19 +14,16 @@ import {
   Building,
   CreditCard,
   FileText,
-  MapPin,
   X
 } from 'lucide-react';
 import { useGeneratorForm } from '@/hooks/useGeneratorForm';
-import FormProgress from '@/components/forms/FormProgress';
-import StepNavigationButtons from '@/components/forms/StepNavigationButtons';
+import GeneratorConcessionariaForm from '@/components/forms/GeneratorConcessionariaForm';
 import GeneratorOwnerTypeForm from '@/components/forms/GeneratorOwnerTypeForm';
 import GeneratorOwnerDataForm from '@/components/forms/GeneratorOwnerDataForm';
 import GeneratorAdministratorForm from '@/components/forms/GeneratorAdministratorForm';
 import GeneratorPlantsForm from '@/components/forms/GeneratorPlantsForm';
 import GeneratorPaymentForm from '@/components/forms/GeneratorPaymentForm';
 import GeneratorDistributorLoginForm from '@/components/forms/GeneratorDistributorLoginForm';
-import GeneratorConcessionariaForm from '@/components/forms/GeneratorConcessionariaForm';
 import GeneratorAttachmentsForm from '@/components/forms/GeneratorAttachmentsForm';
 import { useToast } from '@/hooks/use-toast';
 
@@ -41,8 +38,7 @@ const NewGeneratorModal = ({ isOpen, onClose, onSuccess }: NewGeneratorModalProp
   const { toast } = useToast();
   
   const {
-    formData,
-    updateFormData,
+    form,
     handleCepLookup,
     addPlant,
     removePlant,
@@ -50,100 +46,62 @@ const NewGeneratorModal = ({ isOpen, onClose, onSuccess }: NewGeneratorModalProp
     isLoading
   } = useGeneratorForm();
 
+  const ownerType = form.watch('owner.type');
+
   const steps = [
     { 
       number: 1, 
       title: 'Concessionária', 
       icon: Zap,
-      component: (
-        <GeneratorConcessionariaForm 
-          value={formData.concessionaria} 
-          onChange={(value) => updateFormData('concessionaria', value)} 
-        />
-      )
+      component: <GeneratorConcessionariaForm form={form} />
     },
     { 
       number: 2, 
       title: 'Tipo de Proprietário', 
       icon: User,
-      component: (
-        <GeneratorOwnerTypeForm 
-          value={formData.owner?.type} 
-          onChange={(value) => updateFormData('owner', { ...formData.owner, type: value })} 
-        />
-      )
+      component: <GeneratorOwnerTypeForm form={form} />
     },
     { 
       number: 3, 
       title: 'Dados do Proprietário', 
       icon: Building,
-      component: (
-        <GeneratorOwnerDataForm 
-          data={formData.owner} 
-          onUpdate={(data) => updateFormData('owner', data)}
-          onCepLookup={(cep) => handleCepLookup(cep, 'owner')}
-        />
-      )
+      component: <GeneratorOwnerDataForm form={form} ownerType={ownerType} />
     },
-    { 
+    ...(ownerType === 'juridica' ? [{
       number: 4, 
       title: 'Administrador', 
       icon: User,
-      component: (
-        <GeneratorAdministratorForm 
-          data={formData.administrator} 
-          onUpdate={(data) => updateFormData('administrator', data)}
-          onCepLookup={(cep) => handleCepLookup(cep, 'administrator')}
-        />
-      )
-    },
+      component: <GeneratorAdministratorForm form={form} />
+    }] : []),
     { 
-      number: 5, 
+      number: ownerType === 'juridica' ? 5 : 4, 
       title: 'Usinas', 
       icon: Zap,
       component: (
         <GeneratorPlantsForm 
-          plants={formData.plants} 
-          onUpdate={(plants) => updateFormData('plants', plants)}
-          onCepLookup={(cep, index) => handleCepLookup(cep, 'plant', index)}
+          form={form}
           onAddPlant={addPlant}
           onRemovePlant={removePlant}
         />
       )
     },
     { 
-      number: 6, 
+      number: ownerType === 'juridica' ? 6 : 5, 
       title: 'Dados de Pagamento', 
       icon: CreditCard,
-      component: (
-        <GeneratorPaymentForm 
-          data={formData.payment_data} 
-          onUpdate={(data) => updateFormData('payment_data', data)}
-        />
-      )
+      component: <GeneratorPaymentForm form={form} />
     },
     { 
-      number: 7, 
+      number: ownerType === 'juridica' ? 7 : 6, 
       title: 'Login da Distribuidora', 
       icon: FileText,
-      component: (
-        <GeneratorDistributorLoginForm 
-          data={formData.distributor_login} 
-          onUpdate={(data) => updateFormData('distributor_login', data)}
-        />
-      )
+      component: <GeneratorDistributorLoginForm form={form} />
     },
     { 
-      number: 8, 
+      number: ownerType === 'juridica' ? 8 : 7, 
       title: 'Anexos', 
       icon: FileText,
-      component: (
-        <GeneratorAttachmentsForm 
-          data={formData.attachments} 
-          ownerType={formData.owner?.type}
-          onUpdate={(data) => updateFormData('attachments', data)}
-        />
-      )
+      component: <GeneratorAttachmentsForm form={form} />
     },
   ];
 
@@ -164,14 +122,15 @@ const NewGeneratorModal = ({ isOpen, onClose, onSuccess }: NewGeneratorModalProp
 
   const handleFinish = async () => {
     try {
-      await saveGenerator();
+      const formData = form.getValues();
+      await saveGenerator(formData);
       toast({
         title: "Geradora cadastrada!",
         description: "A geradora foi cadastrada com sucesso.",
       });
       onSuccess();
       onClose();
-      setCurrentStep(1); // Reset para o primeiro passo
+      setCurrentStep(1);
     } catch (error) {
       console.error('Erro ao salvar geradora:', error);
       toast({
@@ -183,7 +142,7 @@ const NewGeneratorModal = ({ isOpen, onClose, onSuccess }: NewGeneratorModalProp
   };
 
   const handleClose = () => {
-    setCurrentStep(1); // Reset para o primeiro passo
+    setCurrentStep(1);
     onClose();
   };
 
@@ -235,7 +194,11 @@ const NewGeneratorModal = ({ isOpen, onClose, onSuccess }: NewGeneratorModalProp
             <div className="p-6">
               <Card className="shadow-lg border-0 max-w-4xl mx-auto">
                 <CardContent className="p-8">
-                  {currentStepData.component}
+                  <Form {...form}>
+                    <form>
+                      {currentStepData.component}
+                    </form>
+                  </Form>
                 </CardContent>
               </Card>
             </div>
