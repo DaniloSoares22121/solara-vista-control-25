@@ -22,7 +22,6 @@ export const useCepLookup = () => {
     const cleanCep = cep.replace(/\D/g, '');
     
     if (cleanCep.length !== 8) {
-      toast.error('CEP deve ter 8 dígitos');
       return null;
     }
 
@@ -37,15 +36,25 @@ export const useCepLookup = () => {
         return null;
       }
       
+      toast.success('CEP encontrado! Endereço preenchido automaticamente.');
       return data;
     } catch (error) {
       console.error('Erro ao buscar CEP:', error);
-      toast.error('Erro ao buscar CEP');
+      toast.error('Erro ao buscar CEP. Verifique sua conexão.');
       return null;
     } finally {
       setLoading(false);
     }
   };
 
-  return { lookupCep, loading };
+  const formatCep = (value: string): string => {
+    const cleaned = value.replace(/\D/g, '');
+    const match = cleaned.match(/^(\d{5})(\d{3})$/);
+    if (match) {
+      return `${match[1]}-${match[2]}`;
+    }
+    return cleaned;
+  };
+
+  return { lookupCep, loading, formatCep };
 };

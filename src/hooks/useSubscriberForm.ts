@@ -1,4 +1,3 @@
-
 import { useState, useCallback } from 'react';
 import { SubscriberFormData, Contact, Address } from '@/types/subscriber';
 import { useCepLookup } from '@/hooks/useCepLookup';
@@ -106,53 +105,59 @@ export const useSubscriberForm = () => {
   }, []);
 
   const handleCepLookup = useCallback(async (cep: string, addressType: 'personal' | 'company' | 'administrator' | 'energy') => {
-    const cepData = await lookupCep(cep);
-    if (cepData) {
-      const addressUpdate = {
-        cep: cepData.cep,
-        street: cepData.logradouro,
-        neighborhood: cepData.bairro,
-        city: cepData.localidade,
-        state: cepData.uf,
-      };
+    // Remove any non-digit characters from CEP
+    const cleanCep = cep.replace(/\D/g, '');
+    
+    // Only lookup if we have a complete CEP (8 digits)
+    if (cleanCep.length === 8) {
+      const cepData = await lookupCep(cleanCep);
+      if (cepData) {
+        const addressUpdate = {
+          cep: cepData.cep,
+          street: cepData.logradouro,
+          neighborhood: cepData.bairro,
+          city: cepData.localidade,
+          state: cepData.uf,
+        };
 
-      switch (addressType) {
-        case 'personal':
-          if (formData.personalData?.address) {
-            const currentAddress = formData.personalData.address;
-            const newAddress: Address = { ...currentAddress, ...addressUpdate };
-            updateFormData('personalData', {
-              address: newAddress
-            });
-          }
-          break;
-        case 'company':
-          if (formData.companyData?.address) {
-            const currentAddress = formData.companyData.address;
-            const newAddress: Address = { ...currentAddress, ...addressUpdate };
-            updateFormData('companyData', {
-              address: newAddress
-            });
-          }
-          break;
-        case 'administrator':
-          if (formData.administratorData?.address) {
-            const currentAddress = formData.administratorData.address;
-            const newAddress: Address = { ...currentAddress, ...addressUpdate };
-            updateFormData('administratorData', {
-              address: newAddress
-            });
-          }
-          break;
-        case 'energy':
-          if (formData.energyAccount.address) {
-            const currentEnergyAddress = formData.energyAccount.address;
-            const newAddress: Address = { ...currentEnergyAddress, ...addressUpdate };
-            updateFormData('energyAccount', {
-              address: newAddress
-            });
-          }
-          break;
+        switch (addressType) {
+          case 'personal':
+            if (formData.personalData?.address) {
+              const currentAddress = formData.personalData.address;
+              const newAddress: Address = { ...currentAddress, ...addressUpdate };
+              updateFormData('personalData', {
+                address: newAddress
+              });
+            }
+            break;
+          case 'company':
+            if (formData.companyData?.address) {
+              const currentAddress = formData.companyData.address;
+              const newAddress: Address = { ...currentAddress, ...addressUpdate };
+              updateFormData('companyData', {
+                address: newAddress
+              });
+            }
+            break;
+          case 'administrator':
+            if (formData.administratorData?.address) {
+              const currentAddress = formData.administratorData.address;
+              const newAddress: Address = { ...currentAddress, ...addressUpdate };
+              updateFormData('administratorData', {
+                address: newAddress
+              });
+            }
+            break;
+          case 'energy':
+            if (formData.energyAccount.address) {
+              const currentEnergyAddress = formData.energyAccount.address;
+              const newAddress: Address = { ...currentEnergyAddress, ...addressUpdate };
+              updateFormData('energyAccount', {
+                address: newAddress
+              });
+            }
+            break;
+        }
       }
     }
   }, [formData, lookupCep, updateFormData]);
@@ -200,7 +205,17 @@ export const useSubscriberForm = () => {
         holderName: formData.personalData.fullName,
         birthDate: formData.personalData.birthDate,
         partnerNumber: formData.personalData.partnerNumber,
-        address: formData.personalData.address ? { ...formData.personalData.address } : {
+        address: formData.personalData.address ? { 
+          ...formData.personalData.address,
+          // Ensure all required fields are present
+          cep: formData.personalData.address.cep || '',
+          street: formData.personalData.address.street || '',
+          number: formData.personalData.address.number || '',
+          complement: formData.personalData.address.complement || '',
+          neighborhood: formData.personalData.address.neighborhood || '',
+          city: formData.personalData.address.city || '',
+          state: formData.personalData.address.state || '',
+        } : {
           cep: '',
           street: '',
           number: '',
@@ -210,14 +225,24 @@ export const useSubscriberForm = () => {
           state: '',
         },
       });
-      toast.success('Dados preenchidos automaticamente!');
+      toast.success('Dados da conta de energia preenchidos automaticamente!');
     } else if (formData.subscriberType === 'company' && formData.companyData) {
       updateFormData('energyAccount', {
         holderType: 'company',
         cpfCnpj: formData.companyData.cnpj,
         holderName: formData.companyData.companyName,
         partnerNumber: formData.companyData.partnerNumber,
-        address: formData.companyData.address ? { ...formData.companyData.address } : {
+        address: formData.companyData.address ? { 
+          ...formData.companyData.address,
+          // Ensure all required fields are present
+          cep: formData.companyData.address.cep || '',
+          street: formData.companyData.address.street || '',
+          number: formData.companyData.address.number || '',
+          complement: formData.companyData.address.complement || '',
+          neighborhood: formData.companyData.address.neighborhood || '',
+          city: formData.companyData.address.city || '',
+          state: formData.companyData.address.state || '',
+        } : {
           cep: '',
           street: '',
           number: '',
@@ -227,9 +252,53 @@ export const useSubscriberForm = () => {
           state: '',
         },
       });
-      toast.success('Dados preenchidos automaticamente!');
+      toast.success('Dados da conta de energia preenchidos automaticamente!');
+    } else {
+      toast.error('Preencha primeiro os dados do assinante para poder usar o preenchimento automático.');
     }
   }, [formData, updateFormData]);
+
+  // Enhanced CEP auto-lookup that triggers when CEP is complete
+  const handleCepChange = useCallback(async (cep: string, addressType: 'personal' | 'company' | 'administrator' | 'energy') => {
+    const cleanCep = cep.replace(/\D/g, '');
+    
+    // Update the CEP field first
+    switch (addressType) {
+      case 'personal':
+        if (formData.personalData?.address) {
+          updateFormData('personalData', {
+            address: { ...formData.personalData.address, cep }
+          });
+        }
+        break;
+      case 'company':
+        if (formData.companyData?.address) {
+          updateFormData('companyData', {
+            address: { ...formData.companyData.address, cep }
+          });
+        }
+        break;
+      case 'administrator':
+        if (formData.administratorData?.address) {
+          updateFormData('administratorData', {
+            address: { ...formData.administratorData.address, cep }
+          });
+        }
+        break;
+      case 'energy':
+        if (formData.energyAccount.address) {
+          updateFormData('energyAccount', {
+            address: { ...formData.energyAccount.address, cep }
+          });
+        }
+        break;
+    }
+
+    // Auto-lookup if CEP is complete
+    if (cleanCep.length === 8) {
+      await handleCepLookup(cep, addressType);
+    }
+  }, [formData, updateFormData, handleCepLookup]);
 
   const validateStep = useCallback((step: number): boolean => {
     switch (step) {
@@ -292,6 +361,7 @@ export const useSubscriberForm = () => {
     setCurrentStep,
     updateFormData,
     handleCepLookup,
+    handleCepChange,
     addContact,
     removeContact,
     autoFillEnergyAccount,
