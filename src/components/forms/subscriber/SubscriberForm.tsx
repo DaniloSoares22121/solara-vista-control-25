@@ -1,16 +1,7 @@
 
 import React, { useCallback, useEffect } from 'react';
 import { useSubscriberForm } from '@/hooks/useSubscriberForm';
-import ConcessionariaSelector from './ConcessionariaSelector';
-import SubscriberTypeSelector from './SubscriberTypeSelector';
-import PersonalDataForm from './PersonalDataForm';
-import CompanyDataForm from './CompanyDataForm';
-import EnergyAccountForm from './EnergyAccountForm';
-import TitleTransferForm from './TitleTransferForm';
-import PlanContractForm from './PlanContractForm';
-import PlanDetailsForm from './PlanDetailsForm';
-import NotificationSettingsForm from './NotificationSettingsForm';
-import AttachmentsForm from './AttachmentsForm';
+import { useSubscriberSteps } from '@/components/subscribers/SubscriberSteps';
 import StepNavigationButtons from '../StepNavigationButtons';
 import FormProgress from '../FormProgress';
 import AutoSaveIndicator from '../AutoSaveIndicator';
@@ -48,6 +39,15 @@ const SubscriberForm: React.FC<SubscriberFormProps> = ({
     resetForm
   } = useSubscriberForm(existingData);
 
+  const { steps } = useSubscriberSteps({
+    formData,
+    updateFormData,
+    handleCepLookup,
+    addContact,
+    removeContact,
+    autoFillEnergyAccount
+  });
+
   useEffect(() => {
     console.log('📋 Estado atual do formulário:', {
       step: currentStep,
@@ -56,11 +56,6 @@ const SubscriberForm: React.FC<SubscriberFormProps> = ({
       isLoaded
     });
   }, [currentStep, formData, isEditing, isLoaded]);
-
-  const handleCepLookupWrapper = useCallback((cep: string, addressType: 'personal' | 'company' | 'administrator' | 'energy') => {
-    console.log('🔍 Fazendo lookup do CEP:', cep, 'para tipo:', addressType);
-    handleCepLookup(cep, addressType);
-  }, [handleCepLookup]);
 
   const handleSubmit = async () => {
     try {
@@ -90,112 +85,9 @@ const SubscriberForm: React.FC<SubscriberFormProps> = ({
     );
   }
 
-  const steps = [
-    { 
-      number: 1, 
-      title: 'Concessionária', 
-      component: <ConcessionariaSelector 
-        value={formData.concessionaria} 
-        onChange={(value) => updateFormData('concessionaria', value)} 
-      /> 
-    },
-    { 
-      number: 2, 
-      title: 'Tipo de Assinante', 
-      component: <SubscriberTypeSelector 
-        value={formData.subscriberType} 
-        onChange={(value) => updateFormData('subscriberType', value)} 
-      /> 
-    },
-    { 
-      number: 3, 
-      title: formData.subscriberType === 'person' ? 'Dados Pessoais' : 'Dados da Empresa',
-      component: formData.subscriberType === 'person' ? (
-        <PersonalDataForm 
-          data={formData.personalData} 
-          onUpdate={(data) => updateFormData('personalData', data)}
-          onCepLookup={(cep) => handleCepLookupWrapper(cep, 'personal')}
-          onAddContact={() => addContact('personal')}
-          onRemoveContact={(contactId) => removeContact('personal', contactId)}
-          form={{ control: { _formValues: formData }, setValue: () => {}, watch: () => {} } as any}
-        />
-      ) : (
-        <CompanyDataForm 
-          companyData={formData.companyData} 
-          administratorData={formData.administratorData}
-          onUpdateCompany={(data) => updateFormData('companyData', data)}
-          onUpdateAdministrator={(data) => updateFormData('administratorData', data)}
-          onCepLookup={(cep, type) => handleCepLookupWrapper(cep, type)}
-          onAddContact={() => addContact('company')}
-          onRemoveContact={(contactId) => removeContact('company', contactId)}
-          form={{ control: { _formValues: formData }, setValue: () => {}, watch: () => {} } as any}
-        />
-      )
-    },
-    { 
-      number: 4, 
-      title: 'Conta de Energia', 
-      component: <EnergyAccountForm 
-        data={formData.energyAccount} 
-        onUpdate={(data) => updateFormData('energyAccount', data)}
-        onCepLookup={(cep) => handleCepLookupWrapper(cep, 'energy')}
-        onAutoFill={autoFillEnergyAccount}
-        form={{ control: { _formValues: formData }, setValue: () => {}, watch: () => {} } as any}
-      /> 
-    },
-    { 
-      number: 5, 
-      title: 'Transferência de Titularidade', 
-      component: <TitleTransferForm 
-        data={formData.titleTransfer} 
-        onUpdate={(data) => updateFormData('titleTransfer', data)}
-        form={{ control: { _formValues: formData }, setValue: () => {}, watch: () => {} } as any}
-      /> 
-    },
-    { 
-      number: 6, 
-      title: 'Contrato do Plano', 
-      component: <PlanContractForm 
-        data={formData.planContract} 
-        onUpdate={(data) => updateFormData('planContract', data)}
-        form={{ control: { _formValues: formData }, setValue: () => {}, watch: () => {} } as any}
-      /> 
-    },
-    { 
-      number: 7, 
-      title: 'Detalhes do Plano', 
-      component: <PlanDetailsForm 
-        data={formData.planDetails} 
-        onUpdate={(data) => updateFormData('planDetails', data)}
-        form={{ control: { _formValues: formData }, setValue: () => {}, watch: () => {} } as any}
-      /> 
-    },
-    { 
-      number: 8, 
-      title: 'Configurações de Notificação', 
-      component: <NotificationSettingsForm 
-        data={formData.notificationSettings} 
-        onUpdate={(data) => updateFormData('notificationSettings', data)}
-        form={{ control: { _formValues: formData }, setValue: () => {}, watch: () => {} } as any}
-      /> 
-    },
-    { 
-      number: 9, 
-      title: 'Anexos', 
-      component: <AttachmentsForm 
-        data={formData.attachments} 
-        subscriberType={formData.subscriberType}
-        willTransfer={formData.titleTransfer?.willTransfer || false}
-        onUpdate={(data) => updateFormData('attachments', data)}
-        form={{ control: { _formValues: formData }, setValue: () => {}, watch: () => {} } as any}
-      /> 
-    },
-  ];
-
   const stepTitles = steps.map(step => step.title);
   const completedSteps = steps.map((_, index) => index < currentStep);
   const hasErrors = steps.map(() => false);
-
   const currentStepData = steps.find(step => step.number === currentStep);
 
   return (
