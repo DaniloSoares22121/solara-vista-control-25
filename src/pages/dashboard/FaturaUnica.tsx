@@ -147,6 +147,10 @@ const FaturaUnica = () => {
 
       if (error) {
         console.error('Erro na edge function:', error);
+        // Se for erro de status code não-2xx, mostrar mensagem específica
+        if (error.message?.includes('non-2xx status code')) {
+          throw new Error('Nenhuma fatura encontrada');
+        }
         throw new Error(error.message || 'Erro ao consultar fatura');
       }
 
