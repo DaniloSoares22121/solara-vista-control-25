@@ -1,6 +1,7 @@
+
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { Sun, LogOut, User, Menu, ChevronRight } from 'lucide-react';
+import { Sun, LogOut, User, Menu } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from '@/components/ui/use-toast';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
@@ -52,7 +53,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
                 {/* Mobile Menu Button - Melhorado com texto */}
                 <div className="lg:hidden mr-1 xs:mr-2">
                   <SidebarTrigger className="flex flex-col items-center justify-center p-1.5 xs:p-2 h-10 w-12 xs:h-11 xs:w-14 bg-gradient-to-br from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 border-0 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 group">
-                    <ChevronRight className="w-4 h-4 xs:w-5 xs:h-5 text-white mb-0.5" />
+                    <Menu className="w-4 h-4 xs:w-5 xs:h-5 text-white mb-0.5" />
                     <span className="text-[9px] xs:text-[10px] text-white font-medium leading-none">Menu</span>
                   </SidebarTrigger>
                 </div>
