@@ -3,7 +3,6 @@ import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Form } from '@/components/ui/form';
 import { 
   ChevronLeft, 
@@ -142,49 +141,49 @@ const NewGeneratorModal = ({ isOpen, onClose, onSuccess }: NewGeneratorModalProp
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-5xl h-[90vh] p-0 overflow-hidden">
-        <div className="flex flex-col h-full">
-          {/* Header Fixo */}
-          <div className="bg-gradient-to-r from-green-600 to-green-700 text-white p-6 shadow-lg flex-shrink-0">
-            <div className="flex items-center justify-between mb-4">
-              <DialogTitle className="text-2xl font-bold flex items-center gap-3">
-                <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
-                  <Zap className="w-6 h-6 text-white" />
-                </div>
-                Nova Geradora
-              </DialogTitle>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={handleClose}
-                className="text-white hover:bg-white/20"
-              >
-                <X className="w-4 h-4" />
-              </Button>
-            </div>
-            
-            <div className="w-full bg-white/20 rounded-full h-2 mb-4">
-              <div 
-                className="bg-white h-2 rounded-full transition-all duration-300" 
-                style={{ width: `${(currentStep / totalSteps) * 100}%` }}
-              />
-            </div>
-            
-            <div className="mt-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-white/20 rounded-lg">
-                  <currentStepData.icon className="w-5 h-5 text-white" />
-                </div>
-                <div>
-                  <p className="text-white/80 text-sm">Etapa {currentStep} de {totalSteps}</p>
-                  <p className="text-xl font-semibold text-white">{currentStepData.title}</p>
-                </div>
+      <DialogContent className="max-w-5xl h-[90vh] flex flex-col p-0 gap-0">
+        {/* Header Fixo */}
+        <div className="bg-gradient-to-r from-green-600 to-green-700 text-white p-6 shadow-lg flex-shrink-0">
+          <div className="flex items-center justify-between mb-4">
+            <DialogTitle className="text-2xl font-bold flex items-center gap-3">
+              <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                <Zap className="w-6 h-6 text-white" />
+              </div>
+              Nova Geradora
+            </DialogTitle>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleClose}
+              className="text-white hover:bg-white/20"
+            >
+              <X className="w-4 h-4" />
+            </Button>
+          </div>
+          
+          <div className="w-full bg-white/20 rounded-full h-2 mb-4">
+            <div 
+              className="bg-white h-2 rounded-full transition-all duration-300" 
+              style={{ width: `${(currentStep / totalSteps) * 100}%` }}
+            />
+          </div>
+          
+          <div className="mt-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-white/20 rounded-lg">
+                <currentStepData.icon className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <p className="text-white/80 text-sm">Etapa {currentStep} de {totalSteps}</p>
+                <p className="text-xl font-semibold text-white">{currentStepData.title}</p>
               </div>
             </div>
           </div>
+        </div>
 
-          {/* Conteúdo Scrollável */}
-          <ScrollArea className="flex-1 bg-gray-50">
+        {/* Conteúdo Scrollável */}
+        <div className="flex-1 overflow-hidden bg-gray-50">
+          <div className="h-full overflow-y-auto">
             <div className="p-6">
               <Card className="shadow-lg border-0 max-w-4xl mx-auto">
                 <CardContent className="p-8">
@@ -196,55 +195,55 @@ const NewGeneratorModal = ({ isOpen, onClose, onSuccess }: NewGeneratorModalProp
                 </CardContent>
               </Card>
             </div>
-          </ScrollArea>
+          </div>
+        </div>
 
-          {/* Footer com Navegação */}
-          <div className="bg-white border-t p-6 flex-shrink-0">
-            <div className="flex justify-between items-center max-w-4xl mx-auto">
-              <Button
-                variant="outline"
-                onClick={handlePrevious}
-                disabled={currentStep === 1}
-                className="flex items-center gap-2"
-              >
-                <ChevronLeft className="w-4 h-4" />
-                Anterior
-              </Button>
+        {/* Footer com Navegação */}
+        <div className="bg-white border-t p-6 flex-shrink-0">
+          <div className="flex justify-between items-center max-w-4xl mx-auto">
+            <Button
+              variant="outline"
+              onClick={handlePrevious}
+              disabled={currentStep === 1}
+              className="flex items-center gap-2"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              Anterior
+            </Button>
 
-              <div className="flex items-center gap-2">
-                {steps.map((step) => (
-                  <div
-                    key={step.number}
-                    className={`w-3 h-3 rounded-full transition-colors ${
-                      step.number === currentStep
-                        ? 'bg-green-600'
-                        : step.number < currentStep
-                        ? 'bg-green-400'
-                        : 'bg-gray-300'
-                    }`}
-                  />
-                ))}
-              </div>
-
-              {currentStep === totalSteps ? (
-                <Button
-                  onClick={handleFinish}
-                  disabled={isLoading}
-                  className="bg-green-600 hover:bg-green-700 text-white flex items-center gap-2"
-                >
-                  <CheckCircle className="w-4 h-4" />
-                  {isLoading ? 'Salvando...' : 'Finalizar Cadastro'}
-                </Button>
-              ) : (
-                <Button
-                  onClick={handleNext}
-                  className="bg-green-600 hover:bg-green-700 text-white flex items-center gap-2"
-                >
-                  Próximo
-                  <ChevronRight className="w-4 h-4" />
-                </Button>
-              )}
+            <div className="flex items-center gap-2">
+              {steps.map((step) => (
+                <div
+                  key={step.number}
+                  className={`w-3 h-3 rounded-full transition-colors ${
+                    step.number === currentStep
+                      ? 'bg-green-600'
+                      : step.number < currentStep
+                      ? 'bg-green-400'
+                      : 'bg-gray-300'
+                  }`}
+                />
+              ))}
             </div>
+
+            {currentStep === totalSteps ? (
+              <Button
+                onClick={handleFinish}
+                disabled={isLoading}
+                className="bg-green-600 hover:bg-green-700 text-white flex items-center gap-2"
+              >
+                <CheckCircle className="w-4 h-4" />
+                {isLoading ? 'Salvando...' : 'Finalizar Cadastro'}
+              </Button>
+            ) : (
+              <Button
+                onClick={handleNext}
+                className="bg-green-600 hover:bg-green-700 text-white flex items-center gap-2"
+              >
+                Próximo
+                <ChevronRight className="w-4 h-4" />
+              </Button>
+            )}
           </div>
         </div>
       </DialogContent>
