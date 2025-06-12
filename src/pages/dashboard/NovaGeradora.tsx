@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -7,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Form } from '@/components/ui/form';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { X, ChevronLeft, ChevronRight, Save } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, Save, CheckCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useGenerators } from '@/hooks/useGenerators';
 import GeneratorConcessionariaForm from '@/components/forms/GeneratorConcessionariaForm';
@@ -150,28 +149,33 @@ const NovaGeradora = ({ onClose, editMode = false, generatorData }: NovaGeradora
   const steps = [
     { 
       number: 1, 
-      title: 'Dados Gerais e Dono da Usina', 
-      description: 'Concessionária e informações do proprietário' 
+      title: 'Dados Gerais', 
+      description: 'Concessionária e proprietário',
+      icon: '📊'
     },
     { 
       number: 2, 
-      title: 'Dados das Usinas', 
-      description: 'Informações das unidades geradoras' 
+      title: 'Usinas', 
+      description: 'Unidades geradoras',
+      icon: '⚡'
     },
     { 
       number: 3, 
-      title: 'Login da Distribuidora', 
-      description: 'Credenciais de acesso à distribuidora' 
+      title: 'Acesso', 
+      description: 'Login da distribuidora',
+      icon: '🔐'
     },
     { 
       number: 4, 
-      title: 'Dados para Recebimento', 
-      description: 'Informações bancárias e PIX' 
+      title: 'Pagamento', 
+      description: 'Dados bancários',
+      icon: '💳'
     },
     { 
       number: 5, 
-      title: 'Anexos', 
-      description: 'Documentos e contratos' 
+      title: 'Documentos', 
+      description: 'Anexos e contratos',
+      icon: '📄'
     },
   ];
 
@@ -225,60 +229,79 @@ const NovaGeradora = ({ onClose, editMode = false, generatorData }: NovaGeradora
   };
 
   return (
-    <div className="h-full flex flex-col bg-gray-50">
-      {/* Header Aprimorado */}
-      <div className="bg-gradient-to-r from-green-600 to-green-700 text-white px-6 py-6 shadow-lg">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold">
-              {editMode ? 'Editar Geradora' : 'Nova Geradora'}
-            </h1>
-            <p className="text-green-100 mt-1">
-              {editMode ? 'Atualize as informações da geradora' : 'Cadastre uma nova unidade geradora de energia'}
-            </p>
+    <div className="h-full flex flex-col bg-gradient-to-br from-gray-50 via-white to-gray-50">
+      {/* Header Redesenhado */}
+      <div className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-green-600 via-green-700 to-emerald-600"></div>
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48Y2lyY2xlIGN4PSIzMCIgY3k9IjMwIiByPSIyIi8+PC9nPjwvZz48L3N2Zz4=')] opacity-20"></div>
+        
+        <div className="relative px-8 py-8">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-6">
+              <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-xl">
+                <span className="text-3xl">⚡</span>
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold text-white mb-2">
+                  {editMode ? 'Editar Geradora' : 'Nova Geradora'}
+                </h1>
+                <p className="text-green-100 text-lg">
+                  {editMode 
+                    ? 'Atualize as informações da unidade geradora' 
+                    : 'Cadastre uma nova unidade geradora de energia solar'
+                  }
+                </p>
+              </div>
+            </div>
+            <Button 
+              variant="ghost" 
+              size="icon"
+              onClick={onClose}
+              className="text-white hover:bg-white/20 rounded-xl w-12 h-12 backdrop-blur-sm"
+            >
+              <X className="w-6 h-6" />
+            </Button>
           </div>
-          <Button 
-            variant="ghost" 
-            size="icon"
-            onClick={onClose}
-            className="text-white hover:bg-white/20 rounded-xl"
-          >
-            <X className="w-5 h-5" />
-          </Button>
         </div>
       </div>
 
-      {/* Progress Steps Aprimorado */}
-      <div className="bg-white border-b border-gray-200 px-6 py-6 shadow-sm">
-        <div className="max-w-4xl mx-auto">
-          <div className="flex items-center justify-between">
+      {/* Progress Steps Redesenhado */}
+      <div className="bg-white border-b border-gray-100 px-8 py-8 shadow-sm">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex items-center justify-between relative">
+            {/* Linha de progresso de fundo */}
+            <div className="absolute top-6 left-0 right-0 h-1 bg-gray-200 rounded-full z-0">
+              <div 
+                className="h-full bg-gradient-to-r from-green-500 to-green-600 rounded-full transition-all duration-500 ease-out"
+                style={{ width: `${((currentStep - 1) / (totalSteps - 1)) * 100}%` }}
+              />
+            </div>
+            
             {steps.map((step, index) => (
-              <div key={step.number} className="flex items-center">
-                <div className="flex items-center">
-                  <div className={`
-                    w-12 h-12 rounded-full flex items-center justify-center text-sm font-medium transition-all duration-200
-                    ${currentStep >= step.number 
-                      ? 'bg-green-600 text-white shadow-lg' 
-                      : 'bg-gray-200 text-gray-600'
-                    }
-                  `}>
-                    {step.number}
-                  </div>
-                  <div className="ml-4">
-                    <p className={`text-sm font-medium transition-colors ${
-                      currentStep >= step.number ? 'text-green-600' : 'text-gray-500'
-                    }`}>
-                      {step.title}
-                    </p>
-                    <p className="text-xs text-gray-500">{step.description}</p>
-                  </div>
+              <div key={step.number} className="flex flex-col items-center relative z-10">
+                <div className={`
+                  w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold transition-all duration-300 shadow-lg
+                  ${currentStep >= step.number 
+                    ? 'bg-gradient-to-r from-green-500 to-green-600 text-white scale-110' 
+                    : currentStep === step.number - 1
+                    ? 'bg-gradient-to-r from-orange-400 to-orange-500 text-white'
+                    : 'bg-white text-gray-400 border-2 border-gray-200'
+                  }
+                `}>
+                  {currentStep > step.number ? (
+                    <CheckCircle className="w-6 h-6" />
+                  ) : (
+                    <span className="text-sm">{step.icon}</span>
+                  )}
                 </div>
-                {index < steps.length - 1 && (
-                  <div className={`
-                    w-16 h-1 mx-6 rounded transition-colors
-                    ${currentStep > step.number ? 'bg-green-600' : 'bg-gray-200'}
-                  `} />
-                )}
+                <div className="mt-3 text-center">
+                  <p className={`text-sm font-semibold transition-colors ${
+                    currentStep >= step.number ? 'text-green-600' : 'text-gray-500'
+                  }`}>
+                    {step.title}
+                  </p>
+                  <p className="text-xs text-gray-400 mt-1">{step.description}</p>
+                </div>
               </div>
             ))}
           </div>
@@ -286,31 +309,36 @@ const NovaGeradora = ({ onClose, editMode = false, generatorData }: NovaGeradora
       </div>
 
       {/* Form Content */}
-      <div className="flex-1 overflow-y-auto">
-        <div className="max-w-4xl mx-auto p-6">
+      <div className="flex-1 overflow-y-auto bg-gray-50">
+        <div className="max-w-6xl mx-auto p-8">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
               
               {/* Step 1: Dados Gerais e Dono da Usina */}
               {currentStep === 1 && (
-                <Card className="border-0 shadow-xl">
-                  <CardHeader className="bg-gradient-to-r from-green-50 to-green-100 border-b">
+                <Card className="border-0 shadow-2xl bg-white/70 backdrop-blur-sm">
+                  <CardHeader className="bg-gradient-to-r from-green-50 via-emerald-50 to-green-50 border-b border-green-100/50">
                     <div className="flex items-center justify-between">
-                      <div>
-                        <CardTitle className="text-xl text-green-800">
-                          Dados Gerais e Dono da Usina
-                        </CardTitle>
-                        <p className="text-green-600 mt-1">
-                          Informações da concessionária e proprietário da geradora
-                        </p>
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl flex items-center justify-center shadow-lg">
+                          <span className="text-xl">📊</span>
+                        </div>
+                        <div>
+                          <CardTitle className="text-2xl text-green-800 font-bold">
+                            Dados Gerais e Proprietário
+                          </CardTitle>
+                          <p className="text-green-600 mt-1 text-base">
+                            Configure a concessionária e as informações do proprietário da geradora
+                          </p>
+                        </div>
                       </div>
-                      <Badge className="bg-green-100 text-green-800 border-green-200">
-                        Passo 1 de {totalSteps}
+                      <Badge className="bg-green-100 text-green-800 border-green-200 text-sm px-4 py-2">
+                        {currentStep} de {totalSteps}
                       </Badge>
                     </div>
                   </CardHeader>
                   
-                  <CardContent className="p-8 space-y-8">
+                  <CardContent className="p-10 space-y-10">
                     <GeneratorConcessionariaForm form={form} />
                     <GeneratorOwnerTypeForm form={form} />
                     <GeneratorOwnerDataForm form={form} ownerType={ownerType} />
@@ -323,96 +351,119 @@ const NovaGeradora = ({ onClose, editMode = false, generatorData }: NovaGeradora
 
               {/* Step 2: Dados das Usinas */}
               {currentStep === 2 && (
-                <Card className="border-0 shadow-xl">
-                  <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-100 border-b">
+                <Card className="border-0 shadow-2xl bg-white/70 backdrop-blur-sm">
+                  <CardHeader className="bg-gradient-to-r from-blue-50 via-cyan-50 to-blue-50 border-b border-blue-100/50">
                     <div className="flex items-center justify-between">
-                      <div>
-                        <CardTitle className="text-xl text-blue-800">
-                          Dados das Usinas
-                        </CardTitle>
-                        <p className="text-blue-600 mt-1">
-                          Informações técnicas das unidades geradoras
-                        </p>
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center shadow-lg">
+                          <span className="text-xl">⚡</span>
+                        </div>
+                        <div>
+                          <CardTitle className="text-2xl text-blue-800 font-bold">
+                            Configuração das Usinas
+                          </CardTitle>
+                          <p className="text-blue-600 mt-1 text-base">
+                            Defina as especificações técnicas das unidades geradoras
+                          </p>
+                        </div>
                       </div>
-                      <Badge className="bg-blue-100 text-blue-800 border-blue-200">
-                        Passo 2 de {totalSteps}
+                      <Badge className="bg-blue-100 text-blue-800 border-blue-200 text-sm px-4 py-2">
+                        {currentStep} de {totalSteps}
                       </Badge>
                     </div>
                   </CardHeader>
                   
-                  <CardContent className="p-8">
+                  <CardContent className="p-10">
                     <GeneratorPlantsForm form={form} />
                   </CardContent>
                 </Card>
               )}
 
+              {/* Step 3: Acesso */}
               {currentStep === 3 && (
-                <Card className="border-0 shadow-xl">
-                  <CardHeader className="bg-gradient-to-r from-purple-50 to-purple-100 border-b">
+                <Card className="border-0 shadow-2xl bg-white/70 backdrop-blur-sm">
+                  <CardHeader className="bg-gradient-to-r from-purple-50 via-violet-50 to-purple-50 border-b border-purple-100/50">
                     <div className="flex items-center justify-between">
-                      <div>
-                        <CardTitle className="text-xl text-purple-800">
-                          Login da Distribuidora
-                        </CardTitle>
-                        <p className="text-purple-600 mt-1">
-                          Credenciais de acesso à distribuidora
-                        </p>
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-violet-500 rounded-xl flex items-center justify-center shadow-lg">
+                          <span className="text-xl">🔐</span>
+                        </div>
+                        <div>
+                          <CardTitle className="text-2xl text-purple-800 font-bold">
+                            Acesso à Distribuidora
+                          </CardTitle>
+                          <p className="text-purple-600 mt-1 text-base">
+                            Configure as credenciais de acesso ao portal da concessionária
+                          </p>
+                        </div>
                       </div>
-                      <Badge className="bg-purple-100 text-purple-800 border-purple-200">
-                        Passo 3 de {totalSteps}
+                      <Badge className="bg-purple-100 text-purple-800 border-purple-200 text-sm px-4 py-2">
+                        {currentStep} de {totalSteps}
                       </Badge>
                     </div>
                   </CardHeader>
                   
-                  <CardContent className="p-8">
+                  <CardContent className="p-10">
                     <GeneratorDistributorLoginForm form={form} />
                   </CardContent>
                 </Card>
               )}
 
+              {/* Step 4: Pagamento */}
               {currentStep === 4 && (
-                <Card className="border-0 shadow-xl">
-                  <CardHeader className="bg-gradient-to-r from-green-50 to-green-100 border-b">
+                <Card className="border-0 shadow-2xl bg-white/70 backdrop-blur-sm">
+                  <CardHeader className="bg-gradient-to-r from-green-50 via-emerald-50 to-green-50 border-b border-green-100/50">
                     <div className="flex items-center justify-between">
-                      <div>
-                        <CardTitle className="text-xl text-green-800">
-                          Dados para Recebimento
-                        </CardTitle>
-                        <p className="text-green-600 mt-1">
-                          Informações bancárias e chave PIX
-                        </p>
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl flex items-center justify-center shadow-lg">
+                          <span className="text-xl">💳</span>
+                        </div>
+                        <div>
+                          <CardTitle className="text-2xl text-green-800 font-bold">
+                            Dados para Recebimento
+                          </CardTitle>
+                          <p className="text-green-600 mt-1 text-base">
+                            Configure as informações bancárias e chave PIX para pagamentos
+                          </p>
+                        </div>
                       </div>
-                      <Badge className="bg-green-100 text-green-800 border-green-200">
-                        Passo 4 de {totalSteps}
+                      <Badge className="bg-green-100 text-green-800 border-green-200 text-sm px-4 py-2">
+                        {currentStep} de {totalSteps}
                       </Badge>
                     </div>
                   </CardHeader>
                   
-                  <CardContent className="p-8">
+                  <CardContent className="p-10">
                     <GeneratorPaymentForm form={form} />
                   </CardContent>
                 </Card>
               )}
 
+              {/* Step 5: Documentos */}
               {currentStep === 5 && (
-                <Card className="border-0 shadow-xl">
-                  <CardHeader className="bg-gradient-to-r from-amber-50 to-amber-100 border-b">
+                <Card className="border-0 shadow-2xl bg-white/70 backdrop-blur-sm">
+                  <CardHeader className="bg-gradient-to-r from-amber-50 via-orange-50 to-amber-50 border-b border-amber-100/50">
                     <div className="flex items-center justify-between">
-                      <div>
-                        <CardTitle className="text-xl text-amber-800">
-                          Anexos
-                        </CardTitle>
-                        <p className="text-amber-600 mt-1">
-                          Documentos e contratos necessários
-                        </p>
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 bg-gradient-to-r from-amber-500 to-orange-500 rounded-xl flex items-center justify-center shadow-lg">
+                          <span className="text-xl">📄</span>
+                        </div>
+                        <div>
+                          <CardTitle className="text-2xl text-amber-800 font-bold">
+                            Documentos e Anexos
+                          </CardTitle>
+                          <p className="text-amber-600 mt-1 text-base">
+                            Faça upload dos documentos e contratos necessários
+                          </p>
+                        </div>
                       </div>
-                      <Badge className="bg-amber-100 text-amber-800 border-amber-200">
-                        Passo 5 de {totalSteps}
+                      <Badge className="bg-amber-100 text-amber-800 border-amber-200 text-sm px-4 py-2">
+                        {currentStep} de {totalSteps}
                       </Badge>
                     </div>
                   </CardHeader>
                   
-                  <CardContent className="p-8">
+                  <CardContent className="p-10">
                     <GeneratorAttachmentsForm form={form} />
                   </CardContent>
                 </Card>
@@ -424,18 +475,18 @@ const NovaGeradora = ({ onClose, editMode = false, generatorData }: NovaGeradora
       </div>
 
       {/* Footer com Navegação Aprimorado */}
-      <div className="bg-white border-t border-gray-200 px-6 py-6 shadow-lg">
-        <div className="max-w-4xl mx-auto">
+      <div className="bg-white border-t border-gray-200 px-8 py-6 shadow-xl">
+        <div className="max-w-6xl mx-auto">
           <div className="flex items-center justify-between">
             <Button
               type="button"
               variant="outline"
               onClick={prevStep}
               disabled={currentStep === 1 || saving}
-              className="flex items-center gap-2 px-6 py-3"
+              className="flex items-center gap-3 px-8 py-3 text-base font-medium border-2 hover:bg-gray-50"
             >
-              <ChevronLeft className="w-4 h-4" />
-              Anterior
+              <ChevronLeft className="w-5 h-5" />
+              Etapa Anterior
             </Button>
 
             <div className="flex items-center gap-4">
@@ -444,9 +495,9 @@ const NovaGeradora = ({ onClose, editMode = false, generatorData }: NovaGeradora
                 variant="outline"
                 onClick={() => form.reset()}
                 disabled={saving}
-                className="px-6 py-3"
+                className="px-8 py-3 text-base font-medium border-2"
               >
-                Limpar
+                Limpar Dados
               </Button>
               
               {currentStep === totalSteps ? (
@@ -454,20 +505,20 @@ const NovaGeradora = ({ onClose, editMode = false, generatorData }: NovaGeradora
                   type="submit"
                   onClick={form.handleSubmit(onSubmit)}
                   disabled={!canProceed() || saving}
-                  className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white px-8 py-3 flex items-center gap-2"
+                  className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white px-10 py-3 text-base font-medium flex items-center gap-3 shadow-lg"
                 >
-                  <Save className="w-4 h-4" />
-                  {saving ? 'Salvando...' : editMode ? 'Atualizar Geradora' : 'Salvar Geradora'}
+                  <Save className="w-5 h-5" />
+                  {saving ? 'Salvando...' : editMode ? 'Atualizar Geradora' : 'Criar Geradora'}
                 </Button>
               ) : (
                 <Button
                   type="button"
                   onClick={nextStep}
                   disabled={!canProceed() || saving}
-                  className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white flex items-center gap-2 px-6 py-3"
+                  className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white flex items-center gap-3 px-8 py-3 text-base font-medium shadow-lg"
                 >
-                  Próximo
-                  <ChevronRight className="w-4 h-4" />
+                  Próxima Etapa
+                  <ChevronRight className="w-5 h-5" />
                 </Button>
               )}
             </div>

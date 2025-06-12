@@ -4,14 +4,14 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { CepInput } from '@/components/ui/cep-input';
 import { UseFormReturn } from 'react-hook-form';
-import { Address } from '@/types/subscriber';
+import { MapPin } from 'lucide-react';
 
 interface AddressFormProps {
   form: UseFormReturn<any>;
   prefix: string;
   title: string;
   onCepChange?: (cep: string) => void;
-  onAddressChange?: (address: Partial<Address>) => void;
+  onAddressChange?: (address: any) => void;
   className?: string;
 }
 
@@ -49,14 +49,6 @@ const AddressForm = ({ form, prefix, title, onCepChange, onAddressChange, classN
   const handleCepFound = (cepData: any) => {
     console.log('CEP encontrado:', cepData);
     
-    // Mapear os campos da API ViaCEP para os campos do formulário
-    const addressData = {
-      endereco: cepData.logradouro || '',
-      bairro: cepData.bairro || '',
-      cidade: cepData.localidade || '',
-      estado: cepData.uf || '',
-    };
-
     // Atualizar os campos do formulário
     if (cepData.logradouro) {
       form.setValue(`${prefix}.endereco`, cepData.logradouro);
@@ -73,17 +65,24 @@ const AddressForm = ({ form, prefix, title, onCepChange, onAddressChange, classN
 
     // Callback opcional
     if (onAddressChange) {
-      onAddressChange(addressData);
+      onAddressChange({
+        endereco: cepData.logradouro || '',
+        bairro: cepData.bairro || '',
+        cidade: cepData.localidade || '',
+        estado: cepData.uf || '',
+      });
     }
   };
 
   return (
     <div className={className || "space-y-6"}>
       <div className="border-t pt-6">
-        <h4 className="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2">
-          <div className="w-2 h-6 bg-blue-500 rounded"></div>
-          {title}
-        </h4>
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg flex items-center justify-center shadow-md">
+            <MapPin className="w-4 h-4 text-white" />
+          </div>
+          <h4 className="text-lg font-semibold text-gray-900">{title}</h4>
+        </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <FormField
