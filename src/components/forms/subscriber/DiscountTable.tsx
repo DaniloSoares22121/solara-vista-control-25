@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { CheckCircle2, Edit2, Save, X } from 'lucide-react';
 
 interface DiscountTableProps {
-  contractedKwh: number; // Mudança para usar kWh contratado
+  contractedKwh: number;
   loyalty: 'none' | 'oneYear' | 'twoYears';
   onDiscountSelect: (percentage: number) => void;
   selectedDiscount?: number;
@@ -72,7 +72,7 @@ const DiscountTable = ({ contractedKwh, loyalty, onDiscountSelect, selectedDisco
 
   const getCurrentRange = () => {
     return consumptionRanges.find(range => 
-      contractedKwh >= range.min && contractedKwh <= range.max // Usando contractedKwh
+      contractedKwh >= range.min && contractedKwh <= range.max
     );
   };
 

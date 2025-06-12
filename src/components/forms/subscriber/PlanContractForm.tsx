@@ -214,9 +214,10 @@ const PlanContractForm = ({ data, onUpdate, form }: PlanContractFormProps) => {
         />
       </div>
 
+      {/* Tabela de desconto baseada no kWh contratado */}
       {data.contractedKwh > 0 && (
         <DiscountTable
-          contractedKwh={data.contractedKwh} // Usando contractedKwh em vez de informedKwh
+          contractedKwh={data.contractedKwh}
           loyalty={data.loyalty}
           onDiscountSelect={handleDiscountSelect}
           selectedDiscount={data.discountPercentage}

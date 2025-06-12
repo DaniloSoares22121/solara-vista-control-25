@@ -148,6 +148,30 @@ export const useSubscriberForm = (existingData?: any) => {
   const [isLoaded, setIsLoaded] = useState(false);
   const { lookupCep } = useCepLookup();
 
+  // Função padronizada para mapear endereços
+  const mapAddress = (addr: any): Address => {
+    if (!addr) return initialFormData.personalData!.address;
+    
+    return {
+      cep: addr.cep || '',
+      street: addr.street || addr.endereco || addr.logradouro || '',
+      number: addr.number || addr.numero || '',
+      complement: addr.complement || addr.complemento || '',
+      neighborhood: addr.neighborhood || addr.bairro || '',
+      city: addr.city || addr.cidade || addr.localidade || '',
+      state: addr.state || addr.estado || addr.uf || '',
+    };
+  };
+
+  // Determinar tipo de assinante de forma consistente
+  const determineSubscriberType = (subscriber: any, energyAccount: any): 'person' | 'company' => {
+    // Prioridade: CNPJ no subscriber > tipo da conta de energia > padrão pessoa
+    if (subscriber?.cnpj) return 'company';
+    if (energyAccount?.holderType === 'company') return 'company';
+    if (energyAccount?.cpfCnpj && energyAccount.cpfCnpj.includes('/')) return 'company';
+    return 'person';
+  };
+
   // Load existing data if editing
   useEffect(() => {
     if (existingData) {
@@ -162,72 +186,66 @@ export const useSubscriberForm = (existingData?: any) => {
       const attachments = existingData.attachments;
       const titleTransfer = existingData.title_transfer;
       
-      // Determinar tipo de assinante baseado nos dados - priorizar CNPJ para empresa
-      const subscriberType = subscriber?.cnpj || energyAccount?.holderType === 'company' ? 'company' : 'person';
+      // Determinar tipo de assinante de forma consistente
+      const subscriberType = determineSubscriberType(subscriber, energyAccount);
       console.log('📋 Tipo de assinante detectado:', subscriberType);
-      
-      // Função melhorada para mapear endereços com múltiplos formatos possíveis
-      const mapAddress = (addr: any): Address => {
-        if (!addr) return initialFormData.personalData!.address;
-        
-        return {
-          cep: addr.cep || '',
-          street: addr.street || addr.endereco || addr.logradouro || '',
-          number: addr.number || addr.numero || '',
-          complement: addr.complement || addr.complemento || '',
-          neighborhood: addr.neighborhood || addr.bairro || '',
-          city: addr.city || addr.cidade || addr.localidade || '',
-          state: addr.state || addr.estado || addr.uf || '',
-        };
-      };
       
       const loadedData: SubscriberFormData = {
         concessionaria: existingData.concessionaria || 'equatorial-goias',
         subscriberType,
+        
+        // Dados de pessoa física - só preenche se for pessoa física
         personalData: subscriberType === 'person' && subscriber ? {
           cpf: subscriber.cpf || '',
           partnerNumber: subscriber.partnerNumber || '',
-          fullName: subscriber.fullName || subscriber.nome || '',
-          birthDate: subscriber.birthDate || subscriber.dataNascimento || '',
-          maritalStatus: subscriber.maritalStatus || subscriber.estadoCivil || '',
-          profession: subscriber.profession || subscriber.profissao || '',
-          phone: subscriber.phone || subscriber.telefone || '',
+          fullName: subscriber.fullName || '',
+          birthDate: subscriber.birthDate || '',
+          maritalStatus: subscriber.maritalStatus || '',
+          profession: subscriber.profession || '',
+          phone: subscriber.phone || '',
           email: subscriber.email || '',
-          observations: subscriber.observations || subscriber.observacoes || '',
+          observations: subscriber.observations || '',
           address: mapAddress(subscriber.address),
           contacts: subscriber.contacts || [],
         } : initialFormData.personalData!,
+        
+        // Dados de pessoa jurídica - só preenche se for empresa
         companyData: subscriberType === 'company' && subscriber ? {
           cnpj: subscriber.cnpj || '',
           partnerNumber: subscriber.partnerNumber || '',
           companyName: subscriber.companyName || subscriber.razaoSocial || '',
           fantasyName: subscriber.fantasyName || subscriber.nomeFantasia || '',
-          phone: subscriber.phone || subscriber.telefone || '',
+          phone: subscriber.phone || '',
           email: subscriber.email || '',
-          observations: subscriber.observations || subscriber.observacoes || '',
+          observations: subscriber.observations || '',
           address: mapAddress(subscriber.address),
           contacts: subscriber.contacts || [],
         } : initialFormData.companyData!,
+        
+        // Dados do administrador - só para empresas
         administratorData: administrator ? {
           cpf: administrator.cpf || '',
-          fullName: administrator.fullName || administrator.nome || '',
-          birthDate: administrator.birthDate || administrator.dataNascimento || '',
-          maritalStatus: administrator.maritalStatus || administrator.estadoCivil || '',
-          profession: administrator.profession || administrator.profissao || '',
-          phone: administrator.phone || administrator.telefone || '',
+          fullName: administrator.fullName || '',
+          birthDate: administrator.birthDate || '',
+          maritalStatus: administrator.maritalStatus || '',
+          profession: administrator.profession || '',
+          phone: administrator.phone || '',
           email: administrator.email || '',
           address: mapAddress(administrator.address),
         } : initialFormData.administratorData!,
+        
         energyAccount: energyAccount ? {
-          holderType: energyAccount.holderType || (energyAccount.cpfCnpj && energyAccount.cpfCnpj.includes('/') ? 'company' : 'person'),
+          holderType: energyAccount.holderType || subscriberType,
           cpfCnpj: energyAccount.cpfCnpj || '',
-          holderName: energyAccount.holderName || energyAccount.nome || '',
-          birthDate: energyAccount.birthDate || energyAccount.dataNascimento || '',
+          holderName: energyAccount.holderName || '',
+          birthDate: energyAccount.birthDate || '',
           uc: energyAccount.uc || '',
           partnerNumber: energyAccount.partnerNumber || '',
           address: mapAddress(energyAccount.address),
         } : initialFormData.energyAccount,
+        
         titleTransfer: titleTransfer || initialFormData.titleTransfer,
+        
         planContract: planContract ? {
           selectedPlan: planContract.selectedPlan || '',
           compensationMode: planContract.compensationMode || 'autoConsumption',
@@ -237,12 +255,14 @@ export const useSubscriberForm = (existingData?: any) => {
           loyalty: planContract.loyalty || 'none',
           discountPercentage: planContract.discountPercentage || 0,
         } : initialFormData.planContract,
+        
         planDetails: planDetails ? {
           paysPisAndCofins: planDetails.paysPisAndCofins !== undefined ? planDetails.paysPisAndCofins : true,
           paysWireB: planDetails.paysWireB !== undefined ? planDetails.paysWireB : false,
           addDistributorValue: planDetails.addDistributorValue !== undefined ? planDetails.addDistributorValue : true,
           exemptFromPayment: planDetails.exemptFromPayment !== undefined ? planDetails.exemptFromPayment : false,
         } : initialFormData.planDetails,
+        
         notificationSettings: notifications || defaultNotificationSettings,
         attachments: attachments || {},
       };
@@ -256,15 +276,15 @@ export const useSubscriberForm = (existingData?: any) => {
     }
   }, [existingData]);
 
-  // Preenchimento automático da conta de energia quando os dados do assinante estão disponíveis
-  useEffect(() => {
-    if (currentStep === 4) { // Quando estiver na etapa da conta de energia
-      if (formData.subscriberType === 'person' && formData.personalData) {
-        const { cpf, fullName, birthDate, partnerNumber, address } = formData.personalData;
+  // Auto-fill melhorado que funciona em qualquer momento
+  const performAutoFill = useCallback(() => {
+    setFormData(prev => {
+      if (prev.subscriberType === 'person' && prev.personalData) {
+        const { cpf, fullName, birthDate, partnerNumber, address } = prev.personalData;
         
-        if (cpf && fullName && address?.cep) {
-          console.log('Preenchendo automaticamente os dados da conta de energia (Pessoa Física)');
-          setFormData(prev => ({
+        if (cpf && fullName) {
+          console.log('🔄 Auto-preenchendo conta de energia (Pessoa Física)');
+          return {
             ...prev,
             energyAccount: {
               ...prev.energyAccount,
@@ -273,30 +293,40 @@ export const useSubscriberForm = (existingData?: any) => {
               holderName: fullName,
               birthDate: birthDate || '',
               partnerNumber: partnerNumber || '',
-              address: { ...address },
+              address: address.cep ? { ...address } : prev.energyAccount.address,
             }
-          }));
+          };
         }
-      } else if (formData.subscriberType === 'company' && formData.companyData) {
-        const { cnpj, companyName, partnerNumber, address } = formData.companyData;
+      } else if (prev.subscriberType === 'company' && prev.companyData) {
+        const { cnpj, companyName, partnerNumber, address } = prev.companyData;
         
-        if (cnpj && companyName && address?.cep) {
-          console.log('Preenchendo automaticamente os dados da conta de energia (Pessoa Jurídica)');
-          setFormData(prev => ({
+        if (cnpj && companyName) {
+          console.log('🔄 Auto-preenchendo conta de energia (Pessoa Jurídica)');
+          return {
             ...prev,
             energyAccount: {
               ...prev.energyAccount,
               holderType: 'company',
               cpfCnpj: cnpj,
               holderName: companyName,
+              birthDate: '',
               partnerNumber: partnerNumber || '',
-              address: { ...address },
+              address: address.cep ? { ...address } : prev.energyAccount.address,
             }
-          }));
+          };
         }
       }
+      
+      return prev;
+    });
+  }, []);
+
+  // Auto-fill automático quando dados mudam
+  useEffect(() => {
+    if (isLoaded && !isEditing) {
+      performAutoFill();
     }
-  }, [currentStep, formData.subscriberType, formData.personalData, formData.companyData]);
+  }, [formData.personalData, formData.companyData, isLoaded, isEditing, performAutoFill]);
 
   const updateFormData = useCallback((section: keyof SubscriberFormData, data: any) => {
     console.log('🔄 Atualizando seção:', section, 'com dados:', data);
@@ -331,7 +361,7 @@ export const useSubscriberForm = (existingData?: any) => {
             cep: cepData.cep,
             street: cepData.logradouro,
             neighborhood: cepData.bairro,
-            city: cepData.localidade, // Corrigido para usar localidade
+            city: cepData.localidade,
             state: cepData.uf,
           };
 
@@ -388,7 +418,7 @@ export const useSubscriberForm = (existingData?: any) => {
         if (contacts.length <= 5) {
           newFormData.personalData.contacts = contacts;
         } else {
-          toast.error('Máximo de 5 contatos permitidos', { duration: 2000 }); // Toast mais rápido
+          toast.error('Máximo de 5 contatos permitidos', { duration: 1000 });
           return prev;
         }
       } else if (type === 'company' && newFormData.companyData) {
@@ -396,7 +426,7 @@ export const useSubscriberForm = (existingData?: any) => {
         if (contacts.length <= 5) {
           newFormData.companyData.contacts = contacts;
         } else {
-          toast.error('Máximo de 5 contatos permitidos', { duration: 2000 }); // Toast mais rápido
+          toast.error('Máximo de 5 contatos permitidos', { duration: 1000 });
           return prev;
         }
       }
@@ -420,140 +450,50 @@ export const useSubscriberForm = (existingData?: any) => {
   }, []);
 
   const autoFillEnergyAccount = useCallback(() => {
-    console.log('🔄 Executando preenchimento automático');
-    console.log('📊 Dados atuais do formulário:', formData);
-    
-    setFormData(prev => {
-      console.log('📋 Estado anterior:', prev);
-      
-      if (prev.subscriberType === 'person' && prev.personalData) {
-        console.log('👤 Preenchendo com dados de pessoa física');
-        
-        const newFormData = {
-          ...prev,
-          energyAccount: {
-            ...prev.energyAccount,
-            holderType: 'person' as const,
-            cpfCnpj: prev.personalData.cpf || '',
-            holderName: prev.personalData.fullName || '',
-            birthDate: prev.personalData.birthDate || '',
-            partnerNumber: prev.personalData.partnerNumber || '',
-            address: {
-              ...prev.personalData.address
-            },
-          }
-        };
-        
-        console.log('✅ Novos dados após preenchimento:', newFormData.energyAccount);
-        toast.success('Dados da conta de energia preenchidos automaticamente!', { duration: 2000 });
-        return newFormData;
-        
-      } else if (prev.subscriberType === 'company' && prev.companyData) {
-        console.log('🏢 Preenchendo com dados de pessoa jurídica');
-        
-        const newFormData = {
-          ...prev,
-          energyAccount: {
-            ...prev.energyAccount,
-            holderType: 'company' as const,
-            cpfCnpj: prev.companyData.cnpj || '',
-            holderName: prev.companyData.companyName || '',
-            partnerNumber: prev.companyData.partnerNumber || '',
-            address: {
-              ...prev.companyData.address
-            },
-          }
-        };
-        
-        console.log('✅ Novos dados após preenchimento:', newFormData.energyAccount);
-        toast.success('Dados da conta de energia preenchidos automaticamente!', { duration: 2000 });
-        return newFormData;
-        
-      } else {
-        console.log('❌ Não foi possível preencher - dados insuficientes');
-        toast.error('Preencha primeiro os dados do assinante para poder usar o preenchimento automático.', { duration: 2000 });
-        return prev;
-      }
-    });
-  }, [formData]);
+    console.log('🔄 Executando preenchimento automático manual');
+    performAutoFill();
+    toast.success('Dados da conta de energia preenchidos automaticamente!', { duration: 1000 });
+  }, [performAutoFill]);
 
   const validateStep = useCallback((step: number): boolean => {
     console.log('🔍 Validando passo:', step, 'com dados:', formData);
     
     switch (step) {
       case 1:
-        const step1Valid = !!formData.concessionaria;
-        console.log('✅ Passo 1 válido:', step1Valid, 'concessionaria:', formData.concessionaria);
-        return step1Valid;
+        return !!formData.concessionaria;
         
       case 2:
-        const step2Valid = !!formData.subscriberType;
-        console.log('✅ Passo 2 válido:', step2Valid, 'subscriberType:', formData.subscriberType);
-        return step2Valid;
+        return !!formData.subscriberType;
         
       case 3:
         if (formData.subscriberType === 'person') {
-          const step3PersonValid = !!(formData.personalData?.cpf && formData.personalData?.fullName && formData.personalData?.email);
-          console.log('✅ Passo 3 (pessoa) válido:', step3PersonValid, 'dados:', {
-            cpf: formData.personalData?.cpf,
-            fullName: formData.personalData?.fullName,
-            email: formData.personalData?.email
-          });
-          return step3PersonValid;
+          return !!(formData.personalData?.cpf && formData.personalData?.fullName && formData.personalData?.email);
         } else {
-          const step3CompanyValid = !!(formData.companyData?.cnpj && formData.companyData?.companyName && formData.administratorData?.cpf);
-          console.log('✅ Passo 3 (empresa) válido:', step3CompanyValid, 'dados:', {
-            cnpj: formData.companyData?.cnpj,
-            companyName: formData.companyData?.companyName,
-            adminCpf: formData.administratorData?.cpf
-          });
-          return step3CompanyValid;
+          return !!(formData.companyData?.cnpj && formData.companyData?.companyName && formData.administratorData?.cpf);
         }
         
       case 4:
-        const step4Valid = !!(formData.energyAccount.uc && formData.energyAccount.cpfCnpj && formData.energyAccount.holderName);
-        console.log('✅ Passo 4 válido:', step4Valid, 'dados:', {
-          uc: formData.energyAccount.uc,
-          cpfCnpj: formData.energyAccount.cpfCnpj,
-          holderName: formData.energyAccount.holderName
-        });
-        return step4Valid;
+        return !!(formData.energyAccount.uc && formData.energyAccount.cpfCnpj && formData.energyAccount.holderName);
         
       case 5:
-        console.log('✅ Passo 5 sempre válido');
-        return true;
+        return true; // Transferência é opcional
         
       case 6:
-        const step6Valid = !!(formData.planContract.selectedPlan && formData.planContract.informedKwh && formData.planContract.contractedKwh);
-        console.log('✅ Passo 6 válido:', step6Valid, 'dados:', {
-          selectedPlan: formData.planContract.selectedPlan,
-          informedKwh: formData.planContract.informedKwh,
-          contractedKwh: formData.planContract.contractedKwh
-        });
-        return step6Valid;
+        return !!(formData.planContract.selectedPlan && formData.planContract.contractedKwh > 0);
         
       case 7:
-        console.log('✅ Passo 7 sempre válido');
-        return true;
-        
       case 8:
-        console.log('✅ Passo 8 sempre válido');
-        return true;
+        return true; // Configurações são opcionais
         
       case 9:
-        if (isEditing) {
-          console.log('✅ Passo 9 válido (modo edição)');
-          return true;
-        }
+        if (isEditing) return true; // Na edição, anexos são opcionais
         
         const requiredAttachments = ['contract', 'bill'];
         if (formData.subscriberType === 'person') requiredAttachments.push('cnh');
         if (formData.subscriberType === 'company') requiredAttachments.push('companyContract');
         if (formData.titleTransfer.willTransfer) requiredAttachments.push('procuration');
         
-        const step9Valid = requiredAttachments.every(key => formData.attachments[key as keyof typeof formData.attachments]);
-        console.log('✅ Passo 9 válido:', step9Valid, 'anexos requeridos:', requiredAttachments);
-        return step9Valid;
+        return requiredAttachments.every(key => formData.attachments[key as keyof typeof formData.attachments]);
         
       default:
         return false;
@@ -566,13 +506,11 @@ export const useSubscriberForm = (existingData?: any) => {
       console.log('📤 Enviando dados do formulário:', formData);
       
       if (subscriberId) {
-        // Update existing subscriber
         await subscriberService.updateSubscriber(subscriberId, formData);
-        toast.success('Assinante atualizado com sucesso!');
+        toast.success('Assinante atualizado com sucesso!', { duration: 1000 });
       } else {
-        // Create new subscriber
         await subscriberService.createSubscriber(formData);
-        toast.success('Assinante cadastrado com sucesso!');
+        toast.success('Assinante cadastrado com sucesso!', { duration: 1000 });
       }
       
       if (!subscriberId) {
@@ -584,7 +522,7 @@ export const useSubscriberForm = (existingData?: any) => {
       return { success: true };
     } catch (error) {
       console.error('❌ Erro ao enviar formulário:', error);
-      toast.error(subscriberId ? 'Erro ao atualizar assinante. Tente novamente.' : 'Erro ao cadastrar assinante. Tente novamente.');
+      toast.error(subscriberId ? 'Erro ao atualizar assinante. Tente novamente.' : 'Erro ao cadastrar assinante. Tente novamente.', { duration: 3000 });
       return { success: false, error: 'Erro interno do servidor' };
     } finally {
       setIsSubmitting(false);
