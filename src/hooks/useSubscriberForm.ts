@@ -145,12 +145,13 @@ export const useSubscriberForm = (existingData?: any) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isEditing, setIsEditing] = useState(!!existingData);
+  const [isLoaded, setIsLoaded] = useState(false);
   const { lookupCep } = useCepLookup();
 
   // Load existing data if editing
   useEffect(() => {
     if (existingData) {
-      console.log('Carregando dados existentes:', existingData);
+      console.log('🔄 Carregando dados existentes para edição:', existingData);
       
       const subscriber = existingData.subscriber;
       const administrator = existingData.administrator;
@@ -159,9 +160,26 @@ export const useSubscriberForm = (existingData?: any) => {
       const planDetails = existingData.plan_details;
       const notifications = existingData.notifications;
       const attachments = existingData.attachments;
+      const titleTransfer = existingData.title_transfer;
       
-      // Determinar tipo de assinante
+      // Determinar tipo de assinante baseado nos dados
       const subscriberType = subscriber?.fullName ? 'person' : 'company';
+      console.log('📋 Tipo de assinante detectado:', subscriberType);
+      
+      // Mapear address corretamente, considerando diferentes formatos
+      const mapAddress = (addr: any): Address => {
+        if (!addr) return initialFormData.personalData!.address;
+        
+        return {
+          cep: addr.cep || '',
+          street: addr.street || addr.endereco || '',
+          number: addr.number || '',
+          complement: addr.complement || '',
+          neighborhood: addr.neighborhood || addr.bairro || '',
+          city: addr.city || addr.cidade || '',
+          state: addr.state || addr.estado || '',
+        };
+      };
       
       const loadedData: SubscriberFormData = {
         concessionaria: existingData.concessionaria || 'equatorial-goias',
@@ -176,7 +194,7 @@ export const useSubscriberForm = (existingData?: any) => {
           phone: subscriber.phone || '',
           email: subscriber.email || '',
           observations: subscriber.observations || '',
-          address: subscriber.address || initialFormData.personalData!.address,
+          address: mapAddress(subscriber.address),
           contacts: subscriber.contacts || [],
         } : initialFormData.personalData!,
         companyData: subscriberType === 'company' && subscriber ? {
@@ -187,7 +205,7 @@ export const useSubscriberForm = (existingData?: any) => {
           phone: subscriber.phone || '',
           email: subscriber.email || '',
           observations: subscriber.observations || '',
-          address: subscriber.address || initialFormData.companyData!.address,
+          address: mapAddress(subscriber.address),
           contacts: subscriber.contacts || [],
         } : initialFormData.companyData!,
         administratorData: administrator ? {
@@ -198,7 +216,7 @@ export const useSubscriberForm = (existingData?: any) => {
           profession: administrator.profession || '',
           phone: administrator.phone || '',
           email: administrator.email || '',
-          address: administrator.address || initialFormData.administratorData!.address,
+          address: mapAddress(administrator.address),
         } : initialFormData.administratorData!,
         energyAccount: energyAccount ? {
           holderType: energyAccount.holderType || 'person',
@@ -207,9 +225,9 @@ export const useSubscriberForm = (existingData?: any) => {
           birthDate: energyAccount.birthDate || '',
           uc: energyAccount.uc || '',
           partnerNumber: energyAccount.partnerNumber || '',
-          address: energyAccount.address || initialFormData.energyAccount.address,
+          address: mapAddress(energyAccount.address),
         } : initialFormData.energyAccount,
-        titleTransfer: existingData.title_transfer || initialFormData.titleTransfer,
+        titleTransfer: titleTransfer || initialFormData.titleTransfer,
         planContract: planContract ? {
           selectedPlan: planContract.selectedPlan || '',
           compensationMode: planContract.compensationMode || 'autoConsumption',
@@ -229,9 +247,12 @@ export const useSubscriberForm = (existingData?: any) => {
         attachments: attachments || {},
       };
       
-      console.log('Dados processados para carregamento:', loadedData);
+      console.log('✅ Dados processados para carregamento:', loadedData);
       setFormData(loadedData);
       setIsEditing(true);
+      setIsLoaded(true);
+    } else {
+      setIsLoaded(true);
     }
   }, [existingData]);
 
@@ -278,7 +299,7 @@ export const useSubscriberForm = (existingData?: any) => {
   }, [currentStep, formData.subscriberType, formData.personalData, formData.companyData]);
 
   const updateFormData = useCallback((section: keyof SubscriberFormData, data: any) => {
-    console.log('Atualizando seção:', section, 'com dados:', data);
+    console.log('🔄 Atualizando seção:', section, 'com dados:', data);
     setFormData(prev => {
       const currentSectionData = prev[section];
       
@@ -300,10 +321,10 @@ export const useSubscriberForm = (existingData?: any) => {
     const cleanCep = cep.replace(/\D/g, '');
     
     if (cleanCep.length === 8) {
-      console.log('Fazendo lookup do CEP:', cleanCep, 'para tipo:', addressType);
+      console.log('🔍 Fazendo lookup do CEP:', cleanCep, 'para tipo:', addressType);
       try {
         const cepData = await lookupCep(cleanCep);
-        console.log('Dados retornados do CEP:', cepData);
+        console.log('📍 Dados retornados do CEP:', cepData);
         
         if (cepData) {
           const addressUpdate = {
@@ -314,7 +335,7 @@ export const useSubscriberForm = (existingData?: any) => {
             state: cepData.uf,
           };
 
-          console.log('Atualizando endereço para:', addressType, addressUpdate);
+          console.log('🏠 Atualizando endereço para:', addressType, addressUpdate);
 
           setFormData(prev => {
             const newFormData = { ...prev };
@@ -346,7 +367,7 @@ export const useSubscriberForm = (existingData?: any) => {
           });
         }
       } catch (error) {
-        console.error('Erro ao buscar CEP:', error);
+        console.error('❌ Erro ao buscar CEP:', error);
       }
     }
   }, [lookupCep]);
@@ -399,14 +420,14 @@ export const useSubscriberForm = (existingData?: any) => {
   }, []);
 
   const autoFillEnergyAccount = useCallback(() => {
-    console.log('Executando preenchimento automático');
-    console.log('Dados atuais do formulário:', formData);
+    console.log('🔄 Executando preenchimento automático');
+    console.log('📊 Dados atuais do formulário:', formData);
     
     setFormData(prev => {
-      console.log('Estado anterior:', prev);
+      console.log('📋 Estado anterior:', prev);
       
       if (prev.subscriberType === 'person' && prev.personalData) {
-        console.log('Preenchendo com dados de pessoa física');
+        console.log('👤 Preenchendo com dados de pessoa física');
         
         const newFormData = {
           ...prev,
@@ -423,12 +444,12 @@ export const useSubscriberForm = (existingData?: any) => {
           }
         };
         
-        console.log('Novos dados após preenchimento:', newFormData.energyAccount);
+        console.log('✅ Novos dados após preenchimento:', newFormData.energyAccount);
         toast.success('Dados da conta de energia preenchidos automaticamente!');
         return newFormData;
         
       } else if (prev.subscriberType === 'company' && prev.companyData) {
-        console.log('Preenchendo com dados de pessoa jurídica');
+        console.log('🏢 Preenchendo com dados de pessoa jurídica');
         
         const newFormData = {
           ...prev,
@@ -444,12 +465,12 @@ export const useSubscriberForm = (existingData?: any) => {
           }
         };
         
-        console.log('Novos dados após preenchimento:', newFormData.energyAccount);
+        console.log('✅ Novos dados após preenchimento:', newFormData.energyAccount);
         toast.success('Dados da conta de energia preenchidos automaticamente!');
         return newFormData;
         
       } else {
-        console.log('Não foi possível preencher - dados insuficientes');
+        console.log('❌ Não foi possível preencher - dados insuficientes');
         toast.error('Preencha primeiro os dados do assinante para poder usar o preenchimento automático.');
         return prev;
       }
@@ -457,35 +478,83 @@ export const useSubscriberForm = (existingData?: any) => {
   }, [formData]);
 
   const validateStep = useCallback((step: number): boolean => {
+    console.log('🔍 Validando passo:', step, 'com dados:', formData);
+    
     switch (step) {
       case 1:
-        return !!formData.concessionaria;
+        const step1Valid = !!formData.concessionaria;
+        console.log('✅ Passo 1 válido:', step1Valid, 'concessionaria:', formData.concessionaria);
+        return step1Valid;
+        
       case 2:
-        return !!formData.subscriberType;
+        const step2Valid = !!formData.subscriberType;
+        console.log('✅ Passo 2 válido:', step2Valid, 'subscriberType:', formData.subscriberType);
+        return step2Valid;
+        
       case 3:
         if (formData.subscriberType === 'person') {
-          return !!(formData.personalData?.cpf && formData.personalData?.fullName && formData.personalData?.email);
+          const step3PersonValid = !!(formData.personalData?.cpf && formData.personalData?.fullName && formData.personalData?.email);
+          console.log('✅ Passo 3 (pessoa) válido:', step3PersonValid, 'dados:', {
+            cpf: formData.personalData?.cpf,
+            fullName: formData.personalData?.fullName,
+            email: formData.personalData?.email
+          });
+          return step3PersonValid;
         } else {
-          return !!(formData.companyData?.cnpj && formData.companyData?.companyName && formData.administratorData?.cpf);
+          const step3CompanyValid = !!(formData.companyData?.cnpj && formData.companyData?.companyName && formData.administratorData?.cpf);
+          console.log('✅ Passo 3 (empresa) válido:', step3CompanyValid, 'dados:', {
+            cnpj: formData.companyData?.cnpj,
+            companyName: formData.companyData?.companyName,
+            adminCpf: formData.administratorData?.cpf
+          });
+          return step3CompanyValid;
         }
+        
       case 4:
-        return !!(formData.energyAccount.uc && formData.energyAccount.cpfCnpj && formData.energyAccount.holderName);
+        const step4Valid = !!(formData.energyAccount.uc && formData.energyAccount.cpfCnpj && formData.energyAccount.holderName);
+        console.log('✅ Passo 4 válido:', step4Valid, 'dados:', {
+          uc: formData.energyAccount.uc,
+          cpfCnpj: formData.energyAccount.cpfCnpj,
+          holderName: formData.energyAccount.holderName
+        });
+        return step4Valid;
+        
       case 5:
+        console.log('✅ Passo 5 sempre válido');
         return true;
+        
       case 6:
-        return !!(formData.planContract.selectedPlan && formData.planContract.informedKwh && formData.planContract.contractedKwh);
+        const step6Valid = !!(formData.planContract.selectedPlan && formData.planContract.informedKwh && formData.planContract.contractedKwh);
+        console.log('✅ Passo 6 válido:', step6Valid, 'dados:', {
+          selectedPlan: formData.planContract.selectedPlan,
+          informedKwh: formData.planContract.informedKwh,
+          contractedKwh: formData.planContract.contractedKwh
+        });
+        return step6Valid;
+        
       case 7:
+        console.log('✅ Passo 7 sempre válido');
         return true;
+        
       case 8:
+        console.log('✅ Passo 8 sempre válido');
         return true;
+        
       case 9:
-        if (isEditing) return true; // Skip attachment validation for editing
+        if (isEditing) {
+          console.log('✅ Passo 9 válido (modo edição)');
+          return true;
+        }
+        
         const requiredAttachments = ['contract', 'bill'];
         if (formData.subscriberType === 'person') requiredAttachments.push('cnh');
         if (formData.subscriberType === 'company') requiredAttachments.push('companyContract');
         if (formData.titleTransfer.willTransfer) requiredAttachments.push('procuration');
         
-        return requiredAttachments.every(key => formData.attachments[key as keyof typeof formData.attachments]);
+        const step9Valid = requiredAttachments.every(key => formData.attachments[key as keyof typeof formData.attachments]);
+        console.log('✅ Passo 9 válido:', step9Valid, 'anexos requeridos:', requiredAttachments);
+        return step9Valid;
+        
       default:
         return false;
     }
@@ -494,7 +563,7 @@ export const useSubscriberForm = (existingData?: any) => {
   const submitForm = useCallback(async (subscriberId?: string) => {
     setIsSubmitting(true);
     try {
-      console.log('Enviando dados do formulário:', formData);
+      console.log('📤 Enviando dados do formulário:', formData);
       
       if (subscriberId) {
         // Update existing subscriber
@@ -514,7 +583,7 @@ export const useSubscriberForm = (existingData?: any) => {
       
       return { success: true };
     } catch (error) {
-      console.error('Erro ao enviar formulário:', error);
+      console.error('❌ Erro ao enviar formulário:', error);
       toast.error(subscriberId ? 'Erro ao atualizar assinante. Tente novamente.' : 'Erro ao cadastrar assinante. Tente novamente.');
       return { success: false, error: 'Erro interno do servidor' };
     } finally {
@@ -526,6 +595,7 @@ export const useSubscriberForm = (existingData?: any) => {
     setFormData(initialFormData);
     setCurrentStep(1);
     setIsEditing(false);
+    setIsLoaded(false);
   }, []);
 
   return {
@@ -533,6 +603,7 @@ export const useSubscriberForm = (existingData?: any) => {
     currentStep,
     isSubmitting,
     isEditing,
+    isLoaded,
     setCurrentStep,
     updateFormData,
     handleCepLookup,

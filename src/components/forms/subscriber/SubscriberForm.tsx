@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -37,6 +38,7 @@ const SubscriberForm = ({ existingData, onSuccess }: SubscriberFormProps) => {
     currentStep,
     isSubmitting,
     isEditing,
+    isLoaded,
     setCurrentStep,
     updateFormData,
     handleCepLookup,
@@ -50,18 +52,25 @@ const SubscriberForm = ({ existingData, onSuccess }: SubscriberFormProps) => {
   const form = useForm({
     resolver: zodResolver(schema),
     defaultValues: {
-      concessionaria: formData.concessionaria,
-      subscriberType: formData.subscriberType,
+      concessionaria: '',
+      subscriberType: 'person' as const,
     },
     mode: 'onChange',
   });
 
   // Sincronizar formulário react-hook-form com formData carregado
   useEffect(() => {
-    console.log('Sincronizando formulário com dados carregados:', formData);
-    form.setValue('concessionaria', formData.concessionaria);
-    form.setValue('subscriberType', formData.subscriberType);
-  }, [formData.concessionaria, formData.subscriberType, form]);
+    if (isLoaded) {
+      console.log('🔄 Sincronizando formulário com dados carregados:', formData);
+      form.setValue('concessionaria', formData.concessionaria);
+      form.setValue('subscriberType', formData.subscriberType);
+      
+      // Reset validation errors when data is loaded
+      form.clearErrors();
+      
+      console.log('✅ Formulário sincronizado');
+    }
+  }, [formData.concessionaria, formData.subscriberType, form, isLoaded]);
 
   const totalSteps = 9;
 
@@ -80,6 +89,8 @@ const SubscriberForm = ({ existingData, onSuccess }: SubscriberFormProps) => {
   const handleNext = () => {
     if (validateStep(currentStep)) {
       setCurrentStep(Math.min(currentStep + 1, totalSteps));
+    } else {
+      console.log('❌ Validação falhou para o passo:', currentStep);
     }
   };
 
@@ -95,6 +106,30 @@ const SubscriberForm = ({ existingData, onSuccess }: SubscriberFormProps) => {
       }
     }
   };
+
+  // Show loading state while data is being loaded
+  if (!isLoaded) {
+    return (
+      <div className="max-w-4xl mx-auto space-y-6">
+        <Card className="bg-gradient-to-r from-green-50 to-emerald-50 border-green-200">
+          <CardContent className="p-8">
+            <div className="flex items-center justify-center py-16">
+              <div className="text-center space-y-6">
+                <div className="relative">
+                  <div className="w-16 h-16 border-4 border-green-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
+                  <div className="absolute inset-0 w-16 h-16 border-4 border-green-200 rounded-full mx-auto"></div>
+                </div>
+                <div className="space-y-2">
+                  <p className="text-gray-700 text-xl font-semibold">Carregando dados...</p>
+                  <p className="text-gray-500">Aguarde enquanto preparamos o formulário</p>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   const renderStepContent = () => {
     switch (currentStep) {
