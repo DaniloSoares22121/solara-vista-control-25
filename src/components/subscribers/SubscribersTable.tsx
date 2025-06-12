@@ -67,6 +67,24 @@ const SubscribersTable = ({ subscribers, onEdit, onDelete, onView }: Subscribers
     );
   };
 
+  const handleViewClick = (e: React.MouseEvent, subscriber: SubscriberRecord) => {
+    e.stopPropagation();
+    console.log('Clicando no olho para visualizar:', subscriber);
+    onView(subscriber);
+  };
+
+  const handleEditClick = (e: React.MouseEvent, subscriber: SubscriberRecord) => {
+    e.stopPropagation();
+    console.log('Clicando para editar:', subscriber);
+    onEdit(subscriber);
+  };
+
+  const handleDeleteClick = (e: React.MouseEvent, subscriberId: string) => {
+    e.stopPropagation();
+    console.log('Clicando para deletar ID:', subscriberId);
+    onDelete(subscriberId);
+  };
+
   if (subscribers.length === 0) {
     return (
       <Card className="border-0 shadow-xl bg-white/95 backdrop-blur-md">
@@ -139,8 +157,7 @@ const SubscribersTable = ({ subscribers, onEdit, onDelete, onView }: Subscribers
         {subscribers.map((subscriber) => (
           <Card 
             key={subscriber.id}
-            className="group hover:shadow-xl transition-all duration-300 cursor-pointer border-0 bg-white/95 backdrop-blur-md hover:scale-105"
-            onClick={() => onView(subscriber)}
+            className="group hover:shadow-xl transition-all duration-300 border-0 bg-white/95 backdrop-blur-md hover:scale-105"
           >
             <CardHeader className="pb-3">
               <div className="flex items-start justify-between">
@@ -213,10 +230,7 @@ const SubscribersTable = ({ subscribers, onEdit, onDelete, onView }: Subscribers
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onView(subscriber);
-                  }}
+                  onClick={(e) => handleViewClick(e, subscriber)}
                   className="h-8 w-8 p-0 hover:bg-green-100 hover:text-green-700 transition-colors"
                   title="Visualizar"
                 >
@@ -225,10 +239,7 @@ const SubscribersTable = ({ subscribers, onEdit, onDelete, onView }: Subscribers
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onEdit(subscriber);
-                  }}
+                  onClick={(e) => handleEditClick(e, subscriber)}
                   className="h-8 w-8 p-0 hover:bg-blue-100 hover:text-blue-700 transition-colors"
                   title="Editar"
                 >
@@ -237,10 +248,7 @@ const SubscribersTable = ({ subscribers, onEdit, onDelete, onView }: Subscribers
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onDelete(subscriber.id);
-                  }}
+                  onClick={(e) => handleDeleteClick(e, subscriber.id)}
                   className="h-8 w-8 p-0 hover:bg-red-100 hover:text-red-700 transition-colors"
                   title="Excluir"
                 >
