@@ -94,35 +94,35 @@ const SubscriberForm: React.FC<SubscriberFormProps> = ({
   const currentStepData = steps.find(step => step.number === currentStep);
   const totalSteps = steps.length;
 
-  // Define step colors and icons based on step number
-  const getStepColor = (stepNumber: number) => {
-    const colors = [
-      { from: 'from-green-50', to: 'to-emerald-50', border: 'border-green-100/50', text: 'text-green-800', desc: 'text-green-600', bg: 'from-green-500', bgTo: 'to-emerald-500' },
-      { from: 'from-blue-50', to: 'to-cyan-50', border: 'border-blue-100/50', text: 'text-blue-800', desc: 'text-blue-600', bg: 'from-blue-500', bgTo: 'to-cyan-500' },
-      { from: 'from-purple-50', to: 'to-violet-50', border: 'border-purple-100/50', text: 'text-purple-800', desc: 'text-purple-600', bg: 'from-purple-500', bgTo: 'to-violet-500' },
-      { from: 'from-orange-50', to: 'to-amber-50', border: 'border-orange-100/50', text: 'text-orange-800', desc: 'text-orange-600', bg: 'from-orange-500', bgTo: 'to-amber-500' },
-      { from: 'from-rose-50', to: 'to-pink-50', border: 'border-rose-100/50', text: 'text-rose-800', desc: 'text-rose-600', bg: 'from-rose-500', bgTo: 'to-pink-500' },
-      { from: 'from-teal-50', to: 'to-cyan-50', border: 'border-teal-100/50', text: 'text-teal-800', desc: 'text-teal-600', bg: 'from-teal-500', bgTo: 'to-cyan-500' }
-    ];
-    return colors[(stepNumber - 1) % colors.length];
-  };
+  // Define step descriptions for the UI
+  const stepDescriptions = [
+    'Selecione a concessionária',
+    'Escolha o tipo de assinante', 
+    'Informações do titular',
+    'Dados da conta de energia',
+    'Transferência de titularidade',
+    'Configuração do plano',
+    'Detalhes do contrato',
+    'Configurações de notificação',
+    'Anexos obrigatórios'
+  ];
 
-  const stepIcons = ['👤', '⚡', '📋', '💰', '📄', '🔔'];
+  const stepIcons = ['🏢', '👤', '📋', '⚡', '📄', '💰', '⚙️', '🔔', '📎'];
 
   return (
     <DashboardLayout>
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-green-50/30 to-emerald-50/50">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50">
         <div className="space-y-8 p-6 max-w-7xl mx-auto">
           
           {/* Header Section */}
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
             <div className="space-y-3">
               <div className="flex items-center gap-4">
-                <div className="p-3 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl shadow-lg">
+                <div className="p-3 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl shadow-lg">
                   <Users className="w-8 h-8 text-white" />
                 </div>
                 <div>
-                  <h1 className="text-3xl lg:text-4xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
+                  <h1 className="text-3xl lg:text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
                     {isEditing ? 'Editar Assinante' : 'Novo Assinante'}
                   </h1>
                   <p className="text-gray-600 text-lg">
@@ -139,7 +139,7 @@ const SubscriberForm: React.FC<SubscriberFormProps> = ({
               <Button
                 onClick={onClose}
                 variant="outline"
-                className="flex items-center space-x-2 border-green-200 text-green-700 hover:bg-green-50 shadow-md"
+                className="flex items-center space-x-2 border-blue-200 text-blue-700 hover:bg-blue-50 shadow-md"
               >
                 <ArrowLeft className="w-4 h-4" />
                 <span>Voltar para Lista</span>
@@ -154,7 +154,7 @@ const SubscriberForm: React.FC<SubscriberFormProps> = ({
                 {/* Linha de progresso de fundo */}
                 <div className="absolute top-6 left-0 right-0 h-1 bg-gray-200 rounded-full z-0">
                   <div 
-                    className="h-full bg-gradient-to-r from-green-500 to-green-600 rounded-full transition-all duration-500 ease-out"
+                    className="h-full bg-gradient-to-r from-blue-500 to-blue-600 rounded-full transition-all duration-500 ease-out"
                     style={{ width: `${((currentStep - 1) / (totalSteps - 1)) * 100}%` }}
                   />
                 </div>
@@ -164,7 +164,7 @@ const SubscriberForm: React.FC<SubscriberFormProps> = ({
                     <div className={`
                       w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold transition-all duration-300 shadow-lg
                       ${currentStep >= step.number 
-                        ? 'bg-gradient-to-r from-green-500 to-green-600 text-white scale-110' 
+                        ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white scale-110' 
                         : currentStep === step.number - 1
                         ? 'bg-gradient-to-r from-orange-400 to-orange-500 text-white'
                         : 'bg-white text-gray-400 border-2 border-gray-200'
@@ -178,11 +178,11 @@ const SubscriberForm: React.FC<SubscriberFormProps> = ({
                     </div>
                     <div className="mt-3 text-center">
                       <p className={`text-sm font-semibold transition-colors ${
-                        currentStep >= step.number ? 'text-green-600' : 'text-gray-500'
+                        currentStep >= step.number ? 'text-blue-600' : 'text-gray-500'
                       }`}>
                         {step.title}
                       </p>
-                      <p className="text-xs text-gray-400 mt-1">{step.description || 'Configuração'}</p>
+                      <p className="text-xs text-gray-400 mt-1">{stepDescriptions[index] || 'Configuração'}</p>
                     </div>
                   </div>
                 ))}
@@ -193,22 +193,22 @@ const SubscriberForm: React.FC<SubscriberFormProps> = ({
           {/* Form Content */}
           {currentStepData && (
             <Card className="border-0 shadow-2xl bg-white/70 backdrop-blur-sm">
-              <CardHeader className={`bg-gradient-to-r ${getStepColor(currentStep).from} via-${getStepColor(currentStep).from} ${getStepColor(currentStep).to} border-b ${getStepColor(currentStep).border}`}>
+              <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-blue-100/50">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
-                    <div className={`w-12 h-12 bg-gradient-to-r ${getStepColor(currentStep).bg} ${getStepColor(currentStep).bgTo} rounded-xl flex items-center justify-center shadow-lg`}>
+                    <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-xl flex items-center justify-center shadow-lg">
                       <span className="text-xl">{stepIcons[currentStep - 1] || '📋'}</span>
                     </div>
                     <div>
-                      <CardTitle className={`text-2xl ${getStepColor(currentStep).text} font-bold`}>
+                      <CardTitle className="text-2xl text-blue-800 font-bold">
                         {currentStepData.title}
                       </CardTitle>
-                      <p className={`${getStepColor(currentStep).desc} mt-1 text-base`}>
-                        {currentStepData.description || 'Configure as informações necessárias'}
+                      <p className="text-blue-600 mt-1 text-base">
+                        {stepDescriptions[currentStep - 1] || 'Configure as informações necessárias'}
                       </p>
                     </div>
                   </div>
-                  <Badge className={`bg-${getStepColor(currentStep).text.split('-')[1]}-100 text-${getStepColor(currentStep).text.split('-')[1]}-800 border-${getStepColor(currentStep).text.split('-')[1]}-200 text-sm px-4 py-2`}>
+                  <Badge className="bg-blue-100 text-blue-800 border-blue-200 text-sm px-4 py-2">
                     {currentStep} de {totalSteps}
                   </Badge>
                 </div>
@@ -254,7 +254,7 @@ const SubscriberForm: React.FC<SubscriberFormProps> = ({
                       type="button"
                       onClick={handleSubmit}
                       disabled={!validateStep(currentStep) || isSubmitting}
-                      className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white px-10 py-3 text-base font-medium flex items-center gap-3 shadow-lg"
+                      className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-10 py-3 text-base font-medium flex items-center gap-3 shadow-lg"
                     >
                       <Save className="w-5 h-5" />
                       {isSubmitting ? 'Salvando...' : isEditing ? 'Atualizar Assinante' : 'Criar Assinante'}
@@ -264,7 +264,7 @@ const SubscriberForm: React.FC<SubscriberFormProps> = ({
                       type="button"
                       onClick={nextStep}
                       disabled={!validateStep(currentStep) || isSubmitting}
-                      className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white flex items-center gap-3 px-8 py-3 text-base font-medium shadow-lg"
+                      className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white flex items-center gap-3 px-8 py-3 text-base font-medium shadow-lg"
                     >
                       Próxima Etapa
                       <ChevronRight className="w-5 h-5" />
