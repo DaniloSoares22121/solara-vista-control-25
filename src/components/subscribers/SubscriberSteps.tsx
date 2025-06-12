@@ -79,14 +79,14 @@ const createMockForm = (formData: SubscriberFormData): UseFormReturn<any> => ({
     }
     return undefined;
   },
-  getValues: (fieldName?: string | string[]) => {
-    if (!fieldName) return formData;
-    if (typeof fieldName === 'string') {
-      return fieldName.split('.').reduce((obj, key) => obj?.[key], formData);
+  getValues: (names?: any) => {
+    if (!names) return formData;
+    if (typeof names === 'string') {
+      return names.split('.').reduce((obj: any, key: string) => obj?.[key], formData);
     }
-    if (Array.isArray(fieldName)) {
-      return fieldName.reduce((result, name) => {
-        result[name] = name.split('.').reduce((obj, key) => obj?.[key], formData);
+    if (Array.isArray(names)) {
+      return names.reduce((result: any, name: string) => {
+        result[name] = name.split('.').reduce((obj: any, key: string) => obj?.[key], formData);
         return result;
       }, {} as any);
     }
@@ -96,6 +96,7 @@ const createMockForm = (formData: SubscriberFormData): UseFormReturn<any> => ({
     invalid: false, 
     isTouched: false, 
     isDirty: false, 
+    isValidating: false,
     error: undefined 
   }),
   setError: () => {},
@@ -114,15 +115,16 @@ const createMockForm = (formData: SubscriberFormData): UseFormReturn<any> => ({
     touchedFields: {},
     dirtyFields: {},
     validatingFields: {},
-    defaultValues: formData
+    defaultValues: formData,
+    disabled: false
   },
   reset: () => {},
-  handleSubmit: () => () => {},
+  handleSubmit: () => () => Promise.resolve(),
   unregister: () => {},
-  register: () => ({ 
-    name: '', 
-    onChange: () => {}, 
-    onBlur: () => {}, 
+  register: (name: any) => ({ 
+    name, 
+    onChange: () => Promise.resolve(), 
+    onBlur: () => Promise.resolve(), 
     ref: () => {} 
   }),
   setFocus: () => {},
