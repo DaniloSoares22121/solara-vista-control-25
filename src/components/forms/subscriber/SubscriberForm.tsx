@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -50,77 +49,19 @@ const SubscriberForm = ({ existingData, onSuccess }: SubscriberFormProps) => {
 
   const form = useForm({
     resolver: zodResolver(schema),
-    defaultValues: formData,
+    defaultValues: {
+      concessionaria: formData.concessionaria,
+      subscriberType: formData.subscriberType,
+    },
     mode: 'onChange',
   });
 
-  // Sincronizar o estado do formulário com os dados existentes
+  // Sincronizar formulário react-hook-form com formData carregado
   useEffect(() => {
-    console.log('Dados existentes para edição:', existingData);
-    console.log('Dados do formulário atual:', formData);
-    
-    if (existingData && isEditing) {
-      // Preencher com dados da base de dados do assinante existente
-      if (existingData.concessionaria) {
-        form.setValue('concessionaria', existingData.concessionaria);
-        updateFormData('concessionaria', existingData.concessionaria);
-      }
-      
-      // Determinar tipo de assinante baseado nos dados
-      const subscriberType = existingData.subscriber?.fullName ? 'person' : 'company';
-      form.setValue('subscriberType', subscriberType);
-      updateFormData('subscriberType', subscriberType);
-      
-      // Preencher dados pessoais/empresa
-      if (existingData.subscriber) {
-        if (subscriberType === 'person') {
-          updateFormData('personalData', existingData.subscriber);
-        } else {
-          updateFormData('companyData', existingData.subscriber);
-        }
-      }
-      
-      // Preencher administrador
-      if (existingData.administrator) {
-        updateFormData('administratorData', existingData.administrator);
-      }
-      
-      // Preencher conta de energia
-      if (existingData.energy_account) {
-        updateFormData('energyAccount', existingData.energy_account);
-      }
-      
-      // Preencher contrato do plano
-      if (existingData.plan_contract) {
-        updateFormData('planContract', existingData.plan_contract);
-      }
-      
-      // Preencher detalhes do plano
-      if (existingData.plan_details) {
-        updateFormData('planDetails', existingData.plan_details);
-      }
-      
-      // Preencher notificações
-      if (existingData.notifications) {
-        updateFormData('notificationSettings', existingData.notifications);
-      }
-      
-      // Preencher anexos
-      if (existingData.attachments) {
-        updateFormData('attachments', existingData.attachments);
-      }
-    }
-  }, [existingData, isEditing, form, updateFormData]);
-
-  // Sincronizar formulário react-hook-form com formData
-  useEffect(() => {
-    if (formData.concessionaria) {
-      form.setValue('concessionaria', formData.concessionaria);
-    }
-    if (formData.subscriberType) {
-      form.setValue('subscriberType', formData.subscriberType);
-    }
-  }, [formData, form]);
+    console.log('Sincronizando formulário com dados carregados:', formData);
+    form.setValue('concessionaria', formData.concessionaria);
+    form.setValue('subscriberType', formData.subscriberType);
+  }, [formData.concessionaria, formData.subscriberType, form]);
 
   const totalSteps = 9;
 

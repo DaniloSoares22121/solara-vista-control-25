@@ -150,7 +150,7 @@ export const useSubscriberForm = (existingData?: any) => {
   // Load existing data if editing
   useEffect(() => {
     if (existingData) {
-      console.log('Carregando dados existentes para edição:', existingData);
+      console.log('Carregando dados existentes:', existingData);
       
       const subscriber = existingData.subscriber;
       const administrator = existingData.administrator;
@@ -158,11 +158,15 @@ export const useSubscriberForm = (existingData?: any) => {
       const planContract = existingData.plan_contract;
       const planDetails = existingData.plan_details;
       const notifications = existingData.notifications;
+      const attachments = existingData.attachments;
+      
+      // Determinar tipo de assinante
+      const subscriberType = subscriber?.fullName ? 'person' : 'company';
       
       const loadedData: SubscriberFormData = {
         concessionaria: existingData.concessionaria || 'equatorial-goias',
-        subscriberType: subscriber?.fullName ? 'person' : 'company',
-        personalData: subscriber?.fullName ? {
+        subscriberType,
+        personalData: subscriberType === 'person' && subscriber ? {
           cpf: subscriber.cpf || '',
           partnerNumber: subscriber.partnerNumber || '',
           fullName: subscriber.fullName || '',
@@ -172,18 +176,10 @@ export const useSubscriberForm = (existingData?: any) => {
           phone: subscriber.phone || '',
           email: subscriber.email || '',
           observations: subscriber.observations || '',
-          address: subscriber.address || {
-            cep: '',
-            street: '',
-            number: '',
-            complement: '',
-            neighborhood: '',
-            city: '',
-            state: '',
-          },
+          address: subscriber.address || initialFormData.personalData!.address,
           contacts: subscriber.contacts || [],
-        } : initialFormData.personalData,
-        companyData: subscriber?.companyName ? {
+        } : initialFormData.personalData!,
+        companyData: subscriberType === 'company' && subscriber ? {
           cnpj: subscriber.cnpj || '',
           partnerNumber: subscriber.partnerNumber || '',
           companyName: subscriber.companyName || '',
@@ -191,19 +187,28 @@ export const useSubscriberForm = (existingData?: any) => {
           phone: subscriber.phone || '',
           email: subscriber.email || '',
           observations: subscriber.observations || '',
-          address: subscriber.address || {
-            cep: '',
-            street: '',
-            number: '',
-            complement: '',
-            neighborhood: '',
-            city: '',
-            state: '',
-          },
+          address: subscriber.address || initialFormData.companyData!.address,
           contacts: subscriber.contacts || [],
-        } : initialFormData.companyData,
-        administratorData: administrator || initialFormData.administratorData,
-        energyAccount: energyAccount || initialFormData.energyAccount,
+        } : initialFormData.companyData!,
+        administratorData: administrator ? {
+          cpf: administrator.cpf || '',
+          fullName: administrator.fullName || '',
+          birthDate: administrator.birthDate || '',
+          maritalStatus: administrator.maritalStatus || '',
+          profession: administrator.profession || '',
+          phone: administrator.phone || '',
+          email: administrator.email || '',
+          address: administrator.address || initialFormData.administratorData!.address,
+        } : initialFormData.administratorData!,
+        energyAccount: energyAccount ? {
+          holderType: energyAccount.holderType || 'person',
+          cpfCnpj: energyAccount.cpfCnpj || '',
+          holderName: energyAccount.holderName || '',
+          birthDate: energyAccount.birthDate || '',
+          uc: energyAccount.uc || '',
+          partnerNumber: energyAccount.partnerNumber || '',
+          address: energyAccount.address || initialFormData.energyAccount.address,
+        } : initialFormData.energyAccount,
         titleTransfer: existingData.title_transfer || initialFormData.titleTransfer,
         planContract: planContract ? {
           selectedPlan: planContract.selectedPlan || '',
@@ -221,11 +226,10 @@ export const useSubscriberForm = (existingData?: any) => {
           exemptFromPayment: planDetails.exemptFromPayment !== undefined ? planDetails.exemptFromPayment : false,
         } : initialFormData.planDetails,
         notificationSettings: notifications || defaultNotificationSettings,
-        attachments: existingData.attachments || {},
+        attachments: attachments || {},
       };
       
-      console.log('Dados carregados para edição:', loadedData);
-      console.log('Dados do plano carregados:', loadedData.planContract);
+      console.log('Dados processados para carregamento:', loadedData);
       setFormData(loadedData);
       setIsEditing(true);
     }
