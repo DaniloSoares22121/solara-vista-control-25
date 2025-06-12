@@ -201,102 +201,104 @@ const Geradoras = () => {
             </CardContent>
           </Card>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {generators.map((generator) => (
-              <Card key={generator.id} className="border-0 shadow-md hover:shadow-lg transition-all duration-300 bg-white">
-                <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center shadow-lg">
-                        <Zap className="w-6 h-6 text-white" />
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="font-bold text-gray-900 text-lg leading-tight">
-                          {generator.owner?.name || 'Geradora'}
-                        </h3>
-                        <div className="flex items-center gap-2 mt-1">
-                          <Building className="w-4 h-4 text-gray-400" />
-                          <span className="text-sm font-medium text-gray-600">
-                            {generator.concessionaria}
-                          </span>
+          <div className="max-w-6xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {generators.map((generator) => (
+                <Card key={generator.id} className="border-0 shadow-md hover:shadow-lg transition-all duration-300 bg-white">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center shadow-lg">
+                          <Zap className="w-6 h-6 text-white" />
                         </div>
-                      </div>
-                    </div>
-                    <Badge 
-                      variant="secondary" 
-                      className={`${generator.status === 'active' ? 'bg-green-100 text-green-800 border-green-200' : 'bg-gray-100 text-gray-800 border-gray-200'}`}
-                    >
-                      {generator.status === 'active' ? 'Ativa' : 'Inativa'}
-                    </Badge>
-                  </div>
-                </CardHeader>
-
-                <CardContent className="pt-0 space-y-4">
-                  {/* Informações da Geradora */}
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Zap className="w-4 h-4 text-yellow-500" />
-                        <span className="text-sm font-medium text-gray-600">Usinas</span>
-                      </div>
-                      <span className="text-sm font-bold text-gray-900">
-                        {generator.plants?.length || 0}
-                      </span>
-                    </div>
-                    
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Activity className="w-4 h-4 text-blue-500" />
-                        <span className="text-sm font-medium text-gray-600">Capacidade</span>
-                      </div>
-                      <span className="text-sm font-bold text-gray-900">
-                        {generator.plants?.reduce((total: number, plant: any) => {
-                          return total + (plant.potenciaTotalUsina || 0);
-                        }, 0).toFixed(1)} kWp
-                      </span>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-gray-600">Status</span>
-                      <span className={`text-sm font-bold ${generator.status === 'active' ? 'text-green-600' : 'text-gray-600'}`}>
-                        {generator.status === 'active' ? 'Em funcionamento' : 'Inativa'}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Informações do Proprietário */}
-                  {generator.owner && (
-                    <div className="border-t border-gray-100 pt-3">
-                      <div className="flex items-start gap-2">
-                        <User className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
                         <div className="flex-1">
-                          <span className="text-xs text-gray-500">Proprietário:</span>
-                          <p className="text-sm text-gray-900 leading-relaxed">
-                            {generator.owner.name}
-                            <br />
-                            <span className="text-xs text-gray-500">
-                              {generator.owner.email}
+                          <h3 className="font-bold text-gray-900 text-lg leading-tight">
+                            {generator.owner?.name || 'Geradora'}
+                          </h3>
+                          <div className="flex items-center gap-2 mt-1">
+                            <Building className="w-4 h-4 text-gray-400" />
+                            <span className="text-sm font-medium text-gray-600">
+                              {generator.concessionaria}
                             </span>
-                          </p>
+                          </div>
                         </div>
                       </div>
+                      <Badge 
+                        variant="secondary" 
+                        className={`${generator.status === 'active' ? 'bg-green-100 text-green-800 border-green-200' : 'bg-gray-100 text-gray-800 border-gray-200'}`}
+                      >
+                        {generator.status === 'active' ? 'Ativa' : 'Inativa'}
+                      </Badge>
                     </div>
-                  )}
+                  </CardHeader>
 
-                  {/* Ações */}
-                  <div className="border-t border-gray-100 pt-3">
-                    <Button 
-                      onClick={() => handleViewDetails(generator)}
-                      className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-                      size="sm"
-                    >
-                      <Eye className="w-4 h-4 mr-2" />
-                      Ver Detalhes
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                  <CardContent className="pt-0 space-y-4">
+                    {/* Informações da Geradora */}
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Zap className="w-4 h-4 text-yellow-500" />
+                          <span className="text-sm font-medium text-gray-600">Usinas</span>
+                        </div>
+                        <span className="text-sm font-bold text-gray-900">
+                          {generator.plants?.length || 0}
+                        </span>
+                      </div>
+                      
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Activity className="w-4 h-4 text-blue-500" />
+                          <span className="text-sm font-medium text-gray-600">Capacidade</span>
+                        </div>
+                        <span className="text-sm font-bold text-gray-900">
+                          {generator.plants?.reduce((total: number, plant: any) => {
+                            return total + (plant.potenciaTotalUsina || 0);
+                          }, 0).toFixed(1)} kWp
+                        </span>
+                      </div>
+
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium text-gray-600">Status</span>
+                        <span className={`text-sm font-bold ${generator.status === 'active' ? 'text-green-600' : 'text-gray-600'}`}>
+                          {generator.status === 'active' ? 'Em funcionamento' : 'Inativa'}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Informações do Proprietário */}
+                    {generator.owner && (
+                      <div className="border-t border-gray-100 pt-3">
+                        <div className="flex items-start gap-2">
+                          <User className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
+                          <div className="flex-1">
+                            <span className="text-xs text-gray-500">Proprietário:</span>
+                            <p className="text-sm text-gray-900 leading-relaxed">
+                              {generator.owner.name}
+                              <br />
+                              <span className="text-xs text-gray-500">
+                                {generator.owner.email}
+                              </span>
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Ações */}
+                    <div className="border-t border-gray-100 pt-3">
+                      <Button 
+                        onClick={() => handleViewDetails(generator)}
+                        className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                        size="sm"
+                      >
+                        <Eye className="w-4 h-4 mr-2" />
+                        Ver Detalhes
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           </div>
         )}
       </div>
