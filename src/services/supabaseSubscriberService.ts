@@ -40,18 +40,28 @@ export const subscriberService = {
       throw new Error('Usuário não autenticado');
     }
 
+    // Safely stringify data, handling undefined values
+    const safeStringify = (obj: any) => {
+      if (obj === undefined || obj === null) {
+        return {};
+      }
+      return JSON.parse(JSON.stringify(obj));
+    };
+
     const subscriberData = {
       user_id: user.id,
-      concessionaria: formData.concessionaria,
-      subscriber: JSON.parse(JSON.stringify(formData.subscriberType === 'person' ? formData.personalData : formData.companyData)),
-      administrator: JSON.parse(JSON.stringify(formData.administratorData)),
-      energy_account: JSON.parse(JSON.stringify(formData.energyAccount)),
-      plan_contract: JSON.parse(JSON.stringify(formData.planContract)),
-      plan_details: JSON.parse(JSON.stringify(formData.planDetails)),
-      notifications: JSON.parse(JSON.stringify(formData.notificationSettings)),
-      attachments: JSON.parse(JSON.stringify(formData.attachments)),
+      concessionaria: formData.concessionaria || null,
+      subscriber: safeStringify(formData.subscriberType === 'person' ? formData.personalData : formData.companyData),
+      administrator: safeStringify(formData.administratorData),
+      energy_account: safeStringify(formData.energyAccount),
+      plan_contract: safeStringify(formData.planContract),
+      plan_details: safeStringify(formData.planDetails),
+      notifications: safeStringify(formData.notificationSettings),
+      attachments: safeStringify(formData.attachments),
       status: 'active'
     };
+
+    console.log('Enviando dados para o Supabase:', subscriberData);
 
     const { data, error } = await supabase
       .from('subscribers')

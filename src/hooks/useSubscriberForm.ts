@@ -110,7 +110,10 @@ export const useSubscriberForm = () => {
     
     // Only lookup if we have a complete CEP (8 digits)
     if (cleanCep.length === 8) {
+      console.log('Fazendo lookup do CEP:', cleanCep, 'para tipo:', addressType);
       const cepData = await lookupCep(cleanCep);
+      console.log('Dados retornados do CEP:', cepData);
+      
       if (cepData) {
         const addressUpdate = {
           cep: cepData.cep,
@@ -119,6 +122,8 @@ export const useSubscriberForm = () => {
           city: cepData.localidade,
           state: cepData.uf,
         };
+
+        console.log('Atualizando endereço para:', addressType, addressUpdate);
 
         switch (addressType) {
           case 'personal':
@@ -198,13 +203,17 @@ export const useSubscriberForm = () => {
   }, [formData, updateFormData]);
 
   const autoFillEnergyAccount = useCallback(() => {
+    console.log('Preenchendo automaticamente conta de energia');
+    console.log('Dados atuais:', formData);
+    
     if (formData.subscriberType === 'person' && formData.personalData) {
-      updateFormData('energyAccount', {
-        holderType: 'person',
-        cpfCnpj: formData.personalData.cpf,
-        holderName: formData.personalData.fullName,
-        birthDate: formData.personalData.birthDate,
-        partnerNumber: formData.personalData.partnerNumber,
+      console.log('Preenchendo com dados de pessoa física');
+      const energyAccountData = {
+        holderType: 'person' as const,
+        cpfCnpj: formData.personalData.cpf || '',
+        holderName: formData.personalData.fullName || '',
+        birthDate: formData.personalData.birthDate || '',
+        partnerNumber: formData.personalData.partnerNumber || '',
         address: formData.personalData.address ? { 
           ...formData.personalData.address,
           // Ensure all required fields are present
@@ -224,14 +233,18 @@ export const useSubscriberForm = () => {
           city: '',
           state: '',
         },
-      });
+      };
+      
+      console.log('Dados a serem preenchidos:', energyAccountData);
+      updateFormData('energyAccount', energyAccountData);
       toast.success('Dados da conta de energia preenchidos automaticamente!');
     } else if (formData.subscriberType === 'company' && formData.companyData) {
-      updateFormData('energyAccount', {
-        holderType: 'company',
-        cpfCnpj: formData.companyData.cnpj,
-        holderName: formData.companyData.companyName,
-        partnerNumber: formData.companyData.partnerNumber,
+      console.log('Preenchendo com dados de pessoa jurídica');
+      const energyAccountData = {
+        holderType: 'company' as const,
+        cpfCnpj: formData.companyData.cnpj || '',
+        holderName: formData.companyData.companyName || '',
+        partnerNumber: formData.companyData.partnerNumber || '',
         address: formData.companyData.address ? { 
           ...formData.companyData.address,
           // Ensure all required fields are present
@@ -251,7 +264,10 @@ export const useSubscriberForm = () => {
           city: '',
           state: '',
         },
-      });
+      };
+      
+      console.log('Dados a serem preenchidos:', energyAccountData);
+      updateFormData('energyAccount', energyAccountData);
       toast.success('Dados da conta de energia preenchidos automaticamente!');
     } else {
       toast.error('Preencha primeiro os dados do assinante para poder usar o preenchimento automático.');

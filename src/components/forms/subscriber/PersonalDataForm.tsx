@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { UseFormReturn } from 'react-hook-form';
 import { PersonalData, Address } from '@/types/subscriber';
-import AddressForm from '../AddressForm';
+import { CepInput } from '@/components/ui/cep-input';
 import ContactsSection from './ContactsSection';
 
 interface PersonalDataFormProps {
@@ -40,6 +40,25 @@ const PersonalDataForm = ({
     
     const newAddress: Address = { ...currentAddress, ...addressUpdate };
     onUpdate({ address: newAddress });
+  };
+
+  const handleCepFound = (cepData: any) => {
+    console.log('CEP encontrado no PersonalDataForm:', cepData);
+    const addressUpdate = {
+      cep: cepData.cep,
+      street: cepData.logradouro,
+      neighborhood: cepData.bairro,
+      city: cepData.localidade,
+      state: cepData.uf,
+    };
+    
+    handleAddressChange(addressUpdate);
+    
+    // Atualizar os campos do formulário
+    form.setValue('personalData.address.street', cepData.logradouro);
+    form.setValue('personalData.address.neighborhood', cepData.bairro);
+    form.setValue('personalData.address.city', cepData.localidade);
+    form.setValue('personalData.address.state', cepData.uf);
   };
 
   return (
@@ -229,13 +248,160 @@ const PersonalDataForm = ({
         />
       </div>
 
-      <AddressForm 
-        form={form} 
-        prefix="personalData.address" 
-        title="Endereço Residencial"
-        onCepChange={onCepLookup}
-        onAddressChange={handleAddressChange}
-      />
+      {/* Endereço Residencial */}
+      <div className="space-y-4 p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-200">
+        <h4 className="text-md font-semibold text-green-900">Endereço Residencial</h4>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="personalData.address.cep"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>CEP *</FormLabel>
+                <FormControl>
+                  <CepInput
+                    value={field.value || ''}
+                    onChange={(value) => {
+                      field.onChange(value);
+                      handleAddressChange({ cep: value });
+                    }}
+                    onCepFound={handleCepFound}
+                    placeholder="00000-000"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="personalData.address.street"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Endereço *</FormLabel>
+                <FormControl>
+                  <Input 
+                    {...field} 
+                    placeholder="Digite o endereço" 
+                    onChange={(e) => {
+                      field.onChange(e);
+                      handleAddressChange({ street: e.target.value });
+                    }}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="personalData.address.number"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Número *</FormLabel>
+                <FormControl>
+                  <Input 
+                    {...field} 
+                    placeholder="Digite o número" 
+                    onChange={(e) => {
+                      field.onChange(e);
+                      handleAddressChange({ number: e.target.value });
+                    }}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="personalData.address.complement"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Complemento</FormLabel>
+                <FormControl>
+                  <Input 
+                    {...field} 
+                    placeholder="Apto, bloco, etc." 
+                    onChange={(e) => {
+                      field.onChange(e);
+                      handleAddressChange({ complement: e.target.value });
+                    }}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="personalData.address.neighborhood"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Bairro *</FormLabel>
+                <FormControl>
+                  <Input 
+                    {...field} 
+                    placeholder="Digite o bairro" 
+                    onChange={(e) => {
+                      field.onChange(e);
+                      handleAddressChange({ neighborhood: e.target.value });
+                    }}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="personalData.address.city"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Cidade *</FormLabel>
+                <FormControl>
+                  <Input 
+                    {...field} 
+                    placeholder="Digite a cidade" 
+                    onChange={(e) => {
+                      field.onChange(e);
+                      handleAddressChange({ city: e.target.value });
+                    }}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="personalData.address.state"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Estado *</FormLabel>
+                <FormControl>
+                  <Input 
+                    {...field} 
+                    placeholder="Digite o estado" 
+                    onChange={(e) => {
+                      field.onChange(e);
+                      handleAddressChange({ state: e.target.value });
+                    }}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+      </div>
 
       <FormField
         control={form.control}

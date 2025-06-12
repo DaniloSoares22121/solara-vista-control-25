@@ -32,7 +32,9 @@ export const CepInput = ({
     // Auto-lookup when CEP is complete and different from last lookup
     if (cleanCep.length === 8 && cleanCep !== lastLookup) {
       setLastLookup(cleanCep);
+      console.log('Buscando CEP:', cleanCep);
       const cepData = await lookupCep(cleanCep);
+      console.log('Dados do CEP retornados:', cepData);
       if (cepData && onCepFound) {
         onCepFound(cepData);
       }
