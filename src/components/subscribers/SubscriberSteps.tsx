@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { SubscriberFormData } from '@/types/subscriber';
-import { UseFormReturn } from 'react-hook-form';
+import { UseFormReturn, FormProvider } from 'react-hook-form';
 import ConcessionariaSelector from '../forms/subscriber/ConcessionariaSelector';
 import SubscriberTypeSelector from '../forms/subscriber/SubscriberTypeSelector';
 import PersonalDataForm from '../forms/subscriber/PersonalDataForm';
@@ -173,101 +173,137 @@ export const useSubscriberSteps = ({
     { 
       number: 1, 
       title: 'Concessionária', 
-      component: <ConcessionariaSelector 
-        value={formData.concessionaria} 
-        onChange={(value) => updateFormData('concessionaria', value)} 
-      /> 
+      component: (
+        <FormProvider {...mockForm}>
+          <ConcessionariaSelector 
+            value={formData.concessionaria} 
+            onChange={(value) => updateFormData('concessionaria', value)} 
+          />
+        </FormProvider>
+      )
     },
     { 
       number: 2, 
       title: 'Tipo de Assinante', 
-      component: <SubscriberTypeSelector 
-        value={formData.subscriberType} 
-        onChange={(value) => updateFormData('subscriberType', value)} 
-      /> 
+      component: (
+        <FormProvider {...mockForm}>
+          <SubscriberTypeSelector 
+            value={formData.subscriberType} 
+            onChange={(value) => updateFormData('subscriberType', value)} 
+          />
+        </FormProvider>
+      )
     },
     { 
       number: 3, 
       title: formData.subscriberType === 'person' ? 'Dados Pessoais' : 'Dados da Empresa',
-      component: formData.subscriberType === 'person' ? (
-        <PersonalDataForm 
-          data={formData.personalData} 
-          onUpdate={(data) => updateFormData('personalData', data)}
-          onCepLookup={(cep) => handleCepLookup(cep, 'personal')}
-          onAddContact={() => addContact('personal')}
-          onRemoveContact={(contactId) => removeContact('personal', contactId)}
-          form={mockForm}
-        />
-      ) : (
-        <CompanyDataForm 
-          companyData={formData.companyData} 
-          administratorData={formData.administratorData}
-          onUpdateCompany={(data) => updateFormData('companyData', data)}
-          onUpdateAdministrator={(data) => updateFormData('administratorData', data)}
-          onCepLookup={(cep, type) => handleCepLookup(cep, type)}
-          onAddContact={() => addContact('company')}
-          onRemoveContact={(contactId) => removeContact('company', contactId)}
-          form={mockForm}
-        />
+      component: (
+        <FormProvider {...mockForm}>
+          {formData.subscriberType === 'person' ? (
+            <PersonalDataForm 
+              data={formData.personalData} 
+              onUpdate={(data) => updateFormData('personalData', data)}
+              onCepLookup={(cep) => handleCepLookup(cep, 'personal')}
+              onAddContact={() => addContact('personal')}
+              onRemoveContact={(contactId) => removeContact('personal', contactId)}
+              form={mockForm}
+            />
+          ) : (
+            <CompanyDataForm 
+              companyData={formData.companyData} 
+              administratorData={formData.administratorData}
+              onUpdateCompany={(data) => updateFormData('companyData', data)}
+              onUpdateAdministrator={(data) => updateFormData('administratorData', data)}
+              onCepLookup={(cep, type) => handleCepLookup(cep, type)}
+              onAddContact={() => addContact('company')}
+              onRemoveContact={(contactId) => removeContact('company', contactId)}
+              form={mockForm}
+            />
+          )}
+        </FormProvider>
       )
     },
     { 
       number: 4, 
       title: 'Conta de Energia', 
-      component: <EnergyAccountForm 
-        data={formData.energyAccount} 
-        onUpdate={(data) => updateFormData('energyAccount', data)}
-        onCepLookup={(cep) => handleCepLookup(cep, 'energy')}
-        onAutoFill={autoFillEnergyAccount}
-        form={mockForm}
-      /> 
+      component: (
+        <FormProvider {...mockForm}>
+          <EnergyAccountForm 
+            data={formData.energyAccount} 
+            onUpdate={(data) => updateFormData('energyAccount', data)}
+            onCepLookup={(cep) => handleCepLookup(cep, 'energy')}
+            onAutoFill={autoFillEnergyAccount}
+            form={mockForm}
+          />
+        </FormProvider>
+      )
     },
     { 
       number: 5, 
       title: 'Transferência de Titularidade', 
-      component: <TitleTransferForm 
-        data={formData.titleTransfer} 
-        onUpdate={(data) => updateFormData('titleTransfer', data)}
-        form={mockForm}
-      /> 
+      component: (
+        <FormProvider {...mockForm}>
+          <TitleTransferForm 
+            data={formData.titleTransfer} 
+            onUpdate={(data) => updateFormData('titleTransfer', data)}
+            form={mockForm}
+          />
+        </FormProvider>
+      )
     },
     { 
       number: 6, 
       title: 'Contrato do Plano', 
-      component: <PlanContractForm 
-        data={formData.planContract} 
-        onUpdate={(data) => updateFormData('planContract', data)}
-        form={mockForm}
-      /> 
+      component: (
+        <FormProvider {...mockForm}>
+          <PlanContractForm 
+            data={formData.planContract} 
+            onUpdate={(data) => updateFormData('planContract', data)}
+            form={mockForm}
+          />
+        </FormProvider>
+      )
     },
     { 
       number: 7, 
       title: 'Detalhes do Plano', 
-      component: <PlanDetailsForm 
-        data={formData.planDetails} 
-        onUpdate={(data) => updateFormData('planDetails', data)}
-        form={mockForm}
-      /> 
+      component: (
+        <FormProvider {...mockForm}>
+          <PlanDetailsForm 
+            data={formData.planDetails} 
+            onUpdate={(data) => updateFormData('planDetails', data)}
+            form={mockForm}
+          />
+        </FormProvider>
+      )
     },
     { 
       number: 8, 
       title: 'Configurações de Notificação', 
-      component: <NotificationSettingsForm 
-        data={formData.notificationSettings} 
-        onUpdate={(data) => updateFormData('notificationSettings', data)}
-        form={mockForm}
-      /> 
+      component: (
+        <FormProvider {...mockForm}>
+          <NotificationSettingsForm 
+            data={formData.notificationSettings} 
+            onUpdate={(data) => updateFormData('notificationSettings', data)}
+            form={mockForm}
+          />
+        </FormProvider>
+      )
     },
     { 
       number: 9, 
       title: 'Anexos', 
-      component: <AttachmentsForm 
-        data={formData.attachments} 
-        subscriberType={formData.subscriberType}
-        willTransfer={formData.titleTransfer?.willTransfer || false}
-        onUpdate={(data) => updateFormData('attachments', data)}
-        form={mockForm}
-      /> 
+      component: (
+        <FormProvider {...mockForm}>
+          <AttachmentsForm 
+            data={formData.attachments} 
+            subscriberType={formData.subscriberType}
+            willTransfer={formData.titleTransfer?.willTransfer || false}
+            onUpdate={(data) => updateFormData('attachments', data)}
+            form={mockForm}
+          />
+        </FormProvider>
+      )
     },
   ];
 
