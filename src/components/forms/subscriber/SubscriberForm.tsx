@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -46,6 +46,59 @@ const SubscriberForm = () => {
     defaultValues: formData,
     mode: 'onChange',
   });
+
+  // Sincronizar o estado do formulário com os dados
+  useEffect(() => {
+    console.log('Sincronizando dados do formulário:', formData);
+    
+    // Atualizar os valores do formulário quando formData mudar
+    if (formData.concessionaria) {
+      form.setValue('concessionaria', formData.concessionaria);
+    }
+    if (formData.subscriberType) {
+      form.setValue('subscriberType', formData.subscriberType);
+    }
+    
+    // Sincronizar dados pessoais
+    if (formData.personalData) {
+      const personalData = formData.personalData;
+      Object.keys(personalData).forEach(key => {
+        const value = personalData[key as keyof typeof personalData];
+        if (value !== null && value !== undefined) {
+          if (key === 'address' && typeof value === 'object') {
+            Object.keys(value).forEach(addressKey => {
+              const addressValue = value[addressKey as keyof typeof value];
+              if (addressValue) {
+                form.setValue(`personalData.address.${addressKey}` as any, addressValue);
+              }
+            });
+          } else {
+            form.setValue(`personalData.${key}` as any, value);
+          }
+        }
+      });
+    }
+    
+    // Sincronizar dados da conta de energia
+    if (formData.energyAccount) {
+      const energyAccount = formData.energyAccount;
+      Object.keys(energyAccount).forEach(key => {
+        const value = energyAccount[key as keyof typeof energyAccount];
+        if (value !== null && value !== undefined) {
+          if (key === 'address' && typeof value === 'object') {
+            Object.keys(value).forEach(addressKey => {
+              const addressValue = value[addressKey as keyof typeof value];
+              if (addressValue) {
+                form.setValue(`energyAccount.address.${addressKey}` as any, addressValue);
+              }
+            });
+          } else {
+            form.setValue(`energyAccount.${key}` as any, value);
+          }
+        }
+      });
+    }
+  }, [formData, form]);
 
   const totalSteps = 9;
 

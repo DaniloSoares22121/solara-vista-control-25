@@ -50,7 +50,7 @@ export const CepInput = ({
   return (
     <div className="relative">
       <Input
-        value={value || ''}
+        value={value}
         onChange={handleChange}
         placeholder={placeholder}
         maxLength={9}

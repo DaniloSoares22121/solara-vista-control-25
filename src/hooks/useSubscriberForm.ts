@@ -147,6 +147,7 @@ export const useSubscriberForm = () => {
   const { lookupCep } = useCepLookup();
 
   const updateFormData = useCallback((section: keyof SubscriberFormData, data: any) => {
+    console.log('Atualizando seção:', section, 'com dados:', data);
     setFormData(prev => {
       const currentSectionData = prev[section];
       
@@ -267,49 +268,60 @@ export const useSubscriberForm = () => {
   }, []);
 
   const autoFillEnergyAccount = useCallback(() => {
-    console.log('Preenchendo automaticamente conta de energia');
-    console.log('Dados atuais:', formData);
+    console.log('Executando preenchimento automático');
+    console.log('Dados atuais do formulário:', formData);
     
     setFormData(prev => {
-      const newFormData = { ...prev };
+      console.log('Estado anterior:', prev);
       
       if (prev.subscriberType === 'person' && prev.personalData) {
         console.log('Preenchendo com dados de pessoa física');
-        newFormData.energyAccount = {
-          ...newFormData.energyAccount,
-          holderType: 'person',
-          cpfCnpj: prev.personalData.cpf || '',
-          holderName: prev.personalData.fullName || '',
-          birthDate: prev.personalData.birthDate || '',
-          partnerNumber: prev.personalData.partnerNumber || '',
-          address: prev.personalData.address ? { 
-            ...prev.personalData.address
-          } : newFormData.energyAccount.address,
+        
+        const newFormData = {
+          ...prev,
+          energyAccount: {
+            ...prev.energyAccount,
+            holderType: 'person' as const,
+            cpfCnpj: prev.personalData.cpf || '',
+            holderName: prev.personalData.fullName || '',
+            birthDate: prev.personalData.birthDate || '',
+            partnerNumber: prev.personalData.partnerNumber || '',
+            address: {
+              ...prev.personalData.address
+            },
+          }
         };
         
-        console.log('Dados preenchidos:', newFormData.energyAccount);
+        console.log('Novos dados após preenchimento:', newFormData.energyAccount);
         toast.success('Dados da conta de energia preenchidos automaticamente!');
+        return newFormData;
+        
       } else if (prev.subscriberType === 'company' && prev.companyData) {
         console.log('Preenchendo com dados de pessoa jurídica');
-        newFormData.energyAccount = {
-          ...newFormData.energyAccount,
-          holderType: 'company',
-          cpfCnpj: prev.companyData.cnpj || '',
-          holderName: prev.companyData.companyName || '',
-          partnerNumber: prev.companyData.partnerNumber || '',
-          address: prev.companyData.address ? { 
-            ...prev.companyData.address
-          } : newFormData.energyAccount.address,
+        
+        const newFormData = {
+          ...prev,
+          energyAccount: {
+            ...prev.energyAccount,
+            holderType: 'company' as const,
+            cpfCnpj: prev.companyData.cnpj || '',
+            holderName: prev.companyData.companyName || '',
+            partnerNumber: prev.companyData.partnerNumber || '',
+            address: {
+              ...prev.companyData.address
+            },
+          }
         };
         
-        console.log('Dados preenchidos:', newFormData.energyAccount);
+        console.log('Novos dados após preenchimento:', newFormData.energyAccount);
         toast.success('Dados da conta de energia preenchidos automaticamente!');
+        return newFormData;
+        
       } else {
+        console.log('Não foi possível preencher - dados insuficientes');
         toast.error('Preencha primeiro os dados do assinante para poder usar o preenchimento automático.');
         return prev;
       }
-      
-      return newFormData;
     });
   }, [formData]);
 

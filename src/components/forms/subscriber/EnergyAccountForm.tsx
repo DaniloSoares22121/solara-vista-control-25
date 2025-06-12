@@ -41,6 +41,20 @@ const EnergyAccountForm = ({ data, onUpdate, onCepLookup, onAutoFill, form }: En
     setIsAutoFilling(true);
     try {
       await onAutoFill();
+      // Forçar atualização dos campos do formulário após um pequeno delay
+      setTimeout(() => {
+        if (data.cpfCnpj) form.setValue('energyAccount.cpfCnpj', data.cpfCnpj);
+        if (data.holderName) form.setValue('energyAccount.holderName', data.holderName);
+        if (data.birthDate) form.setValue('energyAccount.birthDate', data.birthDate);
+        if (data.partnerNumber) form.setValue('energyAccount.partnerNumber', data.partnerNumber);
+        if (data.address?.cep) form.setValue('energyAccount.address.cep', data.address.cep);
+        if (data.address?.street) form.setValue('energyAccount.address.street', data.address.street);
+        if (data.address?.number) form.setValue('energyAccount.address.number', data.address.number);
+        if (data.address?.complement) form.setValue('energyAccount.address.complement', data.address.complement);
+        if (data.address?.neighborhood) form.setValue('energyAccount.address.neighborhood', data.address.neighborhood);
+        if (data.address?.city) form.setValue('energyAccount.address.city', data.address.city);
+        if (data.address?.state) form.setValue('energyAccount.address.state', data.address.state);
+      }, 500);
     } catch (error) {
       console.error('Erro ao preencher automaticamente:', error);
     } finally {
@@ -68,6 +82,43 @@ const EnergyAccountForm = ({ data, onUpdate, onCepLookup, onAutoFill, form }: En
       form.setValue('energyAccount.address.state', cepData.uf);
     }, 100);
   };
+
+  // Sincronizar os valores do estado com o formulário quando data mudar
+  React.useEffect(() => {
+    if (data.cpfCnpj && form.getValues('energyAccount.cpfCnpj') !== data.cpfCnpj) {
+      form.setValue('energyAccount.cpfCnpj', data.cpfCnpj);
+    }
+    if (data.holderName && form.getValues('energyAccount.holderName') !== data.holderName) {
+      form.setValue('energyAccount.holderName', data.holderName);
+    }
+    if (data.birthDate && form.getValues('energyAccount.birthDate') !== data.birthDate) {
+      form.setValue('energyAccount.birthDate', data.birthDate);
+    }
+    if (data.partnerNumber && form.getValues('energyAccount.partnerNumber') !== data.partnerNumber) {
+      form.setValue('energyAccount.partnerNumber', data.partnerNumber);
+    }
+    if (data.address?.cep && form.getValues('energyAccount.address.cep') !== data.address.cep) {
+      form.setValue('energyAccount.address.cep', data.address.cep);
+    }
+    if (data.address?.street && form.getValues('energyAccount.address.street') !== data.address.street) {
+      form.setValue('energyAccount.address.street', data.address.street);
+    }
+    if (data.address?.number && form.getValues('energyAccount.address.number') !== data.address.number) {
+      form.setValue('energyAccount.address.number', data.address.number);
+    }
+    if (data.address?.complement && form.getValues('energyAccount.address.complement') !== data.address.complement) {
+      form.setValue('energyAccount.address.complement', data.address.complement);
+    }
+    if (data.address?.neighborhood && form.getValues('energyAccount.address.neighborhood') !== data.address.neighborhood) {
+      form.setValue('energyAccount.address.neighborhood', data.address.neighborhood);
+    }
+    if (data.address?.city && form.getValues('energyAccount.address.city') !== data.address.city) {
+      form.setValue('energyAccount.address.city', data.address.city);
+    }
+    if (data.address?.state && form.getValues('energyAccount.address.state') !== data.address.state) {
+      form.setValue('energyAccount.address.state', data.address.state);
+    }
+  }, [data, form]);
 
   return (
     <div className="space-y-6">
@@ -104,7 +155,7 @@ const EnergyAccountForm = ({ data, onUpdate, onCepLookup, onAutoFill, form }: En
               <FormLabel className="text-gray-900 font-medium">Tipo de Titular *</FormLabel>
               <FormControl>
                 <RadioGroup 
-                  value={field.value || 'person'} 
+                  value={field.value || data.holderType || 'person'} 
                   onValueChange={(value) => {
                     field.onChange(value);
                     onUpdate({ holderType: value as 'person' | 'company' });
@@ -133,13 +184,13 @@ const EnergyAccountForm = ({ data, onUpdate, onCepLookup, onAutoFill, form }: En
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="text-gray-900 font-medium">
-                  {data.holderType === 'person' ? 'CPF' : 'CNPJ'} *
+                  {(data.holderType || 'person') === 'person' ? 'CPF' : 'CNPJ'} *
                 </FormLabel>
                 <FormControl>
                   <MaskedInput 
-                    value={field.value || ''}
-                    mask={data.holderType === 'person' ? "999.999.999-99" : "99.999.999/9999-99"}
-                    placeholder={data.holderType === 'person' ? "000.000.000-00" : "00.000.000/0000-00"}
+                    value={field.value || data.cpfCnpj || ''}
+                    mask={(data.holderType || 'person') === 'person' ? "999.999.999-99" : "99.999.999/9999-99"}
+                    placeholder={(data.holderType || 'person') === 'person' ? "000.000.000-00" : "00.000.000/0000-00"}
                     className="bg-white"
                     onChange={(e) => {
                       field.onChange(e);
@@ -158,11 +209,11 @@ const EnergyAccountForm = ({ data, onUpdate, onCepLookup, onAutoFill, form }: En
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="text-gray-900 font-medium">
-                  {data.holderType === 'person' ? 'Nome da Pessoa Física' : 'Nome da Empresa'} *
+                  {(data.holderType || 'person') === 'person' ? 'Nome da Pessoa Física' : 'Nome da Empresa'} *
                 </FormLabel>
                 <FormControl>
                   <Input 
-                    value={field.value || ''}
+                    value={field.value || data.holderName || ''}
                     placeholder="Digite o nome" 
                     className="bg-white"
                     onChange={(e) => {
@@ -176,7 +227,7 @@ const EnergyAccountForm = ({ data, onUpdate, onCepLookup, onAutoFill, form }: En
             )}
           />
 
-          {data.holderType === 'person' && (
+          {(data.holderType || 'person') === 'person' && (
             <FormField
               control={form.control}
               name="energyAccount.birthDate"
@@ -185,7 +236,7 @@ const EnergyAccountForm = ({ data, onUpdate, onCepLookup, onAutoFill, form }: En
                   <FormLabel className="text-gray-900 font-medium">Data de Nascimento</FormLabel>
                   <FormControl>
                     <Input 
-                      value={field.value || ''}
+                      value={field.value || data.birthDate || ''}
                       type="date" 
                       className="bg-white"
                       onChange={(e) => {
@@ -208,7 +259,7 @@ const EnergyAccountForm = ({ data, onUpdate, onCepLookup, onAutoFill, form }: En
                 <FormLabel className="text-gray-900 font-medium">UC - Unidade Consumidora *</FormLabel>
                 <FormControl>
                   <Input 
-                    value={field.value || ''}
+                    value={field.value || data.uc || ''}
                     placeholder="Digite a UC" 
                     className="bg-white"
                     onChange={(e) => {
@@ -230,7 +281,7 @@ const EnergyAccountForm = ({ data, onUpdate, onCepLookup, onAutoFill, form }: En
                 <FormLabel className="text-gray-900 font-medium">Número do Parceiro</FormLabel>
                 <FormControl>
                   <Input 
-                    value={field.value || ''}
+                    value={field.value || data.partnerNumber || ''}
                     placeholder="Digite o número do parceiro" 
                     className="bg-white"
                     onChange={(e) => {
@@ -264,7 +315,7 @@ const EnergyAccountForm = ({ data, onUpdate, onCepLookup, onAutoFill, form }: En
                 <FormLabel>CEP *</FormLabel>
                 <FormControl>
                   <CepInput
-                    value={field.value || ''}
+                    value={field.value || data.address?.cep || ''}
                     onChange={(value) => {
                       field.onChange(value);
                       handleAddressChange({ cep: value });
