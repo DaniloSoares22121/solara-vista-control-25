@@ -45,7 +45,7 @@ const SubscriberViewModal = ({ subscriber, isOpen, onClose }: SubscriberViewModa
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto fixed right-8 top-1/2 -translate-y-1/2 left-auto translate-x-0">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-3 text-xl">
             <div className="p-2 bg-gradient-to-br from-green-100 to-emerald-100 rounded-lg">
