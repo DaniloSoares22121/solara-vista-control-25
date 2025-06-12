@@ -18,11 +18,12 @@ interface PlanContractFormProps {
 const PlanContractForm = ({ data, onUpdate, form }: PlanContractFormProps) => {
   const handleDiscountSelect = (percentage: number) => {
     onUpdate({ discountPercentage: percentage });
+    form.setValue('planContract.discountPercentage', percentage);
   };
 
   return (
     <div className="space-y-6">
-      <h3 className="text-lg font-semibold">6. Contratação do Plano</h3>
+      <h3 className="text-lg font-semibold">6. Contrato do Plano</h3>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <FormField
@@ -30,54 +31,25 @@ const PlanContractForm = ({ data, onUpdate, form }: PlanContractFormProps) => {
           name="planContract.selectedPlan"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Plano Escolhido *</FormLabel>
-              <FormControl>
-                <Select 
-                  value={field.value} 
-                  onValueChange={(value) => {
-                    field.onChange(value);
-                    onUpdate({ selectedPlan: value });
-                  }}
-                >
+              <FormLabel>Plano Selecionado *</FormLabel>
+              <Select 
+                value={field.value} 
+                onValueChange={(value) => {
+                  field.onChange(value);
+                  onUpdate({ selectedPlan: value });
+                }}
+              >
+                <FormControl>
                   <SelectTrigger>
                     <SelectValue placeholder="Selecione o plano" />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="basico">Plano Básico</SelectItem>
-                    <SelectItem value="intermediario">Plano Intermediário</SelectItem>
-                    <SelectItem value="avancado">Plano Avançado</SelectItem>
-                    <SelectItem value="premium">Plano Premium</SelectItem>
-                  </SelectContent>
-                </Select>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="planContract.compensationMode"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Modalidade de Compensação *</FormLabel>
-              <FormControl>
-                <Select 
-                  value={field.value} 
-                  onValueChange={(value) => {
-                    field.onChange(value);
-                    onUpdate({ compensationMode: value as 'autoConsumption' | 'sharedGeneration' });
-                  }}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione a modalidade" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="autoConsumption">AutoConsumo</SelectItem>
-                    <SelectItem value="sharedGeneration">Geração Compartilhada</SelectItem>
-                  </SelectContent>
-                </Select>
-              </FormControl>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="basico">Básico</SelectItem>
+                  <SelectItem value="premium">Premium</SelectItem>
+                  <SelectItem value="empresarial">Empresarial</SelectItem>
+                </SelectContent>
+              </Select>
               <FormMessage />
             </FormItem>
           )}
@@ -91,8 +63,8 @@ const PlanContractForm = ({ data, onUpdate, form }: PlanContractFormProps) => {
               <FormLabel>Data de Adesão *</FormLabel>
               <FormControl>
                 <Input 
-                  {...field} 
                   type="date" 
+                  {...field}
                   onChange={(e) => {
                     field.onChange(e);
                     onUpdate({ adhesionDate: e.target.value });
@@ -103,18 +75,52 @@ const PlanContractForm = ({ data, onUpdate, form }: PlanContractFormProps) => {
             </FormItem>
           )}
         />
+      </div>
 
+      <div>
+        <FormField
+          control={form.control}
+          name="planContract.compensationMode"
+          render={({ field }) => (
+            <FormItem className="space-y-3">
+              <FormLabel>Modalidade de Compensação *</FormLabel>
+              <FormControl>
+                <RadioGroup
+                  value={field.value}
+                  onValueChange={(value) => {
+                    field.onChange(value);
+                    onUpdate({ compensationMode: value as 'autoConsumption' | 'sharedGeneration' });
+                  }}
+                  className="flex flex-col space-y-2"
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="autoConsumption" id="autoConsumption" />
+                    <Label htmlFor="autoConsumption">Autoconsumo Remoto</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="sharedGeneration" id="sharedGeneration" />
+                    <Label htmlFor="sharedGeneration">Geração Compartilhada</Label>
+                  </div>
+                </RadioGroup>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <FormField
           control={form.control}
           name="planContract.informedKwh"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>kWh Vendedor Informou *</FormLabel>
+              <FormLabel>kWh Informado pelo Vendedor *</FormLabel>
               <FormControl>
                 <Input 
-                  {...field} 
                   type="number" 
-                  placeholder="Digite o kWh informado"
+                  placeholder="Ex: 400"
+                  {...field}
                   onChange={(e) => {
                     const value = Number(e.target.value);
                     field.onChange(value);
@@ -135,9 +141,9 @@ const PlanContractForm = ({ data, onUpdate, form }: PlanContractFormProps) => {
               <FormLabel>kWh Contratado *</FormLabel>
               <FormControl>
                 <Input 
-                  {...field} 
                   type="number" 
-                  placeholder="Digite o kWh contratado"
+                  placeholder="Ex: 400"
+                  {...field}
                   onChange={(e) => {
                     const value = Number(e.target.value);
                     field.onChange(value);
@@ -151,46 +157,71 @@ const PlanContractForm = ({ data, onUpdate, form }: PlanContractFormProps) => {
         />
       </div>
 
-      <FormField
-        control={form.control}
-        name="planContract.loyalty"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Fidelidade *</FormLabel>
-            <FormControl>
-              <RadioGroup 
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <FormField
+          control={form.control}
+          name="planContract.loyalty"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Fidelidade</FormLabel>
+              <Select 
                 value={field.value} 
                 onValueChange={(value) => {
                   field.onChange(value);
                   onUpdate({ loyalty: value as 'none' | 'oneYear' | 'twoYears' });
                 }}
-                className="grid grid-cols-3 gap-4"
               >
-                <div className="flex items-center space-x-2 p-3 border rounded-lg">
-                  <RadioGroupItem value="none" id="no-loyalty" />
-                  <Label htmlFor="no-loyalty">Sem Fidelidade</Label>
-                </div>
-                <div className="flex items-center space-x-2 p-3 border rounded-lg">
-                  <RadioGroupItem value="oneYear" id="one-year" />
-                  <Label htmlFor="one-year">Com Fidelidade (1 Ano)</Label>
-                </div>
-                <div className="flex items-center space-x-2 p-3 border rounded-lg">
-                  <RadioGroupItem value="twoYears" id="two-years" />
-                  <Label htmlFor="two-years">Com Fidelidade (2 Anos)</Label>
-                </div>
-              </RadioGroup>
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione a fidelidade" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="none">Sem Fidelidade</SelectItem>
+                  <SelectItem value="oneYear">1 Ano</SelectItem>
+                  <SelectItem value="twoYears">2 Anos</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-      <DiscountTable
-        informedKwh={data.informedKwh || 0}
-        loyalty={data.loyalty || 'none'}
-        onDiscountSelect={handleDiscountSelect}
-        selectedDiscount={data.discountPercentage}
-      />
+        <FormField
+          control={form.control}
+          name="planContract.discountPercentage"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Percentual de Desconto (%)</FormLabel>
+              <FormControl>
+                <Input 
+                  type="number" 
+                  min="0" 
+                  max="100" 
+                  step="0.1"
+                  placeholder="Ex: 15"
+                  {...field}
+                  onChange={(e) => {
+                    const value = Number(e.target.value);
+                    field.onChange(value);
+                    onUpdate({ discountPercentage: value });
+                  }}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      </div>
+
+      {data.contractedKwh > 0 && (
+        <DiscountTable
+          contractedKwh={data.contractedKwh} // Usando contractedKwh em vez de informedKwh
+          loyalty={data.loyalty}
+          onDiscountSelect={handleDiscountSelect}
+          selectedDiscount={data.discountPercentage}
+        />
+      )}
     </div>
   );
 };

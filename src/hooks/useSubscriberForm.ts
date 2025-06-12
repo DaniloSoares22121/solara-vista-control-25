@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 const defaultNotificationSettings = {
   whatsapp: {
     sendInvoices: true,
-    paymentReceived: false,
+    paymentReceived: false, // Desmarcado por padrão
     createCharge: true,
     changeValueOrDate: true,
     oneDayBefore: true,
@@ -41,7 +41,7 @@ const defaultNotificationSettings = {
 };
 
 const initialFormData: SubscriberFormData = {
-  concessionaria: 'equatorial-goias',
+  concessionaria: 'equatorial-goias', // Padrão Equatorial
   subscriberType: 'person',
   personalData: {
     cpf: '',
@@ -133,7 +133,7 @@ const initialFormData: SubscriberFormData = {
   planDetails: {
     paysPisAndCofins: true,
     paysWireB: false,
-    addDistributorValue: false,
+    addDistributorValue: true, // Marcado como padrão
     exemptFromPayment: false,
   },
   notificationSettings: defaultNotificationSettings,
@@ -240,7 +240,7 @@ export const useSubscriberForm = (existingData?: any) => {
         planDetails: planDetails ? {
           paysPisAndCofins: planDetails.paysPisAndCofins !== undefined ? planDetails.paysPisAndCofins : true,
           paysWireB: planDetails.paysWireB !== undefined ? planDetails.paysWireB : false,
-          addDistributorValue: planDetails.addDistributorValue !== undefined ? planDetails.addDistributorValue : false,
+          addDistributorValue: planDetails.addDistributorValue !== undefined ? planDetails.addDistributorValue : true,
           exemptFromPayment: planDetails.exemptFromPayment !== undefined ? planDetails.exemptFromPayment : false,
         } : initialFormData.planDetails,
         notificationSettings: notifications || defaultNotificationSettings,
@@ -331,7 +331,7 @@ export const useSubscriberForm = (existingData?: any) => {
             cep: cepData.cep,
             street: cepData.logradouro,
             neighborhood: cepData.bairro,
-            city: cepData.localidade,
+            city: cepData.localidade, // Corrigido para usar localidade
             state: cepData.uf,
           };
 
@@ -388,7 +388,7 @@ export const useSubscriberForm = (existingData?: any) => {
         if (contacts.length <= 5) {
           newFormData.personalData.contacts = contacts;
         } else {
-          toast.error('Máximo de 5 contatos permitidos');
+          toast.error('Máximo de 5 contatos permitidos', { duration: 2000 }); // Toast mais rápido
           return prev;
         }
       } else if (type === 'company' && newFormData.companyData) {
@@ -396,7 +396,7 @@ export const useSubscriberForm = (existingData?: any) => {
         if (contacts.length <= 5) {
           newFormData.companyData.contacts = contacts;
         } else {
-          toast.error('Máximo de 5 contatos permitidos');
+          toast.error('Máximo de 5 contatos permitidos', { duration: 2000 }); // Toast mais rápido
           return prev;
         }
       }
@@ -445,7 +445,7 @@ export const useSubscriberForm = (existingData?: any) => {
         };
         
         console.log('✅ Novos dados após preenchimento:', newFormData.energyAccount);
-        toast.success('Dados da conta de energia preenchidos automaticamente!');
+        toast.success('Dados da conta de energia preenchidos automaticamente!', { duration: 2000 });
         return newFormData;
         
       } else if (prev.subscriberType === 'company' && prev.companyData) {
@@ -466,12 +466,12 @@ export const useSubscriberForm = (existingData?: any) => {
         };
         
         console.log('✅ Novos dados após preenchimento:', newFormData.energyAccount);
-        toast.success('Dados da conta de energia preenchidos automaticamente!');
+        toast.success('Dados da conta de energia preenchidos automaticamente!', { duration: 2000 });
         return newFormData;
         
       } else {
         console.log('❌ Não foi possível preencher - dados insuficientes');
-        toast.error('Preencha primeiro os dados do assinante para poder usar o preenchimento automático.');
+        toast.error('Preencha primeiro os dados do assinante para poder usar o preenchimento automático.', { duration: 2000 });
         return prev;
       }
     });
