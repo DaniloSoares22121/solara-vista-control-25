@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import DashboardLayout from '@/components/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Plus, Users, Search, Filter, UserCheck, UserX, TrendingUp } from 'lucide-react';
+import { Plus, Users, Search, Filter, UserCheck, UserX, TrendingUp, Clock, Activity } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import SubscriberForm from '@/components/forms/subscriber/SubscriberForm';
 import SubscribersTable from '@/components/subscribers/SubscribersTable';
@@ -62,29 +62,31 @@ const Assinantes = () => {
   if (showForm) {
     return (
       <DashboardLayout>
-        <div className="space-y-6 p-4 sm:p-6">
-          <div className="flex items-center justify-between">
-            <div className="space-y-1">
-              <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-green-600 to-green-600 bg-clip-text text-transparent">
-                {editingSubscriber ? 'Editar Assinante' : 'Novo Assinante'}
-              </h1>
-              <p className="text-gray-600">
-                {editingSubscriber ? 'Edite os dados do assinante' : 'Cadastre um novo assinante no sistema'}
-              </p>
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-green-50/30 to-emerald-50/50">
+          <div className="space-y-8 p-6 max-w-7xl mx-auto">
+            <div className="flex items-center justify-between">
+              <div className="space-y-2">
+                <h1 className="text-3xl lg:text-4xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
+                  {editingSubscriber ? 'Editar Assinante' : 'Novo Assinante'}
+                </h1>
+                <p className="text-gray-600 text-lg">
+                  {editingSubscriber ? 'Edite os dados do assinante selecionado' : 'Cadastre um novo assinante no sistema'}
+                </p>
+              </div>
+              <Button
+                onClick={handleCloseForm}
+                variant="outline"
+                className="border-green-200 text-green-700 hover:bg-green-50 shadow-md"
+              >
+                Voltar para Lista
+              </Button>
             </div>
-            <Button
-              onClick={handleCloseForm}
-              variant="outline"
-              className="border-green-200 text-green-700 hover:bg-green-50"
-            >
-              Voltar para Lista
-            </Button>
+            
+            <SubscriberForm 
+              existingData={editingSubscriber} 
+              onSuccess={handleCloseForm}
+            />
           </div>
-          
-          <SubscriberForm 
-            existingData={editingSubscriber} 
-            onSuccess={handleCloseForm}
-          />
         </div>
       </DashboardLayout>
     );
@@ -98,170 +100,202 @@ const Assinantes = () => {
   const statsCards = [
     {
       title: 'Total de Assinantes',
-      value: totalSubscribers.toString(),
+      value: totalSubscribers,
       description: 'Assinantes cadastrados',
       icon: Users,
-      iconColor: 'text-green-600',
-      bgColor: 'bg-green-50',
-      borderColor: 'border-green-200',
-      trend: totalSubscribers > 0 ? `+${totalSubscribers}` : '0'
+      iconColor: 'text-blue-600',
+      bgColor: 'bg-gradient-to-br from-blue-50 to-blue-100',
+      borderColor: 'border-blue-200',
+      trend: totalSubscribers > 0 ? `+${totalSubscribers}` : '0',
+      changePercent: '+12%'
     },
     {
       title: 'Assinantes Ativos',
-      value: activeSubscribers.toString(),
+      value: activeSubscribers,
       description: 'Com contratos vigentes',
       icon: UserCheck,
       iconColor: 'text-green-600',
-      bgColor: 'bg-green-50',
+      bgColor: 'bg-gradient-to-br from-green-50 to-green-100',
       borderColor: 'border-green-200',
-      trend: activeSubscribers > 0 ? `+${activeSubscribers}` : '0'
+      trend: activeSubscribers > 0 ? `+${activeSubscribers}` : '0',
+      changePercent: '+8%'
     },
     {
       title: 'Aguardando Ativação',
-      value: pendingSubscribers.toString(),
+      value: pendingSubscribers,
       description: 'Pendentes de aprovação',
-      icon: UserX,
+      icon: Clock,
       iconColor: 'text-orange-600',
-      bgColor: 'bg-orange-50',
+      bgColor: 'bg-gradient-to-br from-orange-50 to-orange-100',
       borderColor: 'border-orange-200',
-      trend: pendingSubscribers > 0 ? `+${pendingSubscribers}` : '0'
+      trend: pendingSubscribers > 0 ? `+${pendingSubscribers}` : '0',
+      changePercent: '+3%'
+    },
+    {
+      title: 'Inativos',
+      value: inactiveSubscribers,
+      description: 'Contratos suspensos',
+      icon: UserX,
+      iconColor: 'text-red-600',
+      bgColor: 'bg-gradient-to-br from-red-50 to-red-100',
+      borderColor: 'border-red-200',
+      trend: inactiveSubscribers > 0 ? `${inactiveSubscribers}` : '0',
+      changePercent: '-2%'
     }
   ];
 
   return (
     <DashboardLayout>
-      <div className="space-y-6 p-4 sm:p-6 min-h-screen bg-gradient-to-br from-green-50/40 to-emerald-50/40">
-        {/* Header */}
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-          <div className="space-y-2">
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
-              Assinantes
-            </h1>
-            <p className="text-gray-600 text-sm sm:text-base lg:text-lg">
-              Gerencie os assinantes do sistema de energia solar
-            </p>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-green-50/30 to-emerald-50/50">
+        <div className="space-y-8 p-6 max-w-7xl mx-auto">
+          
+          {/* Header Section */}
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+            <div className="space-y-3">
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl shadow-lg">
+                  <Users className="w-8 h-8 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-3xl lg:text-4xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
+                    Assinantes
+                  </h1>
+                  <p className="text-gray-600 text-lg">
+                    Gerencie todos os assinantes do sistema de energia solar
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-4">
+              <Button 
+                variant="outline"
+                className="flex items-center space-x-2 border-green-200 text-green-700 hover:bg-green-50 shadow-md"
+              >
+                <Activity className="w-4 h-4" />
+                <span>Relatórios</span>
+              </Button>
+              
+              <Button 
+                onClick={handleNewSubscriber} 
+                className="flex items-center space-x-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 px-6 py-3 rounded-xl"
+              >
+                <Plus className="w-5 h-5" />
+                <span className="font-semibold">Novo Assinante</span>
+              </Button>
+            </div>
           </div>
-          <Button 
-            onClick={handleNewSubscriber} 
-            className="flex items-center space-x-2 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Novo Assinante</span>
-          </Button>
-        </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-          {[
-            {
-              title: 'Total de Assinantes',
-              value: subscribers.length.toString(),
-              description: 'Assinantes cadastrados',
-              icon: Users,
-              iconColor: 'text-green-600',
-              bgColor: 'bg-green-50',
-              borderColor: 'border-green-200',
-              trend: subscribers.length > 0 ? `+${subscribers.length}` : '0'
-            },
-            {
-              title: 'Assinantes Ativos',
-              value: subscribers.filter(s => s.status === 'active').length.toString(),
-              description: 'Com contratos vigentes',
-              icon: UserCheck,
-              iconColor: 'text-green-600',
-              bgColor: 'bg-green-50',
-              borderColor: 'border-green-200',
-              trend: subscribers.filter(s => s.status === 'active').length > 0 ? `+${subscribers.filter(s => s.status === 'active').length}` : '0'
-            },
-            {
-              title: 'Aguardando Ativação',
-              value: subscribers.filter(s => s.status === 'pending').length.toString(),
-              description: 'Pendentes de aprovação',
-              icon: UserX,
-              iconColor: 'text-orange-600',
-              bgColor: 'bg-orange-50',
-              borderColor: 'border-orange-200',
-              trend: subscribers.filter(s => s.status === 'pending').length > 0 ? `+${subscribers.filter(s => s.status === 'pending').length}` : '0'
-            }
-          ].map((card, index) => (
-            <Card key={index} className={`border-2 ${card.borderColor} shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 bg-white/90 backdrop-blur-sm`}>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 sm:pb-3">
-                <div className="space-y-1 flex-1 min-w-0">
-                  <CardTitle className="text-xs sm:text-sm font-medium text-gray-600 truncate">
-                    {card.title}
-                  </CardTitle>
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
-                    <span className="text-lg sm:text-2xl font-bold text-gray-900">{card.value}</span>
-                    <div className="flex items-center text-green-600 text-xs font-medium">
-                      <TrendingUp className="w-3 h-3 mr-1" />
-                      {card.trend}
+          {/* Stats Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {statsCards.map((card, index) => (
+              <Card key={index} className={`border-2 ${card.borderColor} shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 bg-white/80 backdrop-blur-sm overflow-hidden group`}>
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between">
+                    <div className={`p-3 rounded-xl ${card.bgColor} shadow-lg group-hover:scale-110 transition-transform duration-300`}>
+                      <card.icon className={`h-6 w-6 ${card.iconColor}`} />
+                    </div>
+                    <div className="text-right">
+                      <div className="flex items-center text-xs text-green-600 font-medium mb-1">
+                        <TrendingUp className="w-3 h-3 mr-1" />
+                        {card.changePercent}
+                      </div>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <div className="space-y-2">
+                    <CardTitle className="text-sm font-medium text-gray-600 leading-tight">
+                      {card.title}
+                    </CardTitle>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-3xl font-bold text-gray-900">{card.value}</span>
+                      <span className="text-sm text-green-600 font-medium">
+                        {card.trend}
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-500 leading-relaxed">
+                      {card.description}
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          {/* Search and Filter Section */}
+          <Card className="border-0 shadow-xl bg-white/90 backdrop-blur-sm overflow-hidden">
+            <CardContent className="p-6">
+              <div className="flex flex-col sm:flex-row gap-4">
+                <div className="relative flex-1">
+                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  <Input
+                    placeholder="Buscar assinantes por nome, CPF/CNPJ ou email..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-12 h-12 border-gray-200 focus:border-green-400 focus:ring-green-400 bg-white shadow-sm rounded-xl text-gray-700 placeholder:text-gray-400"
+                  />
+                </div>
+                <Button 
+                  variant="outline" 
+                  className="flex items-center space-x-2 border-green-200 text-green-700 hover:bg-green-50 h-12 px-6 rounded-xl shadow-sm"
+                >
+                  <Filter className="w-5 h-5" />
+                  <span className="font-medium">Filtros Avançados</span>
+                </Button>
+              </div>
+              
+              {searchTerm && (
+                <div className="mt-4 flex items-center gap-2 text-sm text-gray-600">
+                  <span>Mostrando {filteredSubscribers.length} resultado(s) para:</span>
+                  <span className="font-semibold text-green-600">"{searchTerm}"</span>
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => setSearchTerm('')}
+                    className="text-gray-500 hover:text-gray-700"
+                  >
+                    Limpar
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Subscribers Table */}
+          {isLoading ? (
+            <Card className="border-0 shadow-xl bg-white/95 backdrop-blur-sm overflow-hidden">
+              <CardContent className="p-12">
+                <div className="flex items-center justify-center py-16">
+                  <div className="text-center space-y-6">
+                    <div className="relative">
+                      <div className="w-16 h-16 border-4 border-green-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
+                      <div className="absolute inset-0 w-16 h-16 border-4 border-green-200 rounded-full mx-auto"></div>
+                    </div>
+                    <div className="space-y-2">
+                      <p className="text-gray-700 text-xl font-semibold">Carregando assinantes...</p>
+                      <p className="text-gray-500">Aguarde enquanto buscamos os dados</p>
                     </div>
                   </div>
                 </div>
-                <div className={`p-2 sm:p-3 rounded-xl ${card.bgColor} flex-shrink-0 shadow-md`}>
-                  <card.icon className={`h-4 w-4 sm:h-6 sm:w-6 ${card.iconColor}`} />
-                </div>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <p className="text-xs text-gray-500">
-                  {card.description}
-                </p>
               </CardContent>
             </Card>
-          ))}
-        </div>
+          ) : (
+            <SubscribersTable
+              subscribers={filteredSubscribers}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+              onView={handleView}
+            />
+          )}
 
-        {/* Search and Filter Bar */}
-        <Card className="border-0 shadow-lg bg-white/90 backdrop-blur-sm">
-          <CardContent className="p-4 sm:p-6">
-            <div className="flex flex-col sm:flex-row gap-4">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                <Input
-                  placeholder="Buscar assinantes por nome, CPF/CNPJ ou email..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 border-gray-200 focus:border-green-400 focus:ring-green-400"
-                />
-              </div>
-              <Button 
-                variant="outline" 
-                className="flex items-center space-x-2 border-green-200 text-green-700 hover:bg-green-50"
-              >
-                <Filter className="w-4 h-4" />
-                <span>Filtros</span>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Subscribers Table */}
-        {isLoading ? (
-          <Card className="border-0 shadow-xl bg-white/95 backdrop-blur-sm">
-            <CardContent className="p-8">
-              <div className="flex items-center justify-center py-16">
-                <div className="text-center space-y-4">
-                  <div className="w-12 h-12 border-4 border-green-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
-                  <p className="text-gray-600 text-lg">Carregando assinantes...</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ) : (
-          <SubscribersTable
-            subscribers={filteredSubscribers}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-            onView={handleView}
+          {/* View Modal */}
+          <SubscriberViewModal
+            subscriber={viewingSubscriber}
+            isOpen={!!viewingSubscriber}
+            onClose={() => setViewingSubscriber(null)}
           />
-        )}
-
-        {/* View Modal */}
-        <SubscriberViewModal
-          subscriber={viewingSubscriber}
-          isOpen={!!viewingSubscriber}
-          onClose={() => setViewingSubscriber(null)}
-        />
+        </div>
       </div>
     </DashboardLayout>
   );
