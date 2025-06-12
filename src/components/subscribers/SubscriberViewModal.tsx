@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
@@ -47,10 +46,10 @@ const SubscriberViewModal = ({ subscriber, isOpen, onClose }: SubscriberViewModa
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-7xl w-[95vw] h-[95vh] max-h-none p-0 overflow-hidden bg-gradient-to-br from-gray-50 via-white to-gray-50">
+      <DialogContent className="max-w-7xl w-[95vw] h-[95vh] max-h-none p-0 overflow-hidden">
         <div className="h-full overflow-y-auto">
           {/* Header Redesenhado */}
-          <div className="relative overflow-hidden border-b border-gray-100">
+          <div className="relative overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600"></div>
             <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48Y2lyY2xlIGN4PSIzMCIgY3k9IjMwIiByPSIyIi8+PC9nPjwvZz48L3N2Zz4=')] opacity-30"></div>
             
@@ -89,7 +88,7 @@ const SubscriberViewModal = ({ subscriber, isOpen, onClose }: SubscriberViewModa
           </div>
 
           {/* Estatísticas Rápidas */}
-          <div className="p-8 pb-4">
+          <div className="p-8 pb-4 bg-gray-50">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
               <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-6 rounded-2xl border border-green-100 shadow-sm">
                 <div className="flex items-center gap-4">
@@ -138,7 +137,7 @@ const SubscriberViewModal = ({ subscriber, isOpen, onClose }: SubscriberViewModa
           </div>
 
           {/* Conteúdo Principal */}
-          <div className="px-8 pb-8">
+          <div className="px-8 pb-8 bg-gray-50">
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
               {/* Lado Esquerdo - Dados Pessoais/Empresa */}
               <div className="space-y-8">
