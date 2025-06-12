@@ -45,7 +45,7 @@ export function AppSidebar() {
     <Sidebar className="bg-green-600 border-none" collapsible="icon">
       <div className="h-screen bg-green-600 flex flex-col">
         <SidebarContent className="bg-green-600 flex flex-col h-full">
-          {/* Header - Mais compacto no mobile */}
+          {/* Header - More compact on mobile */}
           <div className={`flex items-center p-1.5 xs:p-2 sm:p-3 border-b border-green-500/20 flex-shrink-0 ${
             isCollapsed ? 'justify-center' : 'justify-between'
           }`}>
@@ -77,28 +77,35 @@ export function AppSidebar() {
               )}
               
               <SidebarGroupContent>
-                <SidebarMenu className={`space-y-0.5 xs:space-y-1 sm:space-y-2 ${isCollapsed ? 'items-center' : ''}`}>
+                <SidebarMenu className="space-y-0.5 xs:space-y-1 sm:space-y-2">
                   {menuItems.map((item) => (
                     <SidebarMenuItem key={item.title}>
                       <SidebarMenuButton 
                         asChild 
-                        size={isCollapsed ? "sm" : "default"}
+                        size="default"
                         tooltip={isCollapsed ? item.title : undefined}
                       >
                         <NavLink
                           to={item.url}
                           end
                           className={({ isActive }) => 
-                            `flex items-center gap-1.5 xs:gap-2 sm:gap-3 px-1.5 xs:px-2 sm:px-3 py-1.5 xs:py-2 sm:py-3 rounded-md xs:rounded-lg transition-all duration-200 text-white group touch-manipulation ${
+                            `flex items-center gap-1.5 xs:gap-2 sm:gap-3 px-1.5 xs:px-2 sm:px-3 py-2 xs:py-2.5 sm:py-3 rounded-md xs:rounded-lg transition-all duration-200 text-white group touch-manipulation ${
                               isActive 
                                 ? 'bg-green-700/80 text-white shadow-md' 
                                 : 'hover:bg-green-700/50'
-                            } ${isCollapsed ? 'justify-center w-8 h-8 xs:w-9 xs:h-9 sm:w-10 sm:h-10 lg:w-12 lg:h-12' : ''}`
+                            }`
                           }
                         >
-                          <item.icon className={`flex-shrink-0 ${isCollapsed ? 'w-3.5 h-3.5 xs:w-4 xs:h-4' : 'w-3.5 h-3.5 xs:w-4 xs:h-4 sm:w-4 sm:h-4 lg:w-5 lg:h-5'}`} />
+                          <item.icon className="flex-shrink-0 w-4 h-4 xs:w-4 xs:h-4 sm:w-4 sm:h-4 lg:w-5 lg:h-5" />
+                          {/* Always show text on mobile when sidebar is open, only hide when collapsed on desktop */}
+                          <span className="font-medium text-xs xs:text-xs sm:text-sm truncate block lg:hidden">
+                            {item.title}
+                          </span>
+                          {/* Desktop: show/hide based on collapsed state */}
                           {!isCollapsed && (
-                            <span className="font-medium text-xs xs:text-xs sm:text-sm truncate">{item.title}</span>
+                            <span className="font-medium text-xs xs:text-xs sm:text-sm truncate hidden lg:block">
+                              {item.title}
+                            </span>
                           )}
                         </NavLink>
                       </SidebarMenuButton>

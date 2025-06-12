@@ -1,7 +1,7 @@
 
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { Sun, LogOut, User } from 'lucide-react';
+import { Sun, LogOut, User, Menu } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from '@/components/ui/use-toast';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
@@ -50,8 +50,10 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
           <header className="bg-white/95 backdrop-blur-sm shadow-sm border-b border-gray-200/50 sticky top-0 z-40">
             <div className="flex items-center justify-between h-11 xs:h-12 sm:h-14 lg:h-16 px-2 xs:px-3 sm:px-4 lg:px-6">
               <div className="flex items-center space-x-1.5 xs:space-x-2 min-w-0">
-                {/* Mobile Menu Button - Only visible on mobile */}
-                <SidebarTrigger className="lg:hidden mr-1 xs:mr-2 p-1 xs:p-1.5 h-7 w-7 xs:h-8 xs:w-8" />
+                {/* Mobile Menu Button - More prominent and clearer */}
+                <SidebarTrigger className="lg:hidden mr-1 xs:mr-2 p-2 xs:p-2.5 h-9 w-9 xs:h-10 xs:w-10 bg-green-50 hover:bg-green-100 border border-green-200 rounded-lg transition-colors duration-200 shadow-sm">
+                  <Menu className="w-4 h-4 xs:w-5 xs:h-5 text-green-600" />
+                </SidebarTrigger>
                 
                 <div className="w-6 h-6 xs:w-7 xs:h-7 sm:w-8 sm:h-8 lg:w-10 lg:h-10 solar-gradient rounded-lg xs:rounded-xl flex items-center justify-center shadow-lg flex-shrink-0">
                   <Sun className="w-3 h-3 xs:w-3 xs:h-3 sm:w-4 sm:h-4 lg:w-6 lg:h-6 text-white" />
