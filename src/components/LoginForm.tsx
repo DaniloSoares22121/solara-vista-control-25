@@ -50,38 +50,38 @@ const LoginForm = () => {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="w-full max-w-md mx-auto space-y-6 lg:space-y-8">
       {/* Header */}
-      <div className="text-center space-y-4">
-        <div className="inline-flex items-center justify-center w-20 h-20 mb-6 solar-gradient rounded-2xl shadow-lg">
-          <Sun className="w-10 h-10 text-white" />
+      <div className="text-center space-y-3 lg:space-y-4">
+        <div className="inline-flex items-center justify-center w-16 h-16 lg:w-20 lg:h-20 mb-4 lg:mb-6 solar-gradient rounded-2xl shadow-lg">
+          <Sun className="w-8 h-8 lg:w-10 lg:h-10 text-white" />
         </div>
         <div>
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">
+          <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-1 lg:mb-2">
             Solar<span className="solar-text-gradient">Control</span>
           </h1>
-          <p className="text-gray-600 text-lg">
+          <p className="text-gray-600 text-base lg:text-lg">
             Acesse sua plataforma de gestão
           </p>
         </div>
       </div>
 
       {/* Login Card */}
-      <Card className="p-8 shadow-xl border-0 bg-white/80 backdrop-blur-sm">
-        <form onSubmit={handleSubmit} className="space-y-6">
+      <Card className="p-6 lg:p-8 shadow-xl border-0 bg-white/80 backdrop-blur-sm">
+        <form onSubmit={handleSubmit} className="space-y-5 lg:space-y-6">
           <div className="space-y-2">
-            <Label htmlFor="email" className="text-gray-700 font-semibold text-base">
+            <Label htmlFor="email" className="text-gray-700 font-semibold text-sm lg:text-base">
               Email
             </Label>
             <div className="relative">
-              <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <Mail className="absolute left-3 lg:left-4 top-1/2 transform -translate-y-1/2 w-4 h-4 lg:w-5 lg:h-5 text-gray-400" />
               <Input
                 id="email"
                 type="email"
                 placeholder="seu@email.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="pl-12 h-14 text-lg border-2 border-gray-200 focus:border-green-500 transition-colors rounded-xl"
+                className="pl-10 lg:pl-12 h-12 lg:h-14 text-base lg:text-lg border-2 border-gray-200 focus:border-green-500 transition-colors rounded-xl"
                 required
                 disabled={loading}
               />
@@ -89,30 +89,30 @@ const LoginForm = () => {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="password" className="text-gray-700 font-semibold text-base">
+            <Label htmlFor="password" className="text-gray-700 font-semibold text-sm lg:text-base">
               Senha
             </Label>
             <div className="relative">
-              <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <Lock className="absolute left-3 lg:left-4 top-1/2 transform -translate-y-1/2 w-4 h-4 lg:w-5 lg:h-5 text-gray-400" />
               <Input
                 id="password"
                 type="password"
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="pl-12 h-14 text-lg border-2 border-gray-200 focus:border-green-500 transition-colors rounded-xl"
+                className="pl-10 lg:pl-12 h-12 lg:h-14 text-base lg:text-lg border-2 border-gray-200 focus:border-green-500 transition-colors rounded-xl"
                 required
                 disabled={loading}
               />
             </div>
           </div>
 
-          <div className="flex items-center justify-between">
-            <label className="flex items-center space-x-3 cursor-pointer">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0">
+            <label className="flex items-center space-x-2 cursor-pointer">
               <input type="checkbox" className="rounded border-gray-300 text-green-500 focus:ring-green-400" />
-              <span className="text-gray-600 font-medium">Lembrar-me</span>
+              <span className="text-gray-600 font-medium text-sm">Lembrar-me</span>
             </label>
-            <a href="#" className="text-green-600 hover:text-green-700 font-semibold transition-colors">
+            <a href="#" className="text-green-600 hover:text-green-700 font-semibold transition-colors text-sm">
               Esqueceu a senha?
             </a>
           </div>
@@ -120,15 +120,15 @@ const LoginForm = () => {
           <Button
             type="submit"
             disabled={loading}
-            className="w-full h-14 solar-gradient hover:opacity-90 transition-all duration-300 text-white font-bold text-lg rounded-xl shadow-lg hover:shadow-xl group disabled:opacity-50"
+            className="w-full h-12 lg:h-14 solar-gradient hover:opacity-90 transition-all duration-300 text-white font-bold text-base lg:text-lg rounded-xl shadow-lg hover:shadow-xl group disabled:opacity-50"
           >
-            <Zap className="w-5 h-5 mr-3" />
+            <Zap className="w-4 h-4 lg:w-5 lg:h-5 mr-2 lg:mr-3" />
             {loading ? "Entrando..." : "Entrar no Sistema"}
-            <ArrowRight className="w-5 h-5 ml-3 group-hover:translate-x-1 transition-transform" />
+            <ArrowRight className="w-4 h-4 lg:w-5 lg:h-5 ml-2 lg:ml-3 group-hover:translate-x-1 transition-transform" />
           </Button>
 
-          <div className="text-center pt-6">
-            <p className="text-gray-600">
+          <div className="text-center pt-4 lg:pt-6">
+            <p className="text-gray-600 text-sm">
               Não tem uma conta?{" "}
               <a href="/register" className="text-green-600 hover:text-green-700 font-semibold transition-colors">
                 Cadastre-se aqui
@@ -140,7 +140,7 @@ const LoginForm = () => {
 
       {/* Footer */}
       <div className="text-center">
-        <p className="text-gray-500 text-sm">
+        <p className="text-gray-500 text-xs lg:text-sm">
           © 2024 SolarControl - Energia Limpa para um Futuro Sustentável
         </p>
       </div>

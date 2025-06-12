@@ -46,59 +46,59 @@ export function AppSidebar() {
       <div className="h-screen bg-green-600 flex flex-col">
         <SidebarContent className="bg-green-600 flex flex-col h-full">
           {/* Header */}
-          <div className={`flex items-center p-3 border-b border-green-500/20 flex-shrink-0 ${
+          <div className={`flex items-center p-2 sm:p-3 border-b border-green-500/20 flex-shrink-0 ${
             isCollapsed ? 'justify-center' : 'justify-between'
           }`}>
             {!isCollapsed && (
-              <h2 className="text-lg font-bold text-white">
+              <h2 className="text-sm sm:text-base lg:text-lg font-bold text-white truncate">
                 SolarControl
               </h2>
             )}
             
             <button
               onClick={toggleSidebar}
-              className="p-2 rounded-lg bg-green-700/40 hover:bg-green-700/60 text-white transition-all duration-200 shadow-sm"
+              className="p-1.5 sm:p-2 rounded-lg bg-green-700/40 hover:bg-green-700/60 text-white transition-all duration-200 shadow-sm flex-shrink-0"
             >
               {isCollapsed ? (
-                <ChevronRight className="w-4 h-4" />
+                <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4" />
               ) : (
-                <ChevronLeft className="w-4 h-4" />
+                <ChevronLeft className="w-3 h-3 sm:w-4 sm:h-4" />
               )}
             </button>
           </div>
 
           {/* Menu de navegação */}
-          <div className="flex-1 p-3">
+          <div className="flex-1 p-2 sm:p-3 overflow-y-auto">
             <SidebarGroup className="p-0">
               {!isCollapsed && (
-                <SidebarGroupLabel className="text-green-100 px-2 py-2 text-xs font-medium uppercase tracking-wider mb-3">
+                <SidebarGroupLabel className="text-green-100 px-2 py-1 sm:py-2 text-xs font-medium uppercase tracking-wider mb-2 sm:mb-3">
                   Menu Principal
                 </SidebarGroupLabel>
               )}
               
               <SidebarGroupContent>
-                <SidebarMenu className={`space-y-2 ${isCollapsed ? 'items-center' : ''}`}>
+                <SidebarMenu className={`space-y-1 sm:space-y-2 ${isCollapsed ? 'items-center' : ''}`}>
                   {menuItems.map((item) => (
                     <SidebarMenuItem key={item.title}>
                       <SidebarMenuButton 
                         asChild 
-                        size="lg"
+                        size={isCollapsed ? "sm" : "default"}
                         tooltip={isCollapsed ? item.title : undefined}
                       >
                         <NavLink
                           to={item.url}
                           end
                           className={({ isActive }) => 
-                            `flex items-center gap-3 px-3 py-3 rounded-lg transition-all duration-200 text-white group ${
+                            `flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-2 sm:py-3 rounded-lg transition-all duration-200 text-white group ${
                               isActive 
                                 ? 'bg-green-700/80 text-white shadow-md' 
                                 : 'hover:bg-green-700/50'
-                            } ${isCollapsed ? 'justify-center w-12 h-12' : ''}`
+                            } ${isCollapsed ? 'justify-center w-10 h-10 sm:w-12 sm:h-12' : ''}`
                           }
                         >
-                          <item.icon className={`flex-shrink-0 ${isCollapsed ? 'w-5 h-5' : 'w-5 h-5'}`} />
+                          <item.icon className={`flex-shrink-0 ${isCollapsed ? 'w-4 h-4' : 'w-4 h-4 sm:w-5 sm:h-5'}`} />
                           {!isCollapsed && (
-                            <span className="font-medium text-sm">{item.title}</span>
+                            <span className="font-medium text-xs sm:text-sm truncate">{item.title}</span>
                           )}
                         </NavLink>
                       </SidebarMenuButton>
@@ -110,20 +110,20 @@ export function AppSidebar() {
           </div>
           
           {/* Footer */}
-          <div className="flex-shrink-0 p-3">
+          <div className="flex-shrink-0 p-2 sm:p-3">
             {!isCollapsed ? (
-              <div className="bg-green-700/30 rounded-lg p-3">
-                <div className="flex items-center space-x-3">
+              <div className="bg-green-700/30 rounded-lg p-2 sm:p-3">
+                <div className="flex items-center space-x-2 sm:space-x-3">
                   <div className="w-2 h-2 bg-green-300 rounded-full flex-shrink-0"></div>
                   <div className="min-w-0">
                     <p className="text-white text-xs font-medium">Sistema Online</p>
-                    <p className="text-green-100 text-xs opacity-80">Todos os serviços ativos</p>
+                    <p className="text-green-100 text-xs opacity-80 truncate">Todos os serviços ativos</p>
                   </div>
                 </div>
               </div>
             ) : (
               <div className="flex justify-center">
-                <div className="w-3 h-3 bg-green-300 rounded-full shadow-sm"></div>
+                <div className="w-2 h-2 sm:w-3 sm:h-3 bg-green-300 rounded-full shadow-sm"></div>
               </div>
             )}
           </div>
