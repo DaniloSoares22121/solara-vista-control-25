@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,7 +9,7 @@ import GeneratorDetails from '@/components/GeneratorDetails';
 import NewGeneratorModal from '@/components/forms/NewGeneratorModal';
 
 const Geradoras = () => {
-  const { generators, isLoading, deleteGenerator, refetch } = useGenerators();
+  const { generators, loading, deleteGenerator, refreshGenerators } = useGenerators();
   const [selectedGenerator, setSelectedGenerator] = useState<any>(null);
   const [showNewGeneratorModal, setShowNewGeneratorModal] = useState(false);
 
@@ -31,10 +30,10 @@ const Geradoras = () => {
   };
 
   const handleNewGeneratorSuccess = () => {
-    refetch();
+    refreshGenerators();
   };
 
-  if (isLoading) {
+  if (loading) {
     return (
       <div className="p-6">
         <LoadingSpinner size="lg" text="Carregando geradoras..." />

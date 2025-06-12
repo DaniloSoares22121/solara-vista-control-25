@@ -18,16 +18,16 @@ import {
   X
 } from 'lucide-react';
 import { useGeneratorForm } from '@/hooks/useGeneratorForm';
-import { FormProgress } from '@/components/forms/FormProgress';
-import { StepNavigationButtons } from '@/components/forms/StepNavigationButtons';
-import { GeneratorOwnerTypeForm } from '@/components/forms/GeneratorOwnerTypeForm';
-import { GeneratorOwnerDataForm } from '@/components/forms/GeneratorOwnerDataForm';
-import { GeneratorAdministratorForm } from '@/components/forms/GeneratorAdministratorForm';
-import { GeneratorPlantsForm } from '@/components/forms/GeneratorPlantsForm';
-import { GeneratorPaymentForm } from '@/components/forms/GeneratorPaymentForm';
-import { GeneratorDistributorLoginForm } from '@/components/forms/GeneratorDistributorLoginForm';
-import { GeneratorConcessionariaForm } from '@/components/forms/GeneratorConcessionariaForm';
-import { GeneratorAttachmentsForm } from '@/components/forms/GeneratorAttachmentsForm';
+import FormProgress from '@/components/forms/FormProgress';
+import StepNavigationButtons from '@/components/forms/StepNavigationButtons';
+import GeneratorOwnerTypeForm from '@/components/forms/GeneratorOwnerTypeForm';
+import GeneratorOwnerDataForm from '@/components/forms/GeneratorOwnerDataForm';
+import GeneratorAdministratorForm from '@/components/forms/GeneratorAdministratorForm';
+import GeneratorPlantsForm from '@/components/forms/GeneratorPlantsForm';
+import GeneratorPaymentForm from '@/components/forms/GeneratorPaymentForm';
+import GeneratorDistributorLoginForm from '@/components/forms/GeneratorDistributorLoginForm';
+import GeneratorConcessionariaForm from '@/components/forms/GeneratorConcessionariaForm';
+import GeneratorAttachmentsForm from '@/components/forms/GeneratorAttachmentsForm';
 import { useToast } from '@/hooks/use-toast';
 
 interface NewGeneratorModalProps {
@@ -210,7 +210,12 @@ const NewGeneratorModal = ({ isOpen, onClose, onSuccess }: NewGeneratorModalProp
               </Button>
             </div>
             
-            <FormProgress currentStep={currentStep} totalSteps={totalSteps} />
+            <div className="w-full bg-white/20 rounded-full h-2 mb-4">
+              <div 
+                className="bg-white h-2 rounded-full transition-all duration-300" 
+                style={{ width: `${(currentStep / totalSteps) * 100}%` }}
+              />
+            </div>
             
             <div className="mt-4">
               <div className="flex items-center gap-3">
