@@ -99,7 +99,7 @@ export function AppSidebar() {
                               isActive 
                                 ? 'bg-white/20 backdrop-blur-sm text-white shadow-lg border border-white/10' 
                                 : 'hover:bg-white/10 hover:backdrop-blur-sm'
-                            } ${isCollapsed ? 'justify-start px-2' : ''}`
+                            } ${isCollapsed ? 'justify-center' : ''}`
                           }
                         >
                           <item.icon className="flex-shrink-0 w-5 h-5" />
