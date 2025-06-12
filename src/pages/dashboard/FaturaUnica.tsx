@@ -5,8 +5,10 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { MaskedInput } from '@/components/ui/masked-input';
-import { FileText, Search, Download, Zap, Clock, Check, Timer, Users, Edit, User, Building2, Calendar, CreditCard, AlertCircle, CheckCircle2, Save, Sparkles, Star } from 'lucide-react';
+import { FileText, Search, Download, Zap, Clock, Check, Timer, Users, Edit, User, Building2, Calendar, CreditCard, AlertCircle, CheckCircle2, Save, Sparkles, Star, ChevronDown } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -27,6 +29,8 @@ const FaturaUnica = () => {
   
   // Estados para seleção de assinante
   const [selectedSubscriberId, setSelectedSubscriberId] = useState('');
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchValue, setSearchValue] = useState('');
   
   // Estados para modo manual
   const [manualData, setManualData] = useState({
@@ -193,6 +197,7 @@ const FaturaUnica = () => {
 
   const resetForm = () => {
     setSelectedSubscriberId('');
+    setSearchValue('');
     setManualData({
       uc: '',
       documento: '',
@@ -236,6 +241,26 @@ const FaturaUnica = () => {
     if (manualData.tipo === 'fisica' && !manualData.dataNascimento) return false;
     return true;
   };
+
+  // Filtrar assinantes baseado na busca
+  const filteredSubscribers = subscribers.filter((subscriber) => {
+    const subscriberData = subscriber.subscriber as any;
+    const energyAccount = subscriber.energy_account as any;
+    
+    const name = subscriberData?.fullName || 
+                 subscriberData?.nome || 
+                 subscriberData?.companyName || 
+                 subscriberData?.razaoSocial || 
+                 subscriberData?.fantasyName || '';
+    
+    const uc = energyAccount?.uc || '';
+    const documento = subscriberData?.cpf || subscriberData?.cnpj || '';
+    
+    const searchLower = searchValue.toLowerCase();
+    return name.toLowerCase().includes(searchLower) || 
+           uc.includes(searchValue) || 
+           documento.includes(searchValue);
+  });
 
   return (
     <DashboardLayout>
@@ -395,55 +420,106 @@ const FaturaUnica = () => {
                           <Users className="w-5 h-5" />
                           Assinante Cadastrado
                         </label>
-                        <Select
-                          value={selectedSubscriberId}
-                          onValueChange={setSelectedSubscriberId}
-                          disabled={isLoadingSubscribers}
-                        >
-                          <SelectTrigger className="h-16 border-2 border-gray-200 hover:border-emerald-300 focus:border-emerald-500 transition-colors bg-white/70 backdrop-blur-sm">
-                            <SelectValue placeholder={isLoadingSubscribers ? "Carregando assinantes..." : "Selecione um assinante"} />
-                          </SelectTrigger>
-                          <SelectContent className="bg-white/95 backdrop-blur-sm border-2 border-gray-200 shadow-2xl">
-                            {subscribers.map((subscriber) => {
-                              const subscriberData = subscriber.subscriber as any;
-                              const energyAccount = subscriber.energy_account as any;
-                              
-                              const name = subscriberData?.fullName || 
-                                          subscriberData?.nome || 
-                                          subscriberData?.companyName || 
-                                          subscriberData?.razaoSocial || 
-                                          subscriberData?.fantasyName || 
-                                          'Nome não encontrado';
-                              
-                              const uc = energyAccount?.uc || 'UC não informada';
-                              const tipo = subscriberData?.cpf ? 'CPF' : 'CNPJ';
-                              const documento = subscriberData?.cpf || subscriberData?.cnpj || '';
-                              
-                              return (
-                                <SelectItem key={subscriber.id} value={subscriber.id} className="p-4 hover:bg-emerald-50 cursor-pointer">
-                                  <div className="flex items-center gap-4">
-                                    <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-green-500 rounded-xl flex items-center justify-center shadow-lg">
-                                      {subscriberData?.cpf ? (
-                                        <User className="w-6 h-6 text-white" />
+                        
+                        <Popover open={searchOpen} onOpenChange={setSearchOpen}>
+                          <PopoverTrigger asChild>
+                            <Button
+                              variant="outline"
+                              role="combobox"
+                              aria-expanded={searchOpen}
+                              className="h-16 w-full justify-between border-2 border-gray-200 hover:border-emerald-300 focus:border-emerald-500 transition-colors bg-white/70 backdrop-blur-sm text-lg"
+                              disabled={isLoadingSubscribers}
+                            >
+                              {selectedSubscriberId ? (
+                                <div className="flex items-center gap-3">
+                                  <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-green-500 rounded-lg flex items-center justify-center">
+                                    {(() => {
+                                      const subscriber = subscribers.find(s => s.id === selectedSubscriberId);
+                                      const subscriberData = subscriber?.subscriber as any;
+                                      return subscriberData?.cpf ? (
+                                        <User className="w-4 h-4 text-white" />
                                       ) : (
-                                        <Building2 className="w-6 h-6 text-white" />
-                                      )}
-                                    </div>
-                                    <div className="flex-1">
-                                      <div className="font-semibold text-gray-900 text-lg">{name}</div>
-                                      <div className="text-sm text-gray-500 font-medium">UC: {uc}</div>
-                                      <div className="text-xs text-gray-400">{tipo}: {documento}</div>
-                                    </div>
+                                        <Building2 className="w-4 h-4 text-white" />
+                                      );
+                                    })()}
                                   </div>
-                                </SelectItem>
-                              );
-                            })}
-                          </SelectContent>
-                        </Select>
+                                  <span className="font-medium">{getSelectedSubscriberName()}</span>
+                                </div>
+                              ) : (
+                                <span className="text-muted-foreground">
+                                  {isLoadingSubscribers ? "Carregando assinantes..." : "Buscar assinante..."}
+                                </span>
+                              )}
+                              <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-full p-0 bg-white/95 backdrop-blur-sm border-2 border-gray-200 shadow-2xl" align="start">
+                            <Command>
+                              <CommandInput 
+                                placeholder="Buscar por nome, UC ou documento..." 
+                                value={searchValue}
+                                onValueChange={setSearchValue}
+                                className="h-12"
+                              />
+                              <CommandList className="max-h-[300px]">
+                                <CommandEmpty>Nenhum assinante encontrado.</CommandEmpty>
+                                <CommandGroup>
+                                  {filteredSubscribers.map((subscriber) => {
+                                    const subscriberData = subscriber.subscriber as any;
+                                    const energyAccount = subscriber.energy_account as any;
+                                    
+                                    const name = subscriberData?.fullName || 
+                                                subscriberData?.nome || 
+                                                subscriberData?.companyName || 
+                                                subscriberData?.razaoSocial || 
+                                                subscriberData?.fantasyName || 
+                                                'Nome não encontrado';
+                                    
+                                    const uc = energyAccount?.uc || 'UC não informada';
+                                    const tipo = subscriberData?.cpf ? 'CPF' : 'CNPJ';
+                                    const documento = subscriberData?.cpf || subscriberData?.cnpj || '';
+                                    
+                                    return (
+                                      <CommandItem
+                                        key={subscriber.id}
+                                        value={`${name} ${uc} ${documento}`}
+                                        onSelect={() => {
+                                          setSelectedSubscriberId(subscriber.id);
+                                          setSearchOpen(false);
+                                        }}
+                                        className="p-4 hover:bg-emerald-50 cursor-pointer"
+                                      >
+                                        <div className="flex items-center gap-4 w-full">
+                                          <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-green-500 rounded-xl flex items-center justify-center shadow-lg">
+                                            {subscriberData?.cpf ? (
+                                              <User className="w-5 h-5 text-white" />
+                                            ) : (
+                                              <Building2 className="w-5 h-5 text-white" />
+                                            )}
+                                          </div>
+                                          <div className="flex-1">
+                                            <div className="font-semibold text-gray-900">{name}</div>
+                                            <div className="text-sm text-gray-500 font-medium">UC: {uc}</div>
+                                            <div className="text-xs text-gray-400">{tipo}: {documento}</div>
+                                          </div>
+                                          <Check
+                                            className={`ml-auto h-4 w-4 ${
+                                              selectedSubscriberId === subscriber.id ? "opacity-100" : "opacity-0"
+                                            }`}
+                                          />
+                                        </div>
+                                      </CommandItem>
+                                    );
+                                  })}
+                                </CommandGroup>
+                              </CommandList>
+                            </Command>
+                          </PopoverContent>
+                        </Popover>
                         
                         {selectedSubscriberId && (
                           <div className="mt-6 p-6 bg-gradient-to-r from-emerald-50 to-green-50 border-2 border-emerald-200 rounded-2xl shadow-lg">
-                            <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-4 mb-4">
                               <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-green-500 rounded-xl flex items-center justify-center shadow-lg">
                                 <CheckCircle2 className="w-6 h-6 text-white" />
                               </div>
@@ -459,6 +535,26 @@ const FaturaUnica = () => {
                                   Será salvo em "Faturas em Validação"
                                 </div>
                               </div>
+                            </div>
+                            
+                            {/* Mostrar os dados que serão utilizados */}
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-emerald-200">
+                              <div className="space-y-1">
+                                <div className="text-xs font-medium text-emerald-600 uppercase tracking-wide">UC</div>
+                                <div className="text-emerald-800 font-semibold">{manualData.uc || 'Não informado'}</div>
+                              </div>
+                              <div className="space-y-1">
+                                <div className="text-xs font-medium text-emerald-600 uppercase tracking-wide">
+                                  {manualData.tipo === 'fisica' ? 'CPF' : 'CNPJ'}
+                                </div>
+                                <div className="text-emerald-800 font-semibold">{manualData.documento || 'Não informado'}</div>
+                              </div>
+                              {manualData.tipo === 'fisica' && (
+                                <div className="space-y-1">
+                                  <div className="text-xs font-medium text-emerald-600 uppercase tracking-wide">Data Nascimento</div>
+                                  <div className="text-emerald-800 font-semibold">{manualData.dataNascimento || 'Não informado'}</div>
+                                </div>
+                              )}
                             </div>
                           </div>
                         )}
@@ -498,70 +594,67 @@ const FaturaUnica = () => {
                           </SelectContent>
                         </Select>
                       </div>
-                    </div>
-                  )}
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div className="space-y-3">
-                      <label className="block text-lg font-semibold text-gray-700 flex items-center gap-3">
-                        <Zap className="w-5 h-5" />
-                        Unidade Consumidora (UC)
-                      </label>
-                      <Input
-                        placeholder="Ex: 10038684096"
-                        className="h-14 border-2 border-gray-200 hover:border-green-300 focus:border-green-500 transition-colors bg-white/70 backdrop-blur-sm text-lg"
-                        value={manualData.uc}
-                        onChange={(e) => setManualData(prev => ({ ...prev, uc: e.target.value }))}
-                        disabled={entryMode === 'select' && selectedSubscriberId !== ''}
-                      />
-                    </div>
-                    
-                    <div className="space-y-3">
-                      <label className="block text-lg font-semibold text-gray-700 flex items-center gap-3">
-                        <CreditCard className="w-5 h-5" />
-                        {manualData.tipo === 'fisica' ? 'CPF' : 'CNPJ'}
-                      </label>
-                      <MaskedInput
-                        mask={manualData.tipo === 'fisica' ? "999.999.999-99" : "99.999.999/9999-99"}
-                        placeholder={manualData.tipo === 'fisica' ? "000.000.000-00" : "00.000.000/0000-00"}
-                        className="h-14 border-2 border-gray-200 hover:border-green-300 focus:border-green-500 transition-colors bg-white/70 backdrop-blur-sm text-lg"
-                        value={manualData.documento}
-                        onChange={(e) => setManualData(prev => ({ ...prev, documento: e.target.value }))}
-                        disabled={entryMode === 'select' && selectedSubscriberId !== ''}
-                      />
-                    </div>
-                  </div>
-
-                  {manualData.tipo === 'fisica' && (
-                    <div className="space-y-3">
-                      <label className="block text-lg font-semibold text-gray-700 flex items-center gap-3">
-                        <Calendar className="w-5 h-5" />
-                        Data de Nascimento
-                        <Badge variant="secondary" className="ml-3 text-sm bg-red-100 text-red-700 border-red-200">Obrigatório</Badge>
-                      </label>
-                      <MaskedInput
-                        mask="99/99/9999"
-                        placeholder="DD/MM/AAAA"
-                        className="h-14 border-2 border-gray-200 hover:border-green-300 focus:border-green-500 transition-colors bg-white/70 backdrop-blur-sm text-lg"
-                        value={manualData.dataNascimento}
-                        onChange={(e) => setManualData(prev => ({ ...prev, dataNascimento: e.target.value }))}
-                        disabled={entryMode === 'select' && selectedSubscriberId !== ''}
-                      />
-                    </div>
-                  )}
-
-                  {/* Validation Messages */}
-                  {!isFormValid() && (
-                    <div className="p-6 bg-gradient-to-r from-amber-50 to-yellow-50 border-2 border-amber-200 rounded-2xl shadow-lg">
-                      <div className="flex items-center gap-3 text-amber-800 mb-3">
-                        <AlertCircle className="w-6 h-6" />
-                        <span className="font-semibold text-lg">Campos obrigatórios em falta:</span>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div className="space-y-3">
+                          <label className="block text-lg font-semibold text-gray-700 flex items-center gap-3">
+                            <Zap className="w-5 h-5" />
+                            Unidade Consumidora (UC)
+                          </label>
+                          <Input
+                            placeholder="Ex: 10038684096"
+                            className="h-14 border-2 border-gray-200 hover:border-green-300 focus:border-green-500 transition-colors bg-white/70 backdrop-blur-sm text-lg"
+                            value={manualData.uc}
+                            onChange={(e) => setManualData(prev => ({ ...prev, uc: e.target.value }))}
+                          />
+                        </div>
+                        
+                        <div className="space-y-3">
+                          <label className="block text-lg font-semibold text-gray-700 flex items-center gap-3">
+                            <CreditCard className="w-5 h-5" />
+                            {manualData.tipo === 'fisica' ? 'CPF' : 'CNPJ'}
+                          </label>
+                          <MaskedInput
+                            mask={manualData.tipo === 'fisica' ? "999.999.999-99" : "99.999.999/9999-99"}
+                            placeholder={manualData.tipo === 'fisica' ? "000.000.000-00" : "00.000.000/0000-00"}
+                            className="h-14 border-2 border-gray-200 hover:border-green-300 focus:border-green-500 transition-colors bg-white/70 backdrop-blur-sm text-lg"
+                            value={manualData.documento}
+                            onChange={(e) => setManualData(prev => ({ ...prev, documento: e.target.value }))}
+                          />
+                        </div>
                       </div>
-                      <ul className="text-amber-700 space-y-2 font-medium">
-                        {!manualData.uc && <li className="flex items-center gap-2"><span className="w-2 h-2 bg-amber-500 rounded-full"></span> Unidade Consumidora (UC)</li>}
-                        {!manualData.documento && <li className="flex items-center gap-2"><span className="w-2 h-2 bg-amber-500 rounded-full"></span> {manualData.tipo === 'fisica' ? 'CPF' : 'CNPJ'}</li>}
-                        {manualData.tipo === 'fisica' && !manualData.dataNascimento && <li className="flex items-center gap-2"><span className="w-2 h-2 bg-amber-500 rounded-full"></span> Data de Nascimento</li>}
-                      </ul>
+
+                      {manualData.tipo === 'fisica' && (
+                        <div className="space-y-3">
+                          <label className="block text-lg font-semibold text-gray-700 flex items-center gap-3">
+                            <Calendar className="w-5 h-5" />
+                            Data de Nascimento
+                            <Badge variant="secondary" className="ml-3 text-sm bg-red-100 text-red-700 border-red-200">Obrigatório</Badge>
+                          </label>
+                          <MaskedInput
+                            mask="99/99/9999"
+                            placeholder="DD/MM/AAAA"
+                            className="h-14 border-2 border-gray-200 hover:border-green-300 focus:border-green-500 transition-colors bg-white/70 backdrop-blur-sm text-lg"
+                            value={manualData.dataNascimento}
+                            onChange={(e) => setManualData(prev => ({ ...prev, dataNascimento: e.target.value }))}
+                          />
+                        </div>
+                      )}
+
+                      {/* Validation Messages */}
+                      {!isFormValid() && (
+                        <div className="p-6 bg-gradient-to-r from-amber-50 to-yellow-50 border-2 border-amber-200 rounded-2xl shadow-lg">
+                          <div className="flex items-center gap-3 text-amber-800 mb-3">
+                            <AlertCircle className="w-6 h-6" />
+                            <span className="font-semibold text-lg">Campos obrigatórios em falta:</span>
+                          </div>
+                          <ul className="text-amber-700 space-y-2 font-medium">
+                            {!manualData.uc && <li className="flex items-center gap-2"><span className="w-2 h-2 bg-amber-500 rounded-full"></span> Unidade Consumidora (UC)</li>}
+                            {!manualData.documento && <li className="flex items-center gap-2"><span className="w-2 h-2 bg-amber-500 rounded-full"></span> {manualData.tipo === 'fisica' ? 'CPF' : 'CNPJ'}</li>}
+                            {manualData.tipo === 'fisica' && !manualData.dataNascimento && <li className="flex items-center gap-2"><span className="w-2 h-2 bg-amber-500 rounded-full"></span> Data de Nascimento</li>}
+                          </ul>
+                        </div>
+                      )}
                     </div>
                   )}
 
