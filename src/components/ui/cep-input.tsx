@@ -33,10 +33,14 @@ export const CepInput = ({
     if (cleanCep.length === 8 && cleanCep !== lastLookup) {
       setLastLookup(cleanCep);
       console.log('Buscando CEP:', cleanCep);
-      const cepData = await lookupCep(cleanCep);
-      console.log('Dados do CEP retornados:', cepData);
-      if (cepData && onCepFound) {
-        onCepFound(cepData);
+      try {
+        const cepData = await lookupCep(cleanCep);
+        console.log('Dados do CEP retornados:', cepData);
+        if (cepData && onCepFound) {
+          onCepFound(cepData);
+        }
+      } catch (error) {
+        console.error('Erro ao buscar CEP:', error);
       }
     } else if (cleanCep.length < 8) {
       setLastLookup('');
@@ -46,7 +50,7 @@ export const CepInput = ({
   return (
     <div className="relative">
       <Input
-        value={value}
+        value={value || ''}
         onChange={handleChange}
         placeholder={placeholder}
         maxLength={9}
@@ -54,7 +58,7 @@ export const CepInput = ({
       />
       {loading && (
         <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-          <Loader2 className="h-4 w-4 animate-spin text-green-600" />
+          <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
         </div>
       )}
     </div>

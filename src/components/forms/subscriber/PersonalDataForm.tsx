@@ -55,15 +55,22 @@ const PersonalDataForm = ({
     handleAddressChange(addressUpdate);
     
     // Atualizar os campos do formulário
-    form.setValue('personalData.address.street', cepData.logradouro);
-    form.setValue('personalData.address.neighborhood', cepData.bairro);
-    form.setValue('personalData.address.city', cepData.localidade);
-    form.setValue('personalData.address.state', cepData.uf);
+    setTimeout(() => {
+      form.setValue('personalData.address.street', cepData.logradouro);
+      form.setValue('personalData.address.neighborhood', cepData.bairro);
+      form.setValue('personalData.address.city', cepData.localidade);
+      form.setValue('personalData.address.state', cepData.uf);
+    }, 100);
   };
 
   return (
     <div className="space-y-6">
-      <h3 className="text-lg font-semibold">3A. Dados do Assinante (Pessoa Física)</h3>
+      <div className="flex items-center gap-3 mb-6">
+        <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
+          <span className="text-white font-bold text-sm">3</span>
+        </div>
+        <h3 className="text-xl font-semibold text-gray-900">Dados do Assinante (Pessoa Física)</h3>
+      </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <FormField
@@ -74,7 +81,7 @@ const PersonalDataForm = ({
               <FormLabel>CPF *</FormLabel>
               <FormControl>
                 <MaskedInput 
-                  {...field} 
+                  value={field.value || ''}
                   mask="999.999.999-99" 
                   placeholder="000.000.000-00" 
                   onChange={(e) => {
@@ -96,7 +103,7 @@ const PersonalDataForm = ({
               <FormLabel>Número Parceiro de Negócio *</FormLabel>
               <FormControl>
                 <Input 
-                  {...field} 
+                  value={field.value || ''}
                   placeholder="Digite o número do parceiro" 
                   onChange={(e) => {
                     field.onChange(e);
@@ -117,7 +124,7 @@ const PersonalDataForm = ({
               <FormLabel>Nome Completo do Titular *</FormLabel>
               <FormControl>
                 <Input 
-                  {...field} 
+                  value={field.value || ''}
                   placeholder="Digite o nome completo" 
                   onChange={(e) => {
                     field.onChange(e);
@@ -138,7 +145,7 @@ const PersonalDataForm = ({
               <FormLabel>Data de Nascimento *</FormLabel>
               <FormControl>
                 <Input 
-                  {...field} 
+                  value={field.value || ''}
                   type="date" 
                   onChange={(e) => {
                     field.onChange(e);
@@ -159,7 +166,7 @@ const PersonalDataForm = ({
               <FormLabel>Estado Civil</FormLabel>
               <FormControl>
                 <Select 
-                  value={field.value} 
+                  value={field.value || ''} 
                   onValueChange={(value) => {
                     field.onChange(value);
                     onUpdate({ maritalStatus: value });
@@ -190,7 +197,7 @@ const PersonalDataForm = ({
               <FormLabel>Profissão</FormLabel>
               <FormControl>
                 <Input 
-                  {...field} 
+                  value={field.value || ''}
                   placeholder="Digite a profissão" 
                   onChange={(e) => {
                     field.onChange(e);
@@ -211,7 +218,7 @@ const PersonalDataForm = ({
               <FormLabel>Telefone *</FormLabel>
               <FormControl>
                 <MaskedInput 
-                  {...field} 
+                  value={field.value || ''}
                   mask="(99) 99999-9999" 
                   placeholder="(00) 00000-0000" 
                   onChange={(e) => {
@@ -233,7 +240,7 @@ const PersonalDataForm = ({
               <FormLabel>E-mail *</FormLabel>
               <FormControl>
                 <Input 
-                  {...field} 
+                  value={field.value || ''}
                   type="email" 
                   placeholder="email@exemplo.com" 
                   onChange={(e) => {
@@ -249,8 +256,13 @@ const PersonalDataForm = ({
       </div>
 
       {/* Endereço Residencial */}
-      <div className="space-y-4 p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-200">
-        <h4 className="text-md font-semibold text-green-900">Endereço Residencial</h4>
+      <div className="space-y-4 p-6 bg-gray-50 rounded-lg border">
+        <h4 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+          <div className="w-6 h-6 bg-gray-500 rounded-full flex items-center justify-center">
+            <span className="text-white font-bold text-xs">📍</span>
+          </div>
+          Endereço Residencial
+        </h4>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField
@@ -283,7 +295,7 @@ const PersonalDataForm = ({
                 <FormLabel>Endereço *</FormLabel>
                 <FormControl>
                   <Input 
-                    {...field} 
+                    value={field.value || ''}
                     placeholder="Digite o endereço" 
                     onChange={(e) => {
                       field.onChange(e);
@@ -304,7 +316,7 @@ const PersonalDataForm = ({
                 <FormLabel>Número *</FormLabel>
                 <FormControl>
                   <Input 
-                    {...field} 
+                    value={field.value || ''}
                     placeholder="Digite o número" 
                     onChange={(e) => {
                       field.onChange(e);
@@ -325,7 +337,7 @@ const PersonalDataForm = ({
                 <FormLabel>Complemento</FormLabel>
                 <FormControl>
                   <Input 
-                    {...field} 
+                    value={field.value || ''}
                     placeholder="Apto, bloco, etc." 
                     onChange={(e) => {
                       field.onChange(e);
@@ -346,7 +358,7 @@ const PersonalDataForm = ({
                 <FormLabel>Bairro *</FormLabel>
                 <FormControl>
                   <Input 
-                    {...field} 
+                    value={field.value || ''}
                     placeholder="Digite o bairro" 
                     onChange={(e) => {
                       field.onChange(e);
@@ -367,7 +379,7 @@ const PersonalDataForm = ({
                 <FormLabel>Cidade *</FormLabel>
                 <FormControl>
                   <Input 
-                    {...field} 
+                    value={field.value || ''}
                     placeholder="Digite a cidade" 
                     onChange={(e) => {
                       field.onChange(e);
@@ -388,7 +400,7 @@ const PersonalDataForm = ({
                 <FormLabel>Estado *</FormLabel>
                 <FormControl>
                   <Input 
-                    {...field} 
+                    value={field.value || ''}
                     placeholder="Digite o estado" 
                     onChange={(e) => {
                       field.onChange(e);
@@ -411,7 +423,7 @@ const PersonalDataForm = ({
             <FormLabel>Observações</FormLabel>
             <FormControl>
               <Textarea 
-                {...field} 
+                value={field.value || ''}
                 placeholder="Observações adicionais" 
                 onChange={(e) => {
                   field.onChange(e);

@@ -5,7 +5,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Form } from '@/components/ui/form';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, Save } from 'lucide-react';
 import { useSubscriberForm } from '@/hooks/useSubscriberForm';
@@ -25,7 +24,6 @@ const schema = z.object({
   subscriberType: z.enum(['person', 'company'], {
     required_error: 'Tipo de assinante é obrigatório',
   }),
-  // Add more validation as needed
 });
 
 const SubscriberForm = () => {
@@ -50,7 +48,6 @@ const SubscriberForm = () => {
   });
 
   const totalSteps = 9;
-  const progress = (currentStep / totalSteps) * 100;
 
   const stepTitles = [
     'Concessionária',
@@ -66,9 +63,6 @@ const SubscriberForm = () => {
 
   const handleNext = () => {
     if (validateStep(currentStep)) {
-      if (currentStep === 3) {
-        // Auto-preenchimento será feito via botão na próxima tela
-      }
       setCurrentStep(Math.min(currentStep + 1, totalSteps));
     }
   };
@@ -181,20 +175,33 @@ const SubscriberForm = () => {
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Header */}
-      <Card className="bg-gradient-to-r from-green-50 to-green-50 border-green-200">
-        <CardHeader>
-          <CardTitle className="text-2xl font-bold text-center text-green-900">
+      <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
+        <CardHeader className="text-center">
+          <CardTitle className="text-2xl font-bold text-blue-900">
             Cadastro de Assinante
           </CardTitle>
-          <div className="space-y-2">
-            <div className="flex justify-between text-sm text-green-700">
-              <span>Etapa {currentStep} de {totalSteps}</span>
-              <span>{Math.round(progress)}% concluído</span>
+          <div className="flex justify-between items-center mt-4 text-sm text-blue-700">
+            <span>Etapa {currentStep} de {totalSteps}</span>
+            <span className="font-medium">{stepTitles[currentStep - 1]}</span>
+          </div>
+          {/* Progress Steps */}
+          <div className="flex justify-center mt-4">
+            <div className="flex space-x-2">
+              {Array.from({ length: totalSteps }, (_, index) => (
+                <div
+                  key={index}
+                  className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
+                    index + 1 < currentStep
+                      ? 'bg-green-500 text-white'
+                      : index + 1 === currentStep
+                      ? 'bg-blue-500 text-white'
+                      : 'bg-gray-200 text-gray-600'
+                  }`}
+                >
+                  {index + 1}
+                </div>
+              ))}
             </div>
-            <Progress value={progress} className="w-full" />
-            <p className="text-center text-sm font-medium text-green-800">
-              {stepTitles[currentStep - 1]}
-            </p>
           </div>
         </CardHeader>
       </Card>
@@ -202,14 +209,14 @@ const SubscriberForm = () => {
       {/* Form Content */}
       <Form {...form}>
         <Card className="shadow-lg">
-          <CardContent className="p-6">
+          <CardContent className="p-8">
             {renderStepContent()}
           </CardContent>
         </Card>
       </Form>
 
       {/* Navigation */}
-      <Card className="bg-gradient-to-r from-gray-50 to-gray-100 border-gray-200">
+      <Card className="bg-gray-50 border-gray-200">
         <CardContent className="p-4">
           <div className="flex justify-between items-center">
             <Button
@@ -217,7 +224,7 @@ const SubscriberForm = () => {
               variant="outline"
               onClick={handlePrevious}
               disabled={currentStep === 1}
-              className="flex items-center space-x-2 border-gray-300"
+              className="flex items-center space-x-2"
             >
               <ChevronLeft className="w-4 h-4" />
               <span>Anterior</span>
@@ -257,7 +264,7 @@ const SubscriberForm = () => {
                   type="button"
                   onClick={handleNext}
                   disabled={!validateStep(currentStep)}
-                  className="flex items-center space-x-2 bg-green-600 hover:bg-green-700"
+                  className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700"
                 >
                   <span>Próximo</span>
                   <ChevronRight className="w-4 h-4" />

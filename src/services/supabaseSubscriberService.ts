@@ -40,24 +40,33 @@ export const subscriberService = {
       throw new Error('Usuário não autenticado');
     }
 
-    // Safely stringify data, handling undefined values
-    const safeStringify = (obj: any) => {
+    // Safely process data, ensuring no undefined values cause issues
+    const safeData = (obj: any) => {
       if (obj === undefined || obj === null) {
-        return {};
+        return null;
       }
-      return JSON.parse(JSON.stringify(obj));
+      try {
+        // Remove any undefined values from the object
+        const cleanObj = JSON.parse(JSON.stringify(obj, (key, value) => 
+          value === undefined ? null : value
+        ));
+        return cleanObj;
+      } catch (error) {
+        console.error('Error processing data:', error);
+        return null;
+      }
     };
 
     const subscriberData = {
       user_id: user.id,
       concessionaria: formData.concessionaria || null,
-      subscriber: safeStringify(formData.subscriberType === 'person' ? formData.personalData : formData.companyData),
-      administrator: safeStringify(formData.administratorData),
-      energy_account: safeStringify(formData.energyAccount),
-      plan_contract: safeStringify(formData.planContract),
-      plan_details: safeStringify(formData.planDetails),
-      notifications: safeStringify(formData.notificationSettings),
-      attachments: safeStringify(formData.attachments),
+      subscriber: safeData(formData.subscriberType === 'person' ? formData.personalData : formData.companyData),
+      administrator: safeData(formData.administratorData),
+      energy_account: safeData(formData.energyAccount),
+      plan_contract: safeData(formData.planContract),
+      plan_details: safeData(formData.planDetails),
+      notifications: safeData(formData.notificationSettings),
+      attachments: safeData(formData.attachments),
       status: 'active'
     };
 
@@ -82,16 +91,30 @@ export const subscriberService = {
       updated_at: new Date().toISOString()
     };
 
+    const safeData = (obj: any) => {
+      if (obj === undefined || obj === null) {
+        return null;
+      }
+      try {
+        return JSON.parse(JSON.stringify(obj, (key, value) => 
+          value === undefined ? null : value
+        ));
+      } catch (error) {
+        console.error('Error processing data:', error);
+        return null;
+      }
+    };
+
     if (formData.concessionaria) updateData.concessionaria = formData.concessionaria;
     if (formData.personalData || formData.companyData) {
-      updateData.subscriber = JSON.parse(JSON.stringify(formData.personalData || formData.companyData));
+      updateData.subscriber = safeData(formData.personalData || formData.companyData);
     }
-    if (formData.administratorData) updateData.administrator = JSON.parse(JSON.stringify(formData.administratorData));
-    if (formData.energyAccount) updateData.energy_account = JSON.parse(JSON.stringify(formData.energyAccount));
-    if (formData.planContract) updateData.plan_contract = JSON.parse(JSON.stringify(formData.planContract));
-    if (formData.planDetails) updateData.plan_details = JSON.parse(JSON.stringify(formData.planDetails));
-    if (formData.notificationSettings) updateData.notifications = JSON.parse(JSON.stringify(formData.notificationSettings));
-    if (formData.attachments) updateData.attachments = JSON.parse(JSON.stringify(formData.attachments));
+    if (formData.administratorData) updateData.administrator = safeData(formData.administratorData);
+    if (formData.energyAccount) updateData.energy_account = safeData(formData.energyAccount);
+    if (formData.planContract) updateData.plan_contract = safeData(formData.planContract);
+    if (formData.planDetails) updateData.plan_details = safeData(formData.planDetails);
+    if (formData.notificationSettings) updateData.notifications = safeData(formData.notificationSettings);
+    if (formData.attachments) updateData.attachments = safeData(formData.attachments);
 
     const { data, error } = await supabase
       .from('subscribers')

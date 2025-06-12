@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { MaskedInput } from '@/components/ui/masked-input';
@@ -10,7 +10,6 @@ import { Copy, RefreshCw } from 'lucide-react';
 import { UseFormReturn } from 'react-hook-form';
 import { EnergyAccount, Address } from '@/types/subscriber';
 import { CepInput } from '@/components/ui/cep-input';
-import { toast } from 'sonner';
 
 interface EnergyAccountFormProps {
   data: EnergyAccount;
@@ -42,9 +41,8 @@ const EnergyAccountForm = ({ data, onUpdate, onCepLookup, onAutoFill, form }: En
     setIsAutoFilling(true);
     try {
       await onAutoFill();
-      toast.success('Dados preenchidos automaticamente!');
     } catch (error) {
-      toast.error('Erro ao preencher automaticamente');
+      console.error('Erro ao preencher automaticamente:', error);
     } finally {
       setIsAutoFilling(false);
     }
@@ -63,23 +61,30 @@ const EnergyAccountForm = ({ data, onUpdate, onCepLookup, onAutoFill, form }: En
     handleAddressChange(addressUpdate);
     
     // Atualizar os campos do formulário
-    form.setValue('energyAccount.address.street', cepData.logradouro);
-    form.setValue('energyAccount.address.neighborhood', cepData.bairro);
-    form.setValue('energyAccount.address.city', cepData.localidade);
-    form.setValue('energyAccount.address.state', cepData.uf);
+    setTimeout(() => {
+      form.setValue('energyAccount.address.street', cepData.logradouro);
+      form.setValue('energyAccount.address.neighborhood', cepData.bairro);
+      form.setValue('energyAccount.address.city', cepData.localidade);
+      form.setValue('energyAccount.address.state', cepData.uf);
+    }, 100);
   };
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold">4. Cadastro Original da Conta de Energia</h3>
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
+            <span className="text-white font-bold text-sm">4</span>
+          </div>
+          <h3 className="text-xl font-semibold text-gray-900">Cadastro Original da Conta de Energia</h3>
+        </div>
         <Button
           type="button"
           variant="outline"
           size="sm"
           onClick={handleAutoFill}
           disabled={isAutoFilling}
-          className="flex items-center space-x-2 bg-blue-50 hover:bg-blue-100 text-blue-700 border-blue-200"
+          className="flex items-center space-x-2"
         >
           {isAutoFilling ? (
             <RefreshCw className="w-4 h-4 animate-spin" />
@@ -90,16 +95,16 @@ const EnergyAccountForm = ({ data, onUpdate, onCepLookup, onAutoFill, form }: En
         </Button>
       </div>
       
-      <div className="space-y-4 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
+      <div className="space-y-4 p-6 bg-gray-50 rounded-lg border">
         <FormField
           control={form.control}
           name="energyAccount.holderType"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-blue-900 font-medium">Tipo de Titular *</FormLabel>
+              <FormLabel className="text-gray-900 font-medium">Tipo de Titular *</FormLabel>
               <FormControl>
                 <RadioGroup 
-                  value={field.value} 
+                  value={field.value || 'person'} 
                   onValueChange={(value) => {
                     field.onChange(value);
                     onUpdate({ holderType: value as 'person' | 'company' });
@@ -127,15 +132,15 @@ const EnergyAccountForm = ({ data, onUpdate, onCepLookup, onAutoFill, form }: En
             name="energyAccount.cpfCnpj"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-blue-900 font-medium">
+                <FormLabel className="text-gray-900 font-medium">
                   {data.holderType === 'person' ? 'CPF' : 'CNPJ'} *
                 </FormLabel>
                 <FormControl>
                   <MaskedInput 
-                    {...field} 
+                    value={field.value || ''}
                     mask={data.holderType === 'person' ? "999.999.999-99" : "99.999.999/9999-99"}
                     placeholder={data.holderType === 'person' ? "000.000.000-00" : "00.000.000/0000-00"}
-                    className="bg-white border-blue-200 focus:border-blue-400"
+                    className="bg-white"
                     onChange={(e) => {
                       field.onChange(e);
                       onUpdate({ cpfCnpj: e.target.value });
@@ -152,14 +157,14 @@ const EnergyAccountForm = ({ data, onUpdate, onCepLookup, onAutoFill, form }: En
             name="energyAccount.holderName"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-blue-900 font-medium">
+                <FormLabel className="text-gray-900 font-medium">
                   {data.holderType === 'person' ? 'Nome da Pessoa Física' : 'Nome da Empresa'} *
                 </FormLabel>
                 <FormControl>
                   <Input 
-                    {...field} 
+                    value={field.value || ''}
                     placeholder="Digite o nome" 
-                    className="bg-white border-blue-200 focus:border-blue-400"
+                    className="bg-white"
                     onChange={(e) => {
                       field.onChange(e);
                       onUpdate({ holderName: e.target.value });
@@ -177,12 +182,12 @@ const EnergyAccountForm = ({ data, onUpdate, onCepLookup, onAutoFill, form }: En
               name="energyAccount.birthDate"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-blue-900 font-medium">Data de Nascimento</FormLabel>
+                  <FormLabel className="text-gray-900 font-medium">Data de Nascimento</FormLabel>
                   <FormControl>
                     <Input 
-                      {...field} 
+                      value={field.value || ''}
                       type="date" 
-                      className="bg-white border-blue-200 focus:border-blue-400"
+                      className="bg-white"
                       onChange={(e) => {
                         field.onChange(e);
                         onUpdate({ birthDate: e.target.value });
@@ -200,12 +205,12 @@ const EnergyAccountForm = ({ data, onUpdate, onCepLookup, onAutoFill, form }: En
             name="energyAccount.uc"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-blue-900 font-medium">UC - Unidade Consumidora *</FormLabel>
+                <FormLabel className="text-gray-900 font-medium">UC - Unidade Consumidora *</FormLabel>
                 <FormControl>
                   <Input 
-                    {...field} 
+                    value={field.value || ''}
                     placeholder="Digite a UC" 
-                    className="bg-white border-blue-200 focus:border-blue-400"
+                    className="bg-white"
                     onChange={(e) => {
                       field.onChange(e);
                       onUpdate({ uc: e.target.value });
@@ -222,12 +227,12 @@ const EnergyAccountForm = ({ data, onUpdate, onCepLookup, onAutoFill, form }: En
             name="energyAccount.partnerNumber"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-blue-900 font-medium">Número do Parceiro</FormLabel>
+                <FormLabel className="text-gray-900 font-medium">Número do Parceiro</FormLabel>
                 <FormControl>
                   <Input 
-                    {...field} 
+                    value={field.value || ''}
                     placeholder="Digite o número do parceiro" 
-                    className="bg-white border-blue-200 focus:border-blue-400"
+                    className="bg-white"
                     onChange={(e) => {
                       field.onChange(e);
                       onUpdate({ partnerNumber: e.target.value });
@@ -242,8 +247,13 @@ const EnergyAccountForm = ({ data, onUpdate, onCepLookup, onAutoFill, form }: En
       </div>
 
       {/* Endereço da Conta de Energia */}
-      <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-lg border border-green-200">
-        <h4 className="text-md font-semibold text-green-900 mb-4">Endereço da Conta de Energia</h4>
+      <div className="p-6 bg-gray-50 rounded-lg border">
+        <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <div className="w-6 h-6 bg-gray-500 rounded-full flex items-center justify-center">
+            <span className="text-white font-bold text-xs">📍</span>
+          </div>
+          Endereço da Conta de Energia
+        </h4>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField
@@ -276,7 +286,7 @@ const EnergyAccountForm = ({ data, onUpdate, onCepLookup, onAutoFill, form }: En
                 <FormLabel>Endereço *</FormLabel>
                 <FormControl>
                   <Input 
-                    {...field} 
+                    value={field.value || ''}
                     placeholder="Digite o endereço" 
                     onChange={(e) => {
                       field.onChange(e);
@@ -297,7 +307,7 @@ const EnergyAccountForm = ({ data, onUpdate, onCepLookup, onAutoFill, form }: En
                 <FormLabel>Número *</FormLabel>
                 <FormControl>
                   <Input 
-                    {...field} 
+                    value={field.value || ''}
                     placeholder="Digite o número" 
                     onChange={(e) => {
                       field.onChange(e);
@@ -318,7 +328,7 @@ const EnergyAccountForm = ({ data, onUpdate, onCepLookup, onAutoFill, form }: En
                 <FormLabel>Complemento</FormLabel>
                 <FormControl>
                   <Input 
-                    {...field} 
+                    value={field.value || ''}
                     placeholder="Apto, bloco, etc." 
                     onChange={(e) => {
                       field.onChange(e);
@@ -339,7 +349,7 @@ const EnergyAccountForm = ({ data, onUpdate, onCepLookup, onAutoFill, form }: En
                 <FormLabel>Bairro *</FormLabel>
                 <FormControl>
                   <Input 
-                    {...field} 
+                    value={field.value || ''}
                     placeholder="Digite o bairro" 
                     onChange={(e) => {
                       field.onChange(e);
@@ -360,7 +370,7 @@ const EnergyAccountForm = ({ data, onUpdate, onCepLookup, onAutoFill, form }: En
                 <FormLabel>Cidade *</FormLabel>
                 <FormControl>
                   <Input 
-                    {...field} 
+                    value={field.value || ''}
                     placeholder="Digite a cidade" 
                     onChange={(e) => {
                       field.onChange(e);
@@ -381,7 +391,7 @@ const EnergyAccountForm = ({ data, onUpdate, onCepLookup, onAutoFill, form }: En
                 <FormLabel>Estado *</FormLabel>
                 <FormControl>
                   <Input 
-                    {...field} 
+                    value={field.value || ''}
                     placeholder="Digite o estado" 
                     onChange={(e) => {
                       field.onChange(e);

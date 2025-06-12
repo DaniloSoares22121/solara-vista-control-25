@@ -55,8 +55,8 @@ const DiscountTable = ({ informedKwh, loyalty, onDiscountSelect, selectedDiscoun
       }
     },
     {
-      range: 'Maior que 7099 kWh',
-      min: 7100,
+      range: 'Maior que 7000 kWh',
+      min: 7001,
       max: Infinity,
       discounts: {
         none: 22,
@@ -88,7 +88,12 @@ const DiscountTable = ({ informedKwh, loyalty, onDiscountSelect, selectedDiscoun
     <div className="space-y-6">
       <Card className="border-blue-200 bg-blue-50/30">
         <CardHeader>
-          <CardTitle className="text-lg text-blue-900">Faixas de Consumo e Descontos</CardTitle>
+          <CardTitle className="text-lg text-blue-900 flex items-center gap-2">
+            <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
+              <span className="text-white font-bold text-xs">%</span>
+            </div>
+            Faixas de Consumo e Descontos
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid gap-4">
@@ -129,7 +134,7 @@ const DiscountTable = ({ informedKwh, loyalty, onDiscountSelect, selectedDiscoun
             })}
           </div>
 
-          {informedKwh > 0 && currentRange && (
+          {informedKwh > 0 && informedKwh >= 400 && currentRange && (
             <div className="mt-6 p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-200">
               <div className="flex items-center justify-between">
                 <div>
@@ -155,7 +160,18 @@ const DiscountTable = ({ informedKwh, loyalty, onDiscountSelect, selectedDiscoun
             </div>
           )}
 
-          {informedKwh > 0 && !currentRange && (
+          {informedKwh > 0 && informedKwh < 400 && (
+            <div className="mt-6 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+              <p className="text-yellow-700 font-medium">
+                Consumo informado ({informedKwh} kWh) está abaixo da faixa mínima de desconto.
+              </p>
+              <p className="text-sm text-yellow-600 mt-1">
+                O desconto só se aplica a partir de 400 kWh.
+              </p>
+            </div>
+          )}
+
+          {informedKwh > 0 && !currentRange && informedKwh >= 400 && (
             <div className="mt-6 p-4 bg-red-50 rounded-lg border border-red-200">
               <p className="text-red-700 font-medium">
                 Consumo informado ({informedKwh} kWh) está fora das faixas disponíveis.
