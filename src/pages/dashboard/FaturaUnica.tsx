@@ -239,20 +239,20 @@ const FaturaUnica = () => {
 
   return (
     <DashboardLayout>
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-green-50 to-emerald-50">
         <div className="space-y-8 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
           {/* Enhanced Header with animated elements */}
           <div className="text-center space-y-6 relative">
             {/* Floating decoration elements */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
-              <div className="absolute top-10 left-1/4 w-20 h-20 bg-blue-200/30 rounded-full blur-xl animate-pulse"></div>
-              <div className="absolute top-16 right-1/3 w-16 h-16 bg-purple-200/30 rounded-full blur-xl animate-pulse delay-1000"></div>
-              <div className="absolute top-6 right-1/4 w-12 h-12 bg-emerald-200/30 rounded-full blur-xl animate-pulse delay-500"></div>
+              <div className="absolute top-10 left-1/4 w-20 h-20 bg-green-200/30 rounded-full blur-xl animate-pulse"></div>
+              <div className="absolute top-16 right-1/3 w-16 h-16 bg-emerald-200/30 rounded-full blur-xl animate-pulse delay-1000"></div>
+              <div className="absolute top-6 right-1/4 w-12 h-12 bg-teal-200/30 rounded-full blur-xl animate-pulse delay-500"></div>
             </div>
             
             <div className="flex justify-center relative">
-              <div className="w-24 h-24 bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600 rounded-3xl flex items-center justify-center shadow-2xl transform rotate-3 hover:rotate-6 transition-transform duration-300">
-                <div className="w-20 h-20 bg-gradient-to-br from-blue-400 to-purple-500 rounded-2xl flex items-center justify-center">
+              <div className="w-24 h-24 bg-gradient-to-br from-green-500 via-emerald-500 to-teal-600 rounded-3xl flex items-center justify-center shadow-2xl transform rotate-3 hover:rotate-6 transition-transform duration-300">
+                <div className="w-20 h-20 bg-gradient-to-br from-green-400 to-emerald-500 rounded-2xl flex items-center justify-center">
                   <FileText className="w-10 h-10 text-white" />
                 </div>
               </div>
@@ -262,7 +262,7 @@ const FaturaUnica = () => {
             </div>
             
             <div className="space-y-3 relative z-10">
-              <h1 className="text-5xl lg:text-6xl font-bold bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">
+              <h1 className="text-5xl lg:text-6xl font-bold bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 bg-clip-text text-transparent">
                 Consulta de Fatura
               </h1>
               <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
@@ -271,15 +271,15 @@ const FaturaUnica = () => {
             </div>
             
             <div className="flex justify-center gap-4 flex-wrap">
-              <Badge variant="secondary" className="bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-700 border-blue-200 px-6 py-3 text-sm font-medium">
+              <Badge variant="secondary" className="bg-gradient-to-r from-green-100 to-emerald-100 text-green-700 border-green-200 px-6 py-3 text-sm font-medium">
                 <Zap className="w-4 h-4 mr-2" />
                 Instantâneo
               </Badge>
-              <Badge variant="secondary" className="bg-gradient-to-r from-emerald-100 to-green-100 text-emerald-700 border-emerald-200 px-6 py-3 text-sm font-medium">
+              <Badge variant="secondary" className="bg-gradient-to-r from-emerald-100 to-teal-100 text-emerald-700 border-emerald-200 px-6 py-3 text-sm font-medium">
                 <CheckCircle2 className="w-4 h-4 mr-2" />
                 Seguro
               </Badge>
-              <Badge variant="secondary" className="bg-gradient-to-r from-purple-100 to-pink-100 text-purple-700 border-purple-200 px-6 py-3 text-sm font-medium">
+              <Badge variant="secondary" className="bg-gradient-to-r from-teal-100 to-green-100 text-teal-700 border-teal-200 px-6 py-3 text-sm font-medium">
                 <Star className="w-4 h-4 mr-2" />
                 Inteligente
               </Badge>
@@ -295,14 +295,14 @@ const FaturaUnica = () => {
             <div className="max-w-4xl mx-auto space-y-8">
               {/* Mode Selection - Ultra Enhanced Design */}
               <Card className="border-0 shadow-2xl bg-white/80 backdrop-blur-sm overflow-hidden hover:shadow-3xl transition-all duration-500">
-                <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 p-8 relative overflow-hidden">
+                <div className="bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 p-8 relative overflow-hidden">
                   <div className="absolute inset-0 bg-white/10 backdrop-blur-sm"></div>
                   <div className="relative z-10">
                     <CardTitle className="text-2xl text-white flex items-center gap-3 mb-2">
                       <Search className="w-6 h-6" />
                       Como deseja consultar a fatura?
                     </CardTitle>
-                    <CardDescription className="text-blue-100 text-lg">
+                    <CardDescription className="text-green-100 text-lg">
                       Escolha entre selecionar um assinante cadastrado ou inserir os dados manualmente
                     </CardDescription>
                   </div>
@@ -315,15 +315,15 @@ const FaturaUnica = () => {
                       variant={entryMode === 'select' ? 'default' : 'outline'}
                       className={`h-32 flex flex-col items-center justify-center gap-4 transition-all duration-300 text-lg ${
                         entryMode === 'select' 
-                          ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-2xl scale-105 border-2 border-blue-300' 
-                          : 'hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 hover:border-blue-300 hover:scale-105 border-2 border-gray-200'
+                          ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow-2xl scale-105 border-2 border-green-300' 
+                          : 'hover:bg-gradient-to-r hover:from-green-50 hover:to-emerald-50 hover:border-green-300 hover:scale-105 border-2 border-gray-200'
                       }`}
                       onClick={() => setEntryMode('select')}
                     >
                       <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${
-                        entryMode === 'select' ? 'bg-white/20' : 'bg-blue-100'
+                        entryMode === 'select' ? 'bg-white/20' : 'bg-green-100'
                       }`}>
-                        <Users className={`w-6 h-6 ${entryMode === 'select' ? 'text-white' : 'text-blue-600'}`} />
+                        <Users className={`w-6 h-6 ${entryMode === 'select' ? 'text-white' : 'text-green-600'}`} />
                       </div>
                       <div className="text-center">
                         <div className="font-semibold">Selecionar Assinante</div>
@@ -335,15 +335,15 @@ const FaturaUnica = () => {
                       variant={entryMode === 'manual' ? 'default' : 'outline'}
                       className={`h-32 flex flex-col items-center justify-center gap-4 transition-all duration-300 text-lg ${
                         entryMode === 'manual' 
-                          ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-2xl scale-105 border-2 border-purple-300' 
-                          : 'hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50 hover:border-purple-300 hover:scale-105 border-2 border-gray-200'
+                          ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-2xl scale-105 border-2 border-emerald-300' 
+                          : 'hover:bg-gradient-to-r hover:from-emerald-50 hover:to-teal-50 hover:border-emerald-300 hover:scale-105 border-2 border-gray-200'
                       }`}
                       onClick={() => setEntryMode('manual')}
                     >
                       <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${
-                        entryMode === 'manual' ? 'bg-white/20' : 'bg-purple-100'
+                        entryMode === 'manual' ? 'bg-white/20' : 'bg-emerald-100'
                       }`}>
-                        <Edit className={`w-6 h-6 ${entryMode === 'manual' ? 'text-white' : 'text-purple-600'}`} />
+                        <Edit className={`w-6 h-6 ${entryMode === 'manual' ? 'text-white' : 'text-emerald-600'}`} />
                       </div>
                       <div className="text-center">
                         <div className="font-semibold">Inserir Dados</div>
@@ -359,7 +359,7 @@ const FaturaUnica = () => {
                 <div className={`p-8 relative overflow-hidden ${
                   entryMode === 'select' 
                     ? 'bg-gradient-to-r from-emerald-600 via-green-600 to-teal-600' 
-                    : 'bg-gradient-to-r from-orange-600 via-red-600 to-pink-600'
+                    : 'bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600'
                 }`}>
                   <div className="absolute inset-0 bg-white/10 backdrop-blur-sm"></div>
                   <div className="relative z-10">
@@ -479,19 +479,19 @@ const FaturaUnica = () => {
                             setManualData(prev => ({ ...prev, tipo: value, dataNascimento: value === 'juridica' ? '' : prev.dataNascimento }))
                           }
                         >
-                          <SelectTrigger className="h-14 border-2 border-gray-200 hover:border-orange-300 focus:border-orange-500 transition-colors bg-white/70 backdrop-blur-sm">
+                          <SelectTrigger className="h-14 border-2 border-gray-200 hover:border-green-300 focus:border-green-500 transition-colors bg-white/70 backdrop-blur-sm">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent className="bg-white/95 backdrop-blur-sm border-2 border-gray-200 shadow-2xl">
-                            <SelectItem value="fisica" className="p-4 hover:bg-orange-50 cursor-pointer">
+                            <SelectItem value="fisica" className="p-4 hover:bg-green-50 cursor-pointer">
                               <div className="flex items-center gap-3">
-                                <User className="w-5 h-5 text-orange-600" />
+                                <User className="w-5 h-5 text-green-600" />
                                 <span className="font-medium">Pessoa Física</span>
                               </div>
                             </SelectItem>
-                            <SelectItem value="juridica" className="p-4 hover:bg-orange-50 cursor-pointer">
+                            <SelectItem value="juridica" className="p-4 hover:bg-green-50 cursor-pointer">
                               <div className="flex items-center gap-3">
-                                <Building2 className="w-5 h-5 text-red-600" />
+                                <Building2 className="w-5 h-5 text-emerald-600" />
                                 <span className="font-medium">Pessoa Jurídica</span>
                               </div>
                             </SelectItem>
@@ -509,7 +509,7 @@ const FaturaUnica = () => {
                       </label>
                       <Input
                         placeholder="Ex: 10038684096"
-                        className="h-14 border-2 border-gray-200 hover:border-blue-300 focus:border-blue-500 transition-colors bg-white/70 backdrop-blur-sm text-lg"
+                        className="h-14 border-2 border-gray-200 hover:border-green-300 focus:border-green-500 transition-colors bg-white/70 backdrop-blur-sm text-lg"
                         value={manualData.uc}
                         onChange={(e) => setManualData(prev => ({ ...prev, uc: e.target.value }))}
                         disabled={entryMode === 'select' && selectedSubscriberId !== ''}
@@ -524,7 +524,7 @@ const FaturaUnica = () => {
                       <MaskedInput
                         mask={manualData.tipo === 'fisica' ? "999.999.999-99" : "99.999.999/9999-99"}
                         placeholder={manualData.tipo === 'fisica' ? "000.000.000-00" : "00.000.000/0000-00"}
-                        className="h-14 border-2 border-gray-200 hover:border-blue-300 focus:border-blue-500 transition-colors bg-white/70 backdrop-blur-sm text-lg"
+                        className="h-14 border-2 border-gray-200 hover:border-green-300 focus:border-green-500 transition-colors bg-white/70 backdrop-blur-sm text-lg"
                         value={manualData.documento}
                         onChange={(e) => setManualData(prev => ({ ...prev, documento: e.target.value }))}
                         disabled={entryMode === 'select' && selectedSubscriberId !== ''}
@@ -542,7 +542,7 @@ const FaturaUnica = () => {
                       <MaskedInput
                         mask="99/99/9999"
                         placeholder="DD/MM/AAAA"
-                        className="h-14 border-2 border-gray-200 hover:border-blue-300 focus:border-blue-500 transition-colors bg-white/70 backdrop-blur-sm text-lg"
+                        className="h-14 border-2 border-gray-200 hover:border-green-300 focus:border-green-500 transition-colors bg-white/70 backdrop-blur-sm text-lg"
                         value={manualData.dataNascimento}
                         onChange={(e) => setManualData(prev => ({ ...prev, dataNascimento: e.target.value }))}
                         disabled={entryMode === 'select' && selectedSubscriberId !== ''}
@@ -566,7 +566,7 @@ const FaturaUnica = () => {
                   )}
 
                   <Button 
-                    className="w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-700 hover:via-indigo-700 hover:to-purple-700 text-white shadow-2xl h-16 text-xl font-semibold transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:hover:scale-100 border-0"
+                    className="w-full bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 hover:from-green-700 hover:via-emerald-700 hover:to-teal-700 text-white shadow-2xl h-16 text-xl font-semibold transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:hover:scale-100 border-0"
                     onClick={handleConsultar}
                     disabled={(entryMode === 'select' && !selectedSubscriberId) || !isFormValid()}
                   >
@@ -586,7 +586,7 @@ const FaturaUnica = () => {
           {/* Progress Bar - Ultra Enhanced */}
           {isConsultingFatura && (
             <Card className="border-0 shadow-2xl bg-white/90 backdrop-blur-lg max-w-3xl mx-auto overflow-hidden">
-              <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 p-8 relative overflow-hidden">
+              <div className="bg-gradient-to-r from-emerald-600 via-green-600 to-teal-600 p-8 relative overflow-hidden">
                 <div className="absolute inset-0 bg-white/10 backdrop-blur-sm"></div>
                 <div className="text-center text-white relative z-10">
                   <div className="w-16 h-16 mx-auto mb-4 bg-white/20 rounded-3xl flex items-center justify-center animate-pulse">
@@ -608,13 +608,13 @@ const FaturaUnica = () => {
                 <div className="space-y-6">
                   <div className="flex justify-between items-center">
                     <span className="font-semibold text-gray-700 text-lg">Progresso da Consulta</span>
-                    <span className="text-2xl font-bold text-indigo-600">{Math.round(consultaProgress)}%</span>
+                    <span className="text-2xl font-bold text-emerald-600">{Math.round(consultaProgress)}%</span>
                   </div>
                   <Progress value={consultaProgress} className="h-6 bg-gray-200 rounded-full overflow-hidden">
-                    <div className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 transition-all duration-1000 ease-out"></div>
+                    <div className="h-full bg-gradient-to-r from-emerald-500 to-green-500 transition-all duration-1000 ease-out"></div>
                   </Progress>
                   
-                  <div className="flex justify-center items-center gap-4 text-indigo-600">
+                  <div className="flex justify-center items-center gap-4 text-emerald-600">
                     <Clock className="w-6 h-6 animate-pulse" />
                     <span className="font-medium text-xl">
                       {timeRemaining > 0 ? `${timeRemaining}s restantes` : 'Finalizando consulta...'}
