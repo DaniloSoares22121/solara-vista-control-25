@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -93,20 +92,11 @@ const GeneratorDetails = ({ generator, onEdit, onDelete, onClose }: GeneratorDet
                 Editar
               </Button>
               <Button 
-                variant="outline"
                 onClick={() => setShowDeleteDialog(true)}
-                className="border-red-300 text-red-100 hover:bg-red-500/20 hover:border-red-200"
+                className="bg-red-600 hover:bg-red-700 text-white border-red-600"
               >
                 <Trash2 className="w-4 h-4 mr-2" />
                 Excluir
-              </Button>
-              <Button 
-                variant="ghost" 
-                size="icon"
-                onClick={onClose}
-                className="text-white hover:bg-white/20 rounded-xl"
-              >
-                <X className="w-5 h-5" />
               </Button>
             </div>
           </div>
