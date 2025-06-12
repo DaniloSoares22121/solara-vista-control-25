@@ -48,8 +48,8 @@ const SolarHeroSection = () => {
             </p>
           </div>
 
-          {/* Features - Simplificado para mobile */}
-          <div className="space-y-1.5 xs:space-y-2 lg:space-y-4">
+          {/* Features - Hidden on mobile, visible from md up */}
+          <div className="hidden md:block space-y-1.5 xs:space-y-2 lg:space-y-4">
             <div className="flex items-center space-x-1.5 xs:space-x-2 lg:space-x-3">
               <div className="w-5 h-5 xs:w-6 xs:h-6 lg:w-10 lg:h-10 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
                 <TrendingUp className="w-2.5 h-2.5 xs:w-3 xs:h-3 lg:w-5 lg:h-5" />
