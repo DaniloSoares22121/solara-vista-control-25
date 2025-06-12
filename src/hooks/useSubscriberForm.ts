@@ -140,7 +140,7 @@ const initialFormData: SubscriberFormData = {
 };
 
 export const useSubscriberForm = (existingData?: any) => {
-  const [formData, setFormData] = useState<SubscriberFormData>(existingData || initialFormData);
+  const [formData, setFormData] = useState<SubscriberFormData>(initialFormData);
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isEditing, setIsEditing] = useState(!!existingData);
@@ -151,20 +151,27 @@ export const useSubscriberForm = (existingData?: any) => {
     if (existingData) {
       console.log('Carregando dados existentes para edição:', existingData);
       
+      const subscriber = existingData.subscriber;
+      const administrator = existingData.administrator;
+      const energyAccount = existingData.energy_account;
+      const planContract = existingData.plan_contract;
+      const planDetails = existingData.plan_details;
+      const notifications = existingData.notifications;
+      
       const loadedData: SubscriberFormData = {
         concessionaria: existingData.concessionaria || 'equatorial-goias',
-        subscriberType: existingData.subscriber?.fullName ? 'person' : 'company',
-        personalData: existingData.subscriber?.fullName ? {
-          cpf: existingData.subscriber.cpf || '',
-          partnerNumber: existingData.subscriber.partnerNumber || '',
-          fullName: existingData.subscriber.fullName || '',
-          birthDate: existingData.subscriber.birthDate || '',
-          maritalStatus: existingData.subscriber.maritalStatus || '',
-          profession: existingData.subscriber.profession || '',
-          phone: existingData.subscriber.phone || '',
-          email: existingData.subscriber.email || '',
-          observations: existingData.subscriber.observations || '',
-          address: existingData.subscriber.address || {
+        subscriberType: subscriber?.fullName ? 'person' : 'company',
+        personalData: subscriber?.fullName ? {
+          cpf: subscriber.cpf || '',
+          partnerNumber: subscriber.partnerNumber || '',
+          fullName: subscriber.fullName || '',
+          birthDate: subscriber.birthDate || '',
+          maritalStatus: subscriber.maritalStatus || '',
+          profession: subscriber.profession || '',
+          phone: subscriber.phone || '',
+          email: subscriber.email || '',
+          observations: subscriber.observations || '',
+          address: subscriber.address || {
             cep: '',
             street: '',
             number: '',
@@ -173,17 +180,17 @@ export const useSubscriberForm = (existingData?: any) => {
             city: '',
             state: '',
           },
-          contacts: existingData.subscriber.contacts || [],
+          contacts: subscriber.contacts || [],
         } : initialFormData.personalData,
-        companyData: existingData.subscriber?.companyName ? {
-          cnpj: existingData.subscriber.cnpj || '',
-          partnerNumber: existingData.subscriber.partnerNumber || '',
-          companyName: existingData.subscriber.companyName || '',
-          fantasyName: existingData.subscriber.fantasyName || '',
-          phone: existingData.subscriber.phone || '',
-          email: existingData.subscriber.email || '',
-          observations: existingData.subscriber.observations || '',
-          address: existingData.subscriber.address || {
+        companyData: subscriber?.companyName ? {
+          cnpj: subscriber.cnpj || '',
+          partnerNumber: subscriber.partnerNumber || '',
+          companyName: subscriber.companyName || '',
+          fantasyName: subscriber.fantasyName || '',
+          phone: subscriber.phone || '',
+          email: subscriber.email || '',
+          observations: subscriber.observations || '',
+          address: subscriber.address || {
             cep: '',
             street: '',
             number: '',
@@ -192,17 +199,18 @@ export const useSubscriberForm = (existingData?: any) => {
             city: '',
             state: '',
           },
-          contacts: existingData.subscriber.contacts || [],
+          contacts: subscriber.contacts || [],
         } : initialFormData.companyData,
-        administratorData: existingData.administrator || initialFormData.administratorData,
-        energyAccount: existingData.energy_account || initialFormData.energyAccount,
+        administratorData: administrator || initialFormData.administratorData,
+        energyAccount: energyAccount || initialFormData.energyAccount,
         titleTransfer: existingData.title_transfer || initialFormData.titleTransfer,
-        planContract: existingData.plan_contract || initialFormData.planContract,
-        planDetails: existingData.plan_details || initialFormData.planDetails,
-        notificationSettings: existingData.notifications || defaultNotificationSettings,
+        planContract: planContract || initialFormData.planContract,
+        planDetails: planDetails || initialFormData.planDetails,
+        notificationSettings: notifications || defaultNotificationSettings,
         attachments: existingData.attachments || {},
       };
       
+      console.log('Dados carregados para edição:', loadedData);
       setFormData(loadedData);
       setIsEditing(true);
     }
