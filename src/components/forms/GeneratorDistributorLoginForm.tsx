@@ -72,7 +72,7 @@ const GeneratorDistributorLoginForm = ({ form }: GeneratorDistributorLoginFormPr
         requestBody.data_nascimento = dataNascimento;
       }
 
-      const response = await fetch('https://3335-177-148-182-183.ngrok-free.app/verificar', {
+      const response = await fetch('http://localhost:5000/verificar', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
