@@ -1,5 +1,4 @@
-
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { SubscriberFormData, Contact, Address } from '@/types/subscriber';
 import { useCepLookup } from '@/hooks/useCepLookup';
 import { subscriberService } from '@/services/supabaseSubscriberService';
@@ -145,6 +144,48 @@ export const useSubscriberForm = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { lookupCep } = useCepLookup();
+
+  // Preenchimento automático da conta de energia quando os dados do assinante estão disponíveis
+  useEffect(() => {
+    if (currentStep === 4) { // Quando estiver na etapa da conta de energia
+      if (formData.subscriberType === 'person' && formData.personalData) {
+        const { cpf, fullName, birthDate, partnerNumber, address } = formData.personalData;
+        
+        if (cpf && fullName && address?.cep) {
+          console.log('Preenchendo automaticamente os dados da conta de energia (Pessoa Física)');
+          setFormData(prev => ({
+            ...prev,
+            energyAccount: {
+              ...prev.energyAccount,
+              holderType: 'person',
+              cpfCnpj: cpf,
+              holderName: fullName,
+              birthDate: birthDate || '',
+              partnerNumber: partnerNumber || '',
+              address: { ...address },
+            }
+          }));
+        }
+      } else if (formData.subscriberType === 'company' && formData.companyData) {
+        const { cnpj, companyName, partnerNumber, address } = formData.companyData;
+        
+        if (cnpj && companyName && address?.cep) {
+          console.log('Preenchendo automaticamente os dados da conta de energia (Pessoa Jurídica)');
+          setFormData(prev => ({
+            ...prev,
+            energyAccount: {
+              ...prev.energyAccount,
+              holderType: 'company',
+              cpfCnpj: cnpj,
+              holderName: companyName,
+              partnerNumber: partnerNumber || '',
+              address: { ...address },
+            }
+          }));
+        }
+      }
+    }
+  }, [currentStep, formData.subscriberType, formData.personalData, formData.companyData]);
 
   const updateFormData = useCallback((section: keyof SubscriberFormData, data: any) => {
     console.log('Atualizando seção:', section, 'com dados:', data);
