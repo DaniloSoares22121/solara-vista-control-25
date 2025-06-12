@@ -9,6 +9,60 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      faturas_emitidas: {
+        Row: {
+          created_at: string
+          data_emissao: string
+          data_vencimento: string | null
+          documento: string
+          fatura_url: string
+          id: string
+          numero_fatura: string | null
+          referencia: string | null
+          status_pagamento: string
+          subscriber_id: string | null
+          tipo_pessoa: string
+          uc: string
+          updated_at: string
+          user_id: string
+          valor_total: number | null
+        }
+        Insert: {
+          created_at?: string
+          data_emissao?: string
+          data_vencimento?: string | null
+          documento: string
+          fatura_url: string
+          id?: string
+          numero_fatura?: string | null
+          referencia?: string | null
+          status_pagamento?: string
+          subscriber_id?: string | null
+          tipo_pessoa: string
+          uc: string
+          updated_at?: string
+          user_id: string
+          valor_total?: number | null
+        }
+        Update: {
+          created_at?: string
+          data_emissao?: string
+          data_vencimento?: string | null
+          documento?: string
+          fatura_url?: string
+          id?: string
+          numero_fatura?: string | null
+          referencia?: string | null
+          status_pagamento?: string
+          subscriber_id?: string | null
+          tipo_pessoa?: string
+          uc?: string
+          updated_at?: string
+          user_id?: string
+          valor_total?: number | null
+        }
+        Relationships: []
+      }
       faturas_validacao: {
         Row: {
           created_at: string
