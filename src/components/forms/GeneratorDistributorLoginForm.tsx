@@ -7,7 +7,7 @@ import { GeneratorFormData } from '@/types/generator';
 import { CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from '@/integrations/supabase/client';
 
 interface GeneratorDistributorLoginFormProps {
   form: UseFormReturn<GeneratorFormData>;
@@ -72,16 +72,13 @@ const GeneratorDistributorLoginForm = ({ form }: GeneratorDistributorLoginFormPr
         requestBody.data_nascimento = dataNascimento;
       }
 
-      // Usar a edge function do Supabase ao invés de fazer requisição direta
-      const { createClient } = await import('@supabase/supabase-js');
-      const supabase = createClient(
-        import.meta.env.VITE_SUPABASE_URL,
-        import.meta.env.VITE_SUPABASE_ANON_KEY
-      );
+      console.log('Chamando edge function com dados:', requestBody);
 
       const { data, error } = await supabase.functions.invoke('verificar-credenciais', {
         body: requestBody
       });
+
+      console.log('Resposta da edge function:', { data, error });
 
       if (error) {
         throw error;
