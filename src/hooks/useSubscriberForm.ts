@@ -19,9 +19,11 @@ export const useSubscriberForm = (existingData?: SubscriberDataFromDB) => {
   const { isSubmitting, addContact: addContactAction, removeContact: removeContactAction, submitForm: submitFormAction } = useSubscriberFormActions();
   const { mapAddress, determineSubscriberType, performAutoFill } = useSubscriberDataMapping();
 
-  // Load existing data if editing
+  // Load existing data if editing - APENAS UMA VEZ
   useEffect(() => {
-    if (existingData) {
+    if (existingData && !isLoaded) {
+      console.log('🔄 Carregando dados existentes:', existingData);
+      
       const subscriber = existingData.subscriber;
       const administrator = existingData.administrator;
       const energyAccount = existingData.energy_account;
@@ -107,15 +109,16 @@ export const useSubscriberForm = (existingData?: SubscriberDataFromDB) => {
         attachments: (attachments as any) || {},
       };
       
+      console.log('✅ Dados carregados com sucesso:', loadedData);
       setFormData(loadedData);
       setIsEditing(true);
       setIsLoaded(true);
-    } else {
+    } else if (!existingData) {
       setIsLoaded(true);
     }
-  }, [existingData, mapAddress, determineSubscriberType]);
+  }, [existingData, mapAddress, determineSubscriberType, isLoaded]);
 
-  // Auto-fill quando dados mudam
+  // Auto-fill apenas para novos assinantes
   useEffect(() => {
     if (isLoaded && !isEditing) {
       const newFormData = performAutoFill(formData);
@@ -126,6 +129,7 @@ export const useSubscriberForm = (existingData?: SubscriberDataFromDB) => {
   }, [formData.personalData, formData.companyData, isLoaded, isEditing, performAutoFill]);
 
   const updateFormData = useCallback((section: keyof SubscriberFormData, data: unknown) => {
+    console.log('🔄 Atualizando formData:', section, data);
     setFormData(prev => {
       const currentSectionData = prev[section];
       
