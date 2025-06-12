@@ -1,4 +1,3 @@
-
 import DashboardLayout from '@/components/DashboardLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,11 +6,12 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { MaskedInput } from '@/components/ui/masked-input';
-import { FileText, Search, Download, Zap, Clock, Check, Timer, Users, Edit, User, Building2, Calendar, CreditCard, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { FileText, Search, Download, Zap, Clock, Check, Timer, Users, Edit, User, Building2, Calendar, CreditCard, AlertCircle, CheckCircle2, Save, Sparkles, Star } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useSubscribers } from '@/hooks/useSubscribers';
+import { faturaValidacaoService } from '@/services/faturaValidacaoService';
 
 interface FaturaResponse {
   fatura_url: string;
@@ -41,6 +41,7 @@ const FaturaUnica = () => {
   const [consultaProgress, setConsultaProgress] = useState(0);
   const [timeRemaining, setTimeRemaining] = useState(0);
   const [faturaResult, setFaturaResult] = useState<FaturaResponse | null>(null);
+  const [isSavingValidacao, setIsSavingValidacao] = useState(false);
 
   // Preencher dados quando selecionar assinante
   useEffect(() => {
@@ -138,7 +139,31 @@ const FaturaUnica = () => {
       }
 
       setFaturaResult(result);
-      toast.success('Fatura consultada com sucesso!');
+      
+      // Se for de assinante cadastrado, salvar em validação
+      if (entryMode === 'select' && selectedSubscriberId) {
+        try {
+          setIsSavingValidacao(true);
+          await faturaValidacaoService.createFaturaValidacao({
+            subscriber_id: selectedSubscriberId,
+            uc: dados.uc,
+            documento: dados.documento,
+            data_nascimento: dados.dataNascimento,
+            tipo_pessoa: dados.tipo,
+            fatura_url: result.fatura_url,
+            pdf_path: result.pdf_path,
+            message: result.message
+          });
+          toast.success('Fatura consultada e salva para validação!');
+        } catch (error) {
+          console.error('Erro ao salvar fatura para validação:', error);
+          toast.error('Fatura consultada, mas erro ao salvar para validação');
+        } finally {
+          setIsSavingValidacao(false);
+        }
+      } else {
+        toast.success('Fatura consultada com sucesso!');
+      }
 
       clearInterval(progressInterval);
       clearInterval(timerInterval);
@@ -214,34 +239,52 @@ const FaturaUnica = () => {
 
   return (
     <DashboardLayout>
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
-        <div className="space-y-8 p-4 sm:p-6 lg:p-8 max-w-6xl mx-auto">
-          {/* Enhanced Header */}
-          <div className="text-center space-y-4">
-            <div className="flex justify-center">
-              <div className="w-20 h-20 bg-gradient-to-br from-emerald-500 via-green-500 to-teal-500 rounded-3xl flex items-center justify-center shadow-xl transform rotate-3">
-                <FileText className="w-10 h-10 text-white" />
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+        <div className="space-y-8 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
+          {/* Enhanced Header with animated elements */}
+          <div className="text-center space-y-6 relative">
+            {/* Floating decoration elements */}
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+              <div className="absolute top-10 left-1/4 w-20 h-20 bg-blue-200/30 rounded-full blur-xl animate-pulse"></div>
+              <div className="absolute top-16 right-1/3 w-16 h-16 bg-purple-200/30 rounded-full blur-xl animate-pulse delay-1000"></div>
+              <div className="absolute top-6 right-1/4 w-12 h-12 bg-emerald-200/30 rounded-full blur-xl animate-pulse delay-500"></div>
+            </div>
+            
+            <div className="flex justify-center relative">
+              <div className="w-24 h-24 bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600 rounded-3xl flex items-center justify-center shadow-2xl transform rotate-3 hover:rotate-6 transition-transform duration-300">
+                <div className="w-20 h-20 bg-gradient-to-br from-blue-400 to-purple-500 rounded-2xl flex items-center justify-center">
+                  <FileText className="w-10 h-10 text-white" />
+                </div>
+              </div>
+              <div className="absolute -top-2 -right-2 w-8 h-8 bg-yellow-400 rounded-full flex items-center justify-center animate-bounce">
+                <Sparkles className="w-4 h-4 text-yellow-800" />
               </div>
             </div>
-            <div className="space-y-2">
-              <h1 className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-emerald-600 via-green-600 to-teal-600 bg-clip-text text-transparent">
+            
+            <div className="space-y-3 relative z-10">
+              <h1 className="text-5xl lg:text-6xl font-bold bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">
                 Consulta de Fatura
               </h1>
-              <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-                Obtenha suas faturas diretamente da distribuidora de energia de forma rápida e segura
+              <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+                Obtenha suas faturas diretamente da distribuidora de energia de forma rápida, segura e inteligente
               </p>
             </div>
-            <div className="flex justify-center gap-3">
-              <Badge variant="secondary" className="bg-emerald-100 text-emerald-700 border-emerald-200 px-4 py-2">
+            
+            <div className="flex justify-center gap-4 flex-wrap">
+              <Badge variant="secondary" className="bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-700 border-blue-200 px-6 py-3 text-sm font-medium">
                 <Zap className="w-4 h-4 mr-2" />
                 Instantâneo
               </Badge>
-              <Badge variant="secondary" className="bg-blue-100 text-blue-700 border-blue-200 px-4 py-2">
+              <Badge variant="secondary" className="bg-gradient-to-r from-emerald-100 to-green-100 text-emerald-700 border-emerald-200 px-6 py-3 text-sm font-medium">
                 <CheckCircle2 className="w-4 h-4 mr-2" />
                 Seguro
               </Badge>
+              <Badge variant="secondary" className="bg-gradient-to-r from-purple-100 to-pink-100 text-purple-700 border-purple-200 px-6 py-3 text-sm font-medium">
+                <Star className="w-4 h-4 mr-2" />
+                Inteligente
+              </Badge>
               {faturaResult && (
-                <Button variant="outline" size="sm" onClick={resetForm} className="ml-4">
+                <Button variant="outline" size="sm" onClick={resetForm} className="ml-4 hover:scale-105 transition-transform">
                   Nova Consulta
                 </Button>
               )}
@@ -249,86 +292,107 @@ const FaturaUnica = () => {
           </div>
 
           {!isConsultingFatura && !faturaResult && (
-            <div className="max-w-3xl mx-auto space-y-8">
-              {/* Mode Selection - Enhanced Design */}
-              <Card className="border-0 shadow-xl bg-white overflow-hidden">
-                <div className="bg-gradient-to-r from-emerald-500 to-green-500 p-6">
-                  <CardTitle className="text-xl text-white flex items-center gap-2">
-                    <Search className="w-5 h-5" />
-                    Como deseja consultar a fatura?
-                  </CardTitle>
-                  <CardDescription className="text-emerald-100 mt-2">
-                    Escolha entre selecionar um assinante cadastrado ou inserir os dados manualmente
-                  </CardDescription>
+            <div className="max-w-4xl mx-auto space-y-8">
+              {/* Mode Selection - Ultra Enhanced Design */}
+              <Card className="border-0 shadow-2xl bg-white/80 backdrop-blur-sm overflow-hidden hover:shadow-3xl transition-all duration-500">
+                <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 p-8 relative overflow-hidden">
+                  <div className="absolute inset-0 bg-white/10 backdrop-blur-sm"></div>
+                  <div className="relative z-10">
+                    <CardTitle className="text-2xl text-white flex items-center gap-3 mb-2">
+                      <Search className="w-6 h-6" />
+                      Como deseja consultar a fatura?
+                    </CardTitle>
+                    <CardDescription className="text-blue-100 text-lg">
+                      Escolha entre selecionar um assinante cadastrado ou inserir os dados manualmente
+                    </CardDescription>
+                  </div>
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-3xl"></div>
                 </div>
                 
-                <CardContent className="p-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <CardContent className="p-8">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <Button
                       variant={entryMode === 'select' ? 'default' : 'outline'}
-                      className={`h-24 flex flex-col items-center justify-center gap-3 transition-all duration-300 ${
+                      className={`h-32 flex flex-col items-center justify-center gap-4 transition-all duration-300 text-lg ${
                         entryMode === 'select' 
-                          ? 'bg-gradient-to-r from-emerald-600 to-green-600 text-white shadow-lg scale-105' 
-                          : 'hover:bg-emerald-50 hover:border-emerald-300 hover:scale-105'
+                          ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-2xl scale-105 border-2 border-blue-300' 
+                          : 'hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 hover:border-blue-300 hover:scale-105 border-2 border-gray-200'
                       }`}
                       onClick={() => setEntryMode('select')}
                     >
-                      <Users className="w-6 h-6" />
+                      <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${
+                        entryMode === 'select' ? 'bg-white/20' : 'bg-blue-100'
+                      }`}>
+                        <Users className={`w-6 h-6 ${entryMode === 'select' ? 'text-white' : 'text-blue-600'}`} />
+                      </div>
                       <div className="text-center">
                         <div className="font-semibold">Selecionar Assinante</div>
-                        <div className="text-xs opacity-80">Dados automáticos</div>
+                        <div className="text-sm opacity-80">Dados automáticos</div>
                       </div>
                     </Button>
                     
                     <Button
                       variant={entryMode === 'manual' ? 'default' : 'outline'}
-                      className={`h-24 flex flex-col items-center justify-center gap-3 transition-all duration-300 ${
+                      className={`h-32 flex flex-col items-center justify-center gap-4 transition-all duration-300 text-lg ${
                         entryMode === 'manual' 
-                          ? 'bg-gradient-to-r from-emerald-600 to-green-600 text-white shadow-lg scale-105' 
-                          : 'hover:bg-emerald-50 hover:border-emerald-300 hover:scale-105'
+                          ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-2xl scale-105 border-2 border-purple-300' 
+                          : 'hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50 hover:border-purple-300 hover:scale-105 border-2 border-gray-200'
                       }`}
                       onClick={() => setEntryMode('manual')}
                     >
-                      <Edit className="w-6 h-6" />
+                      <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${
+                        entryMode === 'manual' ? 'bg-white/20' : 'bg-purple-100'
+                      }`}>
+                        <Edit className={`w-6 h-6 ${entryMode === 'manual' ? 'text-white' : 'text-purple-600'}`} />
+                      </div>
                       <div className="text-center">
                         <div className="font-semibold">Inserir Dados</div>
-                        <div className="text-xs opacity-80">Digitação manual</div>
+                        <div className="text-sm opacity-80">Digitação manual</div>
                       </div>
                     </Button>
                   </div>
                 </CardContent>
               </Card>
 
-              {/* Data Entry Form - Enhanced Design */}
-              <Card className="border-0 shadow-xl bg-white overflow-hidden">
-                <div className="bg-gradient-to-r from-blue-500 to-indigo-500 p-6">
-                  <CardTitle className="text-xl text-white flex items-center gap-2">
-                    {entryMode === 'select' ? (
-                      <>
-                        <User className="w-5 h-5" />
-                        Selecionar Assinante
-                      </>
-                    ) : (
-                      <>
-                        <CreditCard className="w-5 h-5" />
-                        Informações da Conta
-                      </>
-                    )}
-                  </CardTitle>
-                  <CardDescription className="text-blue-100 mt-2">
-                    {entryMode === 'select' 
-                      ? 'Escolha um assinante cadastrado para carregar os dados automaticamente'
-                      : 'Preencha as informações necessárias para consultar a fatura'
-                    }
-                  </CardDescription>
+              {/* Data Entry Form - Ultra Enhanced Design */}
+              <Card className="border-0 shadow-2xl bg-white/80 backdrop-blur-sm overflow-hidden hover:shadow-3xl transition-all duration-500">
+                <div className={`p-8 relative overflow-hidden ${
+                  entryMode === 'select' 
+                    ? 'bg-gradient-to-r from-emerald-600 via-green-600 to-teal-600' 
+                    : 'bg-gradient-to-r from-orange-600 via-red-600 to-pink-600'
+                }`}>
+                  <div className="absolute inset-0 bg-white/10 backdrop-blur-sm"></div>
+                  <div className="relative z-10">
+                    <CardTitle className="text-2xl text-white flex items-center gap-3 mb-2">
+                      {entryMode === 'select' ? (
+                        <>
+                          <User className="w-6 h-6" />
+                          Selecionar Assinante
+                        </>
+                      ) : (
+                        <>
+                          <CreditCard className="w-6 h-6" />
+                          Informações da Conta
+                        </>
+                      )}
+                    </CardTitle>
+                    <CardDescription className="text-white/90 text-lg">
+                      {entryMode === 'select' 
+                        ? 'Escolha um assinante cadastrado para carregar os dados automaticamente e salvar para validação'
+                        : 'Preencha as informações necessárias para consultar a fatura (apenas visualização)'
+                      }
+                    </CardDescription>
+                  </div>
+                  <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full blur-3xl"></div>
+                  <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/5 rounded-full blur-3xl"></div>
                 </div>
                 
-                <CardContent className="p-6 space-y-6">
+                <CardContent className="p-8 space-y-8">
                   {entryMode === 'select' && (
-                    <div className="space-y-4">
-                      <div className="space-y-2">
-                        <label className="block text-sm font-semibold text-gray-700 flex items-center gap-2">
-                          <Users className="w-4 h-4" />
+                    <div className="space-y-6">
+                      <div className="space-y-3">
+                        <label className="block text-lg font-semibold text-gray-700 flex items-center gap-3">
+                          <Users className="w-5 h-5" />
                           Assinante Cadastrado
                         </label>
                         <Select
@@ -336,10 +400,10 @@ const FaturaUnica = () => {
                           onValueChange={setSelectedSubscriberId}
                           disabled={isLoadingSubscribers}
                         >
-                          <SelectTrigger className="h-14 border-2 border-gray-200 hover:border-emerald-300 focus:border-emerald-500 transition-colors">
+                          <SelectTrigger className="h-16 border-2 border-gray-200 hover:border-emerald-300 focus:border-emerald-500 transition-colors bg-white/70 backdrop-blur-sm">
                             <SelectValue placeholder={isLoadingSubscribers ? "Carregando assinantes..." : "Selecione um assinante"} />
                           </SelectTrigger>
-                          <SelectContent className="bg-white border-2 border-gray-200 shadow-xl">
+                          <SelectContent className="bg-white/95 backdrop-blur-sm border-2 border-gray-200 shadow-2xl">
                             {subscribers.map((subscriber) => {
                               const subscriberData = subscriber.subscriber as any;
                               const energyAccount = subscriber.energy_account as any;
@@ -356,18 +420,18 @@ const FaturaUnica = () => {
                               const documento = subscriberData?.cpf || subscriberData?.cnpj || '';
                               
                               return (
-                                <SelectItem key={subscriber.id} value={subscriber.id} className="p-4 hover:bg-emerald-50">
-                                  <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-green-500 rounded-lg flex items-center justify-center">
+                                <SelectItem key={subscriber.id} value={subscriber.id} className="p-4 hover:bg-emerald-50 cursor-pointer">
+                                  <div className="flex items-center gap-4">
+                                    <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-green-500 rounded-xl flex items-center justify-center shadow-lg">
                                       {subscriberData?.cpf ? (
-                                        <User className="w-5 h-5 text-white" />
+                                        <User className="w-6 h-6 text-white" />
                                       ) : (
-                                        <Building2 className="w-5 h-5 text-white" />
+                                        <Building2 className="w-6 h-6 text-white" />
                                       )}
                                     </div>
                                     <div className="flex-1">
-                                      <div className="font-semibold text-gray-900">{name}</div>
-                                      <div className="text-sm text-gray-500">UC: {uc}</div>
+                                      <div className="font-semibold text-gray-900 text-lg">{name}</div>
+                                      <div className="text-sm text-gray-500 font-medium">UC: {uc}</div>
                                       <div className="text-xs text-gray-400">{tipo}: {documento}</div>
                                     </div>
                                   </div>
@@ -378,17 +442,21 @@ const FaturaUnica = () => {
                         </Select>
                         
                         {selectedSubscriberId && (
-                          <div className="mt-4 p-4 bg-gradient-to-r from-emerald-50 to-green-50 border-2 border-emerald-200 rounded-xl">
-                            <div className="flex items-center gap-3">
-                              <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-green-500 rounded-lg flex items-center justify-center">
-                                <CheckCircle2 className="w-5 h-5 text-white" />
+                          <div className="mt-6 p-6 bg-gradient-to-r from-emerald-50 to-green-50 border-2 border-emerald-200 rounded-2xl shadow-lg">
+                            <div className="flex items-center gap-4">
+                              <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-green-500 rounded-xl flex items-center justify-center shadow-lg">
+                                <CheckCircle2 className="w-6 h-6 text-white" />
                               </div>
                               <div className="flex-1">
-                                <div className="font-semibold text-emerald-800">
+                                <div className="font-semibold text-emerald-800 text-lg">
                                   {getSelectedSubscriberName()}
                                 </div>
-                                <div className="text-sm text-emerald-600">
+                                <div className="text-emerald-600 font-medium">
                                   {getSelectedSubscriberType()} • Dados carregados automaticamente
+                                </div>
+                                <div className="text-emerald-500 text-sm flex items-center gap-2 mt-1">
+                                  <Save className="w-4 h-4" />
+                                  Será salvo em "Faturas em Validação"
                                 </div>
                               </div>
                             </div>
@@ -399,10 +467,10 @@ const FaturaUnica = () => {
                   )}
 
                   {entryMode === 'manual' && (
-                    <div className="space-y-4">
-                      <div className="space-y-2">
-                        <label className="block text-sm font-semibold text-gray-700 flex items-center gap-2">
-                          <Building2 className="w-4 h-4" />
+                    <div className="space-y-6">
+                      <div className="space-y-3">
+                        <label className="block text-lg font-semibold text-gray-700 flex items-center gap-3">
+                          <Building2 className="w-5 h-5" />
                           Tipo de Pessoa
                         </label>
                         <Select
@@ -411,20 +479,20 @@ const FaturaUnica = () => {
                             setManualData(prev => ({ ...prev, tipo: value, dataNascimento: value === 'juridica' ? '' : prev.dataNascimento }))
                           }
                         >
-                          <SelectTrigger className="h-12 border-2 border-gray-200 hover:border-emerald-300 focus:border-emerald-500 transition-colors">
+                          <SelectTrigger className="h-14 border-2 border-gray-200 hover:border-orange-300 focus:border-orange-500 transition-colors bg-white/70 backdrop-blur-sm">
                             <SelectValue />
                           </SelectTrigger>
-                          <SelectContent className="bg-white border-2 border-gray-200 shadow-xl">
-                            <SelectItem value="fisica" className="p-3 hover:bg-emerald-50">
+                          <SelectContent className="bg-white/95 backdrop-blur-sm border-2 border-gray-200 shadow-2xl">
+                            <SelectItem value="fisica" className="p-4 hover:bg-orange-50 cursor-pointer">
                               <div className="flex items-center gap-3">
-                                <User className="w-4 h-4 text-emerald-600" />
-                                <span>Pessoa Física</span>
+                                <User className="w-5 h-5 text-orange-600" />
+                                <span className="font-medium">Pessoa Física</span>
                               </div>
                             </SelectItem>
-                            <SelectItem value="juridica" className="p-3 hover:bg-emerald-50">
+                            <SelectItem value="juridica" className="p-4 hover:bg-orange-50 cursor-pointer">
                               <div className="flex items-center gap-3">
-                                <Building2 className="w-4 h-4 text-blue-600" />
-                                <span>Pessoa Jurídica</span>
+                                <Building2 className="w-5 h-5 text-red-600" />
+                                <span className="font-medium">Pessoa Jurídica</span>
                               </div>
                             </SelectItem>
                           </SelectContent>
@@ -433,30 +501,30 @@ const FaturaUnica = () => {
                     </div>
                   )}
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <label className="block text-sm font-semibold text-gray-700 flex items-center gap-2">
-                        <Zap className="w-4 h-4" />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="space-y-3">
+                      <label className="block text-lg font-semibold text-gray-700 flex items-center gap-3">
+                        <Zap className="w-5 h-5" />
                         Unidade Consumidora (UC)
                       </label>
                       <Input
                         placeholder="Ex: 10038684096"
-                        className="h-12 border-2 border-gray-200 hover:border-emerald-300 focus:border-emerald-500 transition-colors"
+                        className="h-14 border-2 border-gray-200 hover:border-blue-300 focus:border-blue-500 transition-colors bg-white/70 backdrop-blur-sm text-lg"
                         value={manualData.uc}
                         onChange={(e) => setManualData(prev => ({ ...prev, uc: e.target.value }))}
                         disabled={entryMode === 'select' && selectedSubscriberId !== ''}
                       />
                     </div>
                     
-                    <div className="space-y-2">
-                      <label className="block text-sm font-semibold text-gray-700 flex items-center gap-2">
-                        <CreditCard className="w-4 h-4" />
+                    <div className="space-y-3">
+                      <label className="block text-lg font-semibold text-gray-700 flex items-center gap-3">
+                        <CreditCard className="w-5 h-5" />
                         {manualData.tipo === 'fisica' ? 'CPF' : 'CNPJ'}
                       </label>
                       <MaskedInput
                         mask={manualData.tipo === 'fisica' ? "999.999.999-99" : "99.999.999/9999-99"}
                         placeholder={manualData.tipo === 'fisica' ? "000.000.000-00" : "00.000.000/0000-00"}
-                        className="h-12 border-2 border-gray-200 hover:border-emerald-300 focus:border-emerald-500 transition-colors"
+                        className="h-14 border-2 border-gray-200 hover:border-blue-300 focus:border-blue-500 transition-colors bg-white/70 backdrop-blur-sm text-lg"
                         value={manualData.documento}
                         onChange={(e) => setManualData(prev => ({ ...prev, documento: e.target.value }))}
                         disabled={entryMode === 'select' && selectedSubscriberId !== ''}
@@ -465,16 +533,16 @@ const FaturaUnica = () => {
                   </div>
 
                   {manualData.tipo === 'fisica' && (
-                    <div className="space-y-2">
-                      <label className="block text-sm font-semibold text-gray-700 flex items-center gap-2">
-                        <Calendar className="w-4 h-4" />
+                    <div className="space-y-3">
+                      <label className="block text-lg font-semibold text-gray-700 flex items-center gap-3">
+                        <Calendar className="w-5 h-5" />
                         Data de Nascimento
-                        <Badge variant="secondary" className="ml-2 text-xs">Obrigatório</Badge>
+                        <Badge variant="secondary" className="ml-3 text-sm bg-red-100 text-red-700 border-red-200">Obrigatório</Badge>
                       </label>
                       <MaskedInput
                         mask="99/99/9999"
                         placeholder="DD/MM/AAAA"
-                        className="h-12 border-2 border-gray-200 hover:border-emerald-300 focus:border-emerald-500 transition-colors"
+                        className="h-14 border-2 border-gray-200 hover:border-blue-300 focus:border-blue-500 transition-colors bg-white/70 backdrop-blur-sm text-lg"
                         value={manualData.dataNascimento}
                         onChange={(e) => setManualData(prev => ({ ...prev, dataNascimento: e.target.value }))}
                         disabled={entryMode === 'select' && selectedSubscriberId !== ''}
@@ -484,54 +552,71 @@ const FaturaUnica = () => {
 
                   {/* Validation Messages */}
                   {!isFormValid() && (
-                    <div className="p-4 bg-amber-50 border-2 border-amber-200 rounded-xl">
-                      <div className="flex items-center gap-2 text-amber-800">
-                        <AlertCircle className="w-5 h-5" />
-                        <span className="font-medium">Campos obrigatórios em falta:</span>
+                    <div className="p-6 bg-gradient-to-r from-amber-50 to-yellow-50 border-2 border-amber-200 rounded-2xl shadow-lg">
+                      <div className="flex items-center gap-3 text-amber-800 mb-3">
+                        <AlertCircle className="w-6 h-6" />
+                        <span className="font-semibold text-lg">Campos obrigatórios em falta:</span>
                       </div>
-                      <ul className="mt-2 text-sm text-amber-700 space-y-1">
-                        {!manualData.uc && <li>• Unidade Consumidora (UC)</li>}
-                        {!manualData.documento && <li>• {manualData.tipo === 'fisica' ? 'CPF' : 'CNPJ'}</li>}
-                        {manualData.tipo === 'fisica' && !manualData.dataNascimento && <li>• Data de Nascimento</li>}
+                      <ul className="text-amber-700 space-y-2 font-medium">
+                        {!manualData.uc && <li className="flex items-center gap-2"><span className="w-2 h-2 bg-amber-500 rounded-full"></span> Unidade Consumidora (UC)</li>}
+                        {!manualData.documento && <li className="flex items-center gap-2"><span className="w-2 h-2 bg-amber-500 rounded-full"></span> {manualData.tipo === 'fisica' ? 'CPF' : 'CNPJ'}</li>}
+                        {manualData.tipo === 'fisica' && !manualData.dataNascimento && <li className="flex items-center gap-2"><span className="w-2 h-2 bg-amber-500 rounded-full"></span> Data de Nascimento</li>}
                       </ul>
                     </div>
                   )}
 
                   <Button 
-                    className="w-full bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white shadow-lg h-14 text-lg font-semibold transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:hover:scale-100"
+                    className="w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-700 hover:via-indigo-700 hover:to-purple-700 text-white shadow-2xl h-16 text-xl font-semibold transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:hover:scale-100 border-0"
                     onClick={handleConsultar}
                     disabled={(entryMode === 'select' && !selectedSubscriberId) || !isFormValid()}
                   >
-                    <Search className="w-5 h-5 mr-3" />
+                    <Search className="w-6 h-6 mr-3" />
                     Consultar Fatura na Distribuidora
+                    {entryMode === 'select' && selectedSubscriberId && (
+                      <Badge className="ml-3 bg-white/20 text-white border-white/30">
+                        + Salvar
+                      </Badge>
+                    )}
                   </Button>
                 </CardContent>
               </Card>
             </div>
           )}
 
-          {/* Progress Bar - Enhanced */}
+          {/* Progress Bar - Ultra Enhanced */}
           {isConsultingFatura && (
-            <Card className="border-0 shadow-xl bg-white max-w-2xl mx-auto overflow-hidden">
-              <div className="bg-gradient-to-r from-blue-500 to-indigo-500 p-6">
-                <div className="text-center text-white">
-                  <Timer className="w-12 h-12 mx-auto mb-3" />
-                  <h3 className="text-2xl font-bold">Processando Consulta</h3>
-                  <p className="opacity-90">Conectando com a distribuidora...</p>
+            <Card className="border-0 shadow-2xl bg-white/90 backdrop-blur-lg max-w-3xl mx-auto overflow-hidden">
+              <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 p-8 relative overflow-hidden">
+                <div className="absolute inset-0 bg-white/10 backdrop-blur-sm"></div>
+                <div className="text-center text-white relative z-10">
+                  <div className="w-16 h-16 mx-auto mb-4 bg-white/20 rounded-3xl flex items-center justify-center animate-pulse">
+                    <Timer className="w-8 h-8" />
+                  </div>
+                  <h3 className="text-3xl font-bold mb-2">Processando Consulta</h3>
+                  <p className="opacity-90 text-lg">Conectando com a distribuidora...</p>
+                  {isSavingValidacao && (
+                    <p className="text-yellow-200 text-sm mt-2 flex items-center justify-center gap-2">
+                      <Save className="w-4 h-4 animate-pulse" />
+                      Preparando para salvar na validação...
+                    </p>
+                  )}
                 </div>
+                <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full blur-3xl"></div>
               </div>
               
-              <CardContent className="p-8 space-y-6">
-                <div className="space-y-4">
+              <CardContent className="p-8 space-y-8">
+                <div className="space-y-6">
                   <div className="flex justify-between items-center">
-                    <span className="font-semibold text-gray-700">Progresso da Consulta</span>
-                    <span className="text-lg font-bold text-blue-600">{Math.round(consultaProgress)}%</span>
+                    <span className="font-semibold text-gray-700 text-lg">Progresso da Consulta</span>
+                    <span className="text-2xl font-bold text-indigo-600">{Math.round(consultaProgress)}%</span>
                   </div>
-                  <Progress value={consultaProgress} className="h-4 bg-gray-200" />
+                  <Progress value={consultaProgress} className="h-6 bg-gray-200 rounded-full overflow-hidden">
+                    <div className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 transition-all duration-1000 ease-out"></div>
+                  </Progress>
                   
-                  <div className="flex justify-center items-center gap-3 text-emerald-600">
-                    <Clock className="w-5 h-5" />
-                    <span className="font-medium text-lg">
+                  <div className="flex justify-center items-center gap-4 text-indigo-600">
+                    <Clock className="w-6 h-6 animate-pulse" />
+                    <span className="font-medium text-xl">
                       {timeRemaining > 0 ? `${timeRemaining}s restantes` : 'Finalizando consulta...'}
                     </span>
                   </div>
@@ -540,38 +625,46 @@ const FaturaUnica = () => {
             </Card>
           )}
 
-          {/* Result - Enhanced */}
+          {/* Result - Ultra Enhanced */}
           {faturaResult && (
-            <Card className="border-0 shadow-xl bg-white max-w-2xl mx-auto overflow-hidden">
-              <div className="bg-gradient-to-r from-emerald-500 to-green-500 p-6">
-                <div className="flex items-center gap-4 text-white">
-                  <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center">
-                    <CheckCircle2 className="w-8 h-8" />
+            <Card className="border-0 shadow-2xl bg-white/90 backdrop-blur-lg max-w-3xl mx-auto overflow-hidden">
+              <div className="bg-gradient-to-r from-emerald-600 via-green-600 to-teal-600 p-8 relative overflow-hidden">
+                <div className="absolute inset-0 bg-white/10 backdrop-blur-sm"></div>
+                <div className="flex items-center gap-6 text-white relative z-10">
+                  <div className="w-20 h-20 bg-white/20 rounded-3xl flex items-center justify-center shadow-xl">
+                    <CheckCircle2 className="w-10 h-10" />
                   </div>
-                  <div>
-                    <CardTitle className="text-2xl text-white">Fatura Encontrada!</CardTitle>
-                    <CardDescription className="text-emerald-100 text-lg">{faturaResult.message}</CardDescription>
+                  <div className="flex-1">
+                    <CardTitle className="text-3xl text-white mb-2">Fatura Encontrada!</CardTitle>
+                    <CardDescription className="text-emerald-100 text-xl font-medium">{faturaResult.message}</CardDescription>
+                    {entryMode === 'select' && selectedSubscriberId && (
+                      <div className="mt-3 flex items-center gap-2 text-emerald-100">
+                        <Save className="w-5 h-5" />
+                        <span className="font-medium">Salva em Faturas em Validação</span>
+                      </div>
+                    )}
                   </div>
                 </div>
+                <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-3xl"></div>
               </div>
               
               <CardContent className="p-8">
-                <div className="space-y-4">
-                  <div className="p-4 bg-emerald-50 border-2 border-emerald-200 rounded-xl">
-                    <div className="flex items-center gap-2 text-emerald-800 mb-2">
-                      <FileText className="w-5 h-5" />
-                      <span className="font-semibold">Documento Gerado</span>
+                <div className="space-y-6">
+                  <div className="p-6 bg-gradient-to-r from-emerald-50 to-green-50 border-2 border-emerald-200 rounded-2xl shadow-lg">
+                    <div className="flex items-center gap-3 text-emerald-800 mb-3">
+                      <FileText className="w-6 h-6" />
+                      <span className="font-semibold text-lg">Documento Gerado</span>
                     </div>
-                    <p className="text-emerald-700 text-sm">
+                    <p className="text-emerald-700 font-medium">
                       Sua fatura foi localizada e está pronta para download. O arquivo será aberto em uma nova aba.
                     </p>
                   </div>
                   
                   <Button
-                    className="w-full bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white shadow-lg h-14 text-lg font-semibold transition-all duration-300 hover:scale-105"
+                    className="w-full bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white shadow-2xl h-16 text-xl font-semibold transition-all duration-300 hover:scale-105 border-0"
                     onClick={() => window.open(faturaResult.fatura_url, '_blank')}
                   >
-                    <Download className="w-5 h-5 mr-3" />
+                    <Download className="w-6 h-6 mr-3" />
                     Baixar Fatura em PDF
                   </Button>
                 </div>
