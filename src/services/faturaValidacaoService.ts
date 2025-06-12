@@ -91,7 +91,7 @@ export const faturaValidacaoService = {
   async updateStatusFatura(id: string, status: 'pendente' | 'aprovada' | 'rejeitada'): Promise<void> {
     console.log('Atualizando status da fatura:', id, 'para:', status);
     
-    // Se aprovada, move para faturas emitidas
+    // Se aprovada, move para faturas emitidas e remove da validação
     if (status === 'aprovada') {
       // Busca a fatura para mover
       const { data: fatura, error: fetchError } = await supabase
@@ -127,18 +127,15 @@ export const faturaValidacaoService = {
         throw insertError;
       }
 
-      // Atualiza o status para aprovada (mas não remove ainda)
-      const { error: updateError } = await supabase
+      // Remove da tabela de validação
+      const { error: deleteError } = await supabase
         .from('faturas_validacao')
-        .update({ 
-          status: 'aprovada',
-          updated_at: new Date().toISOString()
-        })
+        .delete()
         .eq('id', id);
 
-      if (updateError) {
-        console.error('Erro ao atualizar status da fatura:', updateError);
-        throw updateError;
+      if (deleteError) {
+        console.error('Erro ao remover fatura da validação:', deleteError);
+        throw deleteError;
       }
     } else {
       // Apenas atualiza o status

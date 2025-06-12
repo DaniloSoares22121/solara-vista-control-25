@@ -55,7 +55,7 @@ export const useDashboardStats = () => {
           throw generatorsError;
         }
 
-        // Buscar TODAS as faturas em validação (não apenas pendentes)
+        // Buscar faturas em validação (apenas pendentes e rejeitadas aparecem aqui)
         const { data: faturasValidacao, error: validacaoError } = await supabase
           .from('faturas_validacao')
           .select('id, status');
@@ -77,16 +77,15 @@ export const useDashboardStats = () => {
           throw emitidasError;
         }
 
-        // Calcular estatísticas corrigidas
+        // Calcular estatísticas
         const totalAssinantes = subscribers?.length || 0;
         const totalGeradoras = generators?.length || 0;
         
         // Contar faturas por status nas validações
         const faturasPendentes = faturasValidacao?.filter(f => f.status === 'pendente').length || 0;
-        const faturasAprovadas = faturasValidacao?.filter(f => f.status === 'aprovada').length || 0;
         const faturasRejeitadas = faturasValidacao?.filter(f => f.status === 'rejeitada').length || 0;
         
-        // Faturas emitidas
+        // Faturas emitidas (são as aprovadas)
         const totalFaturasEmitidas = faturasEmitidas?.length || 0;
         const faturasPagas = faturasEmitidas?.filter(f => f.status_pagamento === 'pago').length || 0;
         
@@ -102,7 +101,6 @@ export const useDashboardStats = () => {
           totalAssinantes,
           totalGeradoras,
           faturasPendentes,
-          faturasAprovadas,
           faturasRejeitadas,
           totalFaturasEmitidas,
           faturasPagas,
@@ -116,7 +114,7 @@ export const useDashboardStats = () => {
           totalAssinantes,
           totalGeradoras,
           faturasPendentes,
-          faturasProcessadas: faturasAprovadas, // Faturas aprovadas = processadas
+          faturasProcessadas: totalFaturasEmitidas, // Faturas emitidas = processadas (aprovadas)
           faturasEmitidas: totalFaturasEmitidas,
           faturasPagas,
           recentFaturas: faturasEmitidas || []
