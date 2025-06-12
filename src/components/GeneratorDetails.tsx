@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { 
   Edit, 
   Trash2, 
@@ -66,97 +67,97 @@ const GeneratorDetails = ({ generator, onEdit, onDelete, onClose }: GeneratorDet
   }, 0) || 0;
 
   return (
-    <div className="w-full h-full overflow-hidden">
-      <div className="h-full flex flex-col">
-        {/* Header Aprimorado */}
-        <div className="bg-gradient-to-r from-green-600 to-green-700 text-white p-6 shadow-lg">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
-                <Zap className="w-8 h-8 text-white" />
-              </div>
-              <div>
-                <h2 className="text-2xl font-bold">
-                  {generator.owner?.name || 'Geradora'}
-                </h2>
-                <p className="text-green-100 text-lg">{generator.concessionaria}</p>
-              </div>
+    <div className="flex flex-col h-full max-h-[80vh]">
+      {/* Header Fixo */}
+      <div className="bg-gradient-to-r from-green-600 to-green-700 text-white p-6 shadow-lg flex-shrink-0">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
+              <Zap className="w-8 h-8 text-white" />
             </div>
-            <div className="flex gap-3">
-              <Button 
-                onClick={onEdit} 
-                className="bg-white/20 hover:bg-white/30 text-white border-white/30"
-                variant="outline"
-              >
-                <Edit className="w-4 h-4 mr-2" />
-                Editar
-              </Button>
-              <Button 
-                onClick={() => setShowDeleteDialog(true)}
-                className="bg-red-600 hover:bg-red-700 text-white border-red-600"
-              >
-                <Trash2 className="w-4 h-4 mr-2" />
-                Excluir
-              </Button>
+            <div>
+              <h2 className="text-2xl font-bold">
+                {generator.owner?.name || 'Geradora'}
+              </h2>
+              <p className="text-green-100 text-lg">{generator.concessionaria}</p>
             </div>
           </div>
+          <div className="flex gap-3">
+            <Button 
+              onClick={onEdit} 
+              className="bg-white/20 hover:bg-white/30 text-white border-white/30"
+              variant="outline"
+            >
+              <Edit className="w-4 h-4 mr-2" />
+              Editar
+            </Button>
+            <Button 
+              onClick={() => setShowDeleteDialog(true)}
+              className="bg-red-600 hover:bg-red-700 text-white border-red-600"
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              Excluir
+            </Button>
+          </div>
+        </div>
 
-          {/* Estatísticas Rápidas */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6">
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-white/20 rounded-lg">
-                  <Zap className="w-5 h-5 text-white" />
-                </div>
-                <div>
-                  <p className="text-white/80 text-sm">Usinas</p>
-                  <p className="text-2xl font-bold text-white">{generator.plants?.length || 0}</p>
-                </div>
+        {/* Estatísticas Rápidas */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6">
+          <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-white/20 rounded-lg">
+                <Zap className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <p className="text-white/80 text-sm">Usinas</p>
+                <p className="text-2xl font-bold text-white">{generator.plants?.length || 0}</p>
               </div>
             </div>
-            
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-white/20 rounded-lg">
-                  <TrendingUp className="w-5 h-5 text-white" />
-                </div>
-                <div>
-                  <p className="text-white/80 text-sm">Capacidade</p>
-                  <p className="text-2xl font-bold text-white">{totalCapacity.toFixed(1)} kWp</p>
-                </div>
+          </div>
+          
+          <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-white/20 rounded-lg">
+                <TrendingUp className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <p className="text-white/80 text-sm">Capacidade</p>
+                <p className="text-2xl font-bold text-white">{totalCapacity.toFixed(1)} kWp</p>
               </div>
             </div>
-            
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-white/20 rounded-lg">
-                  <Activity className="w-5 h-5 text-white" />
-                </div>
-                <div>
-                  <p className="text-white/80 text-sm">Geração</p>
-                  <p className="text-2xl font-bold text-white">{totalGeneration.toFixed(0)} kWh/mês</p>
-                </div>
+          </div>
+          
+          <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-white/20 rounded-lg">
+                <Activity className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <p className="text-white/80 text-sm">Geração</p>
+                <p className="text-2xl font-bold text-white">{totalGeneration.toFixed(0)} kWh/mês</p>
               </div>
             </div>
-            
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-white/20 rounded-lg">
-                  <Power className="w-5 h-5 text-white" />
-                </div>
-                <div>
-                  <p className="text-white/80 text-sm">Status</p>
-                  <Badge className={`${generator.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'} mt-1`}>
-                    {generator.status === 'active' ? 'Ativa' : 'Inativa'}
-                  </Badge>
-                </div>
+          </div>
+          
+          <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-white/20 rounded-lg">
+                <Power className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <p className="text-white/80 text-sm">Status</p>
+                <Badge className={`${generator.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'} mt-1`}>
+                  {generator.status === 'active' ? 'Ativa' : 'Inativa'}
+                </Badge>
               </div>
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Conteúdo */}
-        <div className="flex-1 overflow-y-auto p-6 bg-gray-50">
+      {/* Conteúdo Scrollável */}
+      <ScrollArea className="flex-1 bg-gray-50">
+        <div className="p-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 max-w-7xl mx-auto">
             {/* Dados do Proprietário */}
             <Card className="shadow-lg border-0">
@@ -397,28 +398,28 @@ const GeneratorDetails = ({ generator, onEdit, onDelete, onClose }: GeneratorDet
             </Card>
           </div>
         </div>
+      </ScrollArea>
 
-        {/* Dialog de Confirmação de Exclusão */}
-        <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Confirmar Exclusão</DialogTitle>
-              <DialogDescription>
-                Tem certeza que deseja excluir a geradora "{generator.owner?.name}"? 
-                Esta ação não pode ser desfeita.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="flex justify-end gap-2 mt-4">
-              <Button variant="outline" onClick={() => setShowDeleteDialog(false)}>
-                Cancelar
-              </Button>
-              <Button variant="destructive" onClick={handleDelete}>
-                Excluir
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
-      </div>
+      {/* Dialog de Confirmação de Exclusão */}
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirmar Exclusão</DialogTitle>
+            <DialogDescription>
+              Tem certeza que deseja excluir a geradora "{generator.owner?.name}"? 
+              Esta ação não pode ser desfeita.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end gap-2 mt-4">
+            <Button variant="outline" onClick={() => setShowDeleteDialog(false)}>
+              Cancelar
+            </Button>
+            <Button variant="destructive" onClick={handleDelete}>
+              Excluir
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
