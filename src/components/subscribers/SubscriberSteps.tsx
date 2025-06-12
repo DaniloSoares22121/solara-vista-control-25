@@ -15,11 +15,17 @@ import AttachmentsForm from '../forms/subscriber/AttachmentsForm';
 interface SubscriberStepsProps {
   formData: SubscriberFormData;
   currentStep: number;
-  updateFormData: (section: keyof SubscriberFormData, data: any) => void;
+  updateFormData: (section: keyof SubscriberFormData, data: unknown) => void;
   handleCepLookup: (cep: string, addressType: 'personal' | 'company' | 'administrator' | 'energy') => void;
   addContact: (type: 'personal' | 'company') => void;
   removeContact: (type: 'personal' | 'company', contactId: string) => void;
   autoFillEnergyAccount: () => void;
+}
+
+interface FormProps {
+  control: { _formValues: SubscriberFormData };
+  setValue: () => void;
+  watch: () => void;
 }
 
 export const useSubscriberSteps = ({
@@ -31,11 +37,12 @@ export const useSubscriberSteps = ({
   autoFillEnergyAccount
 }: Omit<SubscriberStepsProps, 'currentStep'>) => {
   
-  const mockForm = { 
+  // Form mock para compatibilidade com componentes legados
+  const formProps: FormProps = { 
     control: { _formValues: formData }, 
     setValue: () => {}, 
     watch: () => {} 
-  } as any;
+  };
 
   const steps = [
     { 
@@ -64,7 +71,7 @@ export const useSubscriberSteps = ({
           onCepLookup={(cep) => handleCepLookup(cep, 'personal')}
           onAddContact={() => addContact('personal')}
           onRemoveContact={(contactId) => removeContact('personal', contactId)}
-          form={mockForm}
+          form={formProps}
         />
       ) : (
         <CompanyDataForm 
@@ -75,7 +82,7 @@ export const useSubscriberSteps = ({
           onCepLookup={(cep, type) => handleCepLookup(cep, type)}
           onAddContact={() => addContact('company')}
           onRemoveContact={(contactId) => removeContact('company', contactId)}
-          form={mockForm}
+          form={formProps}
         />
       )
     },
@@ -87,7 +94,7 @@ export const useSubscriberSteps = ({
         onUpdate={(data) => updateFormData('energyAccount', data)}
         onCepLookup={(cep) => handleCepLookup(cep, 'energy')}
         onAutoFill={autoFillEnergyAccount}
-        form={mockForm}
+        form={formProps}
       /> 
     },
     { 
@@ -96,7 +103,7 @@ export const useSubscriberSteps = ({
       component: <TitleTransferForm 
         data={formData.titleTransfer} 
         onUpdate={(data) => updateFormData('titleTransfer', data)}
-        form={mockForm}
+        form={formProps}
       /> 
     },
     { 
@@ -105,7 +112,7 @@ export const useSubscriberSteps = ({
       component: <PlanContractForm 
         data={formData.planContract} 
         onUpdate={(data) => updateFormData('planContract', data)}
-        form={mockForm}
+        form={formProps}
       /> 
     },
     { 
@@ -114,7 +121,7 @@ export const useSubscriberSteps = ({
       component: <PlanDetailsForm 
         data={formData.planDetails} 
         onUpdate={(data) => updateFormData('planDetails', data)}
-        form={mockForm}
+        form={formProps}
       /> 
     },
     { 
@@ -123,7 +130,7 @@ export const useSubscriberSteps = ({
       component: <NotificationSettingsForm 
         data={formData.notificationSettings} 
         onUpdate={(data) => updateFormData('notificationSettings', data)}
-        form={mockForm}
+        form={formProps}
       /> 
     },
     { 
@@ -134,7 +141,7 @@ export const useSubscriberSteps = ({
         subscriberType={formData.subscriberType}
         willTransfer={formData.titleTransfer?.willTransfer || false}
         onUpdate={(data) => updateFormData('attachments', data)}
-        form={mockForm}
+        form={formProps}
       /> 
     },
   ];

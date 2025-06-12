@@ -10,10 +10,11 @@ import { Button } from '@/components/ui/button';
 import { RotateCcw } from 'lucide-react';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { toast } from 'sonner';
+import { SubscriberDataFromDB } from '@/types/subscriber';
 
 interface SubscriberFormProps {
   onSuccess?: (id?: string) => void;
-  existingData?: any;
+  existingData?: SubscriberDataFromDB;
   subscriberId?: string;
 }
 
@@ -48,15 +49,6 @@ const SubscriberForm: React.FC<SubscriberFormProps> = ({
     autoFillEnergyAccount
   });
 
-  useEffect(() => {
-    console.log('📋 Estado atual do formulário:', {
-      step: currentStep,
-      formData,
-      isEditing,
-      isLoaded
-    });
-  }, [currentStep, formData, isEditing, isLoaded]);
-
   const handleSubmit = async () => {
     try {
       const result = await submitForm(subscriberId);
@@ -64,7 +56,6 @@ const SubscriberForm: React.FC<SubscriberFormProps> = ({
         onSuccess(subscriberId);
       }
     } catch (error) {
-      console.error('❌ Erro ao enviar formulário:', error);
       toast.error('Erro ao salvar assinante. Tente novamente.');
     }
   };

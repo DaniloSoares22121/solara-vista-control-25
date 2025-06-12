@@ -150,6 +150,19 @@ export interface SubscriberFormData {
   attachments: Attachments;
 }
 
+// Tipos para dados vindos do banco de dados
+export interface SubscriberDataFromDB {
+  subscriber: Record<string, unknown>;
+  administrator?: Record<string, unknown>;
+  energy_account: Record<string, unknown>;
+  plan_contract?: Record<string, unknown>;
+  plan_details?: Record<string, unknown>;
+  notifications?: Record<string, unknown>;
+  attachments?: Record<string, unknown>;
+  title_transfer?: Record<string, unknown>;
+  concessionaria?: string;
+}
+
 export interface DiscountTableData {
   kwh: number;
   loyalty: 'none' | 'oneYear' | 'twoYears';

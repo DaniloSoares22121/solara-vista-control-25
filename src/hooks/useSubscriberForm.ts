@@ -1,6 +1,6 @@
 
 import { useState, useCallback, useEffect } from 'react';
-import { SubscriberFormData } from '@/types/subscriber';
+import { SubscriberFormData, SubscriberDataFromDB } from '@/types/subscriber';
 import { useCepConsistency } from '@/hooks/useCepConsistency';
 import { useSubscriberFormValidation } from '@/hooks/useSubscriberFormValidation';
 import { useSubscriberFormActions } from '@/hooks/useSubscriberFormActions';
@@ -8,7 +8,7 @@ import { useSubscriberDataMapping } from '@/hooks/useSubscriberDataMapping';
 import { initialFormData } from '@/constants/subscriberFormDefaults';
 import { toast } from 'sonner';
 
-export const useSubscriberForm = (existingData?: any) => {
+export const useSubscriberForm = (existingData?: SubscriberDataFromDB) => {
   const [formData, setFormData] = useState<SubscriberFormData>(initialFormData);
   const [currentStep, setCurrentStep] = useState(1);
   const [isEditing, setIsEditing] = useState(!!existingData);
@@ -22,8 +22,6 @@ export const useSubscriberForm = (existingData?: any) => {
   // Load existing data if editing
   useEffect(() => {
     if (existingData) {
-      console.log('🔄 Carregando dados existentes para edição:', existingData);
-      
       const subscriber = existingData.subscriber;
       const administrator = existingData.administrator;
       const energyAccount = existingData.energy_account;
@@ -34,83 +32,81 @@ export const useSubscriberForm = (existingData?: any) => {
       const titleTransfer = existingData.title_transfer;
       
       const subscriberType = determineSubscriberType(subscriber, energyAccount);
-      console.log('📋 Tipo de assinante detectado:', subscriberType);
       
       const loadedData: SubscriberFormData = {
         concessionaria: existingData.concessionaria || 'equatorial-goias',
         subscriberType,
         
         personalData: subscriberType === 'person' && subscriber ? {
-          cpf: subscriber.cpf || '',
-          partnerNumber: subscriber.partnerNumber || '',
-          fullName: subscriber.fullName || '',
-          birthDate: subscriber.birthDate || '',
-          maritalStatus: subscriber.maritalStatus || '',
-          profession: subscriber.profession || '',
-          phone: subscriber.phone || '',
-          email: subscriber.email || '',
-          observations: subscriber.observations || '',
-          address: mapAddress(subscriber.address),
-          contacts: subscriber.contacts || [],
+          cpf: (subscriber.cpf as string) || '',
+          partnerNumber: (subscriber.partnerNumber as string) || '',
+          fullName: (subscriber.fullName as string) || '',
+          birthDate: (subscriber.birthDate as string) || '',
+          maritalStatus: (subscriber.maritalStatus as string) || '',
+          profession: (subscriber.profession as string) || '',
+          phone: (subscriber.phone as string) || '',
+          email: (subscriber.email as string) || '',
+          observations: (subscriber.observations as string) || '',
+          address: mapAddress(subscriber.address as Record<string, unknown>),
+          contacts: (subscriber.contacts as any[]) || [],
         } : initialFormData.personalData!,
         
         companyData: subscriberType === 'company' && subscriber ? {
-          cnpj: subscriber.cnpj || '',
-          partnerNumber: subscriber.partnerNumber || '',
-          companyName: subscriber.companyName || subscriber.razaoSocial || '',
-          fantasyName: subscriber.fantasyName || subscriber.nomeFantasia || '',
-          phone: subscriber.phone || '',
-          email: subscriber.email || '',
-          observations: subscriber.observations || '',
-          address: mapAddress(subscriber.address),
-          contacts: subscriber.contacts || [],
+          cnpj: (subscriber.cnpj as string) || '',
+          partnerNumber: (subscriber.partnerNumber as string) || '',
+          companyName: (subscriber.companyName as string) || (subscriber.razaoSocial as string) || '',
+          fantasyName: (subscriber.fantasyName as string) || (subscriber.nomeFantasia as string) || '',
+          phone: (subscriber.phone as string) || '',
+          email: (subscriber.email as string) || '',
+          observations: (subscriber.observations as string) || '',
+          address: mapAddress(subscriber.address as Record<string, unknown>),
+          contacts: (subscriber.contacts as any[]) || [],
         } : initialFormData.companyData!,
         
         administratorData: administrator ? {
-          cpf: administrator.cpf || '',
-          fullName: administrator.fullName || '',
-          birthDate: administrator.birthDate || '',
-          maritalStatus: administrator.maritalStatus || '',
-          profession: administrator.profession || '',
-          phone: administrator.phone || '',
-          email: administrator.email || '',
-          address: mapAddress(administrator.address),
+          cpf: (administrator.cpf as string) || '',
+          fullName: (administrator.fullName as string) || '',
+          birthDate: (administrator.birthDate as string) || '',
+          maritalStatus: (administrator.maritalStatus as string) || '',
+          profession: (administrator.profession as string) || '',
+          phone: (administrator.phone as string) || '',
+          email: (administrator.email as string) || '',
+          address: mapAddress(administrator.address as Record<string, unknown>),
         } : initialFormData.administratorData!,
         
         energyAccount: energyAccount ? {
-          holderType: energyAccount.holderType || subscriberType,
-          cpfCnpj: energyAccount.cpfCnpj || '',
-          holderName: energyAccount.holderName || '',
-          birthDate: energyAccount.birthDate || '',
-          uc: energyAccount.uc || '',
-          partnerNumber: energyAccount.partnerNumber || '',
-          address: mapAddress(energyAccount.address),
+          holderType: (energyAccount.holderType as 'person' | 'company') || subscriberType,
+          cpfCnpj: (energyAccount.cpfCnpj as string) || '',
+          holderName: (energyAccount.holderName as string) || '',
+          birthDate: (energyAccount.birthDate as string) || '',
+          uc: (energyAccount.uc as string) || '',
+          partnerNumber: (energyAccount.partnerNumber as string) || '',
+          address: mapAddress(energyAccount.address as Record<string, unknown>),
         } : initialFormData.energyAccount,
         
-        titleTransfer: titleTransfer || initialFormData.titleTransfer,
+        titleTransfer: (titleTransfer as any) || initialFormData.titleTransfer,
         
         planContract: planContract ? {
-          selectedPlan: planContract.selectedPlan || '',
-          compensationMode: planContract.compensationMode || 'autoConsumption',
-          adhesionDate: planContract.adhesionDate || '',
-          informedKwh: planContract.informedKwh || 0,
-          contractedKwh: planContract.contractedKwh || 0,
-          loyalty: planContract.loyalty || 'none',
-          discountPercentage: planContract.discountPercentage || 0,
+          selectedPlan: (planContract.selectedPlan as string) || '',
+          compensationMode: (planContract.compensationMode as 'autoConsumption' | 'sharedGeneration') || 'autoConsumption',
+          adhesionDate: (planContract.adhesionDate as string) || '',
+          informedKwh: (planContract.informedKwh as number) || 0,
+          contractedKwh: (planContract.contractedKwh as number) || 0,
+          loyalty: (planContract.loyalty as 'none' | 'oneYear' | 'twoYears') || 'none',
+          discountPercentage: (planContract.discountPercentage as number) || 0,
         } : initialFormData.planContract,
         
         planDetails: planDetails ? {
-          paysPisAndCofins: planDetails.paysPisAndCofins !== undefined ? planDetails.paysPisAndCofins : true,
-          paysWireB: planDetails.paysWireB !== undefined ? planDetails.paysWireB : false,
-          addDistributorValue: planDetails.addDistributorValue !== undefined ? planDetails.addDistributorValue : true,
-          exemptFromPayment: planDetails.exemptFromPayment !== undefined ? planDetails.exemptFromPayment : false,
+          paysPisAndCofins: (planDetails.paysPisAndCofins as boolean) !== undefined ? (planDetails.paysPisAndCofins as boolean) : true,
+          paysWireB: (planDetails.paysWireB as boolean) !== undefined ? (planDetails.paysWireB as boolean) : false,
+          addDistributorValue: (planDetails.addDistributorValue as boolean) !== undefined ? (planDetails.addDistributorValue as boolean) : true,
+          exemptFromPayment: (planDetails.exemptFromPayment as boolean) !== undefined ? (planDetails.exemptFromPayment as boolean) : false,
         } : initialFormData.planDetails,
         
-        notificationSettings: notifications || initialFormData.notificationSettings,
-        attachments: attachments || {},
+        notificationSettings: (notifications as any) || initialFormData.notificationSettings,
+        attachments: (attachments as any) || {},
       };
       
-      console.log('✅ Dados processados para carregamento:', loadedData);
       setFormData(loadedData);
       setIsEditing(true);
       setIsLoaded(true);
@@ -129,8 +125,7 @@ export const useSubscriberForm = (existingData?: any) => {
     }
   }, [formData.personalData, formData.companyData, isLoaded, isEditing, performAutoFill]);
 
-  const updateFormData = useCallback((section: keyof SubscriberFormData, data: any) => {
-    console.log('🔄 Atualizando seção:', section, 'com dados:', data);
+  const updateFormData = useCallback((section: keyof SubscriberFormData, data: unknown) => {
     setFormData(prev => {
       const currentSectionData = prev[section];
       
@@ -157,8 +152,6 @@ export const useSubscriberForm = (existingData?: any) => {
         city: cepData.localidade,
         state: cepData.uf,
       };
-
-      console.log('🏠 Atualizando endereço para:', addressType, addressUpdate);
 
       setFormData(prev => {
         const newFormData = { ...prev };
@@ -200,7 +193,6 @@ export const useSubscriberForm = (existingData?: any) => {
   }, [formData, removeContactAction]);
 
   const autoFillEnergyAccount = useCallback(() => {
-    console.log('🔄 Executando preenchimento automático manual');
     const newFormData = performAutoFill(formData);
     setFormData(newFormData);
     toast.success('Dados da conta de energia preenchidos automaticamente!', { duration: 1000 });

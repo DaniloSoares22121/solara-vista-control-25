@@ -2,10 +2,28 @@
 import { useCallback } from 'react';
 import { SubscriberFormData } from '@/types/subscriber';
 
+const validateAttachments = (formData: SubscriberFormData): boolean => {
+  const requiredAttachments = ['contract', 'bill'];
+  
+  if (formData.subscriberType === 'person') {
+    requiredAttachments.push('cnh');
+  }
+  
+  if (formData.subscriberType === 'company') {
+    requiredAttachments.push('companyContract');
+  }
+  
+  if (formData.titleTransfer.willTransfer) {
+    requiredAttachments.push('procuration');
+  }
+  
+  return requiredAttachments.every(key => 
+    formData.attachments[key as keyof typeof formData.attachments]
+  );
+};
+
 export const useSubscriberFormValidation = () => {
   const validateStep = useCallback((step: number, formData: SubscriberFormData, isEditing: boolean): boolean => {
-    console.log('🔍 Validando passo:', step, 'com dados:', formData);
-    
     switch (step) {
       case 1:
         return !!formData.concessionaria;
@@ -35,13 +53,7 @@ export const useSubscriberFormValidation = () => {
         
       case 9:
         if (isEditing) return true; // Na edição, anexos são opcionais
-        
-        const requiredAttachments = ['contract', 'bill'];
-        if (formData.subscriberType === 'person') requiredAttachments.push('cnh');
-        if (formData.subscriberType === 'company') requiredAttachments.push('companyContract');
-        if (formData.titleTransfer.willTransfer) requiredAttachments.push('procuration');
-        
-        return requiredAttachments.every(key => formData.attachments[key as keyof typeof formData.attachments]);
+        return validateAttachments(formData);
         
       default:
         return false;
