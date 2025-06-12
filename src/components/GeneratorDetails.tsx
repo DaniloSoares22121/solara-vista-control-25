@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -15,7 +16,6 @@ import {
   Phone,
   Mail,
   Calendar,
-  X,
   TrendingUp,
   Power,
   Activity
@@ -66,7 +66,7 @@ const GeneratorDetails = ({ generator, onEdit, onDelete, onClose }: GeneratorDet
   }, 0) || 0;
 
   return (
-    <div className="w-[90vw] max-w-6xl h-[90vh] max-h-none p-0 overflow-hidden">
+    <div className="w-full h-full overflow-hidden">
       <div className="h-full flex flex-col">
         {/* Header Aprimorado */}
         <div className="bg-gradient-to-r from-green-600 to-green-700 text-white p-6 shadow-lg">
