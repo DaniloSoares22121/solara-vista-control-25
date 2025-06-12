@@ -94,7 +94,6 @@ const SubscriberForm: React.FC<SubscriberFormProps> = ({
   const currentStepData = steps.find(step => step.number === currentStep);
   const totalSteps = steps.length;
 
-  // Define step descriptions for the UI
   const stepDescriptions = [
     'Selecione a concessionária',
     'Escolha o tipo de assinante', 
@@ -109,124 +108,127 @@ const SubscriberForm: React.FC<SubscriberFormProps> = ({
 
   return (
     <DashboardLayout>
-      <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50/30 to-green-100/50 p-responsive">
-        <div className="container mx-auto space-y-6 lg:space-y-8">
+      <div className="min-h-screen bg-gradient-to-br from-emerald-50/30 via-green-50/20 to-emerald-100/40">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
           
           {/* Header Section */}
-          <div className="solar-card-gradient rounded-xl border border-green-100 p-6 lg:p-8 shadow-lg">
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 lg:gap-6">
-              <div className="space-y-3">
-                <div className="flex items-center gap-3 lg:gap-4">
-                  <div className="p-2 lg:p-3 solar-gradient rounded-xl lg:rounded-2xl shadow-lg">
-                    <Users className="w-6 h-6 lg:w-8 lg:h-8 text-white" />
-                  </div>
-                  <div>
-                    <h1 className="text-2xl lg:text-3xl xl:text-4xl font-bold solar-text-gradient">
-                      {isEditing ? 'Editar Assinante' : 'Novo Assinante'}
-                    </h1>
-                    <p className="text-muted-foreground text-sm lg:text-base xl:text-lg">
-                      {isEditing 
-                        ? 'Atualize as informações do assinante' 
-                        : 'Cadastre um novo assinante no sistema'
-                      }
-                    </p>
-                  </div>
-                </div>
-              </div>
-              
-              {onClose && (
-                <Button
-                  onClick={onClose}
-                  variant="outline"
-                  className="flex items-center space-x-2 border-green-200 text-primary hover:bg-green-50 shadow-md touch-manipulation min-h-touch"
-                >
-                  <ArrowLeft className="w-4 h-4" />
-                  <span className="hidden sm:inline">Voltar para Lista</span>
-                  <span className="sm:hidden">Voltar</span>
-                </Button>
-              )}
-            </div>
-          </div>
-
-          {/* Progress Steps */}
-          <Card className="border-green-100 shadow-xl solar-card-gradient overflow-hidden">
-            <CardContent className="p-4 lg:p-6 xl:p-8">
-              <div className="flex items-center justify-between relative overflow-x-auto mobile-scroll">
-                {/* Progress line background */}
-                <div className="absolute top-6 left-0 right-0 h-1 bg-green-100 rounded-full z-0">
-                  <div 
-                    className="h-full solar-gradient rounded-full transition-all duration-500 ease-out"
-                    style={{ width: `${((currentStep - 1) / (totalSteps - 1)) * 100}%` }}
-                  />
-                </div>
-                
-                <div className="flex items-center justify-between w-full min-w-max lg:min-w-0 relative z-10 gap-2 lg:gap-4">
-                  {steps.map((step, index) => (
-                    <div key={step.number} className="flex flex-col items-center">
-                      <div className={`
-                        w-8 h-8 lg:w-12 lg:h-12 rounded-full flex items-center justify-center text-xs lg:text-lg font-bold transition-all duration-300 shadow-lg
-                        ${currentStep >= step.number 
-                          ? 'solar-gradient text-white scale-110' 
-                          : currentStep === step.number - 1
-                          ? 'bg-gradient-to-r from-orange-400 to-orange-500 text-white'
-                          : 'bg-white text-gray-400 border-2 border-green-200'
-                        }
-                      `}>
-                        {currentStep > step.number ? (
-                          <CheckCircle className="w-3 h-3 lg:w-6 lg:h-6" />
-                        ) : (
-                          <span className="text-xs lg:text-sm">{step.number}</span>
-                        )}
-                      </div>
-                      <div className="mt-2 lg:mt-3 text-center max-w-16 lg:max-w-32">
-                        <p className={`text-xs lg:text-sm font-semibold transition-colors truncate ${
-                          currentStep >= step.number ? 'text-primary' : 'text-muted-foreground'
-                        }`}>
-                          {step.title}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-1 hidden lg:block">
-                          {stepDescriptions[index] || 'Configuração'}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Form Content */}
-          {currentStepData && (
-            <Card className="border-green-100 shadow-2xl solar-card-gradient">
-              <CardHeader className="bg-gradient-to-r from-green-50 to-emerald-50 border-b border-green-100/50 p-4 lg:p-6">
-                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                  <div className="flex items-center gap-3 lg:gap-4">
-                    <div className="w-10 h-10 lg:w-12 lg:h-12 solar-gradient rounded-lg lg:rounded-xl flex items-center justify-center shadow-lg">
-                      <span className="text-lg lg:text-xl">{currentStep}</span>
+          <div className="mb-6 lg:mb-8">
+            <Card className="border-0 shadow-xl bg-gradient-to-r from-white/90 to-white/95 backdrop-blur-sm">
+              <CardHeader className="pb-4 lg:pb-6">
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 lg:w-16 lg:h-16 rounded-xl lg:rounded-2xl bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center shadow-lg">
+                      <Users className="w-6 h-6 lg:w-8 lg:h-8 text-white" />
                     </div>
                     <div>
-                      <CardTitle className="text-lg lg:text-xl xl:text-2xl text-primary font-bold">
-                        {currentStepData.title}
+                      <CardTitle className="text-xl lg:text-2xl xl:text-3xl font-bold bg-gradient-to-r from-emerald-600 to-green-700 bg-clip-text text-transparent">
+                        {isEditing ? 'Editar Assinante' : 'Novo Assinante'}
                       </CardTitle>
-                      <p className="text-primary/70 mt-1 text-sm lg:text-base">
-                        {stepDescriptions[currentStep - 1] || 'Configure as informações necessárias'}
+                      <p className="text-gray-600 text-sm lg:text-base mt-1">
+                        {isEditing 
+                          ? 'Atualize as informações do assinante' 
+                          : 'Cadastre um novo assinante no sistema'
+                        }
                       </p>
                     </div>
                   </div>
-                  <Badge className="bg-green-100 text-primary border-green-200 text-xs lg:text-sm px-3 lg:px-4 py-1 lg:py-2 self-start lg:self-auto">
-                    {currentStep} de {totalSteps}
-                  </Badge>
+                  
+                  {onClose && (
+                    <Button
+                      onClick={onClose}
+                      variant="outline"
+                      className="self-start lg:self-auto border-emerald-200 text-emerald-700 hover:bg-emerald-50 transition-all duration-200"
+                    >
+                      <ArrowLeft className="w-4 h-4 mr-2" />
+                      <span className="hidden sm:inline">Voltar</span>
+                    </Button>
+                  )}
                 </div>
               </CardHeader>
-              
-              <CardContent className="p-4 lg:p-6 xl:p-8 lg:p-10">
-                {currentStepData.component}
+            </Card>
+          </div>
+
+          {/* Progress Section */}
+          <div className="mb-6 lg:mb-8">
+            <Card className="border-0 shadow-xl bg-gradient-to-r from-white/90 to-white/95 backdrop-blur-sm overflow-hidden">
+              <CardContent className="p-4 lg:p-6">
+                <div className="relative">
+                  {/* Progress background line */}
+                  <div className="absolute top-6 left-0 right-0 h-1 bg-gray-200 rounded-full">
+                    <div 
+                      className="h-full bg-gradient-to-r from-emerald-500 to-green-600 rounded-full transition-all duration-500"
+                      style={{ width: `${((currentStep - 1) / (totalSteps - 1)) * 100}%` }}
+                    />
+                  </div>
+                  
+                  {/* Steps */}
+                  <div className="relative flex justify-between items-center overflow-x-auto pb-2">
+                    {steps.map((step, index) => (
+                      <div key={step.number} className="flex flex-col items-center min-w-0 flex-shrink-0">
+                        <div className={`
+                          w-8 h-8 lg:w-12 lg:h-12 rounded-full flex items-center justify-center text-xs lg:text-sm font-semibold transition-all duration-300 shadow-md
+                          ${currentStep >= step.number 
+                            ? 'bg-gradient-to-r from-emerald-500 to-green-600 text-white scale-110' 
+                            : 'bg-white text-gray-400 border-2 border-gray-200'
+                          }
+                        `}>
+                          {currentStep > step.number ? (
+                            <CheckCircle className="w-3 h-3 lg:w-5 lg:h-5" />
+                          ) : (
+                            step.number
+                          )}
+                        </div>
+                        
+                        <div className="mt-2 text-center max-w-20 lg:max-w-24">
+                          <p className={`text-xs lg:text-sm font-medium transition-colors truncate ${
+                            currentStep >= step.number ? 'text-emerald-700' : 'text-gray-400'
+                          }`}>
+                            {step.title}
+                          </p>
+                          <p className="text-xs text-gray-500 mt-1 hidden lg:block">
+                            {stepDescriptions[index]}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </CardContent>
             </Card>
+          </div>
+
+          {/* Form Content */}
+          {currentStepData && (
+            <div className="mb-6 lg:mb-8">
+              <Card className="border-0 shadow-xl bg-gradient-to-r from-white/90 to-white/95 backdrop-blur-sm">
+                <CardHeader className="bg-gradient-to-r from-emerald-50/80 to-green-50/80 border-b border-emerald-100">
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-xl bg-gradient-to-r from-emerald-500 to-green-600 flex items-center justify-center text-white font-bold shadow-lg">
+                      {currentStep}
+                    </div>
+                    <div className="flex-1">
+                      <CardTitle className="text-lg lg:text-xl text-emerald-800">
+                        {currentStepData.title}
+                      </CardTitle>
+                      <p className="text-emerald-600/80 text-sm lg:text-base mt-1">
+                        {stepDescriptions[currentStep - 1]}
+                      </p>
+                    </div>
+                    <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 text-xs lg:text-sm px-3 py-1">
+                      {currentStep} de {totalSteps}
+                    </Badge>
+                  </div>
+                </CardHeader>
+                
+                <CardContent className="p-4 lg:p-6 xl:p-8">
+                  {currentStepData.component}
+                </CardContent>
+              </Card>
+            </div>
           )}
 
           {/* Navigation Footer */}
-          <Card className="border-green-100 shadow-xl solar-card-gradient overflow-hidden sticky bottom-0 lg:static z-10">
+          <Card className="border-0 shadow-xl bg-gradient-to-r from-white/90 to-white/95 backdrop-blur-sm sticky bottom-0 lg:static z-10">
             <CardContent className="p-4 lg:p-6">
               <div className="flex items-center justify-between gap-4">
                 <Button
@@ -234,11 +236,10 @@ const SubscriberForm: React.FC<SubscriberFormProps> = ({
                   variant="outline"
                   onClick={prevStep}
                   disabled={currentStep === 1 || isSubmitting}
-                  className="flex items-center gap-2 lg:gap-3 px-4 lg:px-8 py-2 lg:py-3 text-sm lg:text-base font-medium border-2 hover:bg-green-50 touch-manipulation min-h-touch"
+                  className="flex items-center gap-2 px-4 lg:px-6 py-2 lg:py-3 border-emerald-200 text-emerald-700 hover:bg-emerald-50 transition-all duration-200"
                 >
-                  <ChevronLeft className="w-4 h-4 lg:w-5 lg:h-5" />
-                  <span className="hidden sm:inline">Etapa Anterior</span>
-                  <span className="sm:hidden">Anterior</span>
+                  <ChevronLeft className="w-4 h-4" />
+                  <span className="hidden sm:inline">Anterior</span>
                 </Button>
 
                 <div className="flex items-center gap-2 lg:gap-4">
@@ -248,10 +249,10 @@ const SubscriberForm: React.FC<SubscriberFormProps> = ({
                       variant="outline"
                       onClick={handleReset}
                       disabled={isSubmitting}
-                      className="hidden lg:flex items-center gap-2 px-4 lg:px-8 py-2 lg:py-3 text-sm lg:text-base font-medium border-2"
+                      className="hidden lg:flex items-center gap-2 px-4 lg:px-6 py-2 lg:py-3 border-gray-200 text-gray-600 hover:bg-gray-50"
                     >
                       <RotateCcw className="w-4 h-4" />
-                      Limpar Dados
+                      Limpar
                     </Button>
                   )}
                   
@@ -260,14 +261,14 @@ const SubscriberForm: React.FC<SubscriberFormProps> = ({
                       type="button"
                       onClick={handleSubmit}
                       disabled={!validateStep(currentStep) || isSubmitting}
-                      className="solar-gradient hover:opacity-90 text-white px-4 lg:px-10 py-2 lg:py-3 text-sm lg:text-base font-medium flex items-center gap-2 lg:gap-3 shadow-lg touch-manipulation min-h-touch"
+                      className="bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white px-4 lg:px-8 py-2 lg:py-3 font-medium flex items-center gap-2 shadow-lg transition-all duration-200"
                     >
-                      <Save className="w-4 h-4 lg:w-5 lg:h-5" />
+                      <Save className="w-4 h-4" />
                       <span className="hidden sm:inline">
-                        {isSubmitting ? 'Salvando...' : isEditing ? 'Atualizar Assinante' : 'Criar Assinante'}
+                        {isSubmitting ? 'Salvando...' : isEditing ? 'Atualizar' : 'Criar Assinante'}
                       </span>
                       <span className="sm:hidden">
-                        {isSubmitting ? 'Salvando...' : isEditing ? 'Atualizar' : 'Criar'}
+                        {isSubmitting ? 'Salvando...' : 'Salvar'}
                       </span>
                     </Button>
                   ) : (
@@ -275,11 +276,11 @@ const SubscriberForm: React.FC<SubscriberFormProps> = ({
                       type="button"
                       onClick={nextStep}
                       disabled={!validateStep(currentStep) || isSubmitting}
-                      className="solar-gradient hover:opacity-90 text-white flex items-center gap-2 lg:gap-3 px-4 lg:px-8 py-2 lg:py-3 text-sm lg:text-base font-medium shadow-lg touch-manipulation min-h-touch"
+                      className="bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white flex items-center gap-2 px-4 lg:px-8 py-2 lg:py-3 font-medium shadow-lg transition-all duration-200"
                     >
-                      <span className="hidden sm:inline">Próxima Etapa</span>
+                      <span className="hidden sm:inline">Próximo</span>
                       <span className="sm:hidden">Próximo</span>
-                      <ChevronRight className="w-4 h-4 lg:w-5 lg:h-5" />
+                      <ChevronRight className="w-4 h-4" />
                     </Button>
                   )}
                 </div>
