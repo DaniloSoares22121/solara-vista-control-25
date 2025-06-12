@@ -1,6 +1,6 @@
 
 import { useForm, UseFormReturn } from 'react-hook-form';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { SubscriberFormData } from '@/types/subscriber';
 
 export const useFormProvider = (formData: SubscriberFormData): UseFormReturn<any> => {
@@ -9,14 +9,15 @@ export const useFormProvider = (formData: SubscriberFormData): UseFormReturn<any
     mode: 'onChange'
   });
 
-  // Sincronizar valores quando formData mudar
+  const prevFormDataRef = useRef<SubscriberFormData>();
+
+  // Sincronizar valores quando formData mudar - mas evitar loops infinitos
   useEffect(() => {
-    const currentValues = form.getValues();
-    
-    // Verificar se precisa atualizar apenas se os valores realmente mudaram
-    if (JSON.stringify(currentValues) !== JSON.stringify(formData)) {
+    // Só atualiza se os dados realmente mudaram
+    if (prevFormDataRef.current !== formData) {
       console.log('🔄 Sincronizando formulário com formData:', formData);
       form.reset(formData);
+      prevFormDataRef.current = formData;
     }
   }, [formData, form]);
 

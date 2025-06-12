@@ -1,4 +1,3 @@
-
 import { useState, useCallback, useEffect } from 'react';
 import { SubscriberFormData, SubscriberDataFromDB } from '@/types/subscriber';
 import { useCepConsistency } from '@/hooks/useCepConsistency';
@@ -118,15 +117,15 @@ export const useSubscriberForm = (existingData?: SubscriberDataFromDB) => {
     }
   }, [existingData, mapAddress, determineSubscriberType, isLoaded]);
 
-  // Auto-fill apenas para novos assinantes
+  // Auto-fill apenas para novos assinantes (removido para evitar conflitos na edição)
   useEffect(() => {
-    if (isLoaded && !isEditing) {
+    if (isLoaded && !isEditing && !existingData) {
       const newFormData = performAutoFill(formData);
       if (newFormData !== formData) {
         setFormData(newFormData);
       }
     }
-  }, [formData.personalData, formData.companyData, isLoaded, isEditing, performAutoFill]);
+  }, [formData.personalData, formData.companyData, isLoaded, isEditing, performAutoFill, existingData]);
 
   const updateFormData = useCallback((section: keyof SubscriberFormData, data: unknown) => {
     console.log('🔄 Atualizando formData:', section, data);

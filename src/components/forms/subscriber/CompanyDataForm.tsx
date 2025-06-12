@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { MaskedInput } from '@/components/ui/masked-input';
@@ -86,10 +86,9 @@ const CompanyDataForm = ({
                 <FormLabel>CNPJ *</FormLabel>
                 <FormControl>
                   <MaskedInput 
-                    {...field} 
                     mask="99.999.999/9999-99" 
                     placeholder="00.000.000/0000-00" 
-                    value={getStringValue(field.value)}
+                    value={getStringValue(companyData?.cnpj)}
                     onChange={(e) => {
                       field.onChange(e);
                       onUpdateCompany({ cnpj: e.target.value });
@@ -109,9 +108,8 @@ const CompanyDataForm = ({
                 <FormLabel>Número Parceiro de Negócio *</FormLabel>
                 <FormControl>
                   <Input 
-                    {...field} 
                     placeholder="Digite o número do parceiro" 
-                    value={getStringValue(field.value)}
+                    value={getStringValue(companyData?.partnerNumber)}
                     onChange={(e) => {
                       field.onChange(e);
                       onUpdateCompany({ partnerNumber: e.target.value });
@@ -131,9 +129,8 @@ const CompanyDataForm = ({
                 <FormLabel>Razão Social *</FormLabel>
                 <FormControl>
                   <Input 
-                    {...field} 
                     placeholder="Digite a razão social" 
-                    value={getStringValue(field.value)}
+                    value={getStringValue(companyData?.companyName)}
                     onChange={(e) => {
                       field.onChange(e);
                       onUpdateCompany({ companyName: e.target.value });
@@ -153,9 +150,8 @@ const CompanyDataForm = ({
                 <FormLabel>Nome Fantasia</FormLabel>
                 <FormControl>
                   <Input 
-                    {...field} 
                     placeholder="Digite o nome fantasia" 
-                    value={getStringValue(field.value)}
+                    value={getStringValue(companyData?.fantasyName)}
                     onChange={(e) => {
                       field.onChange(e);
                       onUpdateCompany({ fantasyName: e.target.value });
@@ -175,10 +171,9 @@ const CompanyDataForm = ({
                 <FormLabel>Telefone da Empresa *</FormLabel>
                 <FormControl>
                   <MaskedInput 
-                    {...field} 
                     mask="(99) 99999-9999" 
                     placeholder="(00) 00000-0000" 
-                    value={getStringValue(field.value)}
+                    value={getStringValue(companyData?.phone)}
                     onChange={(e) => {
                       field.onChange(e);
                       onUpdateCompany({ phone: e.target.value });
@@ -198,10 +193,9 @@ const CompanyDataForm = ({
                 <FormLabel>E-mail *</FormLabel>
                 <FormControl>
                   <Input 
-                    {...field} 
                     type="email" 
                     placeholder="email@empresa.com" 
-                    value={getStringValue(field.value)}
+                    value={getStringValue(companyData?.email)}
                     onChange={(e) => {
                       field.onChange(e);
                       onUpdateCompany({ email: e.target.value });
@@ -230,9 +224,8 @@ const CompanyDataForm = ({
               <FormLabel>Observações</FormLabel>
               <FormControl>
                 <Textarea 
-                  {...field} 
                   placeholder="Observações adicionais" 
-                  value={getStringValue(field.value)}
+                  value={getStringValue(companyData?.observations)}
                   onChange={(e) => {
                     field.onChange(e);
                     onUpdateCompany({ observations: e.target.value });
@@ -266,10 +259,9 @@ const CompanyDataForm = ({
                 <FormLabel>CPF do Administrador *</FormLabel>
                 <FormControl>
                   <MaskedInput 
-                    {...field} 
                     mask="999.999.999-99" 
                     placeholder="000.000.000-00" 
-                    value={getStringValue(field.value)}
+                    value={getStringValue(administratorData?.cpf)}
                     onChange={(e) => {
                       field.onChange(e);
                       onUpdateAdministrator({ cpf: e.target.value });
@@ -289,9 +281,8 @@ const CompanyDataForm = ({
                 <FormLabel>Nome do Administrador *</FormLabel>
                 <FormControl>
                   <Input 
-                    {...field} 
                     placeholder="Digite o nome completo" 
-                    value={getStringValue(field.value)}
+                    value={getStringValue(administratorData?.fullName)}
                     onChange={(e) => {
                       field.onChange(e);
                       onUpdateAdministrator({ fullName: e.target.value });
@@ -311,9 +302,8 @@ const CompanyDataForm = ({
                 <FormLabel>Data de Nascimento *</FormLabel>
                 <FormControl>
                   <Input 
-                    {...field} 
                     type="date" 
-                    value={getStringValue(field.value)}
+                    value={getStringValue(administratorData?.birthDate)}
                     onChange={(e) => {
                       field.onChange(e);
                       onUpdateAdministrator({ birthDate: e.target.value });
@@ -333,7 +323,7 @@ const CompanyDataForm = ({
                 <FormLabel>Estado Civil *</FormLabel>
                 <FormControl>
                   <Select 
-                    value={getStringValue(field.value)} 
+                    value={getStringValue(administratorData?.maritalStatus)} 
                     onValueChange={(value) => {
                       field.onChange(value);
                       onUpdateAdministrator({ maritalStatus: value });
@@ -364,9 +354,8 @@ const CompanyDataForm = ({
                 <FormLabel>Profissão *</FormLabel>
                 <FormControl>
                   <Input 
-                    {...field} 
                     placeholder="Digite a profissão" 
-                    value={getStringValue(field.value)}
+                    value={getStringValue(administratorData?.profession)}
                     onChange={(e) => {
                       field.onChange(e);
                       onUpdateAdministrator({ profession: e.target.value });
@@ -386,10 +375,9 @@ const CompanyDataForm = ({
                 <FormLabel>Telefone *</FormLabel>
                 <FormControl>
                   <MaskedInput 
-                    {...field} 
                     mask="(99) 99999-9999" 
                     placeholder="(00) 00000-0000" 
-                    value={getStringValue(field.value)}
+                    value={getStringValue(administratorData?.phone)}
                     onChange={(e) => {
                       field.onChange(e);
                       onUpdateAdministrator({ phone: e.target.value });
@@ -409,10 +397,9 @@ const CompanyDataForm = ({
                 <FormLabel>E-mail *</FormLabel>
                 <FormControl>
                   <Input 
-                    {...field} 
                     type="email" 
                     placeholder="email@exemplo.com" 
-                    value={getStringValue(field.value)}
+                    value={getStringValue(administratorData?.email)}
                     onChange={(e) => {
                       field.onChange(e);
                       onUpdateAdministrator({ email: e.target.value });
