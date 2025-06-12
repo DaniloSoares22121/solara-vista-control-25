@@ -14,8 +14,10 @@ export default {
 		container: {
 			center: true,
 			padding: {
-				DEFAULT: '1rem',
-				sm: '2rem',
+				DEFAULT: '0.75rem',
+				xs: '1rem',
+				sm: '1.5rem',
+				md: '2rem',
 				lg: '4rem',
 				xl: '5rem',
 				'2xl': '6rem',
@@ -25,7 +27,7 @@ export default {
 			}
 		},
 		screens: {
-			'xs': '420px',
+			'xs': '375px', // iPhone SE size
 			'sm': '640px',
 			'md': '768px',
 			'lg': '1024px',
@@ -94,9 +96,16 @@ export default {
 				sm: 'calc(var(--radius) - 4px)'
 			},
 			fontSize: {
-				'mobile-xs': ['0.7rem', { lineHeight: '1rem' }],
-				'mobile-sm': ['0.8rem', { lineHeight: '1.1rem' }],
-				'mobile-base': ['0.9rem', { lineHeight: '1.3rem' }],
+				'mobile-xs': ['0.625rem', { lineHeight: '0.875rem' }], // 10px
+				'mobile-sm': ['0.75rem', { lineHeight: '1rem' }],      // 12px
+				'mobile-base': ['0.875rem', { lineHeight: '1.25rem' }], // 14px
+				'mobile-lg': ['1rem', { lineHeight: '1.5rem' }],       // 16px
+			},
+			minHeight: {
+				'touch': '44px', // Tamanho mínimo para toque
+			},
+			minWidth: {
+				'touch': '44px',
 			},
 			keyframes: {
 				'accordion-down': {
@@ -114,13 +123,38 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				'floating': {
+					'0%, 100%': { 
+						transform: 'translateY(0px) rotate(0deg)',
+						opacity: '0.3'
+					},
+					'50%': { 
+						transform: 'translateY(-10px) rotate(2deg)',
+						opacity: '0.7'
+					}
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'floating': 'floating 6s ease-in-out infinite'
 			}
 		}
 	},
-	plugins: [require("tailwindcss-animate")],
+	plugins: [
+		require("tailwindcss-animate"),
+		// Plugin customizado para melhorar touch targets
+		function({ addUtilities }: any) {
+			const newUtilities = {
+				'.touch-manipulation': {
+					'touch-action': 'manipulation',
+				},
+				'.floating-animation': {
+					'animation': 'floating 6s ease-in-out infinite',
+				}
+			}
+			addUtilities(newUtilities)
+		}
+	],
 } satisfies Config;

@@ -7,13 +7,13 @@ const Index = () => {
     <div className="min-h-screen flex flex-col">
       {/* Mobile Layout */}
       <div className="lg:hidden">
-        {/* Hero compacto no mobile */}
-        <div className="h-48 sm:h-56">
+        {/* Hero compacto no mobile com altura dinâmica */}
+        <div className="h-56 xs:h-64 sm:h-72">
           <SolarHeroSection />
         </div>
         
-        {/* Login form no mobile */}
-        <div className="flex-1 px-4 py-6 bg-gradient-to-b from-gray-50 to-white">
+        {/* Login form no mobile com padding responsivo */}
+        <div className="flex-1 px-3 xs:px-4 py-4 xs:py-6 bg-gradient-to-b from-gray-50 to-white">
           <LoginForm />
         </div>
       </div>
