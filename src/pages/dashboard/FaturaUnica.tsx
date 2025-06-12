@@ -58,21 +58,24 @@ const FaturaUnica = () => {
         console.log('Dados do assinante:', subscriberData);
         console.log('Conta de energia:', energyAccount);
         
-        // Determinar tipo baseado nos dados disponíveis
-        const isPessoaFisica = subscriberData?.cpf ? true : false;
-        const documento = subscriberData?.cpf || subscriberData?.cnpj || '';
+        // Determinar tipo baseado nos dados disponíveis - melhorar lógica
+        const isPessoaFisica = subscriberData?.cpf || energyAccount?.holderType === 'person';
+        const isPessoaJuridica = subscriberData?.cnpj || energyAccount?.holderType === 'company' || energyAccount?.cpfCnpj?.includes('/');
+        
+        // Priorizar dados do energy_account se disponível, depois subscriber
+        const documento = energyAccount?.cpfCnpj || subscriberData?.cpf || subscriberData?.cnpj || '';
         
         // Para pessoa física, pegar data de nascimento
         let dataNascimento = '';
-        if (isPessoaFisica && subscriberData?.birthDate) {
-          // Se a data vem no formato DD/MM/YYYY, manter assim
-          // Se vem no formato YYYY-MM-DD, converter
-          const birthDate = subscriberData.birthDate;
-          if (birthDate.includes('-')) {
-            const [year, month, day] = birthDate.split('-');
-            dataNascimento = `${day}/${month}/${year}`;
-          } else {
-            dataNascimento = birthDate;
+        if (isPessoaFisica && !isPessoaJuridica) {
+          const birthDate = subscriberData?.birthDate || energyAccount?.birthDate;
+          if (birthDate) {
+            if (birthDate.includes('-')) {
+              const [year, month, day] = birthDate.split('-');
+              dataNascimento = `${day}/${month}/${year}`;
+            } else {
+              dataNascimento = birthDate;
+            }
           }
         }
         
@@ -80,7 +83,16 @@ const FaturaUnica = () => {
           uc: energyAccount?.uc || '',
           documento: documento,
           dataNascimento: dataNascimento,
-          tipo: isPessoaFisica ? 'fisica' : 'juridica'
+          tipo: isPessoaJuridica ? 'juridica' : 'fisica'
+        });
+        
+        console.log('📋 Dados preenchidos:', {
+          uc: energyAccount?.uc || '',
+          documento: documento,
+          dataNascimento: dataNascimento,
+          tipo: isPessoaJuridica ? 'juridica' : 'fisica',
+          isPessoaFisica,
+          isPessoaJuridica
         });
       }
     }
@@ -215,13 +227,15 @@ const FaturaUnica = () => {
     const subscriber = subscribers.find(s => s.id === selectedSubscriberId);
     if (!subscriber) return '';
     const subscriberData = subscriber.subscriber as any;
+    const energyAccount = subscriber.energy_account as any;
     
-    // Verificar diferentes campos possíveis para o nome
+    // Verificar diferentes campos possíveis para o nome, incluindo energy_account
     const name = subscriberData?.fullName || 
                  subscriberData?.nome || 
                  subscriberData?.companyName || 
                  subscriberData?.razaoSocial || 
-                 subscriberData?.fantasyName || 
+                 subscriberData?.fantasyName ||
+                 energyAccount?.holderName ||
                  'Nome não encontrado';
     
     console.log('Nome do assinante encontrado:', name);
@@ -233,7 +247,11 @@ const FaturaUnica = () => {
     const subscriber = subscribers.find(s => s.id === selectedSubscriberId);
     if (!subscriber) return '';
     const subscriberData = subscriber.subscriber as any;
-    return subscriberData?.cpf ? 'Pessoa Física' : 'Pessoa Jurídica';
+    const energyAccount = subscriber.energy_account as any;
+    
+    // Melhorar detecção do tipo
+    const isPessoaJuridica = subscriberData?.cnpj || energyAccount?.holderType === 'company' || energyAccount?.cpfCnpj?.includes('/');
+    return isPessoaJuridica ? 'Pessoa Jurídica' : 'Pessoa Física';
   };
 
   const isFormValid = () => {
@@ -251,10 +269,11 @@ const FaturaUnica = () => {
                  subscriberData?.nome || 
                  subscriberData?.companyName || 
                  subscriberData?.razaoSocial || 
-                 subscriberData?.fantasyName || '';
+                 subscriberData?.fantasyName ||
+                 energyAccount?.holderName || '';
     
     const uc = energyAccount?.uc || '';
-    const documento = subscriberData?.cpf || subscriberData?.cnpj || '';
+    const documento = energyAccount?.cpfCnpj || subscriberData?.cpf || subscriberData?.cnpj || '';
     
     const searchLower = searchValue.toLowerCase();
     return name.toLowerCase().includes(searchLower) || 

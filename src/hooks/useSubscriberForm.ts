@@ -162,22 +162,22 @@ export const useSubscriberForm = (existingData?: any) => {
       const attachments = existingData.attachments;
       const titleTransfer = existingData.title_transfer;
       
-      // Determinar tipo de assinante baseado nos dados
-      const subscriberType = subscriber?.fullName ? 'person' : 'company';
+      // Determinar tipo de assinante baseado nos dados - priorizar CNPJ para empresa
+      const subscriberType = subscriber?.cnpj || energyAccount?.holderType === 'company' ? 'company' : 'person';
       console.log('📋 Tipo de assinante detectado:', subscriberType);
       
-      // Mapear address corretamente, considerando diferentes formatos
+      // Função melhorada para mapear endereços com múltiplos formatos possíveis
       const mapAddress = (addr: any): Address => {
         if (!addr) return initialFormData.personalData!.address;
         
         return {
           cep: addr.cep || '',
-          street: addr.street || addr.endereco || '',
-          number: addr.number || '',
-          complement: addr.complement || '',
+          street: addr.street || addr.endereco || addr.logradouro || '',
+          number: addr.number || addr.numero || '',
+          complement: addr.complement || addr.complemento || '',
           neighborhood: addr.neighborhood || addr.bairro || '',
-          city: addr.city || addr.cidade || '',
-          state: addr.state || addr.estado || '',
+          city: addr.city || addr.cidade || addr.localidade || '',
+          state: addr.state || addr.estado || addr.uf || '',
         };
       };
       
@@ -187,42 +187,42 @@ export const useSubscriberForm = (existingData?: any) => {
         personalData: subscriberType === 'person' && subscriber ? {
           cpf: subscriber.cpf || '',
           partnerNumber: subscriber.partnerNumber || '',
-          fullName: subscriber.fullName || '',
-          birthDate: subscriber.birthDate || '',
-          maritalStatus: subscriber.maritalStatus || '',
-          profession: subscriber.profession || '',
-          phone: subscriber.phone || '',
+          fullName: subscriber.fullName || subscriber.nome || '',
+          birthDate: subscriber.birthDate || subscriber.dataNascimento || '',
+          maritalStatus: subscriber.maritalStatus || subscriber.estadoCivil || '',
+          profession: subscriber.profession || subscriber.profissao || '',
+          phone: subscriber.phone || subscriber.telefone || '',
           email: subscriber.email || '',
-          observations: subscriber.observations || '',
+          observations: subscriber.observations || subscriber.observacoes || '',
           address: mapAddress(subscriber.address),
           contacts: subscriber.contacts || [],
         } : initialFormData.personalData!,
         companyData: subscriberType === 'company' && subscriber ? {
           cnpj: subscriber.cnpj || '',
           partnerNumber: subscriber.partnerNumber || '',
-          companyName: subscriber.companyName || '',
-          fantasyName: subscriber.fantasyName || '',
-          phone: subscriber.phone || '',
+          companyName: subscriber.companyName || subscriber.razaoSocial || '',
+          fantasyName: subscriber.fantasyName || subscriber.nomeFantasia || '',
+          phone: subscriber.phone || subscriber.telefone || '',
           email: subscriber.email || '',
-          observations: subscriber.observations || '',
+          observations: subscriber.observations || subscriber.observacoes || '',
           address: mapAddress(subscriber.address),
           contacts: subscriber.contacts || [],
         } : initialFormData.companyData!,
         administratorData: administrator ? {
           cpf: administrator.cpf || '',
-          fullName: administrator.fullName || '',
-          birthDate: administrator.birthDate || '',
-          maritalStatus: administrator.maritalStatus || '',
-          profession: administrator.profession || '',
-          phone: administrator.phone || '',
+          fullName: administrator.fullName || administrator.nome || '',
+          birthDate: administrator.birthDate || administrator.dataNascimento || '',
+          maritalStatus: administrator.maritalStatus || administrator.estadoCivil || '',
+          profession: administrator.profession || administrator.profissao || '',
+          phone: administrator.phone || administrator.telefone || '',
           email: administrator.email || '',
           address: mapAddress(administrator.address),
         } : initialFormData.administratorData!,
         energyAccount: energyAccount ? {
-          holderType: energyAccount.holderType || 'person',
+          holderType: energyAccount.holderType || (energyAccount.cpfCnpj && energyAccount.cpfCnpj.includes('/') ? 'company' : 'person'),
           cpfCnpj: energyAccount.cpfCnpj || '',
-          holderName: energyAccount.holderName || '',
-          birthDate: energyAccount.birthDate || '',
+          holderName: energyAccount.holderName || energyAccount.nome || '',
+          birthDate: energyAccount.birthDate || energyAccount.dataNascimento || '',
           uc: energyAccount.uc || '',
           partnerNumber: energyAccount.partnerNumber || '',
           address: mapAddress(energyAccount.address),
