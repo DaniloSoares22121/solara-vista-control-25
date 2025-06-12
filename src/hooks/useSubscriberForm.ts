@@ -139,11 +139,74 @@ const initialFormData: SubscriberFormData = {
   attachments: {},
 };
 
-export const useSubscriberForm = () => {
-  const [formData, setFormData] = useState<SubscriberFormData>(initialFormData);
+export const useSubscriberForm = (existingData?: any) => {
+  const [formData, setFormData] = useState<SubscriberFormData>(existingData || initialFormData);
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isEditing, setIsEditing] = useState(!!existingData);
   const { lookupCep } = useCepLookup();
+
+  // Load existing data if editing
+  useEffect(() => {
+    if (existingData) {
+      console.log('Carregando dados existentes para edição:', existingData);
+      
+      const loadedData: SubscriberFormData = {
+        concessionaria: existingData.concessionaria || 'equatorial-goias',
+        subscriberType: existingData.subscriber?.fullName ? 'person' : 'company',
+        personalData: existingData.subscriber?.fullName ? {
+          cpf: existingData.subscriber.cpf || '',
+          partnerNumber: existingData.subscriber.partnerNumber || '',
+          fullName: existingData.subscriber.fullName || '',
+          birthDate: existingData.subscriber.birthDate || '',
+          maritalStatus: existingData.subscriber.maritalStatus || '',
+          profession: existingData.subscriber.profession || '',
+          phone: existingData.subscriber.phone || '',
+          email: existingData.subscriber.email || '',
+          observations: existingData.subscriber.observations || '',
+          address: existingData.subscriber.address || {
+            cep: '',
+            street: '',
+            number: '',
+            complement: '',
+            neighborhood: '',
+            city: '',
+            state: '',
+          },
+          contacts: existingData.subscriber.contacts || [],
+        } : initialFormData.personalData,
+        companyData: existingData.subscriber?.companyName ? {
+          cnpj: existingData.subscriber.cnpj || '',
+          partnerNumber: existingData.subscriber.partnerNumber || '',
+          companyName: existingData.subscriber.companyName || '',
+          fantasyName: existingData.subscriber.fantasyName || '',
+          phone: existingData.subscriber.phone || '',
+          email: existingData.subscriber.email || '',
+          observations: existingData.subscriber.observations || '',
+          address: existingData.subscriber.address || {
+            cep: '',
+            street: '',
+            number: '',
+            complement: '',
+            neighborhood: '',
+            city: '',
+            state: '',
+          },
+          contacts: existingData.subscriber.contacts || [],
+        } : initialFormData.companyData,
+        administratorData: existingData.administrator || initialFormData.administratorData,
+        energyAccount: existingData.energy_account || initialFormData.energyAccount,
+        titleTransfer: existingData.title_transfer || initialFormData.titleTransfer,
+        planContract: existingData.plan_contract || initialFormData.planContract,
+        planDetails: existingData.plan_details || initialFormData.planDetails,
+        notificationSettings: existingData.notifications || defaultNotificationSettings,
+        attachments: existingData.attachments || {},
+      };
+      
+      setFormData(loadedData);
+      setIsEditing(true);
+    }
+  }, [existingData]);
 
   // Preenchimento automático da conta de energia quando os dados do assinante estão disponíveis
   useEffect(() => {
@@ -389,6 +452,7 @@ export const useSubscriberForm = () => {
       case 8:
         return true;
       case 9:
+        if (isEditing) return true; // Skip attachment validation for editing
         const requiredAttachments = ['contract', 'bill'];
         if (formData.subscriberType === 'person') requiredAttachments.push('cnh');
         if (formData.subscriberType === 'company') requiredAttachments.push('companyContract');
@@ -398,32 +462,50 @@ export const useSubscriberForm = () => {
       default:
         return false;
     }
-  }, [formData]);
+  }, [formData, isEditing]);
 
-  const submitForm = useCallback(async () => {
+  const submitForm = useCallback(async (subscriberId?: string) => {
     setIsSubmitting(true);
     try {
       console.log('Enviando dados do formulário:', formData);
-      await subscriberService.createSubscriber(formData);
-      toast.success('Assinante cadastrado com sucesso!');
       
-      setFormData(initialFormData);
-      setCurrentStep(1);
+      if (subscriberId) {
+        // Update existing subscriber
+        await subscriberService.updateSubscriber(subscriberId, formData);
+        toast.success('Assinante atualizado com sucesso!');
+      } else {
+        // Create new subscriber
+        await subscriberService.createSubscriber(formData);
+        toast.success('Assinante cadastrado com sucesso!');
+      }
+      
+      if (!subscriberId) {
+        setFormData(initialFormData);
+        setCurrentStep(1);
+        setIsEditing(false);
+      }
       
       return { success: true };
     } catch (error) {
       console.error('Erro ao enviar formulário:', error);
-      toast.error('Erro ao cadastrar assinante. Tente novamente.');
+      toast.error(subscriberId ? 'Erro ao atualizar assinante. Tente novamente.' : 'Erro ao cadastrar assinante. Tente novamente.');
       return { success: false, error: 'Erro interno do servidor' };
     } finally {
       setIsSubmitting(false);
     }
   }, [formData]);
 
+  const resetForm = useCallback(() => {
+    setFormData(initialFormData);
+    setCurrentStep(1);
+    setIsEditing(false);
+  }, []);
+
   return {
     formData,
     currentStep,
     isSubmitting,
+    isEditing,
     setCurrentStep,
     updateFormData,
     handleCepLookup,
@@ -432,5 +514,6 @@ export const useSubscriberForm = () => {
     autoFillEnergyAccount,
     validateStep,
     submitForm,
+    resetForm,
   };
 };

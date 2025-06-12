@@ -11,7 +11,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Users, Edit, Trash2, Eye, Phone, Mail, Building2, User, FileText, MapPin } from 'lucide-react';
+import { Users, Edit, Trash2, Eye, Phone, Mail, Building2, User, FileText, MapPin, Calendar } from 'lucide-react';
 import { SubscriberRecord } from '@/services/supabaseSubscriberService';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -72,10 +72,18 @@ const SubscribersTable = ({ subscribers, onEdit, onDelete, onView }: Subscribers
 
   const getEnergyAccount = (subscriber: SubscriberRecord) => {
     const account = subscriber.energy_account;
-    if (account?.accountNumber) {
-      return account.accountNumber;
+    if (account?.uc) {
+      return account.uc;
     }
-    return 'Conta não cadastrada';
+    return 'UC não cadastrada';
+  };
+
+  const getPlanInfo = (subscriber: SubscriberRecord) => {
+    const plan = subscriber.plan_contract;
+    if (plan?.informedKwh) {
+      return `${plan.informedKwh} kWh`;
+    }
+    return 'Plano não cadastrado';
   };
 
   const getStatusBadge = (status: string) => {
@@ -177,9 +185,9 @@ const SubscribersTable = ({ subscribers, onEdit, onDelete, onView }: Subscribers
                 <TableHead className="font-semibold text-gray-700">Documento</TableHead>
                 <TableHead className="font-semibold text-gray-700">Contato</TableHead>
                 <TableHead className="font-semibold text-gray-700">Localização</TableHead>
-                <TableHead className="font-semibold text-gray-700">Conta Energia</TableHead>
+                <TableHead className="font-semibold text-gray-700">UC/Plano</TableHead>
                 <TableHead className="font-semibold text-gray-700">Status</TableHead>
-                <TableHead className="font-semibold text-gray-700">Criado em</TableHead>
+                <TableHead className="font-semibold text-gray-700">Criado</TableHead>
                 <TableHead className="font-semibold text-gray-700 text-right">Ações</TableHead>
               </TableRow>
             </TableHeader>
@@ -191,9 +199,10 @@ const SubscribersTable = ({ subscribers, onEdit, onDelete, onView }: Subscribers
                 return (
                   <TableRow 
                     key={subscriber.id} 
-                    className={`hover:bg-green-50/50 transition-all duration-200 ${
+                    className={`hover:bg-green-50/50 transition-all duration-200 cursor-pointer ${
                       isEven ? 'bg-white' : 'bg-gray-50/30'
                     }`}
+                    onClick={() => onView(subscriber)}
                   >
                     <TableCell className="py-4">
                       <div className="flex items-center space-x-3">
@@ -205,7 +214,9 @@ const SubscribersTable = ({ subscribers, onEdit, onDelete, onView }: Subscribers
                           )}
                         </div>
                         <div>
-                          <p className="font-semibold text-gray-900">{getSubscriberName(subscriber)}</p>
+                          <p className="font-semibold text-gray-900 truncate max-w-[200px]">
+                            {getSubscriberName(subscriber)}
+                          </p>
                           <p className="text-sm text-gray-500">
                             {subscriber.concessionaria || 'Concessionária não informada'}
                           </p>
@@ -261,28 +272,39 @@ const SubscribersTable = ({ subscribers, onEdit, onDelete, onView }: Subscribers
                     <TableCell>
                       <div className="flex items-center space-x-2">
                         <MapPin className="w-3 h-3 text-gray-400" />
-                        <span className="text-sm text-gray-600">{getSubscriberAddress(subscriber)}</span>
+                        <span className="text-sm text-gray-600 truncate max-w-[120px]">{getSubscriberAddress(subscriber)}</span>
                       </div>
                     </TableCell>
                     <TableCell>
-                      <span className="text-sm font-mono text-gray-700 bg-blue-50 px-2 py-1 rounded">
-                        {getEnergyAccount(subscriber)}
-                      </span>
+                      <div className="space-y-1">
+                        <div className="text-sm font-mono text-gray-700 bg-blue-50 px-2 py-1 rounded">
+                          {getEnergyAccount(subscriber)}
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          {getPlanInfo(subscriber)}
+                        </div>
+                      </div>
                     </TableCell>
                     <TableCell>
                       {getStatusBadge(subscriber.status)}
                     </TableCell>
                     <TableCell>
-                      <span className="text-sm text-gray-600">
-                        {format(new Date(subscriber.created_at), 'dd/MM/yyyy', { locale: ptBR })}
-                      </span>
+                      <div className="flex items-center space-x-1">
+                        <Calendar className="w-3 h-3 text-gray-400" />
+                        <span className="text-sm text-gray-600">
+                          {format(new Date(subscriber.created_at), 'dd/MM/yy', { locale: ptBR })}
+                        </span>
+                      </div>
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end space-x-1">
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => onView(subscriber)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onView(subscriber);
+                          }}
                           className="h-8 w-8 p-0 hover:bg-green-100 hover:text-green-700 transition-colors"
                           title="Visualizar"
                         >
@@ -291,7 +313,10 @@ const SubscribersTable = ({ subscribers, onEdit, onDelete, onView }: Subscribers
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => onEdit(subscriber)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onEdit(subscriber);
+                          }}
                           className="h-8 w-8 p-0 hover:bg-blue-100 hover:text-blue-700 transition-colors"
                           title="Editar"
                         >
@@ -300,7 +325,10 @@ const SubscribersTable = ({ subscribers, onEdit, onDelete, onView }: Subscribers
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => onDelete(subscriber.id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onDelete(subscriber.id);
+                          }}
                           className="h-8 w-8 p-0 hover:bg-red-100 hover:text-red-700 transition-colors"
                           title="Excluir"
                         >

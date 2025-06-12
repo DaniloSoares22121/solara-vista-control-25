@@ -7,11 +7,14 @@ import { Plus, Users, Search, Filter, UserCheck, UserX, TrendingUp } from 'lucid
 import { Input } from '@/components/ui/input';
 import SubscriberForm from '@/components/forms/subscriber/SubscriberForm';
 import SubscribersTable from '@/components/subscribers/SubscribersTable';
+import SubscriberViewModal from '@/components/subscribers/SubscriberViewModal';
 import { useSubscribers } from '@/hooks/useSubscribers';
 import { SubscriberRecord } from '@/services/supabaseSubscriberService';
 
 const Assinantes = () => {
   const [showForm, setShowForm] = useState(false);
+  const [editingSubscriber, setEditingSubscriber] = useState<SubscriberRecord | null>(null);
+  const [viewingSubscriber, setViewingSubscriber] = useState<SubscriberRecord | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const { subscribers, isLoading, deleteSubscriber } = useSubscribers();
 
@@ -31,19 +34,29 @@ const Assinantes = () => {
 
   const handleEdit = (subscriber: SubscriberRecord) => {
     console.log('Editar assinante:', subscriber);
-    // TODO: Implementar edição
+    setEditingSubscriber(subscriber);
     setShowForm(true);
   };
 
   const handleView = (subscriber: SubscriberRecord) => {
     console.log('Visualizar assinante:', subscriber);
-    // TODO: Implementar visualização detalhada
+    setViewingSubscriber(subscriber);
   };
 
   const handleDelete = (id: string) => {
     if (confirm('Tem certeza que deseja remover este assinante?')) {
       deleteSubscriber(id);
     }
+  };
+
+  const handleCloseForm = () => {
+    setShowForm(false);
+    setEditingSubscriber(null);
+  };
+
+  const handleNewSubscriber = () => {
+    setEditingSubscriber(null);
+    setShowForm(true);
   };
 
   if (showForm) {
@@ -53,12 +66,14 @@ const Assinantes = () => {
           <div className="flex items-center justify-between">
             <div className="space-y-1">
               <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-green-600 to-green-600 bg-clip-text text-transparent">
-                Novo Assinante
+                {editingSubscriber ? 'Editar Assinante' : 'Novo Assinante'}
               </h1>
-              <p className="text-gray-600">Cadastre um novo assinante no sistema</p>
+              <p className="text-gray-600">
+                {editingSubscriber ? 'Edite os dados do assinante' : 'Cadastre um novo assinante no sistema'}
+              </p>
             </div>
             <Button
-              onClick={() => setShowForm(false)}
+              onClick={handleCloseForm}
               variant="outline"
               className="border-green-200 text-green-700 hover:bg-green-50"
             >
@@ -66,7 +81,10 @@ const Assinantes = () => {
             </Button>
           </div>
           
-          <SubscriberForm />
+          <SubscriberForm 
+            existingData={editingSubscriber} 
+            onSuccess={handleCloseForm}
+          />
         </div>
       </DashboardLayout>
     );
@@ -124,7 +142,7 @@ const Assinantes = () => {
             </p>
           </div>
           <Button 
-            onClick={() => setShowForm(true)} 
+            onClick={handleNewSubscriber} 
             className="flex items-center space-x-2 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
           >
             <Plus className="w-4 h-4" />
@@ -134,7 +152,38 @@ const Assinantes = () => {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-          {statsCards.map((card, index) => (
+          {[
+            {
+              title: 'Total de Assinantes',
+              value: subscribers.length.toString(),
+              description: 'Assinantes cadastrados',
+              icon: Users,
+              iconColor: 'text-green-600',
+              bgColor: 'bg-green-50',
+              borderColor: 'border-green-200',
+              trend: subscribers.length > 0 ? `+${subscribers.length}` : '0'
+            },
+            {
+              title: 'Assinantes Ativos',
+              value: subscribers.filter(s => s.status === 'active').length.toString(),
+              description: 'Com contratos vigentes',
+              icon: UserCheck,
+              iconColor: 'text-green-600',
+              bgColor: 'bg-green-50',
+              borderColor: 'border-green-200',
+              trend: subscribers.filter(s => s.status === 'active').length > 0 ? `+${subscribers.filter(s => s.status === 'active').length}` : '0'
+            },
+            {
+              title: 'Aguardando Ativação',
+              value: subscribers.filter(s => s.status === 'pending').length.toString(),
+              description: 'Pendentes de aprovação',
+              icon: UserX,
+              iconColor: 'text-orange-600',
+              bgColor: 'bg-orange-50',
+              borderColor: 'border-orange-200',
+              trend: subscribers.filter(s => s.status === 'pending').length > 0 ? `+${subscribers.filter(s => s.status === 'pending').length}` : '0'
+            }
+          ].map((card, index) => (
             <Card key={index} className={`border-2 ${card.borderColor} shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 bg-white/90 backdrop-blur-sm`}>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 sm:pb-3">
                 <div className="space-y-1 flex-1 min-w-0">
@@ -206,6 +255,13 @@ const Assinantes = () => {
             onView={handleView}
           />
         )}
+
+        {/* View Modal */}
+        <SubscriberViewModal
+          subscriber={viewingSubscriber}
+          isOpen={!!viewingSubscriber}
+          onClose={() => setViewingSubscriber(null)}
+        />
       </div>
     </DashboardLayout>
   );

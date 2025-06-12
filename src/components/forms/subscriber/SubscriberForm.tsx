@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -8,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, Save } from 'lucide-react';
 import { useSubscriberForm } from '@/hooks/useSubscriberForm';
+import { SubscriberRecord } from '@/services/supabaseSubscriberService';
 import ConcessionariaSelector from './ConcessionariaSelector';
 import SubscriberTypeSelector from './SubscriberTypeSelector';
 import PersonalDataForm from './PersonalDataForm';
@@ -26,11 +26,17 @@ const schema = z.object({
   }),
 });
 
-const SubscriberForm = () => {
+interface SubscriberFormProps {
+  existingData?: SubscriberRecord | null;
+  onSuccess?: () => void;
+}
+
+const SubscriberForm = ({ existingData, onSuccess }: SubscriberFormProps) => {
   const {
     formData,
     currentStep,
     isSubmitting,
+    isEditing,
     setCurrentStep,
     updateFormData,
     handleCepLookup,
@@ -39,7 +45,7 @@ const SubscriberForm = () => {
     autoFillEnergyAccount,
     validateStep,
     submitForm,
-  } = useSubscriberForm();
+  } = useSubscriberForm(existingData);
 
   const form = useForm({
     resolver: zodResolver(schema),
@@ -126,7 +132,10 @@ const SubscriberForm = () => {
 
   const handleSubmit = async () => {
     if (validateStep(currentStep) && currentStep === totalSteps) {
-      await submitForm();
+      const result = await submitForm(existingData?.id);
+      if (result.success && onSuccess) {
+        onSuccess();
+      }
     }
   };
 
@@ -231,7 +240,7 @@ const SubscriberForm = () => {
       <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold text-blue-900">
-            Cadastro de Assinante
+            {isEditing ? 'Editar Assinante' : 'Cadastro de Assinante'}
           </CardTitle>
           <div className="flex justify-between items-center mt-4 text-sm text-blue-700">
             <span>Etapa {currentStep} de {totalSteps}</span>
@@ -303,11 +312,11 @@ const SubscriberForm = () => {
                   {isSubmitting ? (
                     <>
                       <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      <span>Enviando...</span>
+                      <span>{isEditing ? 'Atualizando...' : 'Enviando...'}</span>
                     </>
                   ) : (
                     <>
-                      <span>Finalizar Cadastro</span>
+                      <span>{isEditing ? 'Atualizar Cadastro' : 'Finalizar Cadastro'}</span>
                       <ChevronRight className="w-4 h-4" />
                     </>
                   )}
