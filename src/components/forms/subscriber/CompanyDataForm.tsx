@@ -32,53 +32,61 @@ const CompanyDataForm = ({
   form
 }: CompanyDataFormProps) => {
   
+  // Helper function to safely get string value
+  const getStringValue = (value: any): string => {
+    if (value === null || value === undefined) return '';
+    if (typeof value === 'string') return value;
+    if (typeof value === 'object') return '';
+    return String(value);
+  };
+
   // Sync form values when data is loaded
   useEffect(() => {
     if (companyData) {
       console.log('🔄 Sincronizando dados da empresa com o formulário:', companyData);
       
-      // Company data fields
-      if (companyData.cnpj) form.setValue('companyData.cnpj', companyData.cnpj);
-      if (companyData.partnerNumber) form.setValue('companyData.partnerNumber', companyData.partnerNumber);
-      if (companyData.companyName) form.setValue('companyData.companyName', companyData.companyName);
-      if (companyData.fantasyName) form.setValue('companyData.fantasyName', companyData.fantasyName);
-      if (companyData.phone) form.setValue('companyData.phone', companyData.phone);
-      if (companyData.email) form.setValue('companyData.email', companyData.email);
-      if (companyData.observations) form.setValue('companyData.observations', companyData.observations);
+      // Company data fields - usando getStringValue para garantir que sejam strings
+      if (companyData.cnpj) form.setValue('companyData.cnpj', getStringValue(companyData.cnpj));
+      if (companyData.partnerNumber) form.setValue('companyData.partnerNumber', getStringValue(companyData.partnerNumber));
+      if (companyData.companyName) form.setValue('companyData.companyName', getStringValue(companyData.companyName));
+      if (companyData.fantasyName) form.setValue('companyData.fantasyName', getStringValue(companyData.fantasyName));
+      if (companyData.phone) form.setValue('companyData.phone', getStringValue(companyData.phone));
+      if (companyData.email) form.setValue('companyData.email', getStringValue(companyData.email));
+      if (companyData.observations) form.setValue('companyData.observations', getStringValue(companyData.observations));
       
       // Company address fields
       if (companyData.address) {
-        if (companyData.address.cep) form.setValue('companyData.address.cep', companyData.address.cep);
-        if (companyData.address.street) form.setValue('companyData.address.street', companyData.address.street);
-        if (companyData.address.number) form.setValue('companyData.address.number', companyData.address.number);
-        if (companyData.address.complement) form.setValue('companyData.address.complement', companyData.address.complement);
-        if (companyData.address.neighborhood) form.setValue('companyData.address.neighborhood', companyData.address.neighborhood);
-        if (companyData.address.city) form.setValue('companyData.address.city', companyData.address.city);
-        if (companyData.address.state) form.setValue('companyData.address.state', companyData.address.state);
+        if (companyData.address.cep) form.setValue('companyData.address.cep', getStringValue(companyData.address.cep));
+        if (companyData.address.street) form.setValue('companyData.address.street', getStringValue(companyData.address.street));
+        if (companyData.address.number) form.setValue('companyData.address.number', getStringValue(companyData.address.number));
+        if (companyData.address.complement) form.setValue('companyData.address.complement', getStringValue(companyData.address.complement));
+        if (companyData.address.neighborhood) form.setValue('companyData.address.neighborhood', getStringValue(companyData.address.neighborhood));
+        if (companyData.address.city) form.setValue('companyData.address.city', getStringValue(companyData.address.city));
+        if (companyData.address.state) form.setValue('companyData.address.state', getStringValue(companyData.address.state));
       }
     }
     
     if (administratorData) {
       console.log('🔄 Sincronizando dados do administrador com o formulário:', administratorData);
       
-      // Administrator data fields
-      if (administratorData.cpf) form.setValue('administratorData.cpf', administratorData.cpf);
-      if (administratorData.fullName) form.setValue('administratorData.fullName', administratorData.fullName);
-      if (administratorData.birthDate) form.setValue('administratorData.birthDate', administratorData.birthDate);
-      if (administratorData.maritalStatus) form.setValue('administratorData.maritalStatus', administratorData.maritalStatus);
-      if (administratorData.profession) form.setValue('administratorData.profession', administratorData.profession);
-      if (administratorData.phone) form.setValue('administratorData.phone', administratorData.phone);
-      if (administratorData.email) form.setValue('administratorData.email', administratorData.email);
+      // Administrator data fields - usando getStringValue para garantir que sejam strings
+      if (administratorData.cpf) form.setValue('administratorData.cpf', getStringValue(administratorData.cpf));
+      if (administratorData.fullName) form.setValue('administratorData.fullName', getStringValue(administratorData.fullName));
+      if (administratorData.birthDate) form.setValue('administratorData.birthDate', getStringValue(administratorData.birthDate));
+      if (administratorData.maritalStatus) form.setValue('administratorData.maritalStatus', getStringValue(administratorData.maritalStatus));
+      if (administratorData.profession) form.setValue('administratorData.profession', getStringValue(administratorData.profession));
+      if (administratorData.phone) form.setValue('administratorData.phone', getStringValue(administratorData.phone));
+      if (administratorData.email) form.setValue('administratorData.email', getStringValue(administratorData.email));
       
       // Administrator address fields
       if (administratorData.address) {
-        if (administratorData.address.cep) form.setValue('administratorData.address.cep', administratorData.address.cep);
-        if (administratorData.address.street) form.setValue('administratorData.address.street', administratorData.address.street);
-        if (administratorData.address.number) form.setValue('administratorData.address.number', administratorData.address.number);
-        if (administratorData.address.complement) form.setValue('administratorData.address.complement', administratorData.address.complement);
-        if (administratorData.address.neighborhood) form.setValue('administratorData.address.neighborhood', administratorData.address.neighborhood);
-        if (administratorData.address.city) form.setValue('administratorData.address.city', administratorData.address.city);
-        if (administratorData.address.state) form.setValue('administratorData.address.state', administratorData.address.state);
+        if (administratorData.address.cep) form.setValue('administratorData.address.cep', getStringValue(administratorData.address.cep));
+        if (administratorData.address.street) form.setValue('administratorData.address.street', getStringValue(administratorData.address.street));
+        if (administratorData.address.number) form.setValue('administratorData.address.number', getStringValue(administratorData.address.number));
+        if (administratorData.address.complement) form.setValue('administratorData.address.complement', getStringValue(administratorData.address.complement));
+        if (administratorData.address.neighborhood) form.setValue('administratorData.address.neighborhood', getStringValue(administratorData.address.neighborhood));
+        if (administratorData.address.city) form.setValue('administratorData.address.city', getStringValue(administratorData.address.city));
+        if (administratorData.address.state) form.setValue('administratorData.address.state', getStringValue(administratorData.address.state));
       }
     }
   }, [companyData, administratorData, form]);
@@ -132,7 +140,7 @@ const CompanyDataForm = ({
                     {...field} 
                     mask="99.999.999/9999-99" 
                     placeholder="00.000.000/0000-00" 
-                    value={field.value || companyData?.cnpj || ''}
+                    value={getStringValue(field.value || companyData?.cnpj)}
                     onChange={(e) => {
                       field.onChange(e);
                       onUpdateCompany({ cnpj: e.target.value });
@@ -154,7 +162,7 @@ const CompanyDataForm = ({
                   <Input 
                     {...field} 
                     placeholder="Digite o número do parceiro" 
-                    value={field.value || companyData?.partnerNumber || ''}
+                    value={getStringValue(field.value || companyData?.partnerNumber)}
                     onChange={(e) => {
                       field.onChange(e);
                       onUpdateCompany({ partnerNumber: e.target.value });
@@ -176,7 +184,7 @@ const CompanyDataForm = ({
                   <Input 
                     {...field} 
                     placeholder="Digite a razão social" 
-                    value={field.value || companyData?.companyName || ''}
+                    value={getStringValue(field.value || companyData?.companyName)}
                     onChange={(e) => {
                       field.onChange(e);
                       onUpdateCompany({ companyName: e.target.value });
@@ -198,7 +206,7 @@ const CompanyDataForm = ({
                   <Input 
                     {...field} 
                     placeholder="Digite o nome fantasia" 
-                    value={field.value || companyData?.fantasyName || ''}
+                    value={getStringValue(field.value || companyData?.fantasyName)}
                     onChange={(e) => {
                       field.onChange(e);
                       onUpdateCompany({ fantasyName: e.target.value });
@@ -221,7 +229,7 @@ const CompanyDataForm = ({
                     {...field} 
                     mask="(99) 99999-9999" 
                     placeholder="(00) 00000-0000" 
-                    value={field.value || companyData?.phone || ''}
+                    value={getStringValue(field.value || companyData?.phone)}
                     onChange={(e) => {
                       field.onChange(e);
                       onUpdateCompany({ phone: e.target.value });
@@ -244,7 +252,7 @@ const CompanyDataForm = ({
                     {...field} 
                     type="email" 
                     placeholder="email@empresa.com" 
-                    value={field.value || companyData?.email || ''}
+                    value={getStringValue(field.value || companyData?.email)}
                     onChange={(e) => {
                       field.onChange(e);
                       onUpdateCompany({ email: e.target.value });
@@ -275,7 +283,7 @@ const CompanyDataForm = ({
                 <Textarea 
                   {...field} 
                   placeholder="Observações adicionais" 
-                  value={field.value || companyData?.observations || ''}
+                  value={getStringValue(field.value || companyData?.observations)}
                   onChange={(e) => {
                     field.onChange(e);
                     onUpdateCompany({ observations: e.target.value });
@@ -312,7 +320,7 @@ const CompanyDataForm = ({
                     {...field} 
                     mask="999.999.999-99" 
                     placeholder="000.000.000-00" 
-                    value={field.value || administratorData?.cpf || ''}
+                    value={getStringValue(field.value || administratorData?.cpf)}
                     onChange={(e) => {
                       field.onChange(e);
                       onUpdateAdministrator({ cpf: e.target.value });
@@ -334,7 +342,7 @@ const CompanyDataForm = ({
                   <Input 
                     {...field} 
                     placeholder="Digite o nome completo" 
-                    value={field.value || administratorData?.fullName || ''}
+                    value={getStringValue(field.value || administratorData?.fullName)}
                     onChange={(e) => {
                       field.onChange(e);
                       onUpdateAdministrator({ fullName: e.target.value });
@@ -356,7 +364,7 @@ const CompanyDataForm = ({
                   <Input 
                     {...field} 
                     type="date" 
-                    value={field.value || administratorData?.birthDate || ''}
+                    value={getStringValue(field.value || administratorData?.birthDate)}
                     onChange={(e) => {
                       field.onChange(e);
                       onUpdateAdministrator({ birthDate: e.target.value });
@@ -376,7 +384,7 @@ const CompanyDataForm = ({
                 <FormLabel>Estado Civil *</FormLabel>
                 <FormControl>
                   <Select 
-                    value={field.value || administratorData?.maritalStatus || ''} 
+                    value={getStringValue(field.value || administratorData?.maritalStatus)} 
                     onValueChange={(value) => {
                       field.onChange(value);
                       onUpdateAdministrator({ maritalStatus: value });
@@ -409,7 +417,7 @@ const CompanyDataForm = ({
                   <Input 
                     {...field} 
                     placeholder="Digite a profissão" 
-                    value={field.value || administratorData?.profession || ''}
+                    value={getStringValue(field.value || administratorData?.profession)}
                     onChange={(e) => {
                       field.onChange(e);
                       onUpdateAdministrator({ profession: e.target.value });
@@ -432,7 +440,7 @@ const CompanyDataForm = ({
                     {...field} 
                     mask="(99) 99999-9999" 
                     placeholder="(00) 00000-0000" 
-                    value={field.value || administratorData?.phone || ''}
+                    value={getStringValue(field.value || administratorData?.phone)}
                     onChange={(e) => {
                       field.onChange(e);
                       onUpdateAdministrator({ phone: e.target.value });
@@ -455,7 +463,7 @@ const CompanyDataForm = ({
                     {...field} 
                     type="email" 
                     placeholder="email@exemplo.com" 
-                    value={field.value || administratorData?.email || ''}
+                    value={getStringValue(field.value || administratorData?.email)}
                     onChange={(e) => {
                       field.onChange(e);
                       onUpdateAdministrator({ email: e.target.value });
