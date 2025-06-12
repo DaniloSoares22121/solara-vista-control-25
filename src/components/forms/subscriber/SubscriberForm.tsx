@@ -1,3 +1,4 @@
+
 import React, { useCallback, useEffect } from 'react';
 import { useSubscriberForm } from '@/hooks/useSubscriberForm';
 import ConcessionariaSelector from './ConcessionariaSelector';
@@ -58,18 +59,9 @@ const SubscriberForm: React.FC<SubscriberFormProps> = ({
   const handleCepLookupWrapper = useCallback((cep: string, addressType: 'personal' | 'company' | 'administrator' | 'energy') => {
     console.log('🔍 Fazendo lookup do CEP:', cep, 'para tipo:', addressType);
     
-    // Map subscriber types to address types correctly
-    let mappedAddressType: 'personal' | 'company' | 'administrator' | 'energy' = addressType;
-    
-    // If addressType is based on subscriberType, map it correctly
-    if (addressType === 'personal' || (formData.subscriberType === 'person' && addressType === 'personal')) {
-      mappedAddressType = 'personal';
-    } else if (addressType === 'company' || (formData.subscriberType === 'company' && addressType === 'company')) {
-      mappedAddressType = 'company';
-    }
-    
-    handleCepLookup(cep, mappedAddressType);
-  }, [formData.subscriberType, handleCepLookup]);
+    // Use the addressType directly without incorrect mapping
+    handleCepLookup(cep, addressType);
+  }, [handleCepLookup]);
 
   const handleSubmit = async () => {
     try {
@@ -100,8 +92,22 @@ const SubscriberForm: React.FC<SubscriberFormProps> = ({
   }
 
   const steps = [
-    { number: 1, title: 'Concessionária', component: <ConcessionariaSelector formData={formData} updateFormData={updateFormData} /> },
-    { number: 2, title: 'Tipo de Assinante', component: <SubscriberTypeSelector formData={formData} updateFormData={updateFormData} /> },
+    { 
+      number: 1, 
+      title: 'Concessionária', 
+      component: <ConcessionariaSelector 
+        value={formData.concessionaria} 
+        onChange={(value) => updateFormData('concessionaria', value)} 
+      /> 
+    },
+    { 
+      number: 2, 
+      title: 'Tipo de Assinante', 
+      component: <SubscriberTypeSelector 
+        value={formData.subscriberType} 
+        onChange={(value) => updateFormData('subscriberType', value)} 
+      /> 
+    },
     { 
       number: 3, 
       title: formData.subscriberType === 'person' ? 'Dados Pessoais' : 'Dados da Empresa',
@@ -133,11 +139,47 @@ const SubscriberForm: React.FC<SubscriberFormProps> = ({
         autoFillEnergyAccount={autoFillEnergyAccount}
       /> 
     },
-    { number: 5, title: 'Transferência de Titularidade', component: <TitleTransferForm formData={formData} updateFormData={updateFormData} /> },
-    { number: 6, title: 'Contrato do Plano', component: <PlanContractForm formData={formData} updateFormData={updateFormData} /> },
-    { number: 7, title: 'Detalhes do Plano', component: <PlanDetailsForm formData={formData} updateFormData={updateFormData} /> },
-    { number: 8, title: 'Configurações de Notificação', component: <NotificationSettingsForm formData={formData} updateFormData={updateFormData} /> },
-    { number: 9, title: 'Anexos', component: <AttachmentsForm formData={formData} updateFormData={updateFormData} isEditing={isEditing} /> },
+    { 
+      number: 5, 
+      title: 'Transferência de Titularidade', 
+      component: <TitleTransferForm 
+        formData={formData} 
+        updateFormData={updateFormData} 
+      /> 
+    },
+    { 
+      number: 6, 
+      title: 'Contrato do Plano', 
+      component: <PlanContractForm 
+        formData={formData} 
+        updateFormData={updateFormData} 
+      /> 
+    },
+    { 
+      number: 7, 
+      title: 'Detalhes do Plano', 
+      component: <PlanDetailsForm 
+        formData={formData} 
+        updateFormData={updateFormData} 
+      /> 
+    },
+    { 
+      number: 8, 
+      title: 'Configurações de Notificação', 
+      component: <NotificationSettingsForm 
+        formData={formData} 
+        updateFormData={updateFormData} 
+      /> 
+    },
+    { 
+      number: 9, 
+      title: 'Anexos', 
+      component: <AttachmentsForm 
+        formData={formData} 
+        updateFormData={updateFormData} 
+        isEditing={isEditing} 
+      /> 
+    },
   ];
 
   const currentStepData = steps.find(step => step.number === currentStep);
@@ -147,7 +189,7 @@ const SubscriberForm: React.FC<SubscriberFormProps> = ({
       <div className="flex items-center justify-between">
         <FormProgress currentStep={currentStep} totalSteps={steps.length} />
         <div className="flex items-center gap-2">
-          <AutoSaveIndicator />
+          <AutoSaveIndicator status="saved" />
           {!isEditing && (
             <Button 
               variant="outline" 

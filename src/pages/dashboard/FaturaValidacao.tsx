@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Search, FileCheck, FileX, Clock, CheckCircle, XCircle, Filter, Eye, Download, ThumbsUp, ThumbsDown } from 'lucide-react';
-import { faturaValidacaoService, FaturaValidacao } from '@/services/faturaValidacaoService';
+import { faturaValidacaoService, type FaturaValidacao as FaturaValidacaoType } from '@/services/faturaValidacaoService';
 import { toast } from 'sonner';
 
 const FaturaValidacao = () => {
