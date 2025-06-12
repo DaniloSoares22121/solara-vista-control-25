@@ -5,13 +5,22 @@ import { MaskedInput } from '@/components/ui/masked-input';
 import { Button } from '@/components/ui/button';
 import { UseFormReturn } from 'react-hook-form';
 import { GeneratorFormData } from '@/types/generator';
-import { CheckCircle } from 'lucide-react';
+import { CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
+import { useState } from 'react';
+import { useToast } from '@/hooks/use-toast';
 
 interface GeneratorDistributorLoginFormProps {
   form: UseFormReturn<GeneratorFormData>;
 }
 
 const GeneratorDistributorLoginForm = ({ form }: GeneratorDistributorLoginFormProps) => {
+  const [isValidating, setIsValidating] = useState(false);
+  const [validationResult, setValidationResult] = useState<{
+    isValid: boolean;
+    message: string;
+  } | null>(null);
+  const { toast } = useToast();
+
   const ownerType = form.watch('owner.type');
   const ownerCpfCnpj = form.watch('owner.cpfCnpj');
   const ownerDataNascimento = form.watch('owner.dataNascimento');
@@ -24,9 +33,102 @@ const GeneratorDistributorLoginForm = ({ form }: GeneratorDistributorLoginFormPr
     }
   };
 
-  const validateCredentials = () => {
-    console.log('Validando credenciais da distribuidora...');
-    // TODO: Implementar validação real
+  const validateCredentials = async () => {
+    const uc = form.getValues('distributorLogin.uc');
+    const cpfCnpj = form.getValues('distributorLogin.cpfCnpj');
+    const dataNascimento = form.getValues('distributorLogin.dataNascimento');
+
+    if (!uc || !cpfCnpj) {
+      toast({
+        title: "Campos obrigatórios",
+        description: "Preencha UC e CPF/CNPJ antes de validar.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Verificar se data de nascimento é obrigatória para CPF
+    const isCpf = cpfCnpj.replace(/\D/g, '').length === 11;
+    if (isCpf && !dataNascimento) {
+      toast({
+        title: "Data de nascimento obrigatória",
+        description: "Para CPF, a data de nascimento é obrigatória.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsValidating(true);
+    setValidationResult(null);
+
+    try {
+      const requestBody: any = {
+        uc: uc,
+        documento: cpfCnpj.replace(/\D/g, ''), // Remove formatação
+      };
+
+      // Adicionar data de nascimento se for CPF
+      if (isCpf && dataNascimento) {
+        requestBody.data_nascimento = dataNascimento;
+      }
+
+      const response = await fetch('https://3335-177-148-182-183.ngrok-free.app/verificar', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        if (data.status === 'success' && data.result === true) {
+          setValidationResult({
+            isValid: true,
+            message: data.message || 'Credenciais validadas com sucesso!',
+          });
+          toast({
+            title: "Sucesso!",
+            description: "Credenciais validadas com sucesso.",
+          });
+        } else {
+          setValidationResult({
+            isValid: false,
+            message: data.message || 'Falha na validação das credenciais.',
+          });
+          toast({
+            title: "Falha na validação",
+            description: data.message || 'Credenciais inválidas.',
+            variant: "destructive",
+          });
+        }
+      } else {
+        // Erro de validação (400) ou servidor (500)
+        setValidationResult({
+          isValid: false,
+          message: data.message || 'Erro na validação.',
+        });
+        toast({
+          title: "Erro na validação",
+          description: data.message || 'Erro ao validar credenciais.',
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('Erro ao validar credenciais:', error);
+      setValidationResult({
+        isValid: false,
+        message: 'Erro de conexão com o servidor.',
+      });
+      toast({
+        title: "Erro de conexão",
+        description: "Não foi possível conectar com o servidor de validação.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsValidating(false);
+    }
   };
 
   return (
@@ -110,13 +212,50 @@ const GeneratorDistributorLoginForm = ({ form }: GeneratorDistributorLoginFormPr
           <Button 
             type="button" 
             onClick={validateCredentials}
+            disabled={isValidating}
             className="bg-green-600 hover:bg-green-700 text-white w-full"
           >
-            <CheckCircle className="w-4 h-4 mr-2" />
-            Validar Credenciais
+            {isValidating ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Validando...
+              </>
+            ) : (
+              <>
+                <CheckCircle className="w-4 h-4 mr-2" />
+                Validar Credenciais
+              </>
+            )}
           </Button>
         </div>
       </div>
+
+      {/* Resultado da Validação */}
+      {validationResult && (
+        <div className={`p-4 rounded-lg border ${
+          validationResult.isValid 
+            ? 'bg-green-50 border-green-200' 
+            : 'bg-red-50 border-red-200'
+        }`}>
+          <div className="flex items-center gap-2">
+            {validationResult.isValid ? (
+              <CheckCircle className="w-5 h-5 text-green-600" />
+            ) : (
+              <AlertCircle className="w-5 h-5 text-red-600" />
+            )}
+            <span className={`font-medium ${
+              validationResult.isValid ? 'text-green-800' : 'text-red-800'
+            }`}>
+              {validationResult.isValid ? 'Credenciais válidas!' : 'Erro na validação'}
+            </span>
+          </div>
+          <p className={`mt-1 text-sm ${
+            validationResult.isValid ? 'text-green-700' : 'text-red-700'
+          }`}>
+            {validationResult.message}
+          </p>
+        </div>
+      )}
     </div>
   );
 };
