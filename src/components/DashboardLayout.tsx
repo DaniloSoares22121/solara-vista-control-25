@@ -50,10 +50,13 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
           <header className="bg-white/95 backdrop-blur-sm shadow-sm border-b border-gray-200/50 sticky top-0 z-40">
             <div className="flex items-center justify-between h-11 xs:h-12 sm:h-14 lg:h-16 px-2 xs:px-3 sm:px-4 lg:px-6">
               <div className="flex items-center space-x-1.5 xs:space-x-2 min-w-0">
-                {/* Mobile Menu Button - More prominent and clearer */}
-                <SidebarTrigger className="lg:hidden mr-1 xs:mr-2 p-2 xs:p-2.5 h-9 w-9 xs:h-10 xs:w-10 bg-green-50 hover:bg-green-100 border border-green-200 rounded-lg transition-colors duration-200 shadow-sm">
-                  <Menu className="w-4 h-4 xs:w-5 xs:h-5 text-green-600" />
-                </SidebarTrigger>
+                {/* Mobile Menu Button - Melhorado com texto */}
+                <div className="lg:hidden mr-1 xs:mr-2">
+                  <SidebarTrigger className="flex flex-col items-center justify-center p-1.5 xs:p-2 h-10 w-12 xs:h-11 xs:w-14 bg-gradient-to-br from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 border-0 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 group">
+                    <Menu className="w-4 h-4 xs:w-5 xs:h-5 text-white mb-0.5" />
+                    <span className="text-[9px] xs:text-[10px] text-white font-medium leading-none">Menu</span>
+                  </SidebarTrigger>
+                </div>
                 
                 <div className="w-6 h-6 xs:w-7 xs:h-7 sm:w-8 sm:h-8 lg:w-10 lg:h-10 solar-gradient rounded-lg xs:rounded-xl flex items-center justify-center shadow-lg flex-shrink-0">
                   <Sun className="w-3 h-3 xs:w-3 xs:h-3 sm:w-4 sm:h-4 lg:w-6 lg:h-6 text-white" />
