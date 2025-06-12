@@ -1,0 +1,293 @@
+
+import React, { useState } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { 
+  ChevronLeft, 
+  ChevronRight, 
+  CheckCircle, 
+  Zap,
+  User,
+  Building,
+  CreditCard,
+  FileText,
+  MapPin,
+  X
+} from 'lucide-react';
+import { useGeneratorForm } from '@/hooks/useGeneratorForm';
+import { FormProgress } from '@/components/forms/FormProgress';
+import { StepNavigationButtons } from '@/components/forms/StepNavigationButtons';
+import { GeneratorOwnerTypeForm } from '@/components/forms/GeneratorOwnerTypeForm';
+import { GeneratorOwnerDataForm } from '@/components/forms/GeneratorOwnerDataForm';
+import { GeneratorAdministratorForm } from '@/components/forms/GeneratorAdministratorForm';
+import { GeneratorPlantsForm } from '@/components/forms/GeneratorPlantsForm';
+import { GeneratorPaymentForm } from '@/components/forms/GeneratorPaymentForm';
+import { GeneratorDistributorLoginForm } from '@/components/forms/GeneratorDistributorLoginForm';
+import { GeneratorConcessionariaForm } from '@/components/forms/GeneratorConcessionariaForm';
+import { GeneratorAttachmentsForm } from '@/components/forms/GeneratorAttachmentsForm';
+import { useToast } from '@/hooks/use-toast';
+
+interface NewGeneratorModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSuccess: () => void;
+}
+
+const NewGeneratorModal = ({ isOpen, onClose, onSuccess }: NewGeneratorModalProps) => {
+  const [currentStep, setCurrentStep] = useState(1);
+  const { toast } = useToast();
+  
+  const {
+    formData,
+    updateFormData,
+    handleCepLookup,
+    addPlant,
+    removePlant,
+    saveGenerator,
+    isLoading
+  } = useGeneratorForm();
+
+  const steps = [
+    { 
+      number: 1, 
+      title: 'Concessionária', 
+      icon: Zap,
+      component: (
+        <GeneratorConcessionariaForm 
+          value={formData.concessionaria} 
+          onChange={(value) => updateFormData('concessionaria', value)} 
+        />
+      )
+    },
+    { 
+      number: 2, 
+      title: 'Tipo de Proprietário', 
+      icon: User,
+      component: (
+        <GeneratorOwnerTypeForm 
+          value={formData.owner?.type} 
+          onChange={(value) => updateFormData('owner', { ...formData.owner, type: value })} 
+        />
+      )
+    },
+    { 
+      number: 3, 
+      title: 'Dados do Proprietário', 
+      icon: Building,
+      component: (
+        <GeneratorOwnerDataForm 
+          data={formData.owner} 
+          onUpdate={(data) => updateFormData('owner', data)}
+          onCepLookup={(cep) => handleCepLookup(cep, 'owner')}
+        />
+      )
+    },
+    { 
+      number: 4, 
+      title: 'Administrador', 
+      icon: User,
+      component: (
+        <GeneratorAdministratorForm 
+          data={formData.administrator} 
+          onUpdate={(data) => updateFormData('administrator', data)}
+          onCepLookup={(cep) => handleCepLookup(cep, 'administrator')}
+        />
+      )
+    },
+    { 
+      number: 5, 
+      title: 'Usinas', 
+      icon: Zap,
+      component: (
+        <GeneratorPlantsForm 
+          plants={formData.plants} 
+          onUpdate={(plants) => updateFormData('plants', plants)}
+          onCepLookup={(cep, index) => handleCepLookup(cep, 'plant', index)}
+          onAddPlant={addPlant}
+          onRemovePlant={removePlant}
+        />
+      )
+    },
+    { 
+      number: 6, 
+      title: 'Dados de Pagamento', 
+      icon: CreditCard,
+      component: (
+        <GeneratorPaymentForm 
+          data={formData.payment_data} 
+          onUpdate={(data) => updateFormData('payment_data', data)}
+        />
+      )
+    },
+    { 
+      number: 7, 
+      title: 'Login da Distribuidora', 
+      icon: FileText,
+      component: (
+        <GeneratorDistributorLoginForm 
+          data={formData.distributor_login} 
+          onUpdate={(data) => updateFormData('distributor_login', data)}
+        />
+      )
+    },
+    { 
+      number: 8, 
+      title: 'Anexos', 
+      icon: FileText,
+      component: (
+        <GeneratorAttachmentsForm 
+          data={formData.attachments} 
+          ownerType={formData.owner?.type}
+          onUpdate={(data) => updateFormData('attachments', data)}
+        />
+      )
+    },
+  ];
+
+  const currentStepData = steps[currentStep - 1];
+  const totalSteps = steps.length;
+
+  const handleNext = () => {
+    if (currentStep < totalSteps) {
+      setCurrentStep(prev => prev + 1);
+    }
+  };
+
+  const handlePrevious = () => {
+    if (currentStep > 1) {
+      setCurrentStep(prev => prev - 1);
+    }
+  };
+
+  const handleFinish = async () => {
+    try {
+      await saveGenerator();
+      toast({
+        title: "Geradora cadastrada!",
+        description: "A geradora foi cadastrada com sucesso.",
+      });
+      onSuccess();
+      onClose();
+      setCurrentStep(1); // Reset para o primeiro passo
+    } catch (error) {
+      console.error('Erro ao salvar geradora:', error);
+      toast({
+        title: "Erro ao cadastrar",
+        description: "Ocorreu um erro ao cadastrar a geradora. Tente novamente.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleClose = () => {
+    setCurrentStep(1); // Reset para o primeiro passo
+    onClose();
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={handleClose}>
+      <DialogContent className="max-w-5xl h-[90vh] p-0 overflow-hidden">
+        <div className="flex flex-col h-full">
+          {/* Header Fixo */}
+          <div className="bg-gradient-to-r from-green-600 to-green-700 text-white p-6 shadow-lg flex-shrink-0">
+            <div className="flex items-center justify-between mb-4">
+              <DialogTitle className="text-2xl font-bold flex items-center gap-3">
+                <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                  <Zap className="w-6 h-6 text-white" />
+                </div>
+                Nova Geradora
+              </DialogTitle>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleClose}
+                className="text-white hover:bg-white/20"
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
+            
+            <FormProgress currentStep={currentStep} totalSteps={totalSteps} />
+            
+            <div className="mt-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-white/20 rounded-lg">
+                  <currentStepData.icon className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <p className="text-white/80 text-sm">Etapa {currentStep} de {totalSteps}</p>
+                  <p className="text-xl font-semibold text-white">{currentStepData.title}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Conteúdo Scrollável */}
+          <ScrollArea className="flex-1 bg-gray-50">
+            <div className="p-6">
+              <Card className="shadow-lg border-0 max-w-4xl mx-auto">
+                <CardContent className="p-8">
+                  {currentStepData.component}
+                </CardContent>
+              </Card>
+            </div>
+          </ScrollArea>
+
+          {/* Footer com Navegação */}
+          <div className="bg-white border-t p-6 flex-shrink-0">
+            <div className="flex justify-between items-center max-w-4xl mx-auto">
+              <Button
+                variant="outline"
+                onClick={handlePrevious}
+                disabled={currentStep === 1}
+                className="flex items-center gap-2"
+              >
+                <ChevronLeft className="w-4 h-4" />
+                Anterior
+              </Button>
+
+              <div className="flex items-center gap-2">
+                {steps.map((step) => (
+                  <div
+                    key={step.number}
+                    className={`w-3 h-3 rounded-full transition-colors ${
+                      step.number === currentStep
+                        ? 'bg-green-600'
+                        : step.number < currentStep
+                        ? 'bg-green-400'
+                        : 'bg-gray-300'
+                    }`}
+                  />
+                ))}
+              </div>
+
+              {currentStep === totalSteps ? (
+                <Button
+                  onClick={handleFinish}
+                  disabled={isLoading}
+                  className="bg-green-600 hover:bg-green-700 text-white flex items-center gap-2"
+                >
+                  <CheckCircle className="w-4 h-4" />
+                  {isLoading ? 'Salvando...' : 'Finalizar Cadastro'}
+                </Button>
+              ) : (
+                <Button
+                  onClick={handleNext}
+                  className="bg-green-600 hover:bg-green-700 text-white flex items-center gap-2"
+                >
+                  Próximo
+                  <ChevronRight className="w-4 h-4" />
+                </Button>
+              )}
+            </div>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+export default NewGeneratorModal;
