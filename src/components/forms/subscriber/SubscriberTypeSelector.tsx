@@ -11,30 +11,30 @@ interface SubscriberTypeSelectorProps {
 
 const SubscriberTypeSelector = ({ value, onChange }: SubscriberTypeSelectorProps) => {
   return (
-    <div className="bg-gradient-to-r from-emerald-50/80 to-green-50/80 p-4 lg:p-6 rounded-xl border border-emerald-100/50 shadow-sm">
-      <div className="flex items-center gap-3 mb-4 lg:mb-6">
-        <div className="w-8 h-8 lg:w-10 lg:h-10 bg-gradient-to-r from-emerald-500 to-green-600 rounded-lg lg:rounded-xl flex items-center justify-center shadow-lg">
-          <User className="w-4 h-4 lg:w-5 lg:h-5 text-white" />
+    <div className="bg-gradient-to-r from-yellow-50 to-amber-50 p-6 rounded-xl border border-yellow-100">
+      <div className="flex items-center gap-3 mb-6">
+        <div className="w-10 h-10 bg-yellow-500 rounded-xl flex items-center justify-center shadow-lg">
+          <User className="w-5 h-5 text-white" />
         </div>
         <div>
-          <h3 className="text-lg lg:text-xl font-bold text-emerald-800">Tipo de Assinante</h3>
-          <p className="text-emerald-600/70 text-sm">Selecione o tipo de pessoa</p>
+          <h3 className="text-xl font-bold text-yellow-900">Tipo de Assinante</h3>
+          <p className="text-yellow-600 text-sm">Selecione o tipo de pessoa</p>
         </div>
       </div>
 
       <RadioGroup value={value} onValueChange={onChange} className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="flex items-center space-x-3 p-4 lg:p-6 border-2 border-emerald-200 rounded-xl hover:bg-emerald-50/50 cursor-pointer transition-all duration-200">
-          <RadioGroupItem value="person" id="person" className="border-emerald-600 text-emerald-600" />
+        <div className="flex items-center space-x-3 p-6 border-2 border-yellow-200 rounded-xl hover:bg-yellow-50 cursor-pointer transition-all duration-200">
+          <RadioGroupItem value="person" id="person" className="border-yellow-600 text-yellow-600" />
           <div className="flex items-center gap-2">
-            <User className="w-5 h-5 text-emerald-600" />
-            <Label htmlFor="person" className="cursor-pointer font-semibold text-emerald-800">Pessoa Física</Label>
+            <User className="w-5 h-5 text-yellow-600" />
+            <Label htmlFor="person" className="cursor-pointer font-semibold text-yellow-900">Pessoa Física</Label>
           </div>
         </div>
-        <div className="flex items-center space-x-3 p-4 lg:p-6 border-2 border-emerald-200 rounded-xl hover:bg-emerald-50/50 cursor-pointer transition-all duration-200">
-          <RadioGroupItem value="company" id="company" className="border-emerald-600 text-emerald-600" />
+        <div className="flex items-center space-x-3 p-6 border-2 border-yellow-200 rounded-xl hover:bg-yellow-50 cursor-pointer transition-all duration-200">
+          <RadioGroupItem value="company" id="company" className="border-yellow-600 text-yellow-600" />
           <div className="flex items-center gap-2">
-            <Building2 className="w-5 h-5 text-emerald-600" />
-            <Label htmlFor="company" className="cursor-pointer font-semibold text-emerald-800">Pessoa Jurídica</Label>
+            <Building2 className="w-5 h-5 text-yellow-600" />
+            <Label htmlFor="company" className="cursor-pointer font-semibold text-yellow-900">Pessoa Jurídica</Label>
           </div>
         </div>
       </RadioGroup>
