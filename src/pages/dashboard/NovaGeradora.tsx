@@ -1,4 +1,5 @@
-import { useState } from 'react';
+
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -6,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Form } from '@/components/ui/form';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, Save } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useGenerators } from '@/hooks/useGenerators';
 import GeneratorConcessionariaForm from '@/components/forms/GeneratorConcessionariaForm';
@@ -75,14 +76,16 @@ const generatorSchema = z.object({
 
 interface NovaGeradoraProps {
   onClose: () => void;
+  editMode?: boolean;
+  generatorData?: any;
 }
 
-const NovaGeradora = ({ onClose }: NovaGeradoraProps) => {
+const NovaGeradora = ({ onClose, editMode = false, generatorData }: NovaGeradoraProps) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [saving, setSaving] = useState(false);
   const totalSteps = 5;
   const { toast } = useToast();
-  const { createGenerator } = useGenerators();
+  const { createGenerator, updateGenerator } = useGenerators();
 
   const form = useForm<GeneratorFormData>({
     resolver: zodResolver(generatorSchema),
@@ -125,6 +128,23 @@ const NovaGeradora = ({ onClose }: NovaGeradoraProps) => {
     },
   });
 
+  // Preencher formulário com dados existentes se for edição
+  useEffect(() => {
+    if (editMode && generatorData) {
+      console.log('🔄 Preenchendo formulário para edição:', generatorData);
+      
+      form.reset({
+        concessionaria: generatorData.concessionaria || '',
+        owner: generatorData.owner || form.getValues('owner'),
+        administrator: generatorData.administrator,
+        plants: generatorData.plants || [],
+        distributorLogin: generatorData.distributor_login || form.getValues('distributorLogin'),
+        paymentData: generatorData.payment_data || form.getValues('paymentData'),
+        attachments: generatorData.attachments || {},
+      });
+    }
+  }, [editMode, generatorData, form]);
+
   const ownerType = form.watch('owner.type');
 
   const steps = [
@@ -160,18 +180,27 @@ const NovaGeradora = ({ onClose }: NovaGeradoraProps) => {
     setSaving(true);
     
     try {
-      await createGenerator(data);
-      toast({
-        title: "Sucesso!",
-        description: "Geradora cadastrada com sucesso.",
-        variant: "default",
-      });
+      if (editMode && generatorData?.id) {
+        await updateGenerator(generatorData.id, data);
+        toast({
+          title: "Sucesso!",
+          description: "Geradora atualizada com sucesso.",
+          variant: "default",
+        });
+      } else {
+        await createGenerator(data);
+        toast({
+          title: "Sucesso!",
+          description: "Geradora cadastrada com sucesso.",
+          variant: "default",
+        });
+      }
       onClose();
     } catch (error) {
       console.error('❌ Erro ao salvar geradora:', error);
       toast({
         title: "Erro",
-        description: "Erro ao salvar geradora. Tente novamente.",
+        description: `Erro ao ${editMode ? 'atualizar' : 'salvar'} geradora. Tente novamente.`,
         variant: "destructive",
       });
     } finally {
@@ -192,62 +221,67 @@ const NovaGeradora = ({ onClose }: NovaGeradoraProps) => {
   };
 
   const canProceed = () => {
-    // TODO: Implementar validação específica por step
     return true;
   };
 
   return (
     <div className="h-full flex flex-col bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4">
+      {/* Header Aprimorado */}
+      <div className="bg-gradient-to-r from-green-600 to-green-700 text-white px-6 py-6 shadow-lg">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Nova Geradora</h1>
-            <p className="text-gray-600 mt-1">Cadastre uma nova unidade geradora de energia</p>
+            <h1 className="text-2xl font-bold">
+              {editMode ? 'Editar Geradora' : 'Nova Geradora'}
+            </h1>
+            <p className="text-green-100 mt-1">
+              {editMode ? 'Atualize as informações da geradora' : 'Cadastre uma nova unidade geradora de energia'}
+            </p>
           </div>
           <Button 
             variant="ghost" 
             size="icon"
             onClick={onClose}
-            className="text-gray-500 hover:text-gray-700"
+            className="text-white hover:bg-white/20 rounded-xl"
           >
             <X className="w-5 h-5" />
           </Button>
         </div>
       </div>
 
-      {/* Progress Steps */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4">
-        <div className="flex items-center justify-between">
-          {steps.map((step, index) => (
-            <div key={step.number} className="flex items-center">
-              <div className="flex items-center">
-                <div className={`
-                  w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium
-                  ${currentStep >= step.number 
-                    ? 'bg-green-600 text-white' 
-                    : 'bg-gray-200 text-gray-600'
-                  }
-                `}>
-                  {step.number}
+      {/* Progress Steps Aprimorado */}
+      <div className="bg-white border-b border-gray-200 px-6 py-6 shadow-sm">
+        <div className="max-w-4xl mx-auto">
+          <div className="flex items-center justify-between">
+            {steps.map((step, index) => (
+              <div key={step.number} className="flex items-center">
+                <div className="flex items-center">
+                  <div className={`
+                    w-12 h-12 rounded-full flex items-center justify-center text-sm font-medium transition-all duration-200
+                    ${currentStep >= step.number 
+                      ? 'bg-green-600 text-white shadow-lg' 
+                      : 'bg-gray-200 text-gray-600'
+                    }
+                  `}>
+                    {step.number}
+                  </div>
+                  <div className="ml-4">
+                    <p className={`text-sm font-medium transition-colors ${
+                      currentStep >= step.number ? 'text-green-600' : 'text-gray-500'
+                    }`}>
+                      {step.title}
+                    </p>
+                    <p className="text-xs text-gray-500">{step.description}</p>
+                  </div>
                 </div>
-                <div className="ml-3">
-                  <p className={`text-sm font-medium ${
-                    currentStep >= step.number ? 'text-green-600' : 'text-gray-500'
-                  }`}>
-                    {step.title}
-                  </p>
-                  <p className="text-xs text-gray-500">{step.description}</p>
-                </div>
+                {index < steps.length - 1 && (
+                  <div className={`
+                    w-16 h-1 mx-6 rounded transition-colors
+                    ${currentStep > step.number ? 'bg-green-600' : 'bg-gray-200'}
+                  `} />
+                )}
               </div>
-              {index < steps.length - 1 && (
-                <div className={`
-                  w-12 h-0.5 mx-4
-                  ${currentStep > step.number ? 'bg-green-600' : 'bg-gray-200'}
-                `} />
-              )}
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
 
@@ -259,7 +293,7 @@ const NovaGeradora = ({ onClose }: NovaGeradoraProps) => {
               
               {/* Step 1: Dados Gerais e Dono da Usina */}
               {currentStep === 1 && (
-                <Card className="border-0 shadow-lg">
+                <Card className="border-0 shadow-xl">
                   <CardHeader className="bg-gradient-to-r from-green-50 to-green-100 border-b">
                     <div className="flex items-center justify-between">
                       <div>
@@ -276,7 +310,7 @@ const NovaGeradora = ({ onClose }: NovaGeradoraProps) => {
                     </div>
                   </CardHeader>
                   
-                  <CardContent className="p-6 space-y-8">
+                  <CardContent className="p-8 space-y-8">
                     <GeneratorConcessionariaForm form={form} />
                     <GeneratorOwnerTypeForm form={form} />
                     <GeneratorOwnerDataForm form={form} ownerType={ownerType} />
@@ -289,7 +323,7 @@ const NovaGeradora = ({ onClose }: NovaGeradoraProps) => {
 
               {/* Step 2: Dados das Usinas */}
               {currentStep === 2 && (
-                <Card className="border-0 shadow-lg">
+                <Card className="border-0 shadow-xl">
                   <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-100 border-b">
                     <div className="flex items-center justify-between">
                       <div>
@@ -306,15 +340,14 @@ const NovaGeradora = ({ onClose }: NovaGeradoraProps) => {
                     </div>
                   </CardHeader>
                   
-                  <CardContent className="p-6">
+                  <CardContent className="p-8">
                     <GeneratorPlantsForm form={form} />
                   </CardContent>
                 </Card>
               )}
 
-              {/* Step 3: Login da Distribuidora */}
               {currentStep === 3 && (
-                <Card className="border-0 shadow-lg">
+                <Card className="border-0 shadow-xl">
                   <CardHeader className="bg-gradient-to-r from-purple-50 to-purple-100 border-b">
                     <div className="flex items-center justify-between">
                       <div>
@@ -331,15 +364,14 @@ const NovaGeradora = ({ onClose }: NovaGeradoraProps) => {
                     </div>
                   </CardHeader>
                   
-                  <CardContent className="p-6">
+                  <CardContent className="p-8">
                     <GeneratorDistributorLoginForm form={form} />
                   </CardContent>
                 </Card>
               )}
 
-              {/* Step 4: Dados para Recebimento */}
               {currentStep === 4 && (
-                <Card className="border-0 shadow-lg">
+                <Card className="border-0 shadow-xl">
                   <CardHeader className="bg-gradient-to-r from-green-50 to-green-100 border-b">
                     <div className="flex items-center justify-between">
                       <div>
@@ -356,15 +388,14 @@ const NovaGeradora = ({ onClose }: NovaGeradoraProps) => {
                     </div>
                   </CardHeader>
                   
-                  <CardContent className="p-6">
+                  <CardContent className="p-8">
                     <GeneratorPaymentForm form={form} />
                   </CardContent>
                 </Card>
               )}
 
-              {/* Step 5: Anexos */}
               {currentStep === 5 && (
-                <Card className="border-0 shadow-lg">
+                <Card className="border-0 shadow-xl">
                   <CardHeader className="bg-gradient-to-r from-amber-50 to-amber-100 border-b">
                     <div className="flex items-center justify-between">
                       <div>
@@ -381,7 +412,7 @@ const NovaGeradora = ({ onClose }: NovaGeradoraProps) => {
                     </div>
                   </CardHeader>
                   
-                  <CardContent className="p-6">
+                  <CardContent className="p-8">
                     <GeneratorAttachmentsForm form={form} />
                   </CardContent>
                 </Card>
@@ -392,50 +423,54 @@ const NovaGeradora = ({ onClose }: NovaGeradoraProps) => {
         </div>
       </div>
 
-      {/* Footer with Navigation */}
-      <div className="bg-white border-t border-gray-200 px-6 py-4">
-        <div className="flex items-center justify-between">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={prevStep}
-            disabled={currentStep === 1 || saving}
-            className="flex items-center gap-2"
-          >
-            <ChevronLeft className="w-4 h-4" />
-            Anterior
-          </Button>
-
-          <div className="flex items-center gap-3">
+      {/* Footer com Navegação Aprimorado */}
+      <div className="bg-white border-t border-gray-200 px-6 py-6 shadow-lg">
+        <div className="max-w-4xl mx-auto">
+          <div className="flex items-center justify-between">
             <Button
               type="button"
               variant="outline"
-              onClick={() => form.reset()}
-              disabled={saving}
+              onClick={prevStep}
+              disabled={currentStep === 1 || saving}
+              className="flex items-center gap-2 px-6 py-3"
             >
-              Limpar
+              <ChevronLeft className="w-4 h-4" />
+              Anterior
             </Button>
-            
-            {currentStep === totalSteps ? (
-              <Button
-                type="submit"
-                onClick={form.handleSubmit(onSubmit)}
-                disabled={!canProceed() || saving}
-                className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white"
-              >
-                {saving ? 'Salvando...' : 'Salvar Geradora'}
-              </Button>
-            ) : (
+
+            <div className="flex items-center gap-4">
               <Button
                 type="button"
-                onClick={nextStep}
-                disabled={!canProceed() || saving}
-                className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white flex items-center gap-2"
+                variant="outline"
+                onClick={() => form.reset()}
+                disabled={saving}
+                className="px-6 py-3"
               >
-                Próximo
-                <ChevronRight className="w-4 h-4" />
+                Limpar
               </Button>
-            )}
+              
+              {currentStep === totalSteps ? (
+                <Button
+                  type="submit"
+                  onClick={form.handleSubmit(onSubmit)}
+                  disabled={!canProceed() || saving}
+                  className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white px-8 py-3 flex items-center gap-2"
+                >
+                  <Save className="w-4 h-4" />
+                  {saving ? 'Salvando...' : editMode ? 'Atualizar Geradora' : 'Salvar Geradora'}
+                </Button>
+              ) : (
+                <Button
+                  type="button"
+                  onClick={nextStep}
+                  disabled={!canProceed() || saving}
+                  className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white flex items-center gap-2 px-6 py-3"
+                >
+                  Próximo
+                  <ChevronRight className="w-4 h-4" />
+                </Button>
+              )}
+            </div>
           </div>
         </div>
       </div>
