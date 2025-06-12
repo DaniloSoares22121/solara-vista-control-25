@@ -23,12 +23,14 @@ const Assinantes = () => {
     const name = subscriber.subscriber?.fullName || subscriber.subscriber?.companyName || '';
     const document = subscriber.subscriber?.cpf || subscriber.subscriber?.cnpj || '';
     const email = subscriber.subscriber?.email || '';
+    const uc = subscriber.energy_account?.uc || '';
     
     const searchLower = searchTerm.toLowerCase();
     return (
       name.toLowerCase().includes(searchLower) ||
       document.includes(searchTerm) ||
-      email.toLowerCase().includes(searchLower)
+      email.toLowerCase().includes(searchLower) ||
+      uc.includes(searchTerm)
     );
   });
 
@@ -84,6 +86,7 @@ const Assinantes = () => {
             
             <SubscriberForm 
               existingData={editingSubscriber} 
+              subscriberId={editingSubscriber?.id}
               onSuccess={handleCloseForm}
             />
           </div>
@@ -230,7 +233,7 @@ const Assinantes = () => {
                 <div className="relative flex-1">
                   <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                   <Input
-                    placeholder="Buscar assinantes por nome, CPF/CNPJ ou email..."
+                    placeholder="Buscar assinantes por nome, CPF/CNPJ, email ou UC..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="pl-12 h-12 border-gray-200 focus:border-green-400 focus:ring-green-400 bg-white shadow-sm rounded-xl text-gray-700 placeholder:text-gray-400"
@@ -262,32 +265,14 @@ const Assinantes = () => {
             </CardContent>
           </Card>
 
-          {/* Subscribers Table */}
-          {isLoading ? (
-            <Card className="border-0 shadow-xl bg-white/95 backdrop-blur-sm overflow-hidden">
-              <CardContent className="p-12">
-                <div className="flex items-center justify-center py-16">
-                  <div className="text-center space-y-6">
-                    <div className="relative">
-                      <div className="w-16 h-16 border-4 border-green-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
-                      <div className="absolute inset-0 w-16 h-16 border-4 border-green-200 rounded-full mx-auto"></div>
-                    </div>
-                    <div className="space-y-2">
-                      <p className="text-gray-700 text-xl font-semibold">Carregando assinantes...</p>
-                      <p className="text-gray-500">Aguarde enquanto buscamos os dados</p>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ) : (
-            <SubscribersTable
-              subscribers={filteredSubscribers}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-              onView={handleView}
-            />
-          )}
+          {/* Subscribers Table com loading consistente */}
+          <SubscribersTable
+            subscribers={filteredSubscribers}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            onView={handleView}
+            isLoading={isLoading}
+          />
 
           {/* View Modal */}
           <SubscriberViewModal

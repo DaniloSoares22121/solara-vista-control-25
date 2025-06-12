@@ -17,6 +17,7 @@ import AutoSaveIndicator from '../AutoSaveIndicator';
 import FormValidationSummary from '../FormValidationSummary';
 import { Button } from '@/components/ui/button';
 import { RotateCcw } from 'lucide-react';
+import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { toast } from 'sonner';
 
 interface SubscriberFormProps {
@@ -81,10 +82,10 @@ const SubscriberForm: React.FC<SubscriberFormProps> = ({
   if (!isLoaded && isEditing) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center space-y-4">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto"></div>
-          <p className="text-gray-600">Carregando dados do assinante...</p>
-        </div>
+        <LoadingSpinner 
+          size="lg" 
+          text="Carregando dados do assinante..."
+        />
       </div>
     );
   }
@@ -193,7 +194,7 @@ const SubscriberForm: React.FC<SubscriberFormProps> = ({
 
   const stepTitles = steps.map(step => step.title);
   const completedSteps = steps.map((_, index) => index < currentStep);
-  const hasErrors = steps.map(() => false); // You can implement error checking logic here
+  const hasErrors = steps.map(() => false);
 
   const currentStepData = steps.find(step => step.number === currentStep);
 

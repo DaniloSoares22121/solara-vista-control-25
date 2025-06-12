@@ -5,26 +5,25 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Users, Edit, Trash2, Eye, Phone, Mail, Building2, User, FileText, Zap, Star, MapPin } from 'lucide-react';
 import { SubscriberRecord } from '@/services/supabaseSubscriberService';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { formatCpfCnpj, formatPhone, formatKwh } from '@/utils/formatters';
+import { LoadingSpinner } from '@/components/ui/loading-spinner';
 
 interface SubscribersTableProps {
   subscribers: SubscriberRecord[];
   onEdit: (subscriber: SubscriberRecord) => void;
   onDelete: (id: string) => void;
   onView: (subscriber: SubscriberRecord) => void;
+  isLoading?: boolean;
 }
 
-const SubscribersTable = ({ subscribers, onEdit, onDelete, onView }: SubscribersTableProps) => {
+const SubscribersTable = ({ subscribers, onEdit, onDelete, onView, isLoading }: SubscribersTableProps) => {
   const getSubscriberName = (subscriber: SubscriberRecord) => {
     const subscriberData = subscriber.subscriber;
     
-    // Para pessoa física
     if (subscriberData?.fullName) {
       return subscriberData.fullName;
     }
     
-    // Para pessoa jurídica - tenta diferentes campos
     if (subscriberData?.companyName) {
       return subscriberData.companyName;
     }
@@ -33,6 +32,12 @@ const SubscribersTable = ({ subscribers, onEdit, onDelete, onView }: Subscribers
     }
     
     return 'Nome não cadastrado';
+  };
+
+  const getSubscriberDocument = (subscriber: SubscriberRecord) => {
+    const subscriberData = subscriber.subscriber;
+    const document = subscriberData?.cpf || subscriberData?.cnpj || '';
+    return formatCpfCnpj(document);
   };
 
   const getEnergyAccount = (subscriber: SubscriberRecord) => {
@@ -45,9 +50,8 @@ const SubscribersTable = ({ subscribers, onEdit, onDelete, onView }: Subscribers
 
   const getPlanInfo = (subscriber: SubscriberRecord) => {
     const plan = subscriber.plan_contract;
-    // Corrigido: usar contractedKwh em vez de informedKwh
     if (plan?.contractedKwh) {
-      return `${plan.contractedKwh} kWh/mês`;
+      return formatKwh(plan.contractedKwh);
     }
     return 'Plano não cadastrado';
   };
@@ -55,7 +59,6 @@ const SubscribersTable = ({ subscribers, onEdit, onDelete, onView }: Subscribers
   const getSubscriberType = (subscriber: SubscriberRecord) => {
     const subscriberData = subscriber.subscriber;
     
-    // Determina o tipo baseado nos dados disponíveis
     if (subscriberData?.cnpj || subscriberData?.companyName || subscriberData?.razaoSocial) {
       return 'Pessoa Jurídica';
     }
@@ -63,7 +66,6 @@ const SubscribersTable = ({ subscribers, onEdit, onDelete, onView }: Subscribers
       return 'Pessoa Física';
     }
     
-    // Fallback: verifica pela conta de energia
     const energyAccount = subscriber.energy_account;
     if (energyAccount?.holderType === 'company') {
       return 'Pessoa Jurídica';
@@ -75,7 +77,7 @@ const SubscribersTable = ({ subscribers, onEdit, onDelete, onView }: Subscribers
   const getContactInfo = (subscriber: SubscriberRecord) => {
     const subscriberData = subscriber.subscriber;
     return {
-      phone: subscriberData?.phone || 'Não informado',
+      phone: formatPhone(subscriberData?.phone || ''),
       email: subscriberData?.email || 'Não informado',
       city: subscriberData?.address?.city || 'Cidade não informada'
     };
@@ -123,6 +125,28 @@ const SubscribersTable = ({ subscribers, onEdit, onDelete, onView }: Subscribers
     console.log('Clicando para deletar ID:', subscriberId);
     onDelete(subscriberId);
   };
+
+  if (isLoading) {
+    return (
+      <Card className="border-0 shadow-2xl bg-white overflow-hidden">
+        <CardHeader className="bg-gradient-to-r from-green-600 via-green-500 to-emerald-500 text-white">
+          <CardTitle className="text-2xl font-bold flex items-center space-x-3">
+            <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
+              <Users className="w-8 h-8" />
+            </div>
+            <span>Lista de Assinantes</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-12">
+          <LoadingSpinner 
+            size="lg" 
+            text="Carregando assinantes..."
+            className="py-16" 
+          />
+        </CardContent>
+      </Card>
+    );
+  }
 
   if (subscribers.length === 0) {
     return (
@@ -191,8 +215,8 @@ const SubscribersTable = ({ subscribers, onEdit, onDelete, onView }: Subscribers
         </CardHeader>
       </Card>
 
-      {/* Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      {/* Cards Grid - Responsividade Consistente */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {subscribers.map((subscriber) => {
           const contactInfo = getContactInfo(subscriber);
           
@@ -201,7 +225,6 @@ const SubscribersTable = ({ subscribers, onEdit, onDelete, onView }: Subscribers
               key={subscriber.id}
               className="group hover:shadow-2xl transition-all duration-500 border-0 bg-white overflow-hidden hover:scale-105 hover:-translate-y-2"
             >
-              {/* Header do Card com Gradiente */}
               <div className="h-2 bg-gradient-to-r from-green-400 via-emerald-400 to-green-500"></div>
               
               <CardHeader className="pb-4 bg-gradient-to-br from-gray-50 to-white">
@@ -235,6 +258,17 @@ const SubscribersTable = ({ subscribers, onEdit, onDelete, onView }: Subscribers
               </CardHeader>
               
               <CardContent className="pt-0 space-y-4 pb-6">
+                {/* Documento formatado */}
+                <div className="flex items-center space-x-3 p-3 bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl">
+                  <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-md">
+                    <FileText className="w-5 h-5 text-white" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs text-blue-600 font-medium mb-1">Documento</p>
+                    <p className="text-sm font-mono font-bold text-blue-800 truncate">{getSubscriberDocument(subscriber)}</p>
+                  </div>
+                </div>
+
                 {/* Unidade Consumidora */}
                 <div className="flex items-center space-x-3 p-3 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl">
                   <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl flex items-center justify-center shadow-md">
@@ -246,7 +280,7 @@ const SubscribersTable = ({ subscribers, onEdit, onDelete, onView }: Subscribers
                   </div>
                 </div>
 
-                {/* Informações de Contato */}
+                {/* Informações de Contato Formatadas */}
                 <div className="space-y-3">
                   <div className="flex items-center space-x-3">
                     <div className="w-8 h-8 bg-gradient-to-br from-green-100 to-emerald-100 rounded-lg flex items-center justify-center">
@@ -266,7 +300,6 @@ const SubscribersTable = ({ subscribers, onEdit, onDelete, onView }: Subscribers
                     </div>
                   </div>
 
-                  {/* Endereço */}
                   <div className="flex items-center space-x-3">
                     <div className="w-8 h-8 bg-gradient-to-br from-orange-100 to-red-100 rounded-lg flex items-center justify-center">
                       <MapPin className="w-4 h-4 text-orange-600" />
@@ -279,7 +312,7 @@ const SubscribersTable = ({ subscribers, onEdit, onDelete, onView }: Subscribers
                   </div>
                 </div>
 
-                {/* Plano - Corrigido para mostrar kWh contratado */}
+                {/* Plano Formatado */}
                 <div className="p-3 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-100">
                   <div className="flex items-center space-x-3">
                     <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl flex items-center justify-center shadow-md">

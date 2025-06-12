@@ -17,6 +17,8 @@ export const useSubscribers = () => {
   } = useQuery({
     queryKey: ['subscribers'],
     queryFn: subscriberService.getSubscribers,
+    staleTime: 30000, // Cache por 30 segundos
+    retry: 3,
   });
 
   // Configurar atualizações em tempo real
@@ -32,8 +34,9 @@ export const useSubscribers = () => {
         },
         (payload) => {
           console.log('Mudança detectada na tabela subscribers:', payload);
-          // Invalidar e refetch dos dados
+          // Invalidar queries específicas para sincronização consistente
           queryClient.invalidateQueries({ queryKey: ['subscribers'] });
+          queryClient.invalidateQueries({ queryKey: ['subscriber'] }); // Para queries individuais
         }
       )
       .subscribe();
@@ -45,38 +48,47 @@ export const useSubscribers = () => {
 
   const createMutation = useMutation({
     mutationFn: subscriberService.createSubscriber,
-    onSuccess: () => {
+    onSuccess: (data) => {
+      // Invalidar e refetch para sincronização
       queryClient.invalidateQueries({ queryKey: ['subscribers'] });
-      toast.success('Assinante criado com sucesso!', { duration: 2000 });
+      queryClient.setQueryData(['subscriber', data.id], data); // Cache individual
+      toast.success('Assinante criado com sucesso!', { duration: 1500 });
     },
     onError: (error: any) => {
       console.error('Erro ao criar assinante:', error);
-      toast.error('Erro ao criar assinante. Tente novamente.', { duration: 2000 });
+      const errorMessage = error?.message || 'Erro interno do servidor';
+      toast.error(`Erro ao criar assinante: ${errorMessage}`, { duration: 3000 });
     },
   });
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: Partial<SubscriberFormData> }) =>
       subscriberService.updateSubscriber(id, data),
-    onSuccess: () => {
+    onSuccess: (data, variables) => {
+      // Atualizar cache específico e geral
       queryClient.invalidateQueries({ queryKey: ['subscribers'] });
-      toast.success('Assinante atualizado com sucesso!', { duration: 2000 });
+      queryClient.setQueryData(['subscriber', variables.id], data);
+      toast.success('Assinante atualizado com sucesso!', { duration: 1500 });
     },
     onError: (error: any) => {
       console.error('Erro ao atualizar assinante:', error);
-      toast.error('Erro ao atualizar assinante. Tente novamente.', { duration: 2000 });
+      const errorMessage = error?.message || 'Erro interno do servidor';
+      toast.error(`Erro ao atualizar assinante: ${errorMessage}`, { duration: 3000 });
     },
   });
 
   const deleteMutation = useMutation({
     mutationFn: subscriberService.deleteSubscriber,
-    onSuccess: () => {
+    onSuccess: (_, deletedId) => {
+      // Remover do cache e invalidar
+      queryClient.removeQueries({ queryKey: ['subscriber', deletedId] });
       queryClient.invalidateQueries({ queryKey: ['subscribers'] });
-      toast.success('Assinante removido com sucesso!', { duration: 2000 });
+      toast.success('Assinante removido com sucesso!', { duration: 1500 });
     },
     onError: (error: any) => {
       console.error('Erro ao remover assinante:', error);
-      toast.error('Erro ao remover assinante. Tente novamente.', { duration: 2000 });
+      const errorMessage = error?.message || 'Erro interno do servidor';
+      toast.error(`Erro ao remover assinante: ${errorMessage}`, { duration: 3000 });
     },
   });
 
