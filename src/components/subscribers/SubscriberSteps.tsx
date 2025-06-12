@@ -3,6 +3,7 @@ import React from 'react';
 import { SubscriberFormData } from '@/types/subscriber';
 import { FormProvider } from 'react-hook-form';
 import { useFormProvider } from '@/hooks/useFormProvider';
+import { Zap, User, UserCheck, Home, ArrowRightLeft, FileText, Settings, Bell, Paperclip } from 'lucide-react';
 import ConcessionariaSelector from '../forms/subscriber/ConcessionariaSelector';
 import SubscriberTypeSelector from '../forms/subscriber/SubscriberTypeSelector';
 import PersonalDataForm from '../forms/subscriber/PersonalDataForm';
@@ -37,7 +38,8 @@ export const useSubscriberSteps = ({
   const steps = [
     { 
       number: 1, 
-      title: 'Concessionária', 
+      title: 'Concessionária',
+      icon: Zap,
       component: (
         <FormProvider {...form}>
           <ConcessionariaSelector 
@@ -49,7 +51,8 @@ export const useSubscriberSteps = ({
     },
     { 
       number: 2, 
-      title: 'Tipo de Assinante', 
+      title: 'Tipo de Assinante',
+      icon: User,
       component: (
         <FormProvider {...form}>
           <SubscriberTypeSelector 
@@ -62,6 +65,7 @@ export const useSubscriberSteps = ({
     { 
       number: 3, 
       title: formData.subscriberType === 'person' ? 'Dados Pessoais' : 'Dados da Empresa',
+      icon: formData.subscriberType === 'person' ? User : UserCheck,
       component: (
         <FormProvider {...form}>
           {formData.subscriberType === 'person' ? (
@@ -90,7 +94,8 @@ export const useSubscriberSteps = ({
     },
     { 
       number: 4, 
-      title: 'Conta de Energia', 
+      title: 'Conta de Energia',
+      icon: Home,
       component: (
         <FormProvider {...form}>
           <EnergyAccountForm 
@@ -105,7 +110,8 @@ export const useSubscriberSteps = ({
     },
     { 
       number: 5, 
-      title: 'Transferência de Titularidade', 
+      title: 'Transferência de Titularidade',
+      icon: ArrowRightLeft,
       component: (
         <FormProvider {...form}>
           <TitleTransferForm 
@@ -118,7 +124,8 @@ export const useSubscriberSteps = ({
     },
     { 
       number: 6, 
-      title: 'Contrato do Plano', 
+      title: 'Contrato do Plano',
+      icon: FileText,
       component: (
         <FormProvider {...form}>
           <PlanContractForm 
@@ -131,7 +138,8 @@ export const useSubscriberSteps = ({
     },
     { 
       number: 7, 
-      title: 'Detalhes do Plano', 
+      title: 'Detalhes do Plano',
+      icon: Settings,
       component: (
         <FormProvider {...form}>
           <PlanDetailsForm 
@@ -144,7 +152,8 @@ export const useSubscriberSteps = ({
     },
     { 
       number: 8, 
-      title: 'Configurações de Notificação', 
+      title: 'Configurações de Notificação',
+      icon: Bell,
       component: (
         <FormProvider {...form}>
           <NotificationSettingsForm 
@@ -157,7 +166,8 @@ export const useSubscriberSteps = ({
     },
     { 
       number: 9, 
-      title: 'Anexos', 
+      title: 'Anexos',
+      icon: Paperclip,
       component: (
         <FormProvider {...form}>
           <AttachmentsForm 
