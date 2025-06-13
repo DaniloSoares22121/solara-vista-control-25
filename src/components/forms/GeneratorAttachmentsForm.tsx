@@ -6,7 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { UseFormReturn } from 'react-hook-form';
 import { GeneratorFormData } from '@/types/generator';
 import { Upload, FileText, Trash2, X } from 'lucide-react';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 
 interface GeneratorAttachmentsFormProps {
   form: UseFormReturn<GeneratorFormData>;
@@ -24,6 +24,13 @@ const GeneratorAttachmentsForm = ({ form }: GeneratorAttachmentsFormProps) => {
     conta: useRef<HTMLInputElement>(null),
     procuracao: useRef<HTMLInputElement>(null),
   };
+
+  // Debug: Log do estado sempre que mudar
+  useEffect(() => {
+    console.log('🔍 [DEBUG] Estado atual dos arquivos:', uploadedFiles);
+    console.log('🔍 [DEBUG] Número de arquivos no estado:', Object.keys(uploadedFiles).length);
+    console.log('🔍 [DEBUG] Dados do formulário - attachments:', form.getValues('attachments'));
+  }, [uploadedFiles, form]);
 
   const handleFileUpload = (fieldName: string, file: File | null) => {
     console.log('🔄 [FILE UPLOAD] Iniciando upload:', { fieldName, file: file?.name });
@@ -50,21 +57,24 @@ const GeneratorAttachmentsForm = ({ form }: GeneratorAttachmentsFormProps) => {
 
     console.log('✅ [FILE UPLOAD] Arquivo válido, processando...');
 
-    // Atualizar estado local
+    // Atualizar estado local usando callback para garantir que funcione
     setUploadedFiles(prev => {
       const newFiles = {
         ...prev,
         [fieldName]: file
       };
-      console.log('🔄 [FILE UPLOAD] Estado atualizado:', newFiles);
+      console.log('🔄 [FILE UPLOAD] Novo estado será:', newFiles);
       return newFiles;
     });
     
     // Atualizar o formulário
-    form.setValue(`attachments.${fieldName}` as any, file);
-    console.log('✅ [FILE UPLOAD] Formulário atualizado');
+    const currentAttachments = form.getValues('attachments') || {};
+    form.setValue('attachments', {
+      ...currentAttachments,
+      [fieldName]: file
+    });
     
-    console.log(`✅ Arquivo ${file.name} anexado com sucesso!`);
+    console.log('✅ [FILE UPLOAD] Arquivo processado com sucesso!');
   };
 
   const removeFile = (fieldName: string) => {
@@ -73,11 +83,15 @@ const GeneratorAttachmentsForm = ({ form }: GeneratorAttachmentsFormProps) => {
     setUploadedFiles(prev => {
       const newFiles = { ...prev };
       delete newFiles[fieldName];
+      console.log('🗑️ [FILE REMOVE] Novo estado após remoção:', newFiles);
       return newFiles;
     });
     
     // Limpar o formulário
-    form.setValue(`attachments.${fieldName}` as any, undefined);
+    const currentAttachments = form.getValues('attachments') || {};
+    const newAttachments = { ...currentAttachments };
+    delete newAttachments[fieldName];
+    form.setValue('attachments', newAttachments);
     
     // Limpar o input
     if (fileInputRefs[fieldName as keyof typeof fileInputRefs].current) {
@@ -113,12 +127,15 @@ const GeneratorAttachmentsForm = ({ form }: GeneratorAttachmentsFormProps) => {
                   {file ? (
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <FileText className="w-8 h-8 text-blue-600" />
+                        <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                          <FileText className="w-6 h-6 text-green-600" />
+                        </div>
                         <div>
                           <p className="font-medium text-gray-900">{file.name}</p>
                           <p className="text-sm text-gray-500">
                             {(file.size / 1024 / 1024).toFixed(2)} MB
                           </p>
+                          <p className="text-xs text-green-600 font-medium">✅ Arquivo anexado</p>
                         </div>
                       </div>
                       <Button
@@ -154,8 +171,8 @@ const GeneratorAttachmentsForm = ({ form }: GeneratorAttachmentsFormProps) => {
                           type="file"
                           accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
                           onChange={(e) => {
-                            console.log('🔄 [FILE INPUT] Arquivo selecionado:', e.target.files?.[0]?.name);
                             const selectedFile = e.target.files?.[0] || null;
+                            console.log('🔄 [FILE INPUT] Arquivo selecionado:', selectedFile?.name);
                             handleFileUpload(name, selectedFile);
                             field.onChange(selectedFile);
                           }}
@@ -244,9 +261,18 @@ const GeneratorAttachmentsForm = ({ form }: GeneratorAttachmentsFormProps) => {
       {/* Debug Info */}
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
         <h4 className="font-medium text-blue-900 mb-2">Debug - Estado dos Arquivos</h4>
-        <pre className="text-xs text-blue-800">
-          {JSON.stringify(uploadedFiles, null, 2)}
-        </pre>
+        <div className="text-xs text-blue-800 space-y-1">
+          <p><strong>Arquivos no estado:</strong> {Object.keys(uploadedFiles).length}</p>
+          <p><strong>Nomes dos arquivos:</strong> {Object.keys(uploadedFiles).join(', ') || 'Nenhum'}</p>
+          <div className="bg-white p-2 rounded mt-2 max-h-32 overflow-auto">
+            <pre>{JSON.stringify(uploadedFiles, (key, value) => {
+              if (value instanceof File) {
+                return `File: ${value.name} (${value.size} bytes)`;
+              }
+              return value;
+            }, 2)}</pre>
+          </div>
+        </div>
       </div>
     </div>
   );
