@@ -22,6 +22,7 @@ interface FileUploadData {
 
 const GeneratorAttachmentsForm = ({ form }: GeneratorAttachmentsFormProps) => {
   const [files, setFiles] = useState<Record<string, FileUploadData>>({});
+  const [forceUpdate, setForceUpdate] = useState(0);
   const ownerType = form.watch('owner.type');
   
   // Refs para os inputs de arquivo
@@ -36,6 +37,7 @@ const GeneratorAttachmentsForm = ({ form }: GeneratorAttachmentsFormProps) => {
   // Função para atualizar estado local baseado no formulário
   const updateLocalState = useCallback(() => {
     const formAttachments = form.getValues('attachments');
+    console.log('🔄 Atualizando estado local, attachments do form:', formAttachments);
     
     if (formAttachments && typeof formAttachments === 'object') {
       const validFiles: Record<string, FileUploadData> = {};
@@ -58,11 +60,15 @@ const GeneratorAttachmentsForm = ({ form }: GeneratorAttachmentsFormProps) => {
             type: value.type as string,
             uploadedAt: ('uploadedAt' in value ? value.uploadedAt : new Date().toISOString()) as string
           };
+          
+          console.log(`✅ Arquivo válido encontrado [${key}]:`, validFiles[key].name);
         }
       });
       
+      console.log('📁 Total de arquivos válidos:', Object.keys(validFiles).length);
       setFiles(validFiles);
     } else {
+      console.log('❌ Nenhum attachment encontrado no formulário');
       setFiles({});
     }
   }, [form]);
@@ -70,16 +76,20 @@ const GeneratorAttachmentsForm = ({ form }: GeneratorAttachmentsFormProps) => {
   // Sincronizar quando attachments mudar
   useEffect(() => {
     updateLocalState();
-  }, [updateLocalState]);
+  }, [updateLocalState, forceUpdate]);
 
   // Watch mudanças no campo attachments
   const watchedAttachments = form.watch('attachments');
   useEffect(() => {
+    console.log('👁️ Watch detectou mudança em attachments:', watchedAttachments);
     updateLocalState();
   }, [watchedAttachments, updateLocalState]);
 
-  const handleFileUpload = (fieldName: string, selectedFile: File | null) => {
+  const handleFileUpload = async (fieldName: string, selectedFile: File | null) => {
+    console.log(`📤 Iniciando upload para campo [${fieldName}]:`, selectedFile?.name);
+    
     if (!selectedFile) {
+      console.log('❌ Nenhum arquivo selecionado');
       return;
     }
 
@@ -111,14 +121,18 @@ const GeneratorAttachmentsForm = ({ form }: GeneratorAttachmentsFormProps) => {
       uploadedAt: new Date().toISOString()
     };
 
-    // Atualizar formulário diretamente
+    console.log(`💾 Dados do arquivo criados [${fieldName}]:`, fileData);
+
+    // Atualizar formulário
     const currentAttachments = form.getValues('attachments') || {};
     const updatedAttachments = { 
       ...currentAttachments, 
       [fieldName]: fileData
     };
     
-    // Usar setValue com trigger imediato
+    console.log('📝 Atualizando formulário com:', updatedAttachments);
+    
+    // Usar setValue
     form.setValue('attachments', updatedAttachments, { 
       shouldValidate: true,
       shouldTouch: true,
@@ -126,13 +140,24 @@ const GeneratorAttachmentsForm = ({ form }: GeneratorAttachmentsFormProps) => {
     });
 
     // Atualizar estado local imediatamente
-    setFiles(prev => ({
-      ...prev,
-      [fieldName]: fileData
-    }));
+    setFiles(prev => {
+      const newFiles = {
+        ...prev,
+        [fieldName]: fileData
+      };
+      console.log('🔄 Estado local atualizado:', newFiles);
+      return newFiles;
+    });
+
+    // Forçar re-render
+    setForceUpdate(prev => prev + 1);
+    
+    console.log(`✅ Upload concluído para [${fieldName}]`);
   };
 
   const removeFile = (fieldName: string) => {
+    console.log(`🗑️ Removendo arquivo [${fieldName}]`);
+    
     // Atualizar formulário
     const currentAttachments = form.getValues('attachments') || {};
     const updatedAttachments = { ...currentAttachments };
@@ -153,8 +178,12 @@ const GeneratorAttachmentsForm = ({ form }: GeneratorAttachmentsFormProps) => {
     setFiles(prev => {
       const newFiles = { ...prev };
       delete newFiles[fieldName];
+      console.log('🔄 Estado local após remoção:', newFiles);
       return newFiles;
     });
+
+    // Forçar re-render
+    setForceUpdate(prev => prev + 1);
   };
 
   const FileUploadField = ({ 
@@ -168,6 +197,8 @@ const GeneratorAttachmentsForm = ({ form }: GeneratorAttachmentsFormProps) => {
   }) => {
     const fileData = files[name];
     const hasFile = !!fileData && fileData.name && fileData.size > 0;
+    
+    console.log(`🔍 [FIELD ${name}] hasFile: ${hasFile}, fileData:`, fileData);
     
     return (
       <FormField
