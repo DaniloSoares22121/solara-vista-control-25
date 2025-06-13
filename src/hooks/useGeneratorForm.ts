@@ -15,6 +15,7 @@ const initialGeneratorData: GeneratorFormData = {
     dataNascimento: '',
     telefone: '',
     email: '',
+    observacoes: '',
     address: {
       cep: '',
       endereco: '',
@@ -28,14 +29,13 @@ const initialGeneratorData: GeneratorFormData = {
   plants: [{
     apelido: '',
     uc: '',
-    endereco: '',
+    tipoUsina: 'micro',
+    modalidadeCompensacao: 'autoconsumo',
     ownerType: 'fisica',
     ownerCpfCnpj: '',
     ownerName: '',
     ownerNumeroParceiroNegocio: '',
     ownerDataNascimento: '',
-    potenciaTotalUsina: 0,
-    geracaoProjetada: 0,
     address: {
       cep: '',
       endereco: '',
@@ -45,22 +45,27 @@ const initialGeneratorData: GeneratorFormData = {
       cidade: '',
       estado: ''
     },
-    contacts: []
+    contacts: [],
+    observacoes: '',
+    marcaModulo: '',
+    potenciaModulo: 0,
+    quantidadeModulos: 0,
+    potenciaTotalUsina: 0,
+    inversores: [],
+    potenciaTotalInversores: 0,
+    geracaoProjetada: 0,
+    observacoesInstalacao: ''
   }],
   distributorLogin: {
     cpfCnpj: '',
     dataNascimento: '',
-    uc: '',
-    senha: ''
+    uc: ''
   },
   paymentData: {
-    pix: '',
-    bankData: {
-      banco: '',
-      agencia: '',
-      conta: '',
-      tipoConta: 'corrente'
-    }
+    banco: '',
+    agencia: '',
+    conta: '',
+    pix: ''
   },
   administrator: {
     cpf: '',
@@ -197,14 +202,13 @@ export const useGeneratorForm = (existingData?: any) => {
       plants: [...prev.plants, {
         apelido: '',
         uc: '',
-        endereco: '',
+        tipoUsina: 'micro',
+        modalidadeCompensacao: 'autoconsumo',
         ownerType: prev.owner?.type || 'fisica',
         ownerCpfCnpj: prev.owner?.cpfCnpj || '',
         ownerName: prev.owner?.name || '',
         ownerNumeroParceiroNegocio: prev.owner?.numeroParceiroNegocio || '',
         ownerDataNascimento: prev.owner?.dataNascimento || '',
-        potenciaTotalUsina: 0,
-        geracaoProjetada: 0,
         address: prev.owner?.address ? { ...prev.owner.address } : {
           cep: '',
           endereco: '',
@@ -214,7 +218,16 @@ export const useGeneratorForm = (existingData?: any) => {
           cidade: '',
           estado: ''
         },
-        contacts: []
+        contacts: [],
+        observacoes: '',
+        marcaModulo: '',
+        potenciaModulo: 0,
+        quantidadeModulos: 0,
+        potenciaTotalUsina: 0,
+        inversores: [],
+        potenciaTotalInversores: 0,
+        geracaoProjetada: 0,
+        observacoesInstalacao: ''
       }]
     }));
   }, []);
@@ -225,6 +238,30 @@ export const useGeneratorForm = (existingData?: any) => {
       plants: prev.plants.filter((_, i) => i !== index)
     }));
   }, []);
+
+  const validateStep = useCallback((step: number) => {
+    const errors: string[] = [];
+    
+    switch (step) {
+      case 1:
+        if (!formData.concessionaria) errors.push('Selecione uma concessionária');
+        if (!formData.owner?.cpfCnpj) errors.push('CPF/CNPJ é obrigatório');
+        if (!formData.owner?.name) errors.push('Nome é obrigatório');
+        break;
+      case 2:
+        if (!formData.plants || formData.plants.length === 0) errors.push('Cadastre pelo menos uma usina');
+        break;
+      case 3:
+        if (!formData.distributorLogin?.uc) errors.push('UC é obrigatória');
+        if (!formData.distributorLogin?.cpfCnpj) errors.push('CPF/CNPJ é obrigatório');
+        break;
+    }
+    
+    return {
+      isValid: errors.length === 0,
+      errors
+    };
+  }, [formData]);
 
   const autoFillAll = useCallback(() => {
     console.log('🔄 [MANUAL AUTO-FILL] Executando preenchimento manual completo...');
@@ -266,6 +303,7 @@ export const useGeneratorForm = (existingData?: any) => {
     handleCepLookup,
     addPlant,
     removePlant,
+    validateStep,
     autoFillAll,
     submitForm,
     resetForm,
