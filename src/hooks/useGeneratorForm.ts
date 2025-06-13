@@ -1,4 +1,3 @@
-
 import { useState, useCallback, useEffect } from 'react';
 import { GeneratorFormData } from '@/types/generator';
 import { useCepConsistency } from '@/hooks/useCepConsistency';
@@ -247,6 +246,7 @@ export const useGeneratorForm = (existingData?: any) => {
         if (!formData.concessionaria) errors.push('Selecione uma concessionária');
         if (!formData.owner?.cpfCnpj) errors.push('CPF/CNPJ é obrigatório');
         if (!formData.owner?.name) errors.push('Nome é obrigatório');
+        // Removendo validações muito restritivas para permitir passagem da primeira tela
         break;
       case 2:
         if (!formData.plants || formData.plants.length === 0) errors.push('Cadastre pelo menos uma usina');

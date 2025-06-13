@@ -19,7 +19,15 @@ export const useSubscriberAutoFill = () => {
             holderName: fullName,
             birthDate: birthDate || '',
             partnerNumber: partnerNumber || '',
-            address: address.cep ? { ...address } : formData.energyAccount.address,
+            address: address.cep ? {
+              cep: address.cep,
+              street: address.street,
+              number: address.number,
+              complement: address.complement,
+              neighborhood: address.neighborhood,
+              city: address.city,
+              state: address.state,
+            } : formData.energyAccount.address,
           }
         };
       }
@@ -36,7 +44,15 @@ export const useSubscriberAutoFill = () => {
             holderName: companyName,
             birthDate: '',
             partnerNumber: partnerNumber || '',
-            address: address.cep ? { ...address } : formData.energyAccount.address,
+            address: address.cep ? {
+              cep: address.cep,
+              street: address.street,
+              number: address.number,
+              complement: address.complement,
+              neighborhood: address.neighborhood,
+              city: address.city,
+              state: address.state,
+            } : formData.energyAccount.address,
           }
         };
       }
@@ -64,7 +80,15 @@ export const useSubscriberAutoFill = () => {
           profession: formData.administratorData?.profession || '',
           phone: formData.administratorData?.phone || '',
           email: formData.administratorData?.email || '',
-          address: formData.companyData.address,
+          address: {
+            cep: formData.companyData.address.cep,
+            street: formData.companyData.address.street,
+            number: formData.companyData.address.number,
+            complement: formData.companyData.address.complement,
+            neighborhood: formData.companyData.address.neighborhood,
+            city: formData.companyData.address.city,
+            state: formData.companyData.address.state,
+          }
         }
       };
     }
