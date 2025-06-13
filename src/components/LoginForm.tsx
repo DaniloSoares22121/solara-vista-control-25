@@ -8,11 +8,13 @@ import { Sun, Mail, Lock, Zap, ArrowRight } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const LoginForm = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [forgotPasswordLoading, setForgotPasswordLoading] = useState(false);
   const { login, currentUser } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -64,6 +66,43 @@ const LoginForm = () => {
     }
   };
 
+  const handleForgotPassword = async () => {
+    if (!email) {
+      toast({
+        title: "Email necessário",
+        description: "Por favor, digite seu email no campo acima para recuperar a senha.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setForgotPasswordLoading(true);
+
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/`,
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      toast({
+        title: "Email enviado!",
+        description: "Verifique sua caixa de entrada para redefinir sua senha.",
+      });
+    } catch (error: any) {
+      console.error("❌ [FORGOT_PASSWORD] Erro ao enviar email:", error);
+      toast({
+        title: "Erro ao enviar email",
+        description: "Verifique se o email está correto e tente novamente.",
+        variant: "destructive",
+      });
+    } finally {
+      setForgotPasswordLoading(false);
+    }
+  };
+
   return (
     <div className="w-full max-w-sm xs:max-w-md mx-auto space-y-4 xs:space-y-6 lg:space-y-8">
       {/* Header com tamanhos otimizados */}
@@ -98,7 +137,7 @@ const LoginForm = () => {
                 onChange={(e) => setEmail(e.target.value)}
                 className="pl-9 xs:pl-10 lg:pl-12 h-10 xs:h-12 lg:h-14 text-sm xs:text-base lg:text-lg border-2 border-gray-200 focus:border-green-500 transition-colors rounded-lg xs:rounded-xl"
                 required
-                disabled={loading}
+                disabled={loading || forgotPasswordLoading}
               />
             </div>
           </div>
@@ -117,7 +156,7 @@ const LoginForm = () => {
                 onChange={(e) => setPassword(e.target.value)}
                 className="pl-9 xs:pl-10 lg:pl-12 h-10 xs:h-12 lg:h-14 text-sm xs:text-base lg:text-lg border-2 border-gray-200 focus:border-green-500 transition-colors rounded-lg xs:rounded-xl"
                 required
-                disabled={loading}
+                disabled={loading || forgotPasswordLoading}
               />
             </div>
           </div>
@@ -127,14 +166,19 @@ const LoginForm = () => {
               <input type="checkbox" className="rounded border-gray-300 text-green-500 focus:ring-green-400" />
               <span className="text-gray-600 font-medium text-xs xs:text-sm">Lembrar-me</span>
             </label>
-            <a href="#" className="text-green-600 hover:text-green-700 font-semibold transition-colors text-xs xs:text-sm">
-              Esqueceu a senha?
-            </a>
+            <button
+              type="button"
+              onClick={handleForgotPassword}
+              disabled={forgotPasswordLoading}
+              className="text-green-600 hover:text-green-700 font-semibold transition-colors text-xs xs:text-sm disabled:opacity-50"
+            >
+              {forgotPasswordLoading ? "Enviando..." : "Esqueceu a senha?"}
+            </button>
           </div>
 
           <Button
             type="submit"
-            disabled={loading}
+            disabled={loading || forgotPasswordLoading}
             className="w-full h-10 xs:h-12 lg:h-14 solar-gradient hover:opacity-90 transition-all duration-300 text-white font-bold text-sm xs:text-base lg:text-lg rounded-lg xs:rounded-xl shadow-lg hover:shadow-xl group disabled:opacity-50"
           >
             <Zap className="w-4 h-4 xs:w-4 xs:h-4 lg:w-5 lg:h-5 mr-2 xs:mr-2 lg:mr-3" />
