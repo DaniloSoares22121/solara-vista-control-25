@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { UseFormReturn } from 'react-hook-form';
 import { CompanyData, AdministratorData, Address } from '@/types/subscriber';
-import AddressForm from '../AddressForm';
+import { CepInput } from '@/components/ui/cep-input';
 import ContactsSection from './ContactsSection';
 
 interface CompanyDataFormProps {
@@ -68,6 +68,48 @@ const CompanyDataForm = ({
     
     const newAddress: Address = { ...currentAddress, ...addressUpdate };
     onUpdateAdministrator({ address: newAddress });
+  };
+
+  const handleCompanyCepFound = (cepData: any) => {
+    console.log('CEP encontrado para empresa:', cepData);
+    const addressUpdate = {
+      cep: cepData.cep,
+      street: cepData.logradouro,
+      neighborhood: cepData.bairro,
+      city: cepData.localidade,
+      state: cepData.uf,
+    };
+    
+    handleCompanyAddressChange(addressUpdate);
+    
+    // Atualizar os campos do formulário
+    setTimeout(() => {
+      form.setValue('companyData.address.street', cepData.logradouro);
+      form.setValue('companyData.address.neighborhood', cepData.bairro);
+      form.setValue('companyData.address.city', cepData.localidade);
+      form.setValue('companyData.address.state', cepData.uf);
+    }, 100);
+  };
+
+  const handleAdministratorCepFound = (cepData: any) => {
+    console.log('CEP encontrado para administrador:', cepData);
+    const addressUpdate = {
+      cep: cepData.cep,
+      street: cepData.logradouro,
+      neighborhood: cepData.bairro,
+      city: cepData.localidade,
+      state: cepData.uf,
+    };
+    
+    handleAdministratorAddressChange(addressUpdate);
+    
+    // Atualizar os campos do formulário
+    setTimeout(() => {
+      form.setValue('administratorData.address.street', cepData.logradouro);
+      form.setValue('administratorData.address.neighborhood', cepData.bairro);
+      form.setValue('administratorData.address.city', cepData.localidade);
+      form.setValue('administratorData.address.state', cepData.uf);
+    }, 100);
   };
 
   return (
@@ -208,13 +250,165 @@ const CompanyDataForm = ({
           />
         </div>
 
-        <AddressForm 
-          form={form} 
-          prefix="companyData.address" 
-          title="Endereço da Empresa"
-          onCepChange={(cep) => onCepLookup(cep, 'company')}
-          onAddressChange={handleCompanyAddressChange}
-        />
+        {/* Endereço da Empresa */}
+        <div className="space-y-4 p-6 bg-gray-50 rounded-lg border">
+          <h4 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+            <div className="w-6 h-6 bg-gray-500 rounded-full flex items-center justify-center">
+              <span className="text-white font-bold text-xs">📍</span>
+            </div>
+            Endereço da Empresa
+          </h4>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="companyData.address.cep"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>CEP *</FormLabel>
+                  <FormControl>
+                    <CepInput
+                      value={field.value || ''}
+                      onChange={(value) => {
+                        field.onChange(value);
+                        handleCompanyAddressChange({ cep: value });
+                      }}
+                      onCepFound={handleCompanyCepFound}
+                      placeholder="00000-000"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="companyData.address.street"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Endereço *</FormLabel>
+                  <FormControl>
+                    <Input 
+                      value={field.value || ''}
+                      placeholder="Digite o endereço" 
+                      onChange={(e) => {
+                        field.onChange(e);
+                        handleCompanyAddressChange({ street: e.target.value });
+                      }}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="companyData.address.number"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Número *</FormLabel>
+                  <FormControl>
+                    <Input 
+                      value={field.value || ''}
+                      placeholder="Digite o número" 
+                      onChange={(e) => {
+                        field.onChange(e);
+                        handleCompanyAddressChange({ number: e.target.value });
+                      }}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="companyData.address.complement"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Complemento</FormLabel>
+                  <FormControl>
+                    <Input 
+                      value={field.value || ''}
+                      placeholder="Apto, bloco, etc." 
+                      onChange={(e) => {
+                        field.onChange(e);
+                        handleCompanyAddressChange({ complement: e.target.value });
+                      }}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="companyData.address.neighborhood"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Bairro *</FormLabel>
+                  <FormControl>
+                    <Input 
+                      value={field.value || ''}
+                      placeholder="Digite o bairro" 
+                      onChange={(e) => {
+                        field.onChange(e);
+                        handleCompanyAddressChange({ neighborhood: e.target.value });
+                      }}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="companyData.address.city"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Cidade *</FormLabel>
+                  <FormControl>
+                    <Input 
+                      value={field.value || ''}
+                      placeholder="Digite a cidade" 
+                      onChange={(e) => {
+                        field.onChange(e);
+                        handleCompanyAddressChange({ city: e.target.value });
+                      }}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="companyData.address.state"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Estado *</FormLabel>
+                  <FormControl>
+                    <Input 
+                      value={field.value || ''}
+                      placeholder="Digite o estado" 
+                      onChange={(e) => {
+                        field.onChange(e);
+                        handleCompanyAddressChange({ state: e.target.value });
+                      }}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+        </div>
 
         <FormField
           control={form.control}
@@ -412,13 +606,165 @@ const CompanyDataForm = ({
           />
         </div>
 
-        <AddressForm 
-          form={form} 
-          prefix="administratorData.address" 
-          title="Endereço Residencial do Administrador"
-          onCepChange={(cep) => onCepLookup(cep, 'administrator')}
-          onAddressChange={handleAdministratorAddressChange}
-        />
+        {/* Endereço do Administrador */}
+        <div className="space-y-4 p-6 bg-gray-50 rounded-lg border">
+          <h4 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+            <div className="w-6 h-6 bg-gray-500 rounded-full flex items-center justify-center">
+              <span className="text-white font-bold text-xs">📍</span>
+            </div>
+            Endereço Residencial do Administrador
+          </h4>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="administratorData.address.cep"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>CEP *</FormLabel>
+                  <FormControl>
+                    <CepInput
+                      value={field.value || ''}
+                      onChange={(value) => {
+                        field.onChange(value);
+                        handleAdministratorAddressChange({ cep: value });
+                      }}
+                      onCepFound={handleAdministratorCepFound}
+                      placeholder="00000-000"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="administratorData.address.street"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Endereço *</FormLabel>
+                  <FormControl>
+                    <Input 
+                      value={field.value || ''}
+                      placeholder="Digite o endereço" 
+                      onChange={(e) => {
+                        field.onChange(e);
+                        handleAdministratorAddressChange({ street: e.target.value });
+                      }}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="administratorData.address.number"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Número *</FormLabel>
+                  <FormControl>
+                    <Input 
+                      value={field.value || ''}
+                      placeholder="Digite o número" 
+                      onChange={(e) => {
+                        field.onChange(e);
+                        handleAdministratorAddressChange({ number: e.target.value });
+                      }}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="administratorData.address.complement"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Complemento</FormLabel>
+                  <FormControl>
+                    <Input 
+                      value={field.value || ''}
+                      placeholder="Apto, bloco, etc." 
+                      onChange={(e) => {
+                        field.onChange(e);
+                        handleAdministratorAddressChange({ complement: e.target.value });
+                      }}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="administratorData.address.neighborhood"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Bairro *</FormLabel>
+                  <FormControl>
+                    <Input 
+                      value={field.value || ''}
+                      placeholder="Digite o bairro" 
+                      onChange={(e) => {
+                        field.onChange(e);
+                        handleAdministratorAddressChange({ neighborhood: e.target.value });
+                      }}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="administratorData.address.city"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Cidade *</FormLabel>
+                  <FormControl>
+                    <Input 
+                      value={field.value || ''}
+                      placeholder="Digite a cidade" 
+                      onChange={(e) => {
+                        field.onChange(e);
+                        handleAdministratorAddressChange({ city: e.target.value });
+                      }}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="administratorData.address.state"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Estado *</FormLabel>
+                  <FormControl>
+                    <Input 
+                      value={field.value || ''}
+                      placeholder="Digite o estado" 
+                      onChange={(e) => {
+                        field.onChange(e);
+                        handleAdministratorAddressChange({ state: e.target.value });
+                      }}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+        </div>
       </div>
     </div>
   );
