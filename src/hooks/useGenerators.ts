@@ -80,9 +80,12 @@ export const useGenerators = () => {
   useEffect(() => {
     loadGenerators();
 
-    // Configurar listeners de tempo real
+    // Criar um canal único com timestamp para evitar conflitos
+    const channelName = `generators-changes-${Date.now()}`;
+    console.log('🔄 [REALTIME] Criando canal:', channelName);
+    
     const channel = supabase
-      .channel('generators-changes')
+      .channel(channelName)
       .on(
         'postgres_changes',
         {
@@ -119,12 +122,16 @@ export const useGenerators = () => {
           setGenerators(prev => prev.filter(gen => gen.id !== payload.old.id));
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('✅ [REALTIME] Status da inscrição:', status);
+      });
 
+    // Cleanup function para remover o canal quando o componente for desmontado
     return () => {
+      console.log('🔄 [REALTIME] Removendo canal:', channelName);
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, []); // Array de dependências vazio para executar apenas uma vez
 
   return {
     generators,
