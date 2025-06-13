@@ -60,24 +60,30 @@ const ForgotPasswordModal = ({ open, onOpenChange }: ForgotPasswordModalProps) =
     setLoading(true);
 
     try {
-      // Primeiro, fazer login com as credenciais atuais para verificar se o email existe
-      // Como não temos a senha atual, vamos tentar uma abordagem diferente
-      
-      // Verificar se o usuário existe através do admin API seria ideal,
-      // mas como não temos acesso, vamos usar o resetPasswordForEmail
-      // e depois atualizar a senha quando o usuário confirmar
-      
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password?newPassword=${encodeURIComponent(newPassword)}`,
-      });
+      // Buscar o usuário pelo email primeiro
+      const { data: users, error: fetchError } = await supabase
+        .from('solar_profiles')
+        .select('id')
+        .eq('email', email)
+        .single();
+
+      if (fetchError || !users) {
+        throw new Error('Email não encontrado');
+      }
+
+      // Atualizar a senha diretamente usando o admin API
+      const { error } = await supabase.auth.admin.updateUserById(
+        users.id,
+        { password: newPassword }
+      );
 
       if (error) {
         throw error;
       }
 
       toast({
-        title: "Email enviado!",
-        description: "Verifique sua caixa de entrada e clique no link para confirmar a nova senha.",
+        title: "Senha atualizada!",
+        description: "Sua senha foi redefinida com sucesso.",
       });
       
       onOpenChange(false);
@@ -88,7 +94,7 @@ const ForgotPasswordModal = ({ open, onOpenChange }: ForgotPasswordModalProps) =
       console.error("❌ [RESET_PASSWORD] Erro ao redefinir senha:", error);
       toast({
         title: "Erro ao redefinir senha",
-        description: "Verifique se o email está correto e tente novamente.",
+        description: error.message || "Verifique se o email está correto e tente novamente.",
         variant: "destructive",
       });
     } finally {
