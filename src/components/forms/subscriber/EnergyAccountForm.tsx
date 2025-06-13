@@ -50,16 +50,14 @@ const EnergyAccountForm = ({ form }: EnergyAccountFormProps) => {
         form.setValue('energyAccount.holderName', personalData.fullName);
         form.setValue('energyAccount.partnerNumber', personalData.partnerNumber || '');
         
-        // Preencher data de nascimento - CORRIGIDO
+        // Preencher data de nascimento
         console.log('📅 [ENERGY ACCOUNT] Data de nascimento original:', personalData.birthDate);
         if (personalData.birthDate) {
           form.setValue('energyAccount.birthDate', personalData.birthDate);
           console.log('✅ [ENERGY ACCOUNT] Data de nascimento preenchida:', personalData.birthDate);
-        } else {
-          console.log('⚠️ [ENERGY ACCOUNT] Data de nascimento não encontrada nos dados pessoais');
         }
         
-        // Preencher endereço completo - CORRIGIDO
+        // Preencher endereço completo
         console.log('🏠 [ENERGY ACCOUNT] Endereço original:', personalData.address);
         if (personalData.address) {
           const address = personalData.address;
@@ -74,16 +72,12 @@ const EnergyAccountForm = ({ form }: EnergyAccountFormProps) => {
           form.setValue('energyAccount.address.state', address.state || '');
           
           console.log('✅ [ENERGY ACCOUNT] Endereço completo preenchido:', address);
-        } else {
-          console.log('⚠️ [ENERGY ACCOUNT] Endereço não encontrado nos dados pessoais');
         }
         
         // Forçar re-render do formulário
         form.trigger();
         
         console.log('✅ [ENERGY ACCOUNT] Auto-preenchimento PF concluído');
-      } else {
-        console.log('⚠️ [ENERGY ACCOUNT] Dados pessoais incompletos - CPF:', personalData?.cpf, 'Nome:', personalData?.fullName);
       }
     } else if (subscriberType === 'company') {
       const companyData = form.getValues('companyData');
@@ -98,7 +92,7 @@ const EnergyAccountForm = ({ form }: EnergyAccountFormProps) => {
         form.setValue('energyAccount.birthDate', ''); // PJ não tem data de nascimento
         form.setValue('energyAccount.partnerNumber', companyData.partnerNumber || '');
         
-        // Preencher endereço completo - CORRIGIDO
+        // Preencher endereço completo
         console.log('🏠 [ENERGY ACCOUNT] Endereço da empresa:', companyData.address);
         if (companyData.address) {
           const address = companyData.address;
@@ -113,47 +107,63 @@ const EnergyAccountForm = ({ form }: EnergyAccountFormProps) => {
           form.setValue('energyAccount.address.state', address.state || '');
           
           console.log('✅ [ENERGY ACCOUNT] Endereço da empresa preenchido:', address);
-        } else {
-          console.log('⚠️ [ENERGY ACCOUNT] Endereço da empresa não encontrado');
         }
         
         // Forçar re-render do formulário
         form.trigger();
         
         console.log('✅ [ENERGY ACCOUNT] Auto-preenchimento PJ concluído');
-      } else {
-        console.log('⚠️ [ENERGY ACCOUNT] Dados da empresa incompletos - CNPJ:', companyData?.cnpj, 'Nome:', companyData?.companyName);
       }
     }
   };
 
-  // Auto-preenchimento quando o componente é montado
+  // Auto-preenchimento quando o componente é montado OU quando os dados mudam
   useEffect(() => {
     const subscriberType = form.getValues('subscriberType');
     const energyAccountData = form.getValues('energyAccount');
     
-    console.log('🔄 [ENERGY ACCOUNT] Verificando auto-preenchimento na montagem...');
+    console.log('🔄 [ENERGY ACCOUNT] Verificando auto-preenchimento...');
     console.log('📋 [ENERGY ACCOUNT] Tipo de assinante:', subscriberType);
-    console.log('📋 [ENERGY ACCOUNT] Dados atuais da conta:', energyAccountData);
     
-    // Se a conta de energia está vazia ou incompleta, tentar preencher automaticamente
-    if (subscriberType && !energyAccountData?.cpfCnpj) {
-      console.log('🔄 [ENERGY ACCOUNT] Executando auto-preenchimento na montagem');
+    // Verificar se já tem dados preenchidos para evitar loops
+    const isEnergyAccountEmpty = !energyAccountData?.cpfCnpj || 
+                                !energyAccountData?.holderName || 
+                                !energyAccountData?.address?.cep;
+    
+    if (subscriberType && isEnergyAccountEmpty) {
+      console.log('🔄 [ENERGY ACCOUNT] Executando auto-preenchimento automaticamente');
       setTimeout(() => {
         autoFillWithSubscriberData();
       }, 100);
+    } else {
+      console.log('⏭️ [ENERGY ACCOUNT] Auto-preenchimento não necessário ou já preenchido');
     }
-  }, []);
+  }, [form]);
 
   // Monitorar mudanças nos dados do assinante para auto-preencher em tempo real
   useEffect(() => {
     const subscription = form.watch((value, { name, type }) => {
       // Se mudaram dados pessoais ou da empresa, tentar auto-preencher
-      if (name?.startsWith('personalData') || name?.startsWith('companyData')) {
+      if (name?.startsWith('personalData') || name?.startsWith('companyData') || name === 'subscriberType') {
         console.log('🔄 [ENERGY ACCOUNT] Detectada mudança nos dados do assinante:', name);
-        setTimeout(() => {
-          autoFillWithSubscriberData();
-        }, 200);
+        
+        // Verificar se os dados estão completos antes de preencher
+        const subscriberType = form.getValues('subscriberType');
+        let shouldAutoFill = false;
+        
+        if (subscriberType === 'person') {
+          const personalData = form.getValues('personalData');
+          shouldAutoFill = !!(personalData?.cpf && personalData?.fullName);
+        } else if (subscriberType === 'company') {
+          const companyData = form.getValues('companyData');
+          shouldAutoFill = !!(companyData?.cnpj && companyData?.companyName);
+        }
+        
+        if (shouldAutoFill) {
+          setTimeout(() => {
+            autoFillWithSubscriberData();
+          }, 200);
+        }
       }
     });
     
