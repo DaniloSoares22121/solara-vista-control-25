@@ -7,6 +7,7 @@ import { UseFormReturn } from 'react-hook-form';
 import { GeneratorFormData } from '@/types/generator';
 import AddressForm from './AddressForm';
 import { User, Building2, Phone, Mail } from 'lucide-react';
+import { useCepConsistency } from '@/hooks/useCepConsistency';
 
 interface GeneratorOwnerDataFormProps {
   form: UseFormReturn<GeneratorFormData>;
@@ -14,6 +15,24 @@ interface GeneratorOwnerDataFormProps {
 }
 
 const GeneratorOwnerDataForm = ({ form, ownerType }: GeneratorOwnerDataFormProps) => {
+  const { handleCepLookup } = useCepConsistency();
+
+  const handleOwnerCepFound = (cepData: any) => {
+    console.log('📍 [OWNER] Preenchendo endereço do proprietário:', cepData);
+    
+    if (cepData) {
+      form.setValue('owner.address.endereco', cepData.logradouro || '');
+      form.setValue('owner.address.bairro', cepData.bairro || '');
+      form.setValue('owner.address.cidade', cepData.localidade || '');
+      form.setValue('owner.address.estado', cepData.uf || '');
+    }
+  };
+
+  const handleOwnerCepChange = (cep: string) => {
+    form.setValue('owner.address.cep', cep);
+    handleCepLookup(cep, handleOwnerCepFound);
+  };
+
   return (
     <div className="space-y-8">
       {/* Identificação */}
@@ -231,6 +250,7 @@ const GeneratorOwnerDataForm = ({ form, ownerType }: GeneratorOwnerDataFormProps
         prefix="owner.address" 
         title="Endereço do Proprietário"
         className="bg-gradient-to-r from-purple-50 to-violet-50 p-6 rounded-xl border border-purple-100"
+        onCepChange={handleOwnerCepChange}
       />
 
       {/* Observações */}

@@ -52,6 +52,7 @@ export const useGeneratorForm = () => {
   // Auto-fill para login da distribuidora quando os dados do proprietário mudarem
   const ownerCpfCnpj = form.watch('owner.cpfCnpj');
   const ownerDataNascimento = form.watch('owner.dataNascimento');
+  const ownerType = form.watch('owner.type');
 
   useEffect(() => {
     if (ownerCpfCnpj) {
@@ -63,7 +64,7 @@ export const useGeneratorForm = () => {
         form.setValue('distributorLogin', updatedFormData.distributorLogin);
       }
     }
-  }, [ownerCpfCnpj, ownerDataNascimento, form, performAutoFillDistributorLogin]);
+  }, [ownerCpfCnpj, ownerDataNascimento, ownerType, form, performAutoFillDistributorLogin]);
 
   const handleCepLookup = async (cep: string, type: string, index?: number) => {
     // TODO: Implementar lookup de CEP
@@ -72,24 +73,26 @@ export const useGeneratorForm = () => {
 
   const addPlant = useCallback(() => {
     const currentPlants = form.getValues('plants');
+    const owner = form.getValues('owner');
+    
     const newPlant = {
       apelido: '',
       uc: '',
       tipoUsina: 'micro' as const,
       modalidadeCompensacao: 'autoconsumo' as const,
-      ownerType: 'fisica' as const,
-      ownerCpfCnpj: '',
-      ownerName: '',
-      ownerDataNascimento: '',
-      ownerNumeroParceiroNegocio: '',
+      ownerType: owner.type,
+      ownerCpfCnpj: owner.cpfCnpj || '',
+      ownerName: owner.name || '',
+      ownerDataNascimento: owner.dataNascimento || '',
+      ownerNumeroParceiroNegocio: owner.numeroParceiroNegocio || '',
       address: {
-        cep: '',
-        endereco: '',
-        numero: '',
-        complemento: '',
-        bairro: '',
-        cidade: '',
-        estado: ''
+        cep: owner.address.cep || '',
+        endereco: owner.address.endereco || '',
+        numero: owner.address.numero || '',
+        complemento: owner.address.complemento || '',
+        bairro: owner.address.bairro || '',
+        cidade: owner.address.cidade || '',
+        estado: owner.address.estado || ''
       },
       contacts: [],
       observacoes: '',
@@ -103,18 +106,9 @@ export const useGeneratorForm = () => {
       observacoesInstalacao: ''
     };
 
-    const plantIndex = currentPlants.length;
+    console.log('✅ [ADD PLANT] Adicionando usina com dados do proprietário:', newPlant);
     form.setValue('plants', [...currentPlants, newPlant]);
-
-    // Auto-fill dos dados da nova usina
-    setTimeout(() => {
-      const formData = form.getValues();
-      const updatedFormData = performAutoFillPlant(formData, plantIndex);
-      if (updatedFormData.plants[plantIndex] !== formData.plants[plantIndex]) {
-        form.setValue(`plants.${plantIndex}`, updatedFormData.plants[plantIndex]);
-      }
-    }, 100);
-  }, [form, performAutoFillPlant]);
+  }, [form]);
 
   const removePlant = (index: number) => {
     const currentPlants = form.getValues('plants');

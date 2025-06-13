@@ -23,23 +23,32 @@ const AddressForm = ({
   onAddressChange 
 }: AddressFormProps) => {
   
-  const handleCepFound = (cepData: any) => {
-    console.log('📍 CEP encontrado, preenchendo endereço:', cepData);
+  const handleCepFound = async (cep: string) => {
+    console.log('📍 [ADDRESS FORM] CEP encontrado, fazendo lookup:', cep);
     
-    if (cepData) {
-      form.setValue(`${prefix}.endereco`, cepData.logradouro || '');
-      form.setValue(`${prefix}.bairro`, cepData.bairro || '');
-      form.setValue(`${prefix}.cidade`, cepData.localidade || '');
-      form.setValue(`${prefix}.estado`, cepData.uf || '');
+    try {
+      const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+      const data = await response.json();
       
-      if (onAddressChange) {
-        onAddressChange({
-          endereco: cepData.logradouro || '',
-          bairro: cepData.bairro || '',
-          cidade: cepData.localidade || '',
-          estado: cepData.uf || ''
-        });
+      if (!data.erro) {
+        console.log('📍 [ADDRESS FORM] Dados do CEP:', data);
+        
+        form.setValue(`${prefix}.endereco`, data.logradouro || '');
+        form.setValue(`${prefix}.bairro`, data.bairro || '');
+        form.setValue(`${prefix}.cidade`, data.localidade || '');
+        form.setValue(`${prefix}.estado`, data.uf || '');
+        
+        if (onAddressChange) {
+          onAddressChange({
+            endereco: data.logradouro || '',
+            bairro: data.bairro || '',
+            cidade: data.localidade || '',
+            estado: data.uf || ''
+          });
+        }
       }
+    } catch (error) {
+      console.error('❌ [ADDRESS FORM] Erro ao buscar CEP:', error);
     }
   };
 

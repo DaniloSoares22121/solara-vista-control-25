@@ -1,3 +1,4 @@
+
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { MaskedInput } from '@/components/ui/masked-input';
@@ -5,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { UseFormReturn } from 'react-hook-form';
 import { GeneratorFormData } from '@/types/generator';
 import { CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -25,12 +26,29 @@ const GeneratorDistributorLoginForm = ({ form }: GeneratorDistributorLoginFormPr
   const ownerCpfCnpj = form.watch('owner.cpfCnpj');
   const ownerDataNascimento = form.watch('owner.dataNascimento');
 
+  // Auto-fill quando os dados do proprietário mudarem
+  useEffect(() => {
+    if (ownerCpfCnpj) {
+      console.log('🔄 [DISTRIBUTOR LOGIN] Auto-preenchendo com dados do proprietário');
+      form.setValue('distributorLogin.cpfCnpj', ownerCpfCnpj);
+      
+      if (ownerType === 'fisica' && ownerDataNascimento) {
+        form.setValue('distributorLogin.dataNascimento', ownerDataNascimento);
+      }
+    }
+  }, [ownerCpfCnpj, ownerDataNascimento, ownerType, form]);
+
   // Preencher automaticamente com dados do dono da usina
   const fillFromOwnerData = () => {
     form.setValue('distributorLogin.cpfCnpj', ownerCpfCnpj || '');
     if (ownerType === 'fisica' && ownerDataNascimento) {
       form.setValue('distributorLogin.dataNascimento', ownerDataNascimento);
     }
+    
+    toast({
+      title: "Dados preenchidos!",
+      description: "Dados do login preenchidos com informações do proprietário.",
+    });
   };
 
   const validateCredentials = async () => {
@@ -131,7 +149,7 @@ const GeneratorDistributorLoginForm = ({ form }: GeneratorDistributorLoginFormPr
 
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
         <p className="text-blue-800 text-sm">
-          Para a concessionária Equatorial, os dados serão preenchidos automaticamente com as informações do dono da usina.
+          Para a concessionária Equatorial, os dados são preenchidos automaticamente com as informações do proprietário.
         </p>
         <Button 
           type="button" 
@@ -140,7 +158,7 @@ const GeneratorDistributorLoginForm = ({ form }: GeneratorDistributorLoginFormPr
           onClick={fillFromOwnerData}
           className="mt-2 text-blue-700 border-blue-300 hover:bg-blue-100"
         >
-          Preencher com Dados do Dono
+          Preencher com Dados do Proprietário
         </Button>
       </div>
 
