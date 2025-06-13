@@ -36,7 +36,6 @@ const GeneratorAttachmentsForm = ({ form }: GeneratorAttachmentsFormProps) => {
   // Sincronizar dados do formulário com o estado local
   useEffect(() => {
     const formAttachments = form.getValues('attachments');
-    console.log('🔍 [ATTACHMENTS] Carregando attachments do form:', formAttachments);
     
     if (formAttachments && typeof formAttachments === 'object') {
       const validFiles: Record<string, FileUploadData> = {};
@@ -51,37 +50,27 @@ const GeneratorAttachmentsForm = ({ form }: GeneratorAttachmentsFormProps) => {
             'uploadedAt' in value &&
             value.file instanceof File) {
           validFiles[key] = value as FileUploadData;
-          console.log('✅ [ATTACHMENTS] Arquivo válido encontrado:', key, value.name);
-        } else {
-          console.log('❌ [ATTACHMENTS] Arquivo inválido ignorado:', key, value);
         }
       });
       
       if (Object.keys(validFiles).length > 0) {
         setFiles(validFiles);
-        console.log('✅ [ATTACHMENTS] Arquivos válidos carregados:', Object.keys(validFiles));
       } else {
-        console.log('ℹ️ [ATTACHMENTS] Nenhum arquivo válido encontrado, limpando estado');
         setFiles({});
       }
     } else {
-      console.log('ℹ️ [ATTACHMENTS] Nenhum attachment encontrado no form');
       setFiles({});
     }
   }, [form]);
 
   const handleFileUpload = (fieldName: string, selectedFile: File | null) => {
-    console.log('🔄 [FILE UPLOAD] Processando:', { fieldName, fileName: selectedFile?.name });
-    
     if (!selectedFile) {
-      console.log('❌ [FILE UPLOAD] Nenhum arquivo selecionado');
       return;
     }
 
     // Validações
     const allowedTypes = ['application/pdf', 'image/png', 'image/jpeg', 'image/jpg'];
     if (!allowedTypes.includes(selectedFile.type)) {
-      console.error('❌ [FILE UPLOAD] Tipo inválido:', selectedFile.type);
       alert('Formato inválido. Use PDF, PNG ou JPG.');
       if (fileInputRefs[fieldName as keyof typeof fileInputRefs].current) {
         fileInputRefs[fieldName as keyof typeof fileInputRefs].current!.value = '';
@@ -91,15 +80,12 @@ const GeneratorAttachmentsForm = ({ form }: GeneratorAttachmentsFormProps) => {
 
     const maxSize = 10 * 1024 * 1024; // 10MB
     if (selectedFile.size > maxSize) {
-      console.error('❌ [FILE UPLOAD] Arquivo muito grande:', selectedFile.size);
       alert('Arquivo muito grande. Máximo 10MB.');
       if (fileInputRefs[fieldName as keyof typeof fileInputRefs].current) {
         fileInputRefs[fieldName as keyof typeof fileInputRefs].current!.value = '';
       }
       return;
     }
-
-    console.log('✅ [FILE UPLOAD] Arquivo válido, salvando...');
 
     // Criar objeto do arquivo com o File original preservado
     const fileData: FileUploadData = {
@@ -110,17 +96,9 @@ const GeneratorAttachmentsForm = ({ form }: GeneratorAttachmentsFormProps) => {
       uploadedAt: new Date().toISOString()
     };
 
-    console.log('📁 [FILE UPLOAD] Dados do arquivo criados:', {
-      name: fileData.name,
-      size: fileData.size,
-      type: fileData.type,
-      hasFile: fileData.file instanceof File
-    });
-
     // Atualizar estado local primeiro
     setFiles(prevFiles => {
       const newFiles = { ...prevFiles, [fieldName]: fileData };
-      console.log('🔄 [FILES STATE] Estado atualizado:', Object.keys(newFiles));
       return newFiles;
     });
     
@@ -131,31 +109,14 @@ const GeneratorAttachmentsForm = ({ form }: GeneratorAttachmentsFormProps) => {
       [fieldName]: fileData // Salvar o objeto completo com File
     };
     
-    console.log('📝 [FORM] Atualizando formulário com:', {
-      fieldName,
-      fileName: fileData.name,
-      totalAttachments: Object.keys(updatedAttachments).length,
-      hasFileObject: fileData.file instanceof File
-    });
-    
     form.setValue('attachments', updatedAttachments, { shouldValidate: true });
-    
-    // Verificar se foi salvo corretamente
-    setTimeout(() => {
-      const saved = form.getValues('attachments');
-      console.log('🔍 [FORM VERIFY] Dados salvos no form:', saved);
-      console.log('🔍 [FORM VERIFY] Arquivo salvo tem File object:', saved?.[fieldName]?.file instanceof File);
-    }, 100);
   };
 
   const removeFile = (fieldName: string) => {
-    console.log('🗑️ [FILE REMOVE] Removendo:', fieldName);
-    
     // Atualizar estado local
     setFiles(prev => {
       const newFiles = { ...prev };
       delete newFiles[fieldName];
-      console.log('🔄 [FILES STATE] Arquivo removido do estado, restantes:', Object.keys(newFiles));
       return newFiles;
     });
     
@@ -170,8 +131,6 @@ const GeneratorAttachmentsForm = ({ form }: GeneratorAttachmentsFormProps) => {
     if (fileInputRefs[fieldName as keyof typeof fileInputRefs].current) {
       fileInputRefs[fieldName as keyof typeof fileInputRefs].current!.value = '';
     }
-    
-    console.log('✅ [FILE REMOVE] Arquivo removido completamente');
   };
 
   const FileUploadField = ({ 
@@ -185,8 +144,6 @@ const GeneratorAttachmentsForm = ({ form }: GeneratorAttachmentsFormProps) => {
   }) => {
     const fileData = files[name];
     const hasFile = !!fileData && fileData.file instanceof File;
-    
-    console.log(`🔍 [FIELD ${name}] Estado:`, { hasFile, fileData: fileData ? { name: fileData.name, hasValidFile: fileData.file instanceof File } : null });
     
     return (
       <FormField
@@ -356,46 +313,6 @@ const GeneratorAttachmentsForm = ({ form }: GeneratorAttachmentsFormProps) => {
                 </div>
               </div>
             ))}
-          </div>
-        </div>
-      )}
-
-      {/* Debug Info - mais detalhado */}
-      {process.env.NODE_ENV === 'development' && (
-        <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-          <h4 className="font-medium text-gray-900 mb-2">🔧 Debug - Anexos</h4>
-          <div className="text-xs text-gray-700 space-y-1">
-            <p><strong>Arquivos no estado:</strong> {Object.keys(files).length}</p>
-            <p><strong>Campos com arquivo:</strong> {Object.keys(files).join(', ') || 'Nenhum'}</p>
-            <div className="bg-white p-2 rounded mt-2 max-h-40 overflow-auto">
-              <p><strong>Estado local (files):</strong></p>
-              <pre className="text-xs">{JSON.stringify(Object.keys(files).reduce((acc, key) => {
-                const file = files[key];
-                acc[key] = {
-                  name: file.name,
-                  size: file.size,
-                  type: file.type,
-                  hasValidFile: file.file instanceof File,
-                  uploadedAt: file.uploadedAt
-                };
-                return acc;
-              }, {} as any), null, 2)}</pre>
-            </div>
-            <div className="bg-white p-2 rounded mt-2 max-h-40 overflow-auto">
-              <p><strong>Form attachments:</strong></p>
-              <pre className="text-xs">{JSON.stringify(form.getValues('attachments'), (key, value) => {
-                if (value && typeof value === 'object' && 'file' in value) {
-                  return {
-                    name: value.name,
-                    size: value.size,
-                    type: value.type,
-                    hasValidFile: value.file instanceof File,
-                    uploadedAt: value.uploadedAt
-                  };
-                }
-                return value;
-              }, 2)}</pre>
-            </div>
           </div>
         </div>
       )}
