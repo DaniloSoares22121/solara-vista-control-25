@@ -10,9 +10,34 @@ interface AddressFormProps {
   prefix: string;
   title?: string;
   className?: string;
+  onCepChange?: (cep: string) => void;
+  onAddressChange?: (addressUpdate: any) => void;
 }
 
-const AddressForm = ({ form, prefix, title = "Endereço", className = "" }: AddressFormProps) => {
+const AddressForm = ({ 
+  form, 
+  prefix, 
+  title = "Endereço", 
+  className = "",
+  onCepChange,
+  onAddressChange 
+}: AddressFormProps) => {
+  
+  const handleCepChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const cep = e.target.value;
+    form.setValue(`${prefix}.cep`, cep);
+    if (onCepChange) {
+      onCepChange(cep);
+    }
+  };
+
+  const handleAddressFieldChange = (field: string, value: string) => {
+    form.setValue(`${prefix}.${field}`, value);
+    if (onAddressChange) {
+      onAddressChange({ [field]: value });
+    }
+  };
+
   return (
     <div className={`space-y-4 ${className}`}>
       <div className="flex items-center gap-3 mb-4">
@@ -34,6 +59,10 @@ const AddressForm = ({ form, prefix, title = "Endereço", className = "" }: Addr
                   {...field} 
                   mask="99999-999"
                   placeholder="00000-000"
+                  onChange={(e) => {
+                    field.onChange(e);
+                    handleCepChange(e);
+                  }}
                 />
               </FormControl>
               <FormMessage />
@@ -48,7 +77,14 @@ const AddressForm = ({ form, prefix, title = "Endereço", className = "" }: Addr
             <FormItem className="md:col-span-2">
               <FormLabel>Endereço *</FormLabel>
               <FormControl>
-                <Input placeholder="Rua, Avenida, etc." {...field} />
+                <Input 
+                  placeholder="Rua, Avenida, etc." 
+                  {...field}
+                  onChange={(e) => {
+                    field.onChange(e);
+                    handleAddressFieldChange('endereco', e.target.value);
+                  }}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -62,7 +98,14 @@ const AddressForm = ({ form, prefix, title = "Endereço", className = "" }: Addr
             <FormItem>
               <FormLabel>Número *</FormLabel>
               <FormControl>
-                <Input placeholder="123" {...field} />
+                <Input 
+                  placeholder="123" 
+                  {...field}
+                  onChange={(e) => {
+                    field.onChange(e);
+                    handleAddressFieldChange('numero', e.target.value);
+                  }}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -76,7 +119,14 @@ const AddressForm = ({ form, prefix, title = "Endereço", className = "" }: Addr
             <FormItem>
               <FormLabel>Complemento</FormLabel>
               <FormControl>
-                <Input placeholder="Apto, Sala, etc." {...field} />
+                <Input 
+                  placeholder="Apto, Sala, etc." 
+                  {...field}
+                  onChange={(e) => {
+                    field.onChange(e);
+                    handleAddressFieldChange('complemento', e.target.value);
+                  }}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -90,7 +140,14 @@ const AddressForm = ({ form, prefix, title = "Endereço", className = "" }: Addr
             <FormItem>
               <FormLabel>Bairro *</FormLabel>
               <FormControl>
-                <Input placeholder="Nome do bairro" {...field} />
+                <Input 
+                  placeholder="Nome do bairro" 
+                  {...field}
+                  onChange={(e) => {
+                    field.onChange(e);
+                    handleAddressFieldChange('bairro', e.target.value);
+                  }}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -104,7 +161,14 @@ const AddressForm = ({ form, prefix, title = "Endereço", className = "" }: Addr
             <FormItem>
               <FormLabel>Cidade *</FormLabel>
               <FormControl>
-                <Input placeholder="Nome da cidade" {...field} />
+                <Input 
+                  placeholder="Nome da cidade" 
+                  {...field}
+                  onChange={(e) => {
+                    field.onChange(e);
+                    handleAddressFieldChange('cidade', e.target.value);
+                  }}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -118,7 +182,15 @@ const AddressForm = ({ form, prefix, title = "Endereço", className = "" }: Addr
             <FormItem>
               <FormLabel>Estado *</FormLabel>
               <FormControl>
-                <Input placeholder="UF" maxLength={2} {...field} />
+                <Input 
+                  placeholder="UF" 
+                  maxLength={2} 
+                  {...field}
+                  onChange={(e) => {
+                    field.onChange(e);
+                    handleAddressFieldChange('estado', e.target.value);
+                  }}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
