@@ -12,6 +12,7 @@ interface CpfInputProps {
   placeholder?: string;
   className?: string;
   birthDate?: string; // Data de nascimento para melhorar a consulta
+  skipAutoLookup?: boolean; // Opção para pular busca automática
 }
 
 export const CpfInput: React.FC<CpfInputProps> = ({
@@ -20,7 +21,8 @@ export const CpfInput: React.FC<CpfInputProps> = ({
   onCpfFound,
   placeholder = "000.000.000-00",
   className,
-  birthDate
+  birthDate,
+  skipAutoLookup = false
 }) => {
   const [debouncedValue, setDebouncedValue] = useState('');
   const [hasSearched, setHasSearched] = useState(false);
@@ -48,6 +50,12 @@ export const CpfInput: React.FC<CpfInputProps> = ({
   // Buscar dados quando o CPF tiver 14 caracteres (formatado) e não estiver carregando
   useEffect(() => {
     const handleCpfLookup = async () => {
+      // Não fazer busca se skipAutoLookup estiver ativo
+      if (skipAutoLookup) {
+        console.log('🚫 [CPF-INPUT] Auto-lookup desabilitado');
+        return;
+      }
+
       // Verifica se o CPF tem 14 caracteres, não está carregando, não foi pesquisado ainda
       // e é diferente da última pesquisa realizada
       if (
@@ -57,7 +65,7 @@ export const CpfInput: React.FC<CpfInputProps> = ({
         onCpfFound &&
         lastSearchedRef.current !== debouncedValue
       ) {
-        console.log('🔍 Iniciando busca do CPF:', debouncedValue);
+        console.log('🔍 [CPF-INPUT] Iniciando busca do CPF:', debouncedValue);
         setHasSearched(true);
         lastSearchedRef.current = debouncedValue;
         
@@ -69,7 +77,7 @@ export const CpfInput: React.FC<CpfInputProps> = ({
     };
 
     handleCpfLookup();
-  }, [debouncedValue, lookupCpf, onCpfFound, isLoading, hasSearched, birthDate]);
+  }, [debouncedValue, lookupCpf, onCpfFound, isLoading, hasSearched, birthDate, skipAutoLookup]);
 
   // Reset hasSearched quando o valor do CPF mudar significativamente
   useEffect(() => {
@@ -102,7 +110,7 @@ export const CpfInput: React.FC<CpfInputProps> = ({
           <LoadingSpinner size="sm" />
         </div>
       )}
-      {!isLoading && value.length >= 11 && !hasSearched && (
+      {!isLoading && value.length >= 11 && !hasSearched && !skipAutoLookup && (
         <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
           <Search className="w-4 h-4 text-gray-400" />
         </div>

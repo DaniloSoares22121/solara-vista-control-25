@@ -11,6 +11,7 @@ interface CnpjInputProps {
   onCnpjFound?: (cnpjData: any) => void;
   placeholder?: string;
   className?: string;
+  skipAutoLookup?: boolean; // Opção para pular busca automática
 }
 
 export const CnpjInput: React.FC<CnpjInputProps> = ({
@@ -18,7 +19,8 @@ export const CnpjInput: React.FC<CnpjInputProps> = ({
   onChange,
   onCnpjFound,
   placeholder = "00.000.000/0000-00",
-  className
+  className,
+  skipAutoLookup = false
 }) => {
   const [debouncedValue, setDebouncedValue] = useState('');
   const [hasSearched, setHasSearched] = useState(false);
@@ -46,6 +48,12 @@ export const CnpjInput: React.FC<CnpjInputProps> = ({
   // Buscar dados quando o CNPJ tiver 18 caracteres (formatado) e não estiver carregando
   useEffect(() => {
     const handleCnpjLookup = async () => {
+      // Não fazer busca se skipAutoLookup estiver ativo
+      if (skipAutoLookup) {
+        console.log('🚫 [CNPJ-INPUT] Auto-lookup desabilitado');
+        return;
+      }
+
       // Verifica se o CNPJ tem 18 caracteres, não está carregando, não foi pesquisado ainda
       // e é diferente da última pesquisa realizada
       if (
@@ -55,7 +63,7 @@ export const CnpjInput: React.FC<CnpjInputProps> = ({
         onCnpjFound &&
         lastSearchedRef.current !== debouncedValue
       ) {
-        console.log('🔍 Iniciando busca do CNPJ:', debouncedValue);
+        console.log('🔍 [CNPJ-INPUT] Iniciando busca do CNPJ:', debouncedValue);
         setHasSearched(true);
         lastSearchedRef.current = debouncedValue;
         
@@ -67,7 +75,7 @@ export const CnpjInput: React.FC<CnpjInputProps> = ({
     };
 
     handleCnpjLookup();
-  }, [debouncedValue, lookupCnpj, onCnpjFound, isLoading, hasSearched]);
+  }, [debouncedValue, lookupCnpj, onCnpjFound, isLoading, hasSearched, skipAutoLookup]);
 
   // Reset hasSearched quando o valor do CNPJ mudar significativamente
   useEffect(() => {
@@ -110,7 +118,7 @@ export const CnpjInput: React.FC<CnpjInputProps> = ({
           <LoadingSpinner size="sm" />
         </div>
       )}
-      {!isLoading && value.length >= 14 && !hasSearched && (
+      {!isLoading && value.length >= 14 && !hasSearched && !skipAutoLookup && (
         <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
           <Search className="w-4 h-4 text-gray-400" />
         </div>

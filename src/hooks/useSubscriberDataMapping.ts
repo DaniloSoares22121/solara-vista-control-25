@@ -59,8 +59,10 @@ export const useSubscriberDataMapping = () => {
       }
     } else if (formData.subscriberType === 'company' && formData.companyData) {
       const { cnpj, companyName, partnerNumber, address } = formData.companyData;
+      const administratorData = formData.administratorData;
       
       console.log('📋 [AUTO-FILL] Dados PJ encontrados:', { cnpj, companyName, partnerNumber });
+      console.log('📋 [AUTO-FILL] Dados do administrador:', administratorData);
       
       if (cnpj && companyName) {
         const updatedFormData = {
@@ -70,13 +72,14 @@ export const useSubscriberDataMapping = () => {
             holderType: 'company' as const,
             cpfCnpj: cnpj,
             holderName: companyName,
-            birthDate: '', // PJ não tem data de nascimento
+            // Para PJ, usar data de nascimento do administrador
+            birthDate: administratorData?.birthDate || '',
             partnerNumber: partnerNumber || '',
             address: address.cep ? { ...address } : formData.energyAccount.address,
           }
         };
         
-        console.log('✅ [AUTO-FILL] PJ - Dados preenchidos automaticamente');
+        console.log('✅ [AUTO-FILL] PJ - Dados preenchidos automaticamente com data do administrador:', administratorData?.birthDate);
         return updatedFormData;
       }
     }
