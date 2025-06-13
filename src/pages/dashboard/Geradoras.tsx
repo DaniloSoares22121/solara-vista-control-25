@@ -3,24 +3,26 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Users, FileText, Zap, TrendingUp, Activity, Power } from 'lucide-react';
+import { Plus, Users, FileText, Zap, TrendingUp, Activity, Power, ArrowLeft } from 'lucide-react';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { useGenerators } from '@/hooks/useGenerators';
 import GeneratorDetails from '@/components/GeneratorDetails';
-import NewGeneratorModal from '@/components/forms/NewGeneratorModal';
+import NovaGeradora from '@/pages/dashboard/NovaGeradora';
 import DashboardLayout from '@/components/DashboardLayout';
 
 const Geradoras = () => {
   const { generators, loading, deleteGenerator, refreshGenerators } = useGenerators();
   const [selectedGenerator, setSelectedGenerator] = useState<any>(null);
-  const [showNewGeneratorModal, setShowNewGeneratorModal] = useState(false);
+  const [showNewGeneratorForm, setShowNewGeneratorForm] = useState(false);
+  const [editingGenerator, setEditingGenerator] = useState<any>(null);
 
   const handleView = (generator: any) => {
     setSelectedGenerator(generator);
   };
 
-  const handleEdit = () => {
-    // TODO: Implementar edição
+  const handleEdit = (generator: any) => {
+    setEditingGenerator(generator);
+    setShowNewGeneratorForm(true);
   };
 
   const handleDelete = async (id: string) => {
@@ -33,7 +35,25 @@ const Geradoras = () => {
 
   const handleNewGeneratorSuccess = () => {
     refreshGenerators();
+    setShowNewGeneratorForm(false);
+    setEditingGenerator(null);
   };
+
+  const handleCloseForm = () => {
+    setShowNewGeneratorForm(false);
+    setEditingGenerator(null);
+  };
+
+  // Se estiver mostrando o formulário, renderizar apenas ele
+  if (showNewGeneratorForm) {
+    return (
+      <NovaGeradora 
+        onClose={handleCloseForm}
+        editMode={!!editingGenerator}
+        generatorData={editingGenerator}
+      />
+    );
+  }
 
   if (loading) {
     return (
@@ -69,7 +89,7 @@ const Geradoras = () => {
             <p className="text-gray-600 mt-1">Gerencie suas usinas geradoras de energia solar</p>
           </div>
           <Button 
-            onClick={() => setShowNewGeneratorModal(true)}
+            onClick={() => setShowNewGeneratorForm(true)}
             className="bg-green-600 hover:bg-green-700 text-white shadow-lg"
           >
             <Plus className="w-4 h-4 mr-2" />
@@ -149,7 +169,7 @@ const Geradoras = () => {
                   </p>
                 </div>
                 <Button 
-                  onClick={() => setShowNewGeneratorModal(true)}
+                  onClick={() => setShowNewGeneratorForm(true)}
                   className="bg-green-600 hover:bg-green-700 text-white"
                 >
                   <Plus className="w-4 h-4 mr-2" />
@@ -170,7 +190,7 @@ const Geradoras = () => {
               }, 0) || 0;
 
               return (
-                <Card key={generator.id} className="shadow-lg border-0 hover:shadow-xl transition-shadow cursor-pointer">
+                <Card key={generator.id} className="shadow-lg border-0 hover:shadow-xl transition-shadow">
                   <CardHeader className="pb-3">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
@@ -208,13 +228,22 @@ const Geradoras = () => {
                       <p className="text-sm text-gray-600">Geração Mensal</p>
                       <p className="text-lg font-semibold text-gray-900">{totalGenerationGen.toFixed(0)} kWh</p>
                     </div>
-                    <Button 
-                      onClick={() => handleView(generator)}
-                      variant="outline" 
-                      className="w-full"
-                    >
-                      Ver Detalhes
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button 
+                        onClick={() => handleView(generator)}
+                        variant="outline" 
+                        className="flex-1"
+                      >
+                        Ver Detalhes
+                      </Button>
+                      <Button 
+                        onClick={() => handleEdit(generator)}
+                        variant="outline"
+                        className="flex-1"
+                      >
+                        Editar
+                      </Button>
+                    </div>
                   </CardContent>
                 </Card>
               );
@@ -222,18 +251,11 @@ const Geradoras = () => {
           </div>
         )}
 
-        {/* Modal de Nova Geradora */}
-        <NewGeneratorModal
-          isOpen={showNewGeneratorModal}
-          onClose={() => setShowNewGeneratorModal(false)}
-          onSuccess={handleNewGeneratorSuccess}
-        />
-
         {/* Modal de Detalhes da Geradora */}
         <GeneratorDetails
           generator={selectedGenerator}
           isOpen={!!selectedGenerator}
-          onEdit={handleEdit}
+          onEdit={() => handleEdit(selectedGenerator)}
           onDelete={handleDelete}
           onClose={handleCloseDetails}
         />
