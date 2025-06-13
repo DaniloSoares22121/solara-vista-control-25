@@ -158,7 +158,7 @@ const PlanContractForm = ({ form }: PlanContractFormProps) => {
           />
         </div>
 
-        {/* Quarta linha: Fidelidade e Percentual de Desconto */}
+        {/* Quarta linha: Fidelidade */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <FormField
             control={form.control}
@@ -182,27 +182,6 @@ const PlanContractForm = ({ form }: PlanContractFormProps) => {
               </FormItem>
             )}
           />
-
-          <FormField
-            control={form.control}
-            name="planContract.discountPercentage"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-gray-700 font-medium">Percentual de Desconto (%)</FormLabel>
-                <FormControl>
-                  <Input 
-                    {...field} 
-                    type="number" 
-                    placeholder="Será preenchido automaticamente"
-                    className="border-gray-300 bg-gray-50"
-                    readOnly
-                    value={selectedDiscount || field.value || ''}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
         </div>
       </div>
 
@@ -212,6 +191,7 @@ const PlanContractForm = ({ form }: PlanContractFormProps) => {
         loyalty={watchedValues.loyalty as 'none' | 'oneYear' | 'twoYears'}
         onDiscountSelect={handleDiscountSelect}
         selectedDiscount={selectedDiscount}
+        hideApplyButton={true}
       />
     </div>
   );

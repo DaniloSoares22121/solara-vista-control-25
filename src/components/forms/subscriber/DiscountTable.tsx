@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -12,9 +11,10 @@ interface DiscountTableProps {
   loyalty: 'none' | 'oneYear' | 'twoYears';
   onDiscountSelect: (percentage: number) => void;
   selectedDiscount?: number;
+  hideApplyButton?: boolean;
 }
 
-const DiscountTable = ({ contractedKwh, loyalty, onDiscountSelect, selectedDiscount }: DiscountTableProps) => {
+const DiscountTable = ({ contractedKwh, loyalty, onDiscountSelect, selectedDiscount, hideApplyButton = false }: DiscountTableProps) => {
   const [editingRow, setEditingRow] = useState<number | null>(null);
   const [editValues, setEditValues] = useState<{[key: string]: number}>({});
 
@@ -330,14 +330,16 @@ const DiscountTable = ({ contractedKwh, loyalty, onDiscountSelect, selectedDisco
                   <div className="text-4xl font-bold text-emerald-900 mb-2 bg-gradient-to-r from-emerald-600 to-green-600 bg-clip-text text-transparent">
                     {currentDiscount}%
                   </div>
-                  <Button
-                    onClick={() => onDiscountSelect(currentDiscount)}
-                    className="bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
-                    size="lg"
-                  >
-                    <Percent className="w-4 h-4 mr-2" />
-                    Aplicar Desconto
-                  </Button>
+                  {!hideApplyButton && (
+                    <Button
+                      onClick={() => onDiscountSelect(currentDiscount)}
+                      className="bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+                      size="lg"
+                    >
+                      <Percent className="w-4 h-4 mr-2" />
+                      Aplicar Desconto
+                    </Button>
+                  )}
                 </div>
               </div>
             </div>
