@@ -26,32 +26,50 @@ const GeneratorAttachmentsForm = ({ form }: GeneratorAttachmentsFormProps) => {
   };
 
   const handleFileUpload = (fieldName: string, file: File | null) => {
-    if (file) {
-      // Validar formato
-      const allowedTypes = ['application/pdf', 'image/png', 'image/jpeg', 'image/jpg'];
-      if (!allowedTypes.includes(file.type)) {
-        console.error('Formato inválido. Use PDF, PNG ou JPG.');
-        return;
-      }
+    console.log('🔄 [FILE UPLOAD] Iniciando upload:', { fieldName, file: file?.name });
+    
+    if (!file) {
+      console.log('❌ [FILE UPLOAD] Nenhum arquivo selecionado');
+      return;
+    }
 
-      // Validar tamanho (10MB)
-      if (file.size > 10 * 1024 * 1024) {
-        console.error('Arquivo muito grande. Máximo 10MB.');
-        return;
-      }
+    // Validar formato
+    const allowedTypes = ['application/pdf', 'image/png', 'image/jpeg', 'image/jpg'];
+    if (!allowedTypes.includes(file.type)) {
+      console.error('❌ [FILE UPLOAD] Formato inválido:', file.type);
+      alert('Formato inválido. Use PDF, PNG ou JPG.');
+      return;
+    }
 
-      setUploadedFiles(prev => ({
+    // Validar tamanho (10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      console.error('❌ [FILE UPLOAD] Arquivo muito grande:', file.size);
+      alert('Arquivo muito grande. Máximo 10MB.');
+      return;
+    }
+
+    console.log('✅ [FILE UPLOAD] Arquivo válido, processando...');
+
+    // Atualizar estado local
+    setUploadedFiles(prev => {
+      const newFiles = {
         ...prev,
         [fieldName]: file
-      }));
-      
-      // Atualizar o formulário
-      form.setValue(`attachments.${fieldName}` as any, file);
-      console.log(`✅ Arquivo ${file.name} anexado com sucesso!`);
-    }
+      };
+      console.log('🔄 [FILE UPLOAD] Estado atualizado:', newFiles);
+      return newFiles;
+    });
+    
+    // Atualizar o formulário
+    form.setValue(`attachments.${fieldName}` as any, file);
+    console.log('✅ [FILE UPLOAD] Formulário atualizado');
+    
+    console.log(`✅ Arquivo ${file.name} anexado com sucesso!`);
   };
 
   const removeFile = (fieldName: string) => {
+    console.log('🗑️ [FILE REMOVE] Removendo arquivo:', fieldName);
+    
     setUploadedFiles(prev => {
       const newFiles = { ...prev };
       delete newFiles[fieldName];
@@ -65,6 +83,8 @@ const GeneratorAttachmentsForm = ({ form }: GeneratorAttachmentsFormProps) => {
     if (fileInputRefs[fieldName as keyof typeof fileInputRefs].current) {
       fileInputRefs[fieldName as keyof typeof fileInputRefs].current!.value = '';
     }
+    
+    console.log('✅ [FILE REMOVE] Arquivo removido com sucesso');
   };
 
   const FileUploadField = ({ 
@@ -118,7 +138,10 @@ const GeneratorAttachmentsForm = ({ form }: GeneratorAttachmentsFormProps) => {
                         <Button
                           type="button"
                           variant="outline"
-                          onClick={() => fileInputRefs[name].current?.click()}
+                          onClick={() => {
+                            console.log('🔄 [FILE BUTTON] Abrindo seletor de arquivo para:', name);
+                            fileInputRefs[name].current?.click();
+                          }}
                           className="mb-2"
                         >
                           Selecionar Arquivo
@@ -131,6 +154,7 @@ const GeneratorAttachmentsForm = ({ form }: GeneratorAttachmentsFormProps) => {
                           type="file"
                           accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
                           onChange={(e) => {
+                            console.log('🔄 [FILE INPUT] Arquivo selecionado:', e.target.files?.[0]?.name);
                             const selectedFile = e.target.files?.[0] || null;
                             handleFileUpload(name, selectedFile);
                             field.onChange(selectedFile);
@@ -203,11 +227,12 @@ const GeneratorAttachmentsForm = ({ form }: GeneratorAttachmentsFormProps) => {
       {/* Resumo dos Anexos */}
       {Object.keys(uploadedFiles).length > 0 && (
         <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-          <h4 className="font-medium text-green-900 mb-2">Arquivos Anexados</h4>
+          <h4 className="font-medium text-green-900 mb-2">Arquivos Anexados ({Object.keys(uploadedFiles).length})</h4>
           <div className="space-y-1">
             {Object.entries(uploadedFiles).map(([fieldName, file]) => (
               <div key={fieldName} className="flex items-center gap-2 text-sm text-green-800">
                 <FileText className="w-4 h-4" />
+                <span className="font-medium">{fieldName}:</span>
                 <span>{file.name}</span>
                 <span className="text-green-600">({(file.size / 1024).toFixed(1)} KB)</span>
               </div>
@@ -215,6 +240,14 @@ const GeneratorAttachmentsForm = ({ form }: GeneratorAttachmentsFormProps) => {
           </div>
         </div>
       )}
+
+      {/* Debug Info */}
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <h4 className="font-medium text-blue-900 mb-2">Debug - Estado dos Arquivos</h4>
+        <pre className="text-xs text-blue-800">
+          {JSON.stringify(uploadedFiles, null, 2)}
+        </pre>
+      </div>
     </div>
   );
 };
