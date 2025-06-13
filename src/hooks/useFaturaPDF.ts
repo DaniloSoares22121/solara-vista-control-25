@@ -3,12 +3,19 @@ import { useState } from 'react';
 import { generateCustomPDF, combinePDFs, uploadPDFToStorage, saveFaturaPDF, getFaturaPDF } from '@/services/pdfService';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { faturaValidacaoService } from '@/services/faturaValidacaoService';
 
 export const useFaturaPDF = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  const processarFatura = async (uc: string, documento: string, dataNascimento?: string) => {
+  const processarFaturaCompleta = async (
+    uc: string, 
+    documento: string, 
+    dataNascimento?: string,
+    subscriberId?: string,
+    tipoConsulta: 'select' | 'manual' = 'manual'
+  ) => {
     setIsLoading(true);
     try {
       // Verificar se já existe PDF salvo
@@ -19,10 +26,10 @@ export const useFaturaPDF = () => {
           title: "PDF encontrado",
           description: "Abrindo PDF salvo anteriormente.",
         });
-        return;
+        return faturaExistente.pdf_combinado_url;
       }
 
-      // Gerar PDF customizado
+      // Gerar PDF customizado do layout
       const customPdfBytes = await generateCustomPDF('invoice-layout');
       
       // Chamar API para baixar fatura original
@@ -38,9 +45,9 @@ export const useFaturaPDF = () => {
         throw new Error(response.error.message);
       }
 
-      const { fatura_url } = response.data;
+      const { fatura_url, message } = response.data;
 
-      // Combinar PDFs
+      // Combinar PDFs (customizado + original)
       const combinedPdfBytes = await combinePDFs(fatura_url, customPdfBytes);
       
       // Upload para storage
@@ -51,17 +58,47 @@ export const useFaturaPDF = () => {
       await saveFaturaPDF({
         numero_fatura: uc,
         pdf_original_url: fatura_url,
-        pdf_customizado_url: null, // Poderia salvar separadamente se necessário
+        pdf_customizado_url: null,
         pdf_combinado_url: pdfUrl
       });
 
-      // Abrir PDF
+      // Se for de assinante cadastrado, salvar em validação
+      if (tipoConsulta === 'select' && subscriberId) {
+        try {
+          await faturaValidacaoService.createFaturaValidacao({
+            subscriber_id: subscriberId,
+            uc: uc,
+            documento: documento,
+            data_nascimento: dataNascimento,
+            tipo_pessoa: dataNascimento ? 'fisica' : 'juridica',
+            fatura_url: pdfUrl, // Usar o PDF combinado
+            pdf_path: fileName,
+            message: message
+          });
+          
+          toast({
+            title: "Fatura processada com sucesso!",
+            description: "PDF gerado e salvo em 'Faturas em Validação'.",
+          });
+        } catch (error) {
+          console.error('Erro ao salvar em validação:', error);
+          toast({
+            title: "PDF gerado com sucesso!",
+            description: "Mas houve erro ao salvar em validação.",
+            variant: "destructive"
+          });
+        }
+      } else {
+        toast({
+          title: "PDF gerado com sucesso!",
+          description: "O PDF combinado foi criado e está sendo exibido.",
+        });
+      }
+
+      // Abrir PDF na tela
       window.open(pdfUrl, '_blank');
       
-      toast({
-        title: "PDF gerado com sucesso!",
-        description: "O PDF foi salvo e está sendo exibido.",
-      });
+      return pdfUrl;
 
     } catch (error) {
       console.error('Erro ao processar fatura:', error);
@@ -70,13 +107,19 @@ export const useFaturaPDF = () => {
         description: "Ocorreu um erro ao gerar o PDF. Tente novamente.",
         variant: "destructive"
       });
+      throw error;
     } finally {
       setIsLoading(false);
     }
   };
 
+  const processarFatura = async (uc: string, documento: string, dataNascimento?: string) => {
+    return processarFaturaCompleta(uc, documento, dataNascimento);
+  };
+
   return {
     processarFatura,
+    processarFaturaCompleta,
     isLoading
   };
 };

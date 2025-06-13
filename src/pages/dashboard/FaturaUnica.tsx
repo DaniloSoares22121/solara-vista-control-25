@@ -8,12 +8,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { MaskedInput } from '@/components/ui/masked-input';
+import FaturaPDFViewer from '@/components/FaturaPDFViewer';
 import { FileText, Search, Download, Zap, Clock, Check, Timer, Users, Edit, User, Building2, Calendar, CreditCard, AlertCircle, CheckCircle2, Save, Sparkles, Star, ChevronDown } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
-import { supabase } from '@/integrations/supabase/client';
 import { useSubscribers } from '@/hooks/useSubscribers';
-import { faturaValidacaoService } from '@/services/faturaValidacaoService';
+import { useFaturaPDF } from '@/hooks/useFaturaPDF';
 
 interface FaturaResponse {
   fatura_url: string;
@@ -23,6 +23,7 @@ interface FaturaResponse {
 
 const FaturaUnica = () => {
   const { subscribers, isLoading: isLoadingSubscribers } = useSubscribers();
+  const { processarFaturaCompleta, isLoading: isProcessingFatura } = useFaturaPDF();
   
   // Estado para controlar o modo de entrada
   const [entryMode, setEntryMode] = useState<'select' | 'manual'>('select');
@@ -40,12 +41,11 @@ const FaturaUnica = () => {
     tipo: 'fisica' as 'fisica' | 'juridica'
   });
 
-  // Estados para consulta de fatura
-  const [isConsultingFatura, setIsConsultingFatura] = useState(false);
+  // Estados para visualização do PDF
+  const [pdfViewerOpen, setPdfViewerOpen] = useState(false);
+  const [processedPdfUrl, setProcessedPdfUrl] = useState('');
   const [consultaProgress, setConsultaProgress] = useState(0);
   const [timeRemaining, setTimeRemaining] = useState(0);
-  const [faturaResult, setFaturaResult] = useState<FaturaResponse | null>(null);
-  const [isSavingValidacao, setIsSavingValidacao] = useState(false);
 
   // Preencher dados quando selecionar assinante
   useEffect(() => {
@@ -104,13 +104,11 @@ const FaturaUnica = () => {
     dataNascimento?: string;
     tipo: 'fisica' | 'juridica';
   }) => {
-    setIsConsultingFatura(true);
     setConsultaProgress(0);
     setTimeRemaining(60);
-    setFaturaResult(null);
 
     try {
-      // Simular progresso
+      // Simular progresso visual
       const progressInterval = setInterval(() => {
         setConsultaProgress(prev => {
           const next = prev + 1.67;
@@ -128,70 +126,33 @@ const FaturaUnica = () => {
         });
       }, 1000);
 
-      // Preparar dados para API
-      const apiData: any = {
-        uc: dados.uc,
-        documento: dados.documento
-      };
+      console.log('Consultando fatura com dados:', dados);
 
-      if (dados.tipo === 'fisica' && dados.dataNascimento) {
-        apiData.data_nascimento = dados.dataNascimento;
-      }
+      // Processar fatura usando o hook atualizado
+      const pdfUrl = await processarFaturaCompleta(
+        dados.uc,
+        dados.documento,
+        dados.dataNascimento,
+        entryMode === 'select' ? selectedSubscriberId : undefined,
+        entryMode
+      );
 
-      console.log('Consultando fatura com dados:', apiData);
-
-      // Chamar a edge function do Supabase
-      const { data: result, error } = await supabase.functions.invoke('baixar-fatura', {
-        body: apiData
-      });
-
-      if (error) {
-        console.error('Erro na edge function:', error);
-        // Se for erro de status code não-2xx, mostrar mensagem específica
-        if (error.message?.includes('non-2xx status code')) {
-          throw new Error('Nenhuma fatura encontrada');
-        }
-        throw new Error(error.message || 'Erro ao consultar fatura');
-      }
-
-      if (result.error) {
-        throw new Error(result.error);
-      }
-
-      setFaturaResult(result);
-      
-      // Se for de assinante cadastrado, salvar em validação
-      if (entryMode === 'select' && selectedSubscriberId) {
-        try {
-          setIsSavingValidacao(true);
-          await faturaValidacaoService.createFaturaValidacao({
-            subscriber_id: selectedSubscriberId,
-            uc: dados.uc,
-            documento: dados.documento,
-            data_nascimento: dados.dataNascimento,
-            tipo_pessoa: dados.tipo,
-            fatura_url: result.fatura_url,
-            pdf_path: result.pdf_path,
-            message: result.message
-          });
-          toast.success('Fatura consultada e salva para validação!');
-        } catch (error) {
-          console.error('Erro ao salvar fatura para validação:', error);
-          toast.error('Fatura consultada, mas erro ao salvar para validação');
-        } finally {
-          setIsSavingValidacao(false);
-        }
-      } else {
-        toast.success('Fatura consultada com sucesso!');
-      }
-
+      // Limpar intervalos
       clearInterval(progressInterval);
       clearInterval(timerInterval);
+
+      // Mostrar PDF na tela
+      if (pdfUrl) {
+        setProcessedPdfUrl(pdfUrl);
+        setPdfViewerOpen(true);
+      }
+
+      setConsultaProgress(100);
+      setTimeRemaining(0);
+
     } catch (error: any) {
       console.error('Erro ao consultar fatura:', error);
       toast.error(error.message || 'Erro ao consultar fatura');
-    } finally {
-      setIsConsultingFatura(false);
       setConsultaProgress(100);
       setTimeRemaining(0);
     }
@@ -220,7 +181,8 @@ const FaturaUnica = () => {
       dataNascimento: '',
       tipo: 'fisica'
     });
-    setFaturaResult(null);
+    setProcessedPdfUrl('');
+    setPdfViewerOpen(false);
     setConsultaProgress(0);
     setTimeRemaining(0);
     setEntryMode('select');
@@ -239,23 +201,10 @@ const FaturaUnica = () => {
                  subscriberData?.companyName || 
                  subscriberData?.razaoSocial || 
                  subscriberData?.fantasyName ||
-                 energyAccount?.holderName ||
-                 'Nome não encontrado';
+                 energyAccount?.holderName || '';
     
     console.log('Nome do assinante encontrado:', name);
     return name;
-  };
-
-  const getSelectedSubscriberType = () => {
-    if (!selectedSubscriberId) return '';
-    const subscriber = subscribers.find(s => s.id === selectedSubscriberId);
-    if (!subscriber) return '';
-    const subscriberData = subscriber.subscriber as any;
-    const energyAccount = subscriber.energy_account as any;
-    
-    // Melhorar detecção do tipo
-    const isPessoaJuridica = subscriberData?.cnpj || energyAccount?.holderType === 'company' || energyAccount?.cpfCnpj?.includes('/');
-    return isPessoaJuridica ? 'Pessoa Jurídica' : 'Pessoa Física';
   };
 
   const isFormValid = () => {
@@ -263,6 +212,8 @@ const FaturaUnica = () => {
     if (manualData.tipo === 'fisica' && !manualData.dataNascimento) return false;
     return true;
   };
+
+  const isConsultingFatura = isProcessingFatura || consultaProgress > 0;
 
   // Filtrar assinantes baseado na busca
   const filteredSubscribers = subscribers.filter((subscriber) => {
@@ -339,7 +290,7 @@ const FaturaUnica = () => {
             </div>
           </div>
 
-          {!isConsultingFatura && !faturaResult && (
+          {!isConsultingFatura && !pdfViewerOpen && (
             <div className="max-w-4xl mx-auto space-y-8">
               {/* Mode Selection - Ultra Enhanced Design */}
               <Card className="border-0 shadow-2xl bg-white/80 backdrop-blur-sm overflow-hidden hover:shadow-3xl transition-all duration-500">
@@ -687,10 +638,10 @@ const FaturaUnica = () => {
                     disabled={(entryMode === 'select' && !selectedSubscriberId) || !isFormValid()}
                   >
                     <Search className="w-6 h-6 mr-3" />
-                    Consultar Fatura na Distribuidora
+                    Processar Fatura Completa
                     {entryMode === 'select' && selectedSubscriberId && (
                       <Badge className="ml-3 bg-white/20 text-white border-white/30">
-                        + Salvar
+                        + Salvar em Validação
                       </Badge>
                     )}
                   </Button>
@@ -708,32 +659,23 @@ const FaturaUnica = () => {
                   <div className="w-16 h-16 mx-auto mb-4 bg-white/20 rounded-3xl flex items-center justify-center animate-pulse">
                     <Timer className="w-8 h-8" />
                   </div>
-                  <h3 className="text-3xl font-bold mb-2">Processando Consulta</h3>
-                  <p className="opacity-90 text-lg">Conectando com a distribuidora...</p>
-                  {isSavingValidacao && (
-                    <p className="text-yellow-200 text-sm mt-2 flex items-center justify-center gap-2">
-                      <Save className="w-4 h-4 animate-pulse" />
-                      Preparando para salvar na validação...
-                    </p>
-                  )}
+                  <h3 className="text-3xl font-bold mb-2">Processando Fatura Completa</h3>
+                  <p className="opacity-90 text-lg">Baixando, combinando PDFs e preparando visualização...</p>
                 </div>
-                <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full blur-3xl"></div>
               </div>
               
               <CardContent className="p-8 space-y-8">
                 <div className="space-y-6">
                   <div className="flex justify-between items-center">
-                    <span className="font-semibold text-gray-700 text-lg">Progresso da Consulta</span>
+                    <span className="font-semibold text-gray-700 text-lg">Progresso do Processamento</span>
                     <span className="text-2xl font-bold text-emerald-600">{Math.round(consultaProgress)}%</span>
                   </div>
-                  <Progress value={consultaProgress} className="h-6 bg-gray-200 rounded-full overflow-hidden">
-                    <div className="h-full bg-gradient-to-r from-emerald-500 to-green-500 transition-all duration-1000 ease-out"></div>
-                  </Progress>
+                  <Progress value={consultaProgress} className="h-6 bg-gray-200 rounded-full overflow-hidden" />
                   
                   <div className="flex justify-center items-center gap-4 text-emerald-600">
                     <Clock className="w-6 h-6 animate-pulse" />
                     <span className="font-medium text-xl">
-                      {timeRemaining > 0 ? `${timeRemaining}s restantes` : 'Finalizando consulta...'}
+                      {timeRemaining > 0 ? `${timeRemaining}s restantes` : 'Finalizando processamento...'}
                     </span>
                   </div>
                 </div>
@@ -741,51 +683,28 @@ const FaturaUnica = () => {
             </Card>
           )}
 
-          {/* Result - Ultra Enhanced */}
-          {faturaResult && (
-            <Card className="border-0 shadow-2xl bg-white/90 backdrop-blur-lg max-w-3xl mx-auto overflow-hidden">
-              <div className="bg-gradient-to-r from-emerald-600 via-green-600 to-teal-600 p-8 relative overflow-hidden">
-                <div className="absolute inset-0 bg-white/10 backdrop-blur-sm"></div>
-                <div className="flex items-center gap-6 text-white relative z-10">
-                  <div className="w-20 h-20 bg-white/20 rounded-3xl flex items-center justify-center shadow-xl">
-                    <CheckCircle2 className="w-10 h-10" />
-                  </div>
-                  <div className="flex-1">
-                    <CardTitle className="text-3xl text-white mb-2">Fatura Encontrada!</CardTitle>
-                    <CardDescription className="text-emerald-100 text-xl font-medium">{faturaResult.message}</CardDescription>
-                    {entryMode === 'select' && selectedSubscriberId && (
-                      <div className="mt-3 flex items-center gap-2 text-emerald-100">
-                        <Save className="w-5 h-5" />
-                        <span className="font-medium">Salva em Faturas em Validação</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-                <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-3xl"></div>
-              </div>
-              
-              <CardContent className="p-8">
-                <div className="space-y-6">
-                  <div className="p-6 bg-gradient-to-r from-emerald-50 to-green-50 border-2 border-emerald-200 rounded-2xl shadow-lg">
-                    <div className="flex items-center gap-3 text-emerald-800 mb-3">
-                      <FileText className="w-6 h-6" />
-                      <span className="font-semibold text-lg">Documento Gerado</span>
-                    </div>
-                    <p className="text-emerald-700 font-medium">
-                      Sua fatura foi localizada e está pronta para download. O arquivo será aberto em uma nova aba.
-                    </p>
-                  </div>
-                  
-                  <Button
-                    className="w-full bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white shadow-2xl h-16 text-xl font-semibold transition-all duration-300 hover:scale-105 border-0"
-                    onClick={() => window.open(faturaResult.fatura_url, '_blank')}
-                  >
-                    <Download className="w-6 h-6 mr-3" />
-                    Baixar Fatura em PDF
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+          {/* PDF Viewer */}
+          <FaturaPDFViewer
+            isOpen={pdfViewerOpen}
+            onClose={() => setPdfViewerOpen(false)}
+            pdfUrl={processedPdfUrl}
+            uc={manualData.uc}
+            documento={manualData.documento}
+            isSavedToValidation={entryMode === 'select' && !!selectedSubscriberId}
+            subscriberName={entryMode === 'select' ? getSelectedSubscriberName() : undefined}
+          />
+
+          {/* Botão para resetar após visualização */}
+          {pdfViewerOpen && (
+            <div className="fixed bottom-6 right-6 z-50">
+              <Button
+                onClick={resetForm}
+                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-2xl"
+              >
+                <Search className="w-4 h-4 mr-2" />
+                Nova Consulta
+              </Button>
+            </div>
           )}
         </div>
       </div>
