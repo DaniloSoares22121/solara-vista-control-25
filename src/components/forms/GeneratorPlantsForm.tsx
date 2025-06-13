@@ -175,14 +175,22 @@ const PlantForm = ({ form, plantIndex, onRemove, canRemove, concessionaria }: Pl
     }
   }, [potenciaModulo, quantidadeModulos, form, plantIndex, calculateTotalPower, suggestPlantType]);
 
+  // Cálculo da potência total dos inversores - corrigido
   useEffect(() => {
     if (inversores && inversores.length > 0) {
-      const total = calculateInverterTotalPower(inversores);
-      if (total !== potenciaTotalInversores) {
-        form.setValue(`plants.${plantIndex}.potenciaTotalInversores`, total);
+      // Verificar se todos os inversores têm dados válidos
+      const hasValidInverters = inversores.some(inv => inv.potencia > 0 && inv.quantidade > 0);
+      
+      if (hasValidInverters) {
+        const total = calculateInverterTotalPower(inversores);
+        console.log('🔄 [INVERTER CALC] Calculando potência total dos inversores:', { inversores, total });
+        
+        if (total !== potenciaTotalInversores) {
+          form.setValue(`plants.${plantIndex}.potenciaTotalInversores`, total);
+        }
       }
     }
-  }, [inversores, form, plantIndex, calculateInverterTotalPower]);
+  }, [inversores, form, plantIndex, calculateInverterTotalPower, potenciaTotalInversores]);
 
   useEffect(() => {
     if (potenciaTotalUsina && estado) {
