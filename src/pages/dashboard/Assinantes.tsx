@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,6 +9,7 @@ import SubscribersTable from '@/components/subscribers/SubscribersTable';
 import SubscriberViewModal from '@/components/subscribers/SubscriberViewModal';
 import { useSubscribers } from '@/hooks/useSubscribers';
 import { SubscriberRecord } from '@/services/supabaseSubscriberService';
+import { toast } from 'sonner';
 
 const Assinantes = () => {
   const [showForm, setShowForm] = useState(false);
@@ -17,6 +17,11 @@ const Assinantes = () => {
   const [viewingSubscriber, setViewingSubscriber] = useState<SubscriberRecord | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const { subscribers, isLoading, deleteSubscriber } = useSubscribers();
+
+  // Monitor changes in subscribers count for real-time feedback
+  useEffect(() => {
+    console.log('🔄 [ASSINANTES] Total de assinantes:', subscribers.length);
+  }, [subscribers.length]);
 
   // Filter subscribers based on search term
   const filteredSubscribers = subscribers.filter(subscriber => {
@@ -35,30 +40,46 @@ const Assinantes = () => {
   });
 
   const handleEdit = (subscriber: SubscriberRecord) => {
-    console.log('Editar assinante:', subscriber);
+    console.log('✏️ [ASSINANTES] Editar assinante:', subscriber);
     setEditingSubscriber(subscriber);
     setShowForm(true);
   };
 
   const handleView = (subscriber: SubscriberRecord) => {
-    console.log('Visualizar assinante:', subscriber);
+    console.log('👁️ [ASSINANTES] Visualizar assinante:', subscriber);
     setViewingSubscriber(subscriber);
   };
 
   const handleDelete = (id: string) => {
     if (confirm('Tem certeza que deseja remover este assinante?')) {
+      console.log('🗑️ [ASSINANTES] Removendo assinante:', id);
       deleteSubscriber(id);
     }
   };
 
   const handleCloseForm = () => {
+    console.log('❌ [ASSINANTES] Fechando formulário');
     setShowForm(false);
     setEditingSubscriber(null);
   };
 
   const handleNewSubscriber = () => {
+    console.log('➕ [ASSINANTES] Criando novo assinante');
     setEditingSubscriber(null);
     setShowForm(true);
+  };
+
+  const handleFormSuccess = (id?: string) => {
+    console.log('✅ [ASSINANTES] Formulário salvo com sucesso:', id);
+    setShowForm(false);
+    setEditingSubscriber(null);
+    
+    // Show success message
+    if (editingSubscriber) {
+      toast.success('Assinante atualizado! A lista foi atualizada automaticamente.', { duration: 2000 });
+    } else {
+      toast.success('Novo assinante cadastrado! Ele já aparece na sua lista.', { duration: 2000 });
+    }
   };
 
   if (showForm) {
@@ -87,7 +108,8 @@ const Assinantes = () => {
             <SubscriberForm 
               existingData={editingSubscriber} 
               subscriberId={editingSubscriber?.id}
-              onSuccess={handleCloseForm}
+              onSuccess={handleFormSuccess}
+              onClose={handleCloseForm}
             />
           </div>
         </div>

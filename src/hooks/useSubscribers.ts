@@ -23,8 +23,10 @@ export const useSubscribers = () => {
 
   // Configurar atualizações em tempo real
   useEffect(() => {
+    console.log('🔄 [SUBSCRIBERS] Configurando canal de tempo real...');
+    
     const channel = supabase
-      .channel('subscribers-changes')
+      .channel('subscribers-realtime')
       .on(
         'postgres_changes',
         {
@@ -33,15 +35,47 @@ export const useSubscribers = () => {
           table: 'subscribers'
         },
         (payload) => {
-          console.log('Mudança detectada na tabela subscribers:', payload);
-          // Invalidar queries específicas para sincronização consistente
-          queryClient.invalidateQueries({ queryKey: ['subscribers'] });
-          queryClient.invalidateQueries({ queryKey: ['subscriber'] }); // Para queries individuais
+          console.log('🔄 [SUBSCRIBERS] Mudança detectada:', payload.eventType, payload);
+          
+          switch (payload.eventType) {
+            case 'INSERT':
+              console.log('✅ [SUBSCRIBERS] Novo assinante criado:', payload.new);
+              // Adicionar o novo assinante ao cache
+              queryClient.setQueryData(['subscribers'], (oldData: SubscriberRecord[] = []) => {
+                return [payload.new as SubscriberRecord, ...oldData];
+              });
+              // Invalidar para garantir consistência
+              queryClient.invalidateQueries({ queryKey: ['subscribers'] });
+              break;
+              
+            case 'UPDATE':
+              console.log('📝 [SUBSCRIBERS] Assinante atualizado:', payload.new);
+              // Atualizar o assinante específico no cache
+              queryClient.setQueryData(['subscribers'], (oldData: SubscriberRecord[] = []) => {
+                return oldData.map(subscriber => 
+                  subscriber.id === payload.new.id ? payload.new as SubscriberRecord : subscriber
+                );
+              });
+              queryClient.setQueryData(['subscriber', payload.new.id], payload.new);
+              break;
+              
+            case 'DELETE':
+              console.log('🗑️ [SUBSCRIBERS] Assinante removido:', payload.old);
+              // Remover o assinante do cache
+              queryClient.setQueryData(['subscribers'], (oldData: SubscriberRecord[] = []) => {
+                return oldData.filter(subscriber => subscriber.id !== payload.old.id);
+              });
+              queryClient.removeQueries({ queryKey: ['subscriber', payload.old.id] });
+              break;
+          }
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('🔄 [SUBSCRIBERS] Status do canal:', status);
+      });
 
     return () => {
+      console.log('🔄 [SUBSCRIBERS] Removendo canal de tempo real...');
       supabase.removeChannel(channel);
     };
   }, [queryClient]);
@@ -49,13 +83,13 @@ export const useSubscribers = () => {
   const createMutation = useMutation({
     mutationFn: subscriberService.createSubscriber,
     onSuccess: (data) => {
-      // Invalidar e refetch para sincronização
-      queryClient.invalidateQueries({ queryKey: ['subscribers'] });
-      queryClient.setQueryData(['subscriber', data.id], data); // Cache individual
+      console.log('✅ [SUBSCRIBERS] Assinante criado com sucesso:', data);
+      // O tempo real já vai atualizar o cache, mas vamos garantir
+      queryClient.setQueryData(['subscriber', data.id], data);
       toast.success('Assinante criado com sucesso!', { duration: 1500 });
     },
     onError: (error: any) => {
-      console.error('Erro ao criar assinante:', error);
+      console.error('❌ [SUBSCRIBERS] Erro ao criar assinante:', error);
       const errorMessage = error?.message || 'Erro interno do servidor';
       toast.error(`Erro ao criar assinante: ${errorMessage}`, { duration: 3000 });
     },
@@ -65,13 +99,13 @@ export const useSubscribers = () => {
     mutationFn: ({ id, data }: { id: string; data: Partial<SubscriberFormData> }) =>
       subscriberService.updateSubscriber(id, data),
     onSuccess: (data, variables) => {
-      // Atualizar cache específico e geral
-      queryClient.invalidateQueries({ queryKey: ['subscribers'] });
+      console.log('✅ [SUBSCRIBERS] Assinante atualizado com sucesso:', data);
+      // O tempo real já vai atualizar o cache
       queryClient.setQueryData(['subscriber', variables.id], data);
       toast.success('Assinante atualizado com sucesso!', { duration: 1500 });
     },
     onError: (error: any) => {
-      console.error('Erro ao atualizar assinante:', error);
+      console.error('❌ [SUBSCRIBERS] Erro ao atualizar assinante:', error);
       const errorMessage = error?.message || 'Erro interno do servidor';
       toast.error(`Erro ao atualizar assinante: ${errorMessage}`, { duration: 3000 });
     },
@@ -80,13 +114,12 @@ export const useSubscribers = () => {
   const deleteMutation = useMutation({
     mutationFn: subscriberService.deleteSubscriber,
     onSuccess: (_, deletedId) => {
-      // Remover do cache e invalidar
-      queryClient.removeQueries({ queryKey: ['subscriber', deletedId] });
-      queryClient.invalidateQueries({ queryKey: ['subscribers'] });
+      console.log('✅ [SUBSCRIBERS] Assinante removido com sucesso:', deletedId);
+      // O tempo real já vai atualizar o cache
       toast.success('Assinante removido com sucesso!', { duration: 1500 });
     },
     onError: (error: any) => {
-      console.error('Erro ao remover assinante:', error);
+      console.error('❌ [SUBSCRIBERS] Erro ao remover assinante:', error);
       const errorMessage = error?.message || 'Erro interno do servidor';
       toast.error(`Erro ao remover assinante: ${errorMessage}`, { duration: 3000 });
     },
