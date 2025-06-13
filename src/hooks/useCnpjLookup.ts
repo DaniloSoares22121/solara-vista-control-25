@@ -21,6 +21,12 @@ export const useCnpjLookup = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const lookupCnpj = async (cnpj: string): Promise<CnpjData | null> => {
+    // Se já estiver carregando, não fazer nova requisição
+    if (isLoading) {
+      console.log('🚫 Requisição já em andamento, cancelando...');
+      return null;
+    }
+
     // Remove formatação do CNPJ
     const cleanCnpj = cnpj.replace(/\D/g, '');
     
@@ -39,6 +45,10 @@ export const useCnpjLookup = () => {
       const response = await fetch(`https://publica.cnpj.ws/cnpj/${cleanCnpj}`);
       
       if (!response.ok) {
+        if (response.status === 429) {
+          toast.error('Muitas consultas realizadas. Aguarde alguns minutos.');
+          return null;
+        }
         throw new Error('Erro na consulta do CNPJ');
       }
       
@@ -50,6 +60,7 @@ export const useCnpjLookup = () => {
       }
       
       console.log('✅ Dados do CNPJ encontrados:', data);
+      toast.success('CNPJ encontrado! Dados preenchidos automaticamente.');
       
       // Mapeamento dos dados da API publica.cnpj.ws
       return {
@@ -69,7 +80,7 @@ export const useCnpjLookup = () => {
     } catch (error) {
       console.error('Erro ao buscar CNPJ:', error);
       
-      // Fallback para API BrasilAPI que também suporta CORS
+      // Fallback para API BrasilAPI apenas se não for erro de rate limit
       try {
         console.log('🔄 Tentando API alternativa...');
         const fallbackResponse = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${cleanCnpj}`);
@@ -80,6 +91,7 @@ export const useCnpjLookup = () => {
         
         const fallbackData = await fallbackResponse.json();
         console.log('✅ Dados encontrados via API alternativa:', fallbackData);
+        toast.success('CNPJ encontrado! Dados preenchidos automaticamente.');
         
         return {
           cnpj: fallbackData.cnpj || cleanCnpj,
@@ -97,7 +109,7 @@ export const useCnpjLookup = () => {
         };
       } catch (fallbackError) {
         console.error('Erro na API alternativa:', fallbackError);
-        toast.error('Erro ao consultar CNPJ. Tente novamente em alguns instantes.');
+        toast.error('Serviço temporariamente indisponível. Tente novamente em alguns minutos.');
         return null;
       }
     } finally {
