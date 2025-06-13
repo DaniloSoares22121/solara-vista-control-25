@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -18,6 +17,7 @@ import FaturaValidacao from "./pages/dashboard/FaturaValidacao";
 import FaturasEmitidas from "./pages/dashboard/FaturasEmitidas";
 import Whatsapp from "./pages/dashboard/Whatsapp";
 import NotFound from "./pages/NotFound";
+import FaturaLayout from "./pages/FaturaLayout";
 
 const queryClient = new QueryClient();
 
@@ -31,6 +31,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/fatura-layout" element={<FaturaLayout />} />
             <Route path="/dashboard" element={
               <ProtectedRoute>
                 <Dashboard />
