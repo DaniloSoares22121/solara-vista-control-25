@@ -6,15 +6,27 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Sun, Mail, Lock, Zap, ArrowRight } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "@/components/ui/use-toast";
 
 const LoginForm = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
+  const { login, currentUser } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Get the intended destination from location state, default to dashboard
+  const from = location.state?.from?.pathname || "/dashboard";
+
+  // Redirect if already logged in
+  useState(() => {
+    if (currentUser) {
+      console.log('🔐 [LOGIN] User already authenticated, redirecting to:', from);
+      navigate(from, { replace: true });
+    }
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,9 +48,12 @@ const LoginForm = () => {
         title: "Login realizado com sucesso!",
         description: "Bem-vindo ao SolarControl.",
       });
-      navigate("/dashboard");
+      
+      // Navigate to the intended destination
+      console.log('🔐 [LOGIN] Login successful, redirecting to:', from);
+      navigate(from, { replace: true });
     } catch (error: any) {
-      console.error("Erro no login:", error);
+      console.error("❌ [LOGIN] Erro no login:", error);
       toast({
         title: "Erro no login",
         description: "Email ou senha incorretos.",

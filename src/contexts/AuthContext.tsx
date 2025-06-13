@@ -79,25 +79,55 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   };
 
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log('🔐 [AUTH] Initial session:', session ? `User: ${session.user.email}` : 'No session');
-      setSession(session);
-      setCurrentUser(session?.user ?? null);
-      setLoading(false);
-    });
+    let mounted = true;
 
-    // Listen for auth changes
+    // Set up auth state listener FIRST
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      console.log('🔐 [AUTH] Auth state changed:', session ? `User: ${session.user.email}` : 'No user');
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('🔐 [AUTH] Auth state changed:', event, session ? `User: ${session.user.email}` : 'No user');
+      
+      if (!mounted) return;
+
+      // Only update state if component is still mounted
       setSession(session);
       setCurrentUser(session?.user ?? null);
-      setLoading(false);
+      
+      // Only set loading to false after we've processed the auth state
+      if (event !== 'INITIAL_SESSION') {
+        setLoading(false);
+      }
     });
 
-    return () => subscription.unsubscribe();
+    // Get initial session AFTER setting up the listener
+    const getInitialSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error('❌ [AUTH] Error getting session:', error);
+        }
+        
+        if (!mounted) return;
+
+        console.log('🔐 [AUTH] Initial session:', session ? `User: ${session.user.email}` : 'No session');
+        setSession(session);
+        setCurrentUser(session?.user ?? null);
+        setLoading(false);
+      } catch (error) {
+        console.error('❌ [AUTH] Error in getInitialSession:', error);
+        if (mounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    getInitialSession();
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const value = {
