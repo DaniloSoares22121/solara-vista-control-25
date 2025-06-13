@@ -207,6 +207,15 @@ const FaturaUnica = () => {
     return name;
   };
 
+  const getSelectedSubscriberType = () => {
+    if (!selectedSubscriberId) return '';
+    const subscriber = subscribers.find(s => s.id === selectedSubscriberId);
+    if (!subscriber) return '';
+    const subscriberData = subscriber.subscriber as any;
+    
+    return subscriberData?.cpf ? 'Pessoa Física' : 'Pessoa Jurídica';
+  };
+
   const isFormValid = () => {
     if (!manualData.uc || !manualData.documento) return false;
     if (manualData.tipo === 'fisica' && !manualData.dataNascimento) return false;
@@ -282,7 +291,7 @@ const FaturaUnica = () => {
                 <Star className="w-4 h-4 mr-2" />
                 Inteligente
               </Badge>
-              {faturaResult && (
+              {processedPdfUrl && (
                 <Button variant="outline" size="sm" onClick={resetForm} className="ml-4 hover:scale-105 transition-transform">
                   Nova Consulta
                 </Button>
