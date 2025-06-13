@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabaseGeneratorService } from '@/services/supabaseGeneratorService';
 import { GeneratorFormData } from '@/types/generator';
 import { supabase } from '@/integrations/supabase/client';
@@ -8,6 +8,7 @@ export const useGenerators = () => {
   const [generators, setGenerators] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const channelRef = useRef<any>(null);
 
   const loadGenerators = async () => {
     console.log('🔄 [HOOK] Carregando geradoras...');
@@ -33,7 +34,6 @@ export const useGenerators = () => {
     
     try {
       const newGenerator = await supabaseGeneratorService.createGenerator(generatorData);
-      // Não adicionar manualmente - deixar o realtime fazer isso
       console.log('✅ [HOOK] Geradora criada com sucesso:', newGenerator);
       return newGenerator;
     } catch (err) {
@@ -50,7 +50,6 @@ export const useGenerators = () => {
     
     try {
       await supabaseGeneratorService.deleteGenerator(id);
-      // Não remover manualmente - deixar o realtime fazer isso
       console.log('✅ [HOOK] Geradora excluída com sucesso');
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Erro ao excluir geradora';
@@ -66,7 +65,6 @@ export const useGenerators = () => {
     
     try {
       const updatedGenerator = await supabaseGeneratorService.updateGenerator(id, generatorData);
-      // Não atualizar manualmente - deixar o realtime fazer isso
       console.log('✅ [HOOK] Geradora atualizada com sucesso:', updatedGenerator);
       return updatedGenerator;
     } catch (err) {
@@ -80,8 +78,15 @@ export const useGenerators = () => {
   useEffect(() => {
     loadGenerators();
 
-    // Criar um canal único com timestamp para evitar conflitos
-    const channelName = `generators-changes-${Date.now()}`;
+    // Cleanup any existing channel before creating a new one
+    if (channelRef.current) {
+      console.log('🔄 [REALTIME] Removendo canal existente antes de criar novo');
+      supabase.removeChannel(channelRef.current);
+      channelRef.current = null;
+    }
+
+    // Create a unique channel name
+    const channelName = `generators-changes-${Date.now()}-${Math.random()}`;
     console.log('🔄 [REALTIME] Criando canal:', channelName);
     
     const channel = supabase
@@ -121,17 +126,25 @@ export const useGenerators = () => {
           console.log('✅ [REALTIME] Geradora excluída:', payload.old);
           setGenerators(prev => prev.filter(gen => gen.id !== payload.old.id));
         }
-      )
-      .subscribe((status) => {
-        console.log('✅ [REALTIME] Status da inscrição:', status);
-      });
+      );
 
-    // Cleanup function para remover o canal quando o componente for desmontado
+    // Store the channel reference
+    channelRef.current = channel;
+
+    // Subscribe to the channel
+    channel.subscribe((status) => {
+      console.log('✅ [REALTIME] Status da inscrição:', status);
+    });
+
+    // Cleanup function
     return () => {
-      console.log('🔄 [REALTIME] Removendo canal:', channelName);
-      supabase.removeChannel(channel);
+      if (channelRef.current) {
+        console.log('🔄 [REALTIME] Removendo canal:', channelName);
+        supabase.removeChannel(channelRef.current);
+        channelRef.current = null;
+      }
     };
-  }, []); // Array de dependências vazio para executar apenas uma vez
+  }, []); // Empty dependency array to run only once
 
   return {
     generators,
