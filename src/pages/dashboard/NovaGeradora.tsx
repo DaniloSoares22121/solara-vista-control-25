@@ -199,10 +199,15 @@ const NovaGeradora = ({ onClose, editMode = false, generatorData }: NovaGeradora
         await createGenerator(data);
         toast({
           title: "Sucesso!",
-          description: "Geradora cadastrada com sucesso.",
+          description: "Geradora cadastrada com sucesso. Ela aparecerá automaticamente na lista.",
           variant: "default",
         });
       }
+      
+      // Limpar o auto save após sucesso
+      autoSave.clearAutoSave();
+      
+      // Voltar para a lista automaticamente
       onClose();
     } catch (error) {
       console.error('❌ Erro ao salvar geradora:', error);

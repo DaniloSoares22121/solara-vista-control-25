@@ -25,6 +25,22 @@ const GeneratorAttachmentsForm = ({ form }: GeneratorAttachmentsFormProps) => {
     procuracao: useRef<HTMLInputElement>(null),
   };
 
+  // Sync form data with local state on mount
+  useEffect(() => {
+    const formAttachments = form.getValues('attachments') || {};
+    const fileEntries: Record<string, File> = {};
+    
+    Object.entries(formAttachments).forEach(([key, value]) => {
+      if (value instanceof File) {
+        fileEntries[key] = value;
+      }
+    });
+    
+    if (Object.keys(fileEntries).length > 0) {
+      setUploadedFiles(fileEntries);
+    }
+  }, [form]);
+
   // Debug: Log do estado sempre que mudar
   useEffect(() => {
     console.log('🔍 [DEBUG] Estado atual dos arquivos:', uploadedFiles);
@@ -57,7 +73,7 @@ const GeneratorAttachmentsForm = ({ form }: GeneratorAttachmentsFormProps) => {
 
     console.log('✅ [FILE UPLOAD] Arquivo válido, processando...');
 
-    // Atualizar estado local - garantindo que o arquivo seja mantido corretamente
+    // Atualizar estado local - usando callback para garantir estado atualizado
     setUploadedFiles(prevFiles => {
       const newFiles = {
         ...prevFiles,
@@ -65,18 +81,21 @@ const GeneratorAttachmentsForm = ({ form }: GeneratorAttachmentsFormProps) => {
       };
       console.log('🔄 [FILE UPLOAD] Estado anterior:', prevFiles);
       console.log('🔄 [FILE UPLOAD] Novo estado completo:', newFiles);
+      
+      // Atualizar o formulário após atualizar o estado
+      setTimeout(() => {
+        const currentAttachments = form.getValues('attachments') || {};
+        const newAttachments = {
+          ...currentAttachments,
+          [fieldName]: file
+        };
+        
+        console.log('📝 [FORM UPDATE] Atualizando formulário:', newAttachments);
+        form.setValue('attachments', newAttachments, { shouldValidate: true });
+      }, 0);
+      
       return newFiles;
     });
-    
-    // Atualizar o formulário com o arquivo real
-    const currentAttachments = form.getValues('attachments') || {};
-    const newAttachments = {
-      ...currentAttachments,
-      [fieldName]: file
-    };
-    
-    console.log('📝 [FORM UPDATE] Atualizando formulário:', newAttachments);
-    form.setValue('attachments', newAttachments);
     
     console.log('✅ [FILE UPLOAD] Arquivo processado com sucesso!');
   };
@@ -95,7 +114,7 @@ const GeneratorAttachmentsForm = ({ form }: GeneratorAttachmentsFormProps) => {
     const currentAttachments = form.getValues('attachments') || {};
     const newAttachments = { ...currentAttachments };
     delete newAttachments[fieldName];
-    form.setValue('attachments', newAttachments);
+    form.setValue('attachments', newAttachments, { shouldValidate: true });
     
     // Limpar o input
     if (fileInputRefs[fieldName as keyof typeof fileInputRefs].current) {
