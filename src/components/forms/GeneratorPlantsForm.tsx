@@ -27,7 +27,13 @@ const GeneratorPlantsForm = ({ form }: GeneratorPlantsFormProps) => {
     name: "plants"
   });
 
-  const { validateInverterCompatibility } = useGeneratorCalculations();
+  const { 
+    calculateTotalPower, 
+    calculateInverterTotalPower, 
+    estimateGeneration, 
+    suggestPlantType,
+    validateInverterCompatibility 
+  } = useGeneratorCalculations();
   const { validateUC } = useGeneratorValidations();
   const concessionaria = form.watch('concessionaria');
 
@@ -62,12 +68,12 @@ const GeneratorPlantsForm = ({ form }: GeneratorPlantsFormProps) => {
       observacoes: '',
       marcaModulo: '',
       potenciaModulo: 580, // Sugestão automática para 2024
-      quantidadeModulos: 0,
+      quantidadeModulos: '',
       potenciaTotalUsina: 0,
       inversores: [{
         marca: '',
-        potencia: 0,
-        quantidade: 0,
+        potencia: '',
+        quantidade: '',
       }],
       potenciaTotalInversores: 0,
       geracaoProjetada: 0,
@@ -137,7 +143,13 @@ const PlantForm = ({ form, plantIndex, onRemove, canRemove, concessionaria }: Pl
     name: `plants.${plantIndex}.inversores`
   });
 
-  const { validateInverterCompatibility } = useGeneratorCalculations();
+  const { 
+    calculateTotalPower, 
+    calculateInverterTotalPower, 
+    estimateGeneration, 
+    suggestPlantType,
+    validateInverterCompatibility 
+  } = useGeneratorCalculations();
   const { validateUC } = useGeneratorValidations();
 
   const ownerType = form.watch(`plants.${plantIndex}.ownerType`);
@@ -148,6 +160,39 @@ const PlantForm = ({ form, plantIndex, onRemove, canRemove, concessionaria }: Pl
   const inversores = form.watch(`plants.${plantIndex}.inversores`) || [];
   const uc = form.watch(`plants.${plantIndex}.uc`);
   const geracaoProjetada = form.watch(`plants.${plantIndex}.geracaoProjetada`);
+  const estado = form.watch(`plants.${plantIndex}.address.estado`);
+
+  // Cálculos automáticos em tempo real
+  useEffect(() => {
+    if (potenciaModulo && quantidadeModulos) {
+      const total = calculateTotalPower(Number(potenciaModulo), Number(quantidadeModulos));
+      if (total !== potenciaTotalUsina) {
+        form.setValue(`plants.${plantIndex}.potenciaTotalUsina`, total);
+        
+        // Sugerir tipo de usina
+        const tipo = suggestPlantType(total);
+        form.setValue(`plants.${plantIndex}.tipoUsina`, tipo);
+      }
+    }
+  }, [potenciaModulo, quantidadeModulos, form, plantIndex, calculateTotalPower, suggestPlantType]);
+
+  useEffect(() => {
+    if (inversores && inversores.length > 0) {
+      const total = calculateInverterTotalPower(inversores);
+      if (total !== potenciaTotalInversores) {
+        form.setValue(`plants.${plantIndex}.potenciaTotalInversores`, total);
+      }
+    }
+  }, [inversores, form, plantIndex, calculateInverterTotalPower]);
+
+  useEffect(() => {
+    if (potenciaTotalUsina && estado) {
+      const generation = estimateGeneration(potenciaTotalUsina, estado);
+      if (generation.estimatedGeneration !== geracaoProjetada) {
+        form.setValue(`plants.${plantIndex}.geracaoProjetada`, generation.estimatedGeneration);
+      }
+    }
+  }, [potenciaTotalUsina, estado, form, plantIndex, estimateGeneration]);
 
   // Validações em tempo real
   const ucValidation = uc && concessionaria ? validateUC(uc, concessionaria) : { isValid: true, message: '' };
@@ -166,17 +211,9 @@ const PlantForm = ({ form, plantIndex, onRemove, canRemove, concessionaria }: Pl
   const addInverter = () => {
     appendInverter({
       marca: '',
-      potencia: 0,
-      quantidade: 0,
+      potencia: '',
+      quantidade: '',
     });
-  };
-
-  const formatNumber = (value: number): string => {
-    return value.toString().replace('.', ',');
-  };
-
-  const parseNumber = (value: string): number => {
-    return parseFloat(value.replace(',', '.')) || 0;
   };
 
   return (
@@ -554,7 +591,8 @@ const PlantForm = ({ form, plantIndex, onRemove, canRemove, concessionaria }: Pl
                         type="number" 
                         placeholder="580" 
                         {...field} 
-                        onChange={(e) => field.onChange(Number(e.target.value))}
+                        onChange={(e) => field.onChange(Number(e.target.value) || '')}
+                        value={field.value || ''}
                       />
                       {field.value === 580 && (
                         <Badge className="absolute -top-2 -right-2 bg-green-100 text-green-800 text-xs">
@@ -579,7 +617,8 @@ const PlantForm = ({ form, plantIndex, onRemove, canRemove, concessionaria }: Pl
                       type="number" 
                       placeholder="150" 
                       {...field} 
-                      onChange={(e) => field.onChange(Number(e.target.value))}
+                      onChange={(e) => field.onChange(Number(e.target.value) || '')}
+                      value={field.value || ''}
                     />
                   </FormControl>
                   <FormMessage />
@@ -597,7 +636,7 @@ const PlantForm = ({ form, plantIndex, onRemove, canRemove, concessionaria }: Pl
                     <div className="relative">
                       <Input 
                         {...field} 
-                        value={formatNumber(field.value || 0)}
+                        value={field.value ? field.value.toFixed(2).replace('.', ',') : '0,00'}
                         readOnly
                         className="bg-gray-50"
                       />
@@ -650,12 +689,11 @@ const PlantForm = ({ form, plantIndex, onRemove, canRemove, concessionaria }: Pl
                     <FormLabel>Potência (kW) *</FormLabel>
                     <FormControl>
                       <Input 
+                        type="number"
                         placeholder="50" 
-                        value={field.value ? formatNumber(field.value) : ''}
-                        onChange={(e) => {
-                          const value = parseNumber(e.target.value);
-                          field.onChange(value);
-                        }}
+                        {...field}
+                        onChange={(e) => field.onChange(Number(e.target.value) || '')}
+                        value={field.value || ''}
                       />
                     </FormControl>
                     <FormMessage />
@@ -674,10 +712,8 @@ const PlantForm = ({ form, plantIndex, onRemove, canRemove, concessionaria }: Pl
                         type="number" 
                         placeholder="2" 
                         {...field} 
-                        onChange={(e) => {
-                          const value = parseInt(e.target.value) || 0;
-                          field.onChange(value);
-                        }}
+                        onChange={(e) => field.onChange(Number(e.target.value) || '')}
+                        value={field.value || ''}
                       />
                     </FormControl>
                     <FormMessage />
@@ -712,7 +748,7 @@ const PlantForm = ({ form, plantIndex, onRemove, canRemove, concessionaria }: Pl
                     <div className="relative">
                       <Input 
                         {...field} 
-                        value={formatNumber(field.value || 0)}
+                        value={field.value ? field.value.toFixed(2).replace('.', ',') : '0,00'}
                         readOnly
                         className="bg-white"
                       />
@@ -739,7 +775,7 @@ const PlantForm = ({ form, plantIndex, onRemove, canRemove, concessionaria }: Pl
                     <div className="relative">
                       <Input 
                         {...field} 
-                        value={formatNumber(field.value || 0)}
+                        value={field.value ? field.value.toLocaleString('pt-BR') : '0'}
                         readOnly
                         className="bg-gray-50"
                       />

@@ -25,6 +25,7 @@ const GeneratorDistributorLoginForm = ({ form }: GeneratorDistributorLoginFormPr
   const ownerType = form.watch('owner.type');
   const ownerCpfCnpj = form.watch('owner.cpfCnpj');
   const ownerDataNascimento = form.watch('owner.dataNascimento');
+  const plants = form.watch('plants') || [];
 
   // Auto-fill quando os dados do proprietário mudarem
   useEffect(() => {
@@ -35,8 +36,13 @@ const GeneratorDistributorLoginForm = ({ form }: GeneratorDistributorLoginFormPr
       if (ownerType === 'fisica' && ownerDataNascimento) {
         form.setValue('distributorLogin.dataNascimento', ownerDataNascimento);
       }
+
+      // Preencher UC da primeira usina se disponível
+      if (plants.length > 0 && plants[0].uc) {
+        form.setValue('distributorLogin.uc', plants[0].uc);
+      }
     }
-  }, [ownerCpfCnpj, ownerDataNascimento, ownerType, form]);
+  }, [ownerCpfCnpj, ownerDataNascimento, ownerType, plants, form]);
 
   // Preencher automaticamente com dados do dono da usina
   const fillFromOwnerData = () => {
@@ -45,9 +51,14 @@ const GeneratorDistributorLoginForm = ({ form }: GeneratorDistributorLoginFormPr
       form.setValue('distributorLogin.dataNascimento', ownerDataNascimento);
     }
     
+    // Preencher UC da primeira usina se disponível
+    if (plants.length > 0 && plants[0].uc) {
+      form.setValue('distributorLogin.uc', plants[0].uc);
+    }
+    
     toast({
       title: "Dados preenchidos!",
-      description: "Dados do login preenchidos com informações do proprietário.",
+      description: "Dados do login preenchidos com informações do proprietário e primeira usina.",
     });
   };
 
@@ -149,7 +160,7 @@ const GeneratorDistributorLoginForm = ({ form }: GeneratorDistributorLoginFormPr
 
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
         <p className="text-blue-800 text-sm">
-          Para a concessionária Equatorial, os dados são preenchidos automaticamente com as informações do proprietário.
+          Para a concessionária Equatorial, os dados são preenchidos automaticamente com as informações do proprietário e primeira usina.
         </p>
         <Button 
           type="button" 
