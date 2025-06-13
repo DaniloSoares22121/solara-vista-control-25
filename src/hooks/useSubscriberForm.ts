@@ -117,15 +117,42 @@ export const useSubscriberForm = (existingData?: SubscriberDataFromDB) => {
     }
   }, [existingData, mapAddress, determineSubscriberType, isLoaded]);
 
-  // Auto-fill apenas para novos assinantes (removido para evitar conflitos na edição)
+  // Auto-fill para novos assinantes - EXECUTAR SEMPRE QUE OS DADOS MUDAREM
   useEffect(() => {
     if (isLoaded && !isEditing && !existingData) {
-      const newFormData = performAutoFill(formData);
-      if (newFormData !== formData) {
-        setFormData(newFormData);
+      console.log('🔄 [AUTO-FILL] Verificando necessidade de auto-fill...');
+      
+      // Executar auto-fill quando dados pessoais ou da empresa mudarem
+      const hasPersonalData = formData.subscriberType === 'person' && 
+        formData.personalData?.cpf && formData.personalData?.fullName;
+      
+      const hasCompanyData = formData.subscriberType === 'company' && 
+        formData.companyData?.cnpj && formData.companyData?.companyName;
+      
+      if (hasPersonalData || hasCompanyData) {
+        console.log('🔄 [AUTO-FILL] Executando auto-fill...');
+        const newFormData = performAutoFill(formData);
+        
+        // Apenas atualizar se houver mudanças
+        if (JSON.stringify(newFormData.energyAccount) !== JSON.stringify(formData.energyAccount)) {
+          console.log('✅ [AUTO-FILL] Atualizando dados da conta de energia');
+          setFormData(newFormData);
+        }
       }
     }
-  }, [formData.personalData, formData.companyData, isLoaded, isEditing, performAutoFill, existingData]);
+  }, [
+    formData.personalData?.cpf,
+    formData.personalData?.fullName,
+    formData.personalData?.partnerNumber,
+    formData.companyData?.cnpj,
+    formData.companyData?.companyName,
+    formData.companyData?.partnerNumber,
+    formData.subscriberType,
+    isLoaded,
+    isEditing,
+    performAutoFill,
+    existingData
+  ]);
 
   const updateFormData = useCallback((section: keyof SubscriberFormData, data: unknown) => {
     console.log('🔄 Atualizando formData:', section, data);
@@ -196,6 +223,7 @@ export const useSubscriberForm = (existingData?: SubscriberDataFromDB) => {
   }, [formData, removeContactAction]);
 
   const autoFillEnergyAccount = useCallback(() => {
+    console.log('🔄 [MANUAL AUTO-FILL] Executando preenchimento manual...');
     const newFormData = performAutoFill(formData);
     setFormData(newFormData);
     toast.success('Dados da conta de energia preenchidos automaticamente!', { duration: 1000 });
