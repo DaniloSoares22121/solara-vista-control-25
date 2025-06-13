@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { UseFormReturn } from 'react-hook-form';
 import { GeneratorFormData } from '@/types/generator';
-import { Upload, FileText, Trash2, X } from 'lucide-react';
+import { Upload, FileText, X } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 
 interface GeneratorAttachmentsFormProps {
@@ -33,7 +33,7 @@ const GeneratorAttachmentsForm = ({ form }: GeneratorAttachmentsFormProps) => {
   }, [uploadedFiles, form]);
 
   const handleFileUpload = (fieldName: string, file: File | null) => {
-    console.log('🔄 [FILE UPLOAD] Iniciando upload:', { fieldName, file: file?.name });
+    console.log('🔄 [FILE UPLOAD] Iniciando upload:', { fieldName, fileName: file?.name, fileSize: file?.size });
     
     if (!file) {
       console.log('❌ [FILE UPLOAD] Nenhum arquivo selecionado');
@@ -57,22 +57,26 @@ const GeneratorAttachmentsForm = ({ form }: GeneratorAttachmentsFormProps) => {
 
     console.log('✅ [FILE UPLOAD] Arquivo válido, processando...');
 
-    // Atualizar estado local usando callback para garantir que funcione
-    setUploadedFiles(prev => {
+    // Atualizar estado local - garantindo que o arquivo seja mantido corretamente
+    setUploadedFiles(prevFiles => {
       const newFiles = {
-        ...prev,
+        ...prevFiles,
         [fieldName]: file
       };
-      console.log('🔄 [FILE UPLOAD] Novo estado será:', newFiles);
+      console.log('🔄 [FILE UPLOAD] Estado anterior:', prevFiles);
+      console.log('🔄 [FILE UPLOAD] Novo estado completo:', newFiles);
       return newFiles;
     });
     
-    // Atualizar o formulário
+    // Atualizar o formulário com o arquivo real
     const currentAttachments = form.getValues('attachments') || {};
-    form.setValue('attachments', {
+    const newAttachments = {
       ...currentAttachments,
       [fieldName]: file
-    });
+    };
+    
+    console.log('📝 [FORM UPDATE] Atualizando formulário:', newAttachments);
+    form.setValue('attachments', newAttachments);
     
     console.log('✅ [FILE UPLOAD] Arquivo processado com sucesso!');
   };
@@ -172,9 +176,16 @@ const GeneratorAttachmentsForm = ({ form }: GeneratorAttachmentsFormProps) => {
                           accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
                           onChange={(e) => {
                             const selectedFile = e.target.files?.[0] || null;
-                            console.log('🔄 [FILE INPUT] Arquivo selecionado:', selectedFile?.name);
-                            handleFileUpload(name, selectedFile);
-                            field.onChange(selectedFile);
+                            console.log('🔄 [FILE INPUT] Arquivo selecionado no input:', { 
+                              fieldName: name, 
+                              fileName: selectedFile?.name,
+                              fileSize: selectedFile?.size 
+                            });
+                            
+                            if (selectedFile) {
+                              handleFileUpload(name, selectedFile);
+                              field.onChange(selectedFile);
+                            }
                           }}
                           className="hidden"
                         />
@@ -258,14 +269,19 @@ const GeneratorAttachmentsForm = ({ form }: GeneratorAttachmentsFormProps) => {
         </div>
       )}
 
-      {/* Debug Info */}
+      {/* Debug Info - Temporário */}
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
         <h4 className="font-medium text-blue-900 mb-2">Debug - Estado dos Arquivos</h4>
         <div className="text-xs text-blue-800 space-y-1">
-          <p><strong>Arquivos no estado:</strong> {Object.keys(uploadedFiles).length}</p>
+          <p><strong>Arquivos no estado local:</strong> {Object.keys(uploadedFiles).length}</p>
           <p><strong>Nomes dos arquivos:</strong> {Object.keys(uploadedFiles).join(', ') || 'Nenhum'}</p>
+          {Object.entries(uploadedFiles).map(([key, file]) => (
+            <p key={key}><strong>{key}:</strong> {file?.name || 'undefined'} ({file?.size || 0} bytes)</p>
+          ))}
+          
           <div className="bg-white p-2 rounded mt-2 max-h-32 overflow-auto">
-            <pre>{JSON.stringify(uploadedFiles, (key, value) => {
+            <p><strong>Form attachments:</strong></p>
+            <pre className="text-xs">{JSON.stringify(form.getValues('attachments'), (key, value) => {
               if (value instanceof File) {
                 return `File: ${value.name} (${value.size} bytes)`;
               }
