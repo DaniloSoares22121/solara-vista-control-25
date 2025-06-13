@@ -35,7 +35,8 @@ export const useCnpjLookup = () => {
     try {
       console.log('🔍 Buscando dados do CNPJ:', cleanCnpj);
       
-      const response = await fetch(`https://www.receitaws.com.br/v1/cnpj/${cleanCnpj}`);
+      // Usando API alternativa que suporta CORS
+      const response = await fetch(`https://publica.cnpj.ws/cnpj/${cleanCnpj}`);
       
       if (!response.ok) {
         throw new Error('Erro na consulta do CNPJ');
@@ -43,31 +44,62 @@ export const useCnpjLookup = () => {
       
       const data = await response.json();
       
-      if (data.status === 'ERROR') {
-        toast.error(data.message || 'CNPJ não encontrado');
+      if (data.status === 400 || data.erro) {
+        toast.error('CNPJ não encontrado ou inválido');
         return null;
       }
       
       console.log('✅ Dados do CNPJ encontrados:', data);
       
+      // Mapeamento dos dados da API publica.cnpj.ws
       return {
-        cnpj: data.cnpj,
-        nome: data.nome,
-        fantasia: data.fantasia,
-        logradouro: data.logradouro,
-        numero: data.numero,
-        complemento: data.complemento,
-        bairro: data.bairro,
-        municipio: data.municipio,
-        uf: data.uf,
-        cep: data.cep,
-        telefone: data.telefone,
-        email: data.email,
+        cnpj: data.estabelecimento?.cnpj || cleanCnpj,
+        nome: data.razao_social || '',
+        fantasia: data.estabelecimento?.nome_fantasia || '',
+        logradouro: data.estabelecimento?.logradouro || '',
+        numero: data.estabelecimento?.numero || '',
+        complemento: data.estabelecimento?.complemento || '',
+        bairro: data.estabelecimento?.bairro || '',
+        municipio: data.estabelecimento?.cidade?.nome || '',
+        uf: data.estabelecimento?.estado?.sigla || '',
+        cep: data.estabelecimento?.cep || '',
+        telefone: data.estabelecimento?.telefone1 || '',
+        email: data.estabelecimento?.email || '',
       };
     } catch (error) {
       console.error('Erro ao buscar CNPJ:', error);
-      toast.error('Erro ao consultar CNPJ. Tente novamente.');
-      return null;
+      
+      // Fallback para API BrasilAPI que também suporta CORS
+      try {
+        console.log('🔄 Tentando API alternativa...');
+        const fallbackResponse = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${cleanCnpj}`);
+        
+        if (!fallbackResponse.ok) {
+          throw new Error('Erro na consulta do CNPJ - API alternativa');
+        }
+        
+        const fallbackData = await fallbackResponse.json();
+        console.log('✅ Dados encontrados via API alternativa:', fallbackData);
+        
+        return {
+          cnpj: fallbackData.cnpj || cleanCnpj,
+          nome: fallbackData.razao_social || '',
+          fantasia: fallbackData.nome_fantasia || '',
+          logradouro: fallbackData.logradouro || '',
+          numero: fallbackData.numero || '',
+          complemento: fallbackData.complemento || '',
+          bairro: fallbackData.bairro || '',
+          municipio: fallbackData.municipio || '',
+          uf: fallbackData.uf || '',
+          cep: fallbackData.cep || '',
+          telefone: fallbackData.ddd_telefone_1 || '',
+          email: fallbackData.email || '',
+        };
+      } catch (fallbackError) {
+        console.error('Erro na API alternativa:', fallbackError);
+        toast.error('Erro ao consultar CNPJ. Tente novamente em alguns instantes.');
+        return null;
+      }
     } finally {
       setIsLoading(false);
     }
