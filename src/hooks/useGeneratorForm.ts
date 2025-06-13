@@ -75,6 +75,8 @@ export const useGeneratorForm = () => {
     const currentPlants = form.getValues('plants');
     const owner = form.getValues('owner');
     
+    console.log('🌱 [ADD PLANT] Dados do proprietário para auto-fill:', owner);
+    
     const newPlant = {
       apelido: '',
       uc: '',
@@ -86,13 +88,13 @@ export const useGeneratorForm = () => {
       ownerDataNascimento: owner.dataNascimento || '',
       ownerNumeroParceiroNegocio: owner.numeroParceiroNegocio || '',
       address: {
-        cep: owner.address.cep || '',
-        endereco: owner.address.endereco || '',
-        numero: owner.address.numero || '',
-        complemento: owner.address.complemento || '',
-        bairro: owner.address.bairro || '',
-        cidade: owner.address.cidade || '',
-        estado: owner.address.estado || ''
+        cep: owner.address?.cep || '',
+        endereco: owner.address?.endereco || '',
+        numero: owner.address?.numero || '',
+        complemento: owner.address?.complemento || '',
+        bairro: owner.address?.bairro || '',
+        cidade: owner.address?.cidade || '',
+        estado: owner.address?.estado || ''
       },
       contacts: [],
       observacoes: '',
@@ -106,9 +108,26 @@ export const useGeneratorForm = () => {
       observacoesInstalacao: ''
     };
 
-    console.log('✅ [ADD PLANT] Adicionando usina com dados do proprietário:', newPlant);
-    form.setValue('plants', [...currentPlants, newPlant]);
-  }, [form]);
+    console.log('✅ [ADD PLANT] Nova usina criada com auto-fill:', newPlant);
+    
+    const updatedPlants = [...currentPlants, newPlant];
+    form.setValue('plants', updatedPlants);
+    
+    // Aplicar auto-fill adicional usando o hook de mapeamento
+    const currentFormData = form.getValues();
+    const updatedFormData = performAutoFillPlant(currentFormData, updatedPlants.length - 1);
+    
+    // Atualizar apenas se houve mudanças
+    if (JSON.stringify(updatedFormData.plants[updatedPlants.length - 1]) !== JSON.stringify(newPlant)) {
+      form.setValue('plants', updatedFormData.plants);
+      console.log('✅ [ADD PLANT] Auto-fill adicional aplicado pela função de mapeamento');
+    }
+    
+    toast({
+      title: "Usina adicionada!",
+      description: "Nova usina adicionada com dados do proprietário preenchidos automaticamente.",
+    });
+  }, [form, performAutoFillPlant]);
 
   const removePlant = (index: number) => {
     const currentPlants = form.getValues('plants');

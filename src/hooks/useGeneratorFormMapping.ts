@@ -7,26 +7,40 @@ export const useGeneratorFormMapping = () => {
     console.log('🔄 [AUTO-FILL PLANT] Executando auto-fill para usina:', plantIndex);
     
     const owner = formData.owner;
-    if (!owner) return formData;
+    if (!owner) {
+      console.log('❌ [AUTO-FILL PLANT] Dados do proprietário não encontrados');
+      return formData;
+    }
 
     const updatedFormData = { ...formData };
     const plant = updatedFormData.plants[plantIndex];
     
-    if (plant && owner.cpfCnpj && owner.name) {
+    if (plant) {
       console.log('📋 [AUTO-FILL PLANT] Preenchendo dados da usina com dados do proprietário');
       
+      // Dados básicos do proprietário
       plant.ownerType = owner.type;
-      plant.ownerCpfCnpj = owner.cpfCnpj;
-      plant.ownerName = owner.name;
-      plant.ownerNumeroParceiroNegocio = owner.numeroParceiroNegocio;
+      plant.ownerCpfCnpj = owner.cpfCnpj || '';
+      plant.ownerName = owner.name || '';
+      plant.ownerNumeroParceiroNegocio = owner.numeroParceiroNegocio || '';
       
-      if (owner.type === 'fisica') {
-        plant.ownerDataNascimento = owner.dataNascimento || '';
+      // Data de nascimento apenas para pessoa física
+      if (owner.type === 'fisica' && owner.dataNascimento) {
+        plant.ownerDataNascimento = owner.dataNascimento;
       }
 
-      // Copiar endereço se a usina não tiver endereço preenchido
-      if (!plant.address.cep && owner.address.cep) {
-        plant.address = { ...owner.address };
+      // Copiar endereço completo do proprietário
+      if (owner.address) {
+        plant.address = {
+          cep: owner.address.cep || '',
+          endereco: owner.address.endereco || '',
+          numero: owner.address.numero || '',
+          complemento: owner.address.complemento || '',
+          bairro: owner.address.bairro || '',
+          cidade: owner.address.cidade || '',
+          estado: owner.address.estado || ''
+        };
+        console.log('📍 [AUTO-FILL PLANT] Endereço copiado:', plant.address);
       }
 
       console.log('✅ [AUTO-FILL PLANT] Dados da usina preenchidos automaticamente');
@@ -39,19 +53,22 @@ export const useGeneratorFormMapping = () => {
     console.log('🔄 [AUTO-FILL DISTRIBUTOR] Executando auto-fill para login da distribuidora');
     
     const owner = formData.owner;
-    if (!owner || !owner.cpfCnpj) return formData;
+    if (!owner || !owner.cpfCnpj) {
+      console.log('❌ [AUTO-FILL DISTRIBUTOR] Dados do proprietário incompletos');
+      return formData;
+    }
 
     const updatedFormData = { ...formData };
     
-    if (!updatedFormData.distributorLogin.cpfCnpj) {
-      updatedFormData.distributorLogin.cpfCnpj = owner.cpfCnpj;
-      
-      if (owner.type === 'fisica' && owner.dataNascimento) {
-        updatedFormData.distributorLogin.dataNascimento = owner.dataNascimento;
-      }
-      
-      console.log('✅ [AUTO-FILL DISTRIBUTOR] Dados do login preenchidos automaticamente');
+    // Sempre preencher o CPF/CNPJ
+    updatedFormData.distributorLogin.cpfCnpj = owner.cpfCnpj;
+    
+    // Preencher data de nascimento apenas para pessoa física
+    if (owner.type === 'fisica' && owner.dataNascimento) {
+      updatedFormData.distributorLogin.dataNascimento = owner.dataNascimento;
     }
+    
+    console.log('✅ [AUTO-FILL DISTRIBUTOR] Dados do login preenchidos automaticamente:', updatedFormData.distributorLogin);
 
     return updatedFormData;
   }, []);
