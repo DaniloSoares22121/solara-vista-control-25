@@ -123,10 +123,7 @@ export const useGeneratorForm = () => {
       console.log('✅ [ADD PLANT] Auto-fill adicional aplicado pela função de mapeamento');
     }
     
-    toast({
-      title: "Usina adicionada!",
-      description: "Nova usina adicionada com dados do proprietário preenchidos automaticamente.",
-    });
+    toast("Nova usina adicionada com dados do proprietário preenchidos automaticamente.");
   }, [form, performAutoFillPlant]);
 
   const removePlant = (index: number) => {
