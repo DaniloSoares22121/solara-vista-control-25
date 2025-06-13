@@ -56,6 +56,13 @@ const SubscriberForm: React.FC<SubscriberFormProps> = ({
       const result = await submitForm(subscriberId);
       if (result.success && onSuccess) {
         onSuccess(subscriberId);
+        
+        // Se não está editando (é um novo cadastro), recarregar a página após um breve delay
+        if (!subscriberId) {
+          setTimeout(() => {
+            window.location.reload();
+          }, 1500);
+        }
       }
     } catch (error) {
       toast.error('Erro ao salvar assinante. Tente novamente.');

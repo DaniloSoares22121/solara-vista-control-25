@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { SubscriberFormData } from '@/types/subscriber';
 import { FormProvider } from 'react-hook-form';
@@ -104,6 +103,7 @@ export const useSubscriberSteps = ({
             onCepLookup={(cep) => handleCepLookup(cep, 'energy')}
             onAutoFill={autoFillEnergyAccount}
             form={form}
+            subscriberData={formData}
           />
         </FormProvider>
       )

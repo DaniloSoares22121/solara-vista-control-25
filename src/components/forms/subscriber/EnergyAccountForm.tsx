@@ -1,9 +1,12 @@
+
 import React from 'react';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { MaskedInput } from '@/components/ui/masked-input';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
+import { Copy } from 'lucide-react';
 import { UseFormReturn } from 'react-hook-form';
 import { EnergyAccount, Address } from '@/types/subscriber';
 import { CepInput } from '@/components/ui/cep-input';
@@ -14,9 +17,10 @@ interface EnergyAccountFormProps {
   onCepLookup: (cep: string) => void;
   onAutoFill: () => void;
   form: UseFormReturn<any>;
+  subscriberData?: any;
 }
 
-const EnergyAccountForm = ({ data, onUpdate, onCepLookup, form }: EnergyAccountFormProps) => {
+const EnergyAccountForm = ({ data, onUpdate, onCepLookup, form, subscriberData }: EnergyAccountFormProps) => {
   const handleAddressChange = (addressUpdate: Partial<Address>) => {
     const currentAddress = data.address || {
       cep: '',
@@ -51,6 +55,43 @@ const EnergyAccountForm = ({ data, onUpdate, onCepLookup, form }: EnergyAccountF
       form.setValue('energyAccount.address.city', cepData.localidade);
       form.setValue('energyAccount.address.state', cepData.uf);
     }, 100);
+  };
+
+  const handleCopyFromResidentialAddress = () => {
+    let residentialAddress = null;
+    
+    // Buscar endereço residencial dependendo do tipo de assinante
+    if (subscriberData?.subscriberType === 'person' && subscriberData?.personalData?.address) {
+      residentialAddress = subscriberData.personalData.address;
+    } else if (subscriberData?.subscriberType === 'company' && subscriberData?.companyData?.address) {
+      residentialAddress = subscriberData.companyData.address;
+    }
+    
+    if (residentialAddress) {
+      console.log('Copiando endereço residencial para conta de energia:', residentialAddress);
+      
+      // Atualizar o estado local
+      handleAddressChange({
+        cep: residentialAddress.cep || '',
+        street: residentialAddress.street || residentialAddress.endereco || '',
+        number: residentialAddress.number || residentialAddress.numero || '',
+        complement: residentialAddress.complement || residentialAddress.complemento || '',
+        neighborhood: residentialAddress.neighborhood || residentialAddress.bairro || '',
+        city: residentialAddress.city || residentialAddress.cidade || '',
+        state: residentialAddress.state || residentialAddress.estado || '',
+      });
+      
+      // Atualizar os campos do formulário
+      setTimeout(() => {
+        form.setValue('energyAccount.address.cep', residentialAddress.cep || '');
+        form.setValue('energyAccount.address.street', residentialAddress.street || residentialAddress.endereco || '');
+        form.setValue('energyAccount.address.number', residentialAddress.number || residentialAddress.numero || '');
+        form.setValue('energyAccount.address.complement', residentialAddress.complement || residentialAddress.complemento || '');
+        form.setValue('energyAccount.address.neighborhood', residentialAddress.neighborhood || residentialAddress.bairro || '');
+        form.setValue('energyAccount.address.city', residentialAddress.city || residentialAddress.cidade || '');
+        form.setValue('energyAccount.address.state', residentialAddress.state || residentialAddress.estado || '');
+      }, 100);
+    }
   };
 
   // Sincronizar os valores do estado com o formulário quando data mudar
@@ -255,12 +296,27 @@ const EnergyAccountForm = ({ data, onUpdate, onCepLookup, form }: EnergyAccountF
 
       {/* Endereço da Conta de Energia */}
       <div className="p-6 bg-gray-50 rounded-lg border">
-        <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-          <div className="w-6 h-6 bg-gray-500 rounded-full flex items-center justify-center">
-            <span className="text-white font-bold text-xs">📍</span>
-          </div>
-          Endereço da Conta de Energia
-        </h4>
+        <div className="flex items-center justify-between mb-4">
+          <h4 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+            <div className="w-6 h-6 bg-gray-500 rounded-full flex items-center justify-center">
+              <span className="text-white font-bold text-xs">📍</span>
+            </div>
+            Endereço da Conta de Energia
+          </h4>
+          
+          {subscriberData && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleCopyFromResidentialAddress}
+              className="flex items-center gap-2"
+            >
+              <Copy className="w-4 h-4" />
+              Copiar Endereço Residencial
+            </Button>
+          )}
+        </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField

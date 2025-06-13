@@ -78,7 +78,12 @@ const Assinantes = () => {
     if (editingSubscriber) {
       toast.success('Assinante atualizado! A lista foi atualizada automaticamente.', { duration: 2000 });
     } else {
-      toast.success('Novo assinante cadastrado! Ele já aparece na sua lista.', { duration: 2000 });
+      toast.success('Novo assinante cadastrado! Recarregando a página...', { duration: 2000 });
+      
+      // Para novos cadastros, garantir que a página seja recarregada
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500);
     }
   };
 
