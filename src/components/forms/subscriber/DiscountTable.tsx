@@ -3,13 +3,16 @@ import React from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 
 interface DiscountTableProps {
-  currentKwh: number;
-  currentLoyalty: 'none' | 'oneYear' | 'twoYears';
+  contractedKwh: number;
+  loyalty: 'none' | 'oneYear' | 'twoYears';
+  onDiscountSelect: (percentage: number) => void;
+  selectedDiscount: number;
 }
 
-const DiscountTable = ({ currentKwh, currentLoyalty }: DiscountTableProps) => {
+const DiscountTable = ({ contractedKwh, loyalty, onDiscountSelect, selectedDiscount }: DiscountTableProps) => {
   const discountRanges = [
     { min: 0, max: 399, none: 0, oneYear: 0, twoYears: 0 },
     { min: 400, max: 599, none: 13, oneYear: 15, twoYears: 20 },
@@ -23,7 +26,7 @@ const DiscountTable = ({ currentKwh, currentLoyalty }: DiscountTableProps) => {
     return discountRanges.find(range => kwh >= range.min && kwh <= range.max);
   };
 
-  const currentRange = getCurrentRange(currentKwh);
+  const currentRange = getCurrentRange(contractedKwh);
 
   return (
     <Card className="mt-6">
@@ -41,6 +44,7 @@ const DiscountTable = ({ currentKwh, currentLoyalty }: DiscountTableProps) => {
               <TableHead className="text-center">Sem Fidelidade</TableHead>
               <TableHead className="text-center">1 Ano</TableHead>
               <TableHead className="text-center">2 Anos</TableHead>
+              <TableHead className="text-center">Ação</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -62,19 +66,63 @@ const DiscountTable = ({ currentKwh, currentLoyalty }: DiscountTableProps) => {
                     )}
                   </TableCell>
                   <TableCell className="text-center">
-                    <span className={`font-semibold ${isCurrentRange && currentLoyalty === 'none' ? 'text-green-600' : ''}`}>
-                      {range.none}%
-                    </span>
+                    <div className="flex items-center justify-center gap-2">
+                      <span className={`font-semibold ${isCurrentRange && loyalty === 'none' ? 'text-green-600' : ''}`}>
+                        {range.none}%
+                      </span>
+                      {isCurrentRange && loyalty === 'none' && (
+                        <Button
+                          size="sm"
+                          variant={selectedDiscount === range.none ? "default" : "outline"}
+                          onClick={() => onDiscountSelect(range.none)}
+                        >
+                          Aplicar
+                        </Button>
+                      )}
+                    </div>
                   </TableCell>
                   <TableCell className="text-center">
-                    <span className={`font-semibold ${isCurrentRange && currentLoyalty === 'oneYear' ? 'text-green-600' : ''}`}>
-                      {range.oneYear}%
-                    </span>
+                    <div className="flex items-center justify-center gap-2">
+                      <span className={`font-semibold ${isCurrentRange && loyalty === 'oneYear' ? 'text-green-600' : ''}`}>
+                        {range.oneYear}%
+                      </span>
+                      {isCurrentRange && loyalty === 'oneYear' && (
+                        <Button
+                          size="sm"
+                          variant={selectedDiscount === range.oneYear ? "default" : "outline"}
+                          onClick={() => onDiscountSelect(range.oneYear)}
+                        >
+                          Aplicar
+                        </Button>
+                      )}
+                    </div>
                   </TableCell>
                   <TableCell className="text-center">
-                    <span className={`font-semibold ${isCurrentRange && currentLoyalty === 'twoYears' ? 'text-green-600' : ''}`}>
-                      {range.twoYears}%
-                    </span>
+                    <div className="flex items-center justify-center gap-2">
+                      <span className={`font-semibold ${isCurrentRange && loyalty === 'twoYears' ? 'text-green-600' : ''}`}>
+                        {range.twoYears}%
+                      </span>
+                      {isCurrentRange && loyalty === 'twoYears' && (
+                        <Button
+                          size="sm"
+                          variant={selectedDiscount === range.twoYears ? "default" : "outline"}
+                          onClick={() => onDiscountSelect(range.twoYears)}
+                        >
+                          Aplicar
+                        </Button>
+                      )}
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-center">
+                    {isCurrentRange && (
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={() => onDiscountSelect(currentRange[loyalty])}
+                      >
+                        Auto
+                      </Button>
+                    )}
                   </TableCell>
                 </TableRow>
               );
@@ -82,11 +130,14 @@ const DiscountTable = ({ currentKwh, currentLoyalty }: DiscountTableProps) => {
           </TableBody>
         </Table>
         
-        {currentKwh > 0 && currentRange && (
+        {contractedKwh > 0 && currentRange && (
           <div className="mt-4 p-4 bg-green-50 rounded-lg border border-green-200">
             <p className="text-sm text-green-800">
-              <strong>Desconto aplicado:</strong> {currentRange[currentLoyalty]}% 
-              para {currentKwh} kWh com {currentLoyalty === 'none' ? 'sem fidelidade' : currentLoyalty === 'oneYear' ? '1 ano de fidelidade' : '2 anos de fidelidade'}
+              <strong>Desconto aplicado:</strong> {selectedDiscount}% 
+              para {contractedKwh} kWh com {loyalty === 'none' ? 'sem fidelidade' : loyalty === 'oneYear' ? '1 ano de fidelidade' : '2 anos de fidelidade'}
+            </p>
+            <p className="text-xs text-green-600 mt-1">
+              Desconto sugerido para esta faixa: {currentRange[loyalty]}%
             </p>
           </div>
         )}
