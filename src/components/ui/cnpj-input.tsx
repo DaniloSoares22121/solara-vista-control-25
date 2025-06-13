@@ -26,7 +26,7 @@ export const CnpjInput: React.FC<CnpjInputProps> = ({
   const searchTimeoutRef = useRef<NodeJS.Timeout>();
   const lastSearchedRef = useRef<string>('');
 
-  // Debounce para evitar muitas chamadas à API
+  // Debounce reduzido para 1 segundo para ser mais rápido
   useEffect(() => {
     if (searchTimeoutRef.current) {
       clearTimeout(searchTimeoutRef.current);
@@ -34,7 +34,7 @@ export const CnpjInput: React.FC<CnpjInputProps> = ({
 
     searchTimeoutRef.current = setTimeout(() => {
       setDebouncedValue(value);
-    }, 1500); // Aumentei o debounce para 1.5 segundos
+    }, 1000); // Reduzido para 1 segundo
 
     return () => {
       if (searchTimeoutRef.current) {
