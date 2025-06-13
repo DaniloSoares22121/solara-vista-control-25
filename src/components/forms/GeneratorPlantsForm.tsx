@@ -1,4 +1,3 @@
-
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -68,12 +67,12 @@ const GeneratorPlantsForm = ({ form }: GeneratorPlantsFormProps) => {
       observacoes: '',
       marcaModulo: '',
       potenciaModulo: 580, // Sugestão automática para 2024
-      quantidadeModulos: '',
+      quantidadeModulos: 0, // Changed from empty string to 0
       potenciaTotalUsina: 0,
       inversores: [{
         marca: '',
-        potencia: '',
-        quantidade: '',
+        potencia: 0, // Changed from empty string to 0
+        quantidade: 0, // Changed from empty string to 0
       }],
       potenciaTotalInversores: 0,
       geracaoProjetada: 0,
@@ -211,8 +210,8 @@ const PlantForm = ({ form, plantIndex, onRemove, canRemove, concessionaria }: Pl
   const addInverter = () => {
     appendInverter({
       marca: '',
-      potencia: '',
-      quantidade: '',
+      potencia: 0, // Changed from empty string to 0
+      quantidade: 0, // Changed from empty string to 0
     });
   };
 
@@ -617,7 +616,7 @@ const PlantForm = ({ form, plantIndex, onRemove, canRemove, concessionaria }: Pl
                       type="number" 
                       placeholder="150" 
                       {...field} 
-                      onChange={(e) => field.onChange(Number(e.target.value) || '')}
+                      onChange={(e) => field.onChange(Number(e.target.value) || 0)}
                       value={field.value || ''}
                     />
                   </FormControl>
@@ -692,7 +691,7 @@ const PlantForm = ({ form, plantIndex, onRemove, canRemove, concessionaria }: Pl
                         type="number"
                         placeholder="50" 
                         {...field}
-                        onChange={(e) => field.onChange(Number(e.target.value) || '')}
+                        onChange={(e) => field.onChange(Number(e.target.value) || 0)}
                         value={field.value || ''}
                       />
                     </FormControl>
@@ -712,7 +711,7 @@ const PlantForm = ({ form, plantIndex, onRemove, canRemove, concessionaria }: Pl
                         type="number" 
                         placeholder="2" 
                         {...field} 
-                        onChange={(e) => field.onChange(Number(e.target.value) || '')}
+                        onChange={(e) => field.onChange(Number(e.target.value) || 0)}
                         value={field.value || ''}
                       />
                     </FormControl>
