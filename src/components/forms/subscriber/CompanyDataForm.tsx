@@ -160,7 +160,8 @@ const CompanyDataForm = ({
   };
 
   const handleAdministratorCepFound = (cepData: any) => {
-    console.log('CEP encontrado para administrador:', cepData);
+    console.log('📍 [ADMIN CEP] CEP encontrado para administrador:', cepData);
+    
     const addressUpdate = {
       cep: cepData.cep,
       street: cepData.logradouro,
@@ -171,12 +172,13 @@ const CompanyDataForm = ({
     
     handleAdministratorAddressChange(addressUpdate);
     
-    // Atualizar os campos do formulário
+    // Atualizar os campos do formulário do administrador
     setTimeout(() => {
-      form.setValue('administratorData.address.street', cepData.logradouro);
-      form.setValue('administratorData.address.neighborhood', cepData.bairro);
-      form.setValue('administratorData.address.city', cepData.localidade);
-      form.setValue('administratorData.address.state', cepData.uf);
+      console.log('📍 [ADMIN CEP] Preenchendo campos do formulário...');
+      form.setValue('administratorData.address.street', cepData.logradouro || '');
+      form.setValue('administratorData.address.neighborhood', cepData.bairro || '');
+      form.setValue('administratorData.address.city', cepData.localidade || '');
+      form.setValue('administratorData.address.state', cepData.uf || '');
     }, 100);
   };
 
