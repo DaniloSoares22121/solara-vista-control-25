@@ -70,15 +70,16 @@ export const useGeneratorForm = () => {
     }
   }, [ownerCpfCnpj, ownerDataNascimento, form, performAutoFillDistributorLogin]);
 
-  // Auto-fill para usinas quando os dados do proprietário mudarem
+  // Auto-fill para usinas quando os dados do proprietário mudarem ou quando usinas forem adicionadas
   useEffect(() => {
-    if (ownerCpfCnpj && ownerName && plants && plants.length > 0) {
-      console.log('🔄 [GENERATOR FORM] Dados do proprietário mudaram, executando auto-fill das usinas');
+    if (plants && plants.length > 0) {
+      console.log('🔄 [GENERATOR FORM] Executando auto-fill das usinas');
       const currentFormData = form.getValues();
       
       plants.forEach((plant, index) => {
         const updatedFormData = performAutoFillPlant(currentFormData, index);
         if (JSON.stringify(updatedFormData.plants[index]) !== JSON.stringify(currentFormData.plants[index])) {
+          console.log(`🔄 [GENERATOR FORM] Atualizando usina ${index + 1} com dados do proprietário`);
           form.setValue(`plants.${index}`, updatedFormData.plants[index]);
         }
       });
@@ -126,11 +127,13 @@ export const useGeneratorForm = () => {
     const plantIndex = currentPlants.length;
     form.setValue('plants', [...currentPlants, newPlant]);
 
-    // Auto-fill dos dados da nova usina
+    // Auto-fill imediato dos dados da nova usina
+    console.log('🔄 [GENERATOR FORM] Nova usina adicionada, executando auto-fill imediatamente');
     setTimeout(() => {
       const formData = form.getValues();
       const updatedFormData = performAutoFillPlant(formData, plantIndex);
       if (updatedFormData.plants[plantIndex]) {
+        console.log(`✅ [GENERATOR FORM] Auto-fill executado para nova usina ${plantIndex + 1}`);
         form.setValue(`plants.${plantIndex}`, updatedFormData.plants[plantIndex]);
       }
     }, 100);

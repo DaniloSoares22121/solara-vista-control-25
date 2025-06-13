@@ -13,7 +13,8 @@ export const useGeneratorFormMapping = () => {
     const plant = updatedFormData.plants[plantIndex];
     
     if (plant) {
-      console.log('📋 [AUTO-FILL PLANT] Preenchendo dados da usina com dados do proprietário');
+      console.log('📋 [AUTO-FILL PLANT] Dados do proprietário encontrados:', owner);
+      console.log('📋 [AUTO-FILL PLANT] Usina antes do preenchimento:', plant);
       
       // Preencher dados básicos da usina com dados do proprietário
       plant.ownerType = owner.type;
@@ -36,6 +37,7 @@ export const useGeneratorFormMapping = () => {
           cidade: owner.address.cidade || '',
           estado: owner.address.estado || ''
         };
+        console.log('📋 [AUTO-FILL PLANT] Endereço copiado:', plant.address);
       }
 
       console.log('✅ [AUTO-FILL PLANT] Dados da usina preenchidos automaticamente:', plant);
