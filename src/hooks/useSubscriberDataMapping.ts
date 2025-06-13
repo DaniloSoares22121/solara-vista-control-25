@@ -38,7 +38,7 @@ export const useSubscriberDataMapping = () => {
     if (formData.subscriberType === 'person' && formData.personalData) {
       const { cpf, fullName, birthDate, partnerNumber, address } = formData.personalData;
       
-      console.log('📋 [AUTO-FILL] Dados PF encontrados:', { cpf, fullName, partnerNumber });
+      console.log('📋 [AUTO-FILL] Dados PF encontrados:', { cpf, fullName, partnerNumber, birthDate });
       
       if (cpf && fullName) {
         const updatedFormData = {

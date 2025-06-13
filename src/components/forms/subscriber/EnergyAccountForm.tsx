@@ -9,7 +9,6 @@ import { SubscriberFormData } from '@/types/subscriber';
 import { Zap, MapPin, FileText, Copy } from 'lucide-react';
 import { useCepLookup } from '@/hooks/useCepLookup';
 import { useEffect } from 'react';
-import { toast } from 'sonner';
 
 interface EnergyAccountFormProps {
   form: UseFormReturn<SubscriberFormData>;
@@ -60,10 +59,7 @@ const EnergyAccountForm = ({ form }: EnergyAccountFormProps) => {
           form.setValue('energyAccount.address.state', personalData.address.state);
         }
         
-        toast.success('Dados preenchidos automaticamente!');
         console.log('✅ [ENERGY ACCOUNT] Dados PF preenchidos automaticamente');
-      } else {
-        toast.error('Preencha primeiro os dados pessoais');
       }
     } else if (subscriberType === 'company') {
       const companyData = form.getValues('companyData');
@@ -87,10 +83,7 @@ const EnergyAccountForm = ({ form }: EnergyAccountFormProps) => {
           form.setValue('energyAccount.address.state', companyData.address.state);
         }
         
-        toast.success('Dados preenchidos automaticamente!');
         console.log('✅ [ENERGY ACCOUNT] Dados PJ preenchidos automaticamente');
-      } else {
-        toast.error('Preencha primeiro os dados da empresa');
       }
     }
   };

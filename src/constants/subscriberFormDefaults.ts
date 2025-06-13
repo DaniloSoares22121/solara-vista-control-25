@@ -1,41 +1,6 @@
 
 import { SubscriberFormData } from '@/types/subscriber';
 
-const defaultNotificationSettings = {
-  whatsapp: {
-    sendInvoices: true,
-    paymentReceived: false,
-    createCharge: true,
-    changeValueOrDate: true,
-    oneDayBefore: true,
-    onVencimentoDay: true,
-    oneDayAfter: true,
-    threeDaysAfter: true,
-    fiveDaysAfter: true,
-    sevenDaysAfter: true,
-    fifteenDaysAfter: true,
-    twentyDaysAfter: true,
-    twentyFiveDaysAfter: true,
-    thirtyDaysAfter: true,
-    afterThirtyDays: true,
-  },
-  email: {
-    createCharge: true,
-    changeValueOrDate: true,
-    oneDayBefore: true,
-    onVencimentoDay: true,
-    oneDayAfter: true,
-    threeDaysAfter: true,
-    fiveDaysAfter: true,
-    sevenDaysAfter: true,
-    fifteenDaysAfter: true,
-    twentyDaysAfter: true,
-    twentyFiveDaysAfter: true,
-    thirtyDaysAfter: true,
-    afterThirtyDays: true,
-  },
-};
-
 export const initialFormData: SubscriberFormData = {
   concessionaria: 'equatorial-goias',
   subscriberType: 'person',
@@ -129,9 +94,42 @@ export const initialFormData: SubscriberFormData = {
   planDetails: {
     paysPisAndCofins: true,
     paysWireB: false,
-    addDistributorValue: true,
+    addDistributorValue: false, // Alterado para false por padrão
     exemptFromPayment: false,
   },
-  notificationSettings: defaultNotificationSettings,
+  notificationSettings: {
+    whatsapp: {
+      sendInvoices: true,
+      paymentReceived: false,
+      createCharge: true,
+      changeValueOrDate: true,
+      oneDayBefore: true,
+      onVencimentoDay: true,
+      oneDayAfter: true,
+      threeDaysAfter: true,
+      fiveDaysAfter: true,
+      sevenDaysAfter: true,
+      fifteenDaysAfter: true,
+      twentyDaysAfter: true,
+      twentyFiveDaysAfter: true,
+      thirtyDaysAfter: true,
+      afterThirtyDays: true,
+    },
+    email: {
+      createCharge: true,
+      changeValueOrDate: true,
+      oneDayBefore: true,
+      onVencimentoDay: true,
+      oneDayAfter: true,
+      threeDaysAfter: true,
+      fiveDaysAfter: true,
+      sevenDaysAfter: true,
+      fifteenDaysAfter: true,
+      twentyDaysAfter: true,
+      twentyFiveDaysAfter: true,
+      thirtyDaysAfter: true,
+      afterThirtyDays: true,
+    },
+  },
   attachments: {},
 };
