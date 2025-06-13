@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
@@ -8,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { UseFormReturn } from 'react-hook-form';
 import { CompanyData, AdministratorData, Address } from '@/types/subscriber';
 import { CepInput } from '@/components/ui/cep-input';
+import { CnpjInput } from '@/components/ui/cnpj-input';
 import ContactsSection from './ContactsSection';
 
 interface CompanyDataFormProps {
@@ -38,6 +38,52 @@ const CompanyDataForm = ({
     if (typeof value === 'string') return value;
     if (typeof value === 'object') return '';
     return String(value);
+  };
+
+  const handleCnpjFound = (cnpjData: any) => {
+    console.log('📋 Dados do CNPJ encontrados:', cnpjData);
+    
+    // Preencher dados da empresa
+    const companyUpdates: Partial<CompanyData> = {
+      companyName: cnpjData.nome,
+      fantasyName: cnpjData.fantasia || '',
+      phone: cnpjData.telefone || '',
+      email: cnpjData.email || '',
+    };
+    
+    // Preencher endereço
+    const addressUpdates: Partial<Address> = {
+      cep: cnpjData.cep?.replace(/\D/g, '').replace(/(\d{5})(\d{3})/, '$1-$2') || '',
+      street: cnpjData.logradouro || '',
+      number: cnpjData.numero || '',
+      complement: cnpjData.complemento || '',
+      neighborhood: cnpjData.bairro || '',
+      city: cnpjData.municipio || '',
+      state: cnpjData.uf || '',
+    };
+    
+    // Atualizar dados da empresa
+    onUpdateCompany({
+      ...companyUpdates,
+      address: { ...companyData?.address, ...addressUpdates }
+    });
+    
+    // Atualizar campos do formulário
+    setTimeout(() => {
+      if (cnpjData.nome) form.setValue('companyData.companyName', cnpjData.nome);
+      if (cnpjData.fantasia) form.setValue('companyData.fantasyName', cnpjData.fantasia);
+      if (cnpjData.telefone) form.setValue('companyData.phone', cnpjData.telefone);
+      if (cnpjData.email) form.setValue('companyData.email', cnpjData.email);
+      
+      // Endereço
+      if (cnpjData.cep) form.setValue('companyData.address.cep', cnpjData.cep.replace(/\D/g, '').replace(/(\d{5})(\d{3})/, '$1-$2'));
+      if (cnpjData.logradouro) form.setValue('companyData.address.street', cnpjData.logradouro);
+      if (cnpjData.numero) form.setValue('companyData.address.number', cnpjData.numero);
+      if (cnpjData.complemento) form.setValue('companyData.address.complement', cnpjData.complemento);
+      if (cnpjData.bairro) form.setValue('companyData.address.neighborhood', cnpjData.bairro);
+      if (cnpjData.municipio) form.setValue('companyData.address.city', cnpjData.municipio);
+      if (cnpjData.uf) form.setValue('companyData.address.state', cnpjData.uf);
+    }, 100);
   };
 
   const handleCompanyAddressChange = (addressUpdate: Partial<Address>) => {
@@ -127,14 +173,14 @@ const CompanyDataForm = ({
               <FormItem>
                 <FormLabel>CNPJ *</FormLabel>
                 <FormControl>
-                  <MaskedInput 
-                    mask="99.999.999/9999-99" 
-                    placeholder="00.000.000/0000-00" 
+                  <CnpjInput
                     value={getStringValue(companyData?.cnpj)}
-                    onChange={(e) => {
-                      field.onChange(e);
-                      onUpdateCompany({ cnpj: e.target.value });
+                    onChange={(value) => {
+                      field.onChange(value);
+                      onUpdateCompany({ cnpj: value });
                     }}
+                    onCnpjFound={handleCnpjFound}
+                    placeholder="00.000.000/0000-00"
                   />
                 </FormControl>
                 <FormMessage />

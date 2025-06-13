@@ -1,4 +1,3 @@
-
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -8,6 +7,7 @@ import { GeneratorFormData } from '@/types/generator';
 import AddressForm from './AddressForm';
 import { User, Building2, Phone, Mail } from 'lucide-react';
 import { useCepConsistency } from '@/hooks/useCepConsistency';
+import { CnpjInput } from '@/components/ui/cnpj-input';
 
 interface GeneratorOwnerDataFormProps {
   form: UseFormReturn<GeneratorFormData>;
@@ -16,6 +16,25 @@ interface GeneratorOwnerDataFormProps {
 
 const GeneratorOwnerDataForm = ({ form, ownerType }: GeneratorOwnerDataFormProps) => {
   const { handleCepLookup } = useCepConsistency();
+
+  const handleCnpjFound = (cnpjData: any) => {
+    console.log('📋 [GENERATOR] Dados do CNPJ encontrados:', cnpjData);
+    
+    // Preencher dados da empresa
+    if (cnpjData.nome) form.setValue('owner.razaoSocial', cnpjData.nome);
+    if (cnpjData.fantasia) form.setValue('owner.nomeFantasia', cnpjData.fantasia);
+    if (cnpjData.telefone) form.setValue('owner.telefone', cnpjData.telefone);
+    if (cnpjData.email) form.setValue('owner.email', cnpjData.email);
+    
+    // Preencher endereço
+    if (cnpjData.cep) form.setValue('owner.address.cep', cnpjData.cep.replace(/\D/g, '').replace(/(\d{5})(\d{3})/, '$1-$2'));
+    if (cnpjData.logradouro) form.setValue('owner.address.endereco', cnpjData.logradouro);
+    if (cnpjData.numero) form.setValue('owner.address.numero', cnpjData.numero);
+    if (cnpjData.complemento) form.setValue('owner.address.complemento', cnpjData.complemento);
+    if (cnpjData.bairro) form.setValue('owner.address.bairro', cnpjData.bairro);
+    if (cnpjData.municipio) form.setValue('owner.address.cidade', cnpjData.municipio);
+    if (cnpjData.uf) form.setValue('owner.address.estado', cnpjData.uf);
+  };
 
   const handleOwnerCepFound = (cepData: any) => {
     console.log('📍 [OWNER] Preenchendo endereço do proprietário:', cepData);
@@ -67,12 +86,24 @@ const GeneratorOwnerDataForm = ({ form, ownerType }: GeneratorOwnerDataFormProps
                   {ownerType === 'fisica' ? 'CPF' : 'CNPJ'} *
                 </FormLabel>
                 <FormControl>
-                  <MaskedInput 
-                    {...field} 
-                    mask={ownerType === 'fisica' ? '999.999.999-99' : '99.999.999/9999-99'}
-                    placeholder={ownerType === 'fisica' ? '000.000.000-00' : '00.000.000/0000-00'}
-                    className="transition-all duration-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
+                  {ownerType === 'fisica' ? (
+                    <MaskedInput 
+                      {...field} 
+                      mask="999.999.999-99"
+                      placeholder="000.000.000-00"
+                      className="transition-all duration-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  ) : (
+                    <CnpjInput
+                      value={field.value || ''}
+                      onChange={(value) => {
+                        field.onChange(value);
+                      }}
+                      onCnpjFound={handleCnpjFound}
+                      placeholder="00.000.000/0000-00"
+                      className="transition-all duration-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  )}
                 </FormControl>
                 <FormMessage />
               </FormItem>
