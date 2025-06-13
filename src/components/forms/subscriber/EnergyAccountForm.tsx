@@ -3,10 +3,13 @@ import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/comp
 import { Input } from '@/components/ui/input';
 import { CepInput } from '@/components/ui/cep-input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { UseFormReturn } from 'react-hook-form';
 import { SubscriberFormData } from '@/types/subscriber';
-import { Zap, MapPin, FileText } from 'lucide-react';
+import { Zap, MapPin, FileText, Copy } from 'lucide-react';
 import { useCepLookup } from '@/hooks/useCepLookup';
+import { useEffect } from 'react';
+import { toast } from 'sonner';
 
 interface EnergyAccountFormProps {
   form: UseFormReturn<SubscriberFormData>;
@@ -29,18 +32,105 @@ const EnergyAccountForm = ({ form }: EnergyAccountFormProps) => {
     }
   };
 
+  // Auto-preenchimento com dados do assinante
+  const autoFillWithSubscriberData = () => {
+    console.log('🔄 [ENERGY ACCOUNT] Preenchendo com dados do assinante...');
+    
+    const subscriberType = form.getValues('subscriberType');
+    
+    if (subscriberType === 'person') {
+      const personalData = form.getValues('personalData');
+      
+      if (personalData?.cpf && personalData?.fullName) {
+        // Preencher dados básicos
+        form.setValue('energyAccount.holderType', 'person');
+        form.setValue('energyAccount.cpfCnpj', personalData.cpf);
+        form.setValue('energyAccount.holderName', personalData.fullName);
+        form.setValue('energyAccount.birthDate', personalData.birthDate || '');
+        form.setValue('energyAccount.partnerNumber', personalData.partnerNumber || '');
+        
+        // Preencher endereço se disponível
+        if (personalData.address?.cep) {
+          form.setValue('energyAccount.address.cep', personalData.address.cep);
+          form.setValue('energyAccount.address.street', personalData.address.street);
+          form.setValue('energyAccount.address.number', personalData.address.number);
+          form.setValue('energyAccount.address.complement', personalData.address.complement);
+          form.setValue('energyAccount.address.neighborhood', personalData.address.neighborhood);
+          form.setValue('energyAccount.address.city', personalData.address.city);
+          form.setValue('energyAccount.address.state', personalData.address.state);
+        }
+        
+        toast.success('Dados preenchidos automaticamente!');
+        console.log('✅ [ENERGY ACCOUNT] Dados PF preenchidos automaticamente');
+      } else {
+        toast.error('Preencha primeiro os dados pessoais');
+      }
+    } else if (subscriberType === 'company') {
+      const companyData = form.getValues('companyData');
+      
+      if (companyData?.cnpj && companyData?.companyName) {
+        // Preencher dados básicos
+        form.setValue('energyAccount.holderType', 'company');
+        form.setValue('energyAccount.cpfCnpj', companyData.cnpj);
+        form.setValue('energyAccount.holderName', companyData.companyName);
+        form.setValue('energyAccount.birthDate', ''); // PJ não tem data de nascimento
+        form.setValue('energyAccount.partnerNumber', companyData.partnerNumber || '');
+        
+        // Preencher endereço se disponível
+        if (companyData.address?.cep) {
+          form.setValue('energyAccount.address.cep', companyData.address.cep);
+          form.setValue('energyAccount.address.street', companyData.address.street);
+          form.setValue('energyAccount.address.number', companyData.address.number);
+          form.setValue('energyAccount.address.complement', companyData.address.complement);
+          form.setValue('energyAccount.address.neighborhood', companyData.address.neighborhood);
+          form.setValue('energyAccount.address.city', companyData.address.city);
+          form.setValue('energyAccount.address.state', companyData.address.state);
+        }
+        
+        toast.success('Dados preenchidos automaticamente!');
+        console.log('✅ [ENERGY ACCOUNT] Dados PJ preenchidos automaticamente');
+      } else {
+        toast.error('Preencha primeiro os dados da empresa');
+      }
+    }
+  };
+
+  // Auto-preenchimento quando o componente é montado
+  useEffect(() => {
+    const subscriberType = form.getValues('subscriberType');
+    const energyAccountData = form.getValues('energyAccount');
+    
+    // Se a conta de energia está vazia, tentar preencher automaticamente
+    if (subscriberType && !energyAccountData?.cpfCnpj) {
+      console.log('🔄 [ENERGY ACCOUNT] Auto-preenchimento na montagem do componente');
+      autoFillWithSubscriberData();
+    }
+  }, []);
+
   return (
     <div className="space-y-6">
       <Card className="border-0 shadow-xl bg-gradient-to-br from-green-50 via-white to-emerald-50">
         <CardHeader className="bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-t-lg">
-          <CardTitle className="text-xl flex items-center gap-3">
-            <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
-              <Zap className="w-5 h-5" />
+          <CardTitle className="text-xl flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
+                <Zap className="w-5 h-5" />
+              </div>
+              <div>
+                <div className="text-xl font-bold">Conta de Energia</div>
+                <div className="text-green-100 text-sm font-normal">Informações da unidade consumidora</div>
+              </div>
             </div>
-            <div>
-              <div className="text-xl font-bold">Conta de Energia</div>
-              <div className="text-green-100 text-sm font-normal">Informações da unidade consumidora</div>
-            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={autoFillWithSubscriberData}
+              className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+            >
+              <Copy className="w-4 h-4 mr-2" />
+              Preencher com dados do assinante
+            </Button>
           </CardTitle>
         </CardHeader>
         <CardContent className="p-8 space-y-8">
@@ -83,6 +173,60 @@ const EnergyAccountForm = ({ form }: EnergyAccountFormProps) => {
                       <Input 
                         {...field} 
                         placeholder="Digite o número do parceiro"
+                        className="border-blue-200 focus:border-blue-500 focus:ring-blue-500"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="energyAccount.cpfCnpj"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-blue-800 font-medium">CPF/CNPJ do Titular *</FormLabel>
+                    <FormControl>
+                      <Input 
+                        {...field} 
+                        placeholder="000.000.000-00 ou 00.000.000/0000-00"
+                        className="border-blue-200 focus:border-blue-500 focus:ring-blue-500"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="energyAccount.holderName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-blue-800 font-medium">Nome do Titular *</FormLabel>
+                    <FormControl>
+                      <Input 
+                        {...field} 
+                        placeholder="Nome completo do titular"
+                        className="border-blue-200 focus:border-blue-500 focus:ring-blue-500"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="energyAccount.birthDate"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-blue-800 font-medium">Data de Nascimento</FormLabel>
+                    <FormControl>
+                      <Input 
+                        {...field} 
+                        type="date"
                         className="border-blue-200 focus:border-blue-500 focus:ring-blue-500"
                       />
                     </FormControl>

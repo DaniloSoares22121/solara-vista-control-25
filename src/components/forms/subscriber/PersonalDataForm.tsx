@@ -9,6 +9,7 @@ import { UseFormReturn } from 'react-hook-form';
 import { PersonalData, Address } from '@/types/subscriber';
 import { CepInput } from '@/components/ui/cep-input';
 import ContactsSection from './ContactsSection';
+import { useCepLookup } from '@/hooks/useCepLookup';
 
 interface PersonalDataFormProps {
   data?: PersonalData;
@@ -27,6 +28,8 @@ const PersonalDataForm = ({
   onRemoveContact,
   form
 }: PersonalDataFormProps) => {
+  const { lookupCep, loading } = useCepLookup();
+
   const handleAddressChange = (addressUpdate: Partial<Address>) => {
     const currentAddress = data?.address || {
       cep: '',
@@ -42,25 +45,44 @@ const PersonalDataForm = ({
     onUpdate({ address: newAddress });
   };
 
-  const handleCepFound = (cepData: any) => {
-    console.log('CEP encontrado no PersonalDataForm:', cepData);
-    const addressUpdate = {
-      cep: cepData.cep,
-      street: cepData.logradouro,
-      neighborhood: cepData.bairro,
-      city: cepData.localidade,
-      state: cepData.uf,
-    };
+  const handleCepChange = async (cep: string) => {
+    console.log('🔍 [PERSONAL DATA] CEP alterado:', cep);
     
-    handleAddressChange(addressUpdate);
+    // Atualizar o CEP no formulário
+    form.setValue('personalData.address.cep', cep);
+    handleAddressChange({ cep });
     
-    // Atualizar os campos do formulário
-    setTimeout(() => {
-      form.setValue('personalData.address.street', cepData.logradouro);
-      form.setValue('personalData.address.neighborhood', cepData.bairro);
-      form.setValue('personalData.address.city', cepData.localidade);
-      form.setValue('personalData.address.state', cepData.uf);
-    }, 100);
+    // Se o CEP está completo, fazer a busca
+    const cleanCep = cep.replace(/\D/g, '');
+    if (cleanCep.length === 8) {
+      try {
+        const cepData = await lookupCep(cleanCep);
+        console.log('📍 [PERSONAL DATA] Dados do CEP encontrados:', cepData);
+        
+        if (cepData) {
+          const addressUpdate = {
+            cep: cepData.cep,
+            street: cepData.logradouro,
+            neighborhood: cepData.bairro,
+            city: cepData.localidade,
+            state: cepData.uf,
+          };
+          
+          // Atualizar no formulário
+          form.setValue('personalData.address.street', cepData.logradouro);
+          form.setValue('personalData.address.neighborhood', cepData.bairro);
+          form.setValue('personalData.address.city', cepData.localidade);
+          form.setValue('personalData.address.state', cepData.uf);
+          
+          // Atualizar nos dados
+          handleAddressChange(addressUpdate);
+          
+          console.log('✅ [PERSONAL DATA] Endereço preenchido automaticamente');
+        }
+      } catch (error) {
+        console.error('❌ [PERSONAL DATA] Erro ao buscar CEP:', error);
+      }
+    }
   };
 
   return (
@@ -274,11 +296,7 @@ const PersonalDataForm = ({
                 <FormControl>
                   <CepInput
                     value={field.value || ''}
-                    onChange={(value) => {
-                      field.onChange(value);
-                      handleAddressChange({ cep: value });
-                    }}
-                    onCepFound={handleCepFound}
+                    onChange={handleCepChange}
                     placeholder="00000-000"
                   />
                 </FormControl>
