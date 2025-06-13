@@ -70,18 +70,35 @@ export const useGeneratorForm = () => {
     }
   }, [ownerCpfCnpj, ownerDataNascimento, form, performAutoFillDistributorLogin]);
 
-  // Auto-fill para usinas quando os dados do proprietário mudarem ou quando usinas forem adicionadas
+  // Auto-fill FORÇADO para usinas sempre que houver mudanças nos dados do proprietário
   useEffect(() => {
-    if (plants && plants.length > 0) {
-      console.log('🔄 [GENERATOR FORM] Executando auto-fill das usinas');
+    if (plants && plants.length > 0 && (ownerCpfCnpj || ownerName || ownerAddress)) {
+      console.log('🔄 [GENERATOR FORM] Forçando auto-fill das usinas com todos os dados do proprietário');
       const currentFormData = form.getValues();
       
+      // Executar auto-fill para TODAS as usinas
       plants.forEach((plant, index) => {
+        console.log(`🔄 [GENERATOR FORM] Processando usina ${index + 1}:`, plant);
         const updatedFormData = performAutoFillPlant(currentFormData, index);
-        if (JSON.stringify(updatedFormData.plants[index]) !== JSON.stringify(currentFormData.plants[index])) {
-          console.log(`🔄 [GENERATOR FORM] Atualizando usina ${index + 1} com dados do proprietário`);
-          form.setValue(`plants.${index}`, updatedFormData.plants[index]);
-        }
+        
+        // SEMPRE atualizar, mesmo se aparentemente igual
+        console.log(`🔄 [GENERATOR FORM] Forçando atualização da usina ${index + 1}`);
+        form.setValue(`plants.${index}`, updatedFormData.plants[index]);
+        
+        // Forçar re-render dos campos específicos
+        setTimeout(() => {
+          const updatedPlant = updatedFormData.plants[index];
+          if (updatedPlant) {
+            form.setValue(`plants.${index}.ownerType`, updatedPlant.ownerType);
+            form.setValue(`plants.${index}.ownerCpfCnpj`, updatedPlant.ownerCpfCnpj);
+            form.setValue(`plants.${index}.ownerName`, updatedPlant.ownerName);
+            form.setValue(`plants.${index}.ownerNumeroParceiroNegocio`, updatedPlant.ownerNumeroParceiroNegocio);
+            if (updatedPlant.ownerDataNascimento) {
+              form.setValue(`plants.${index}.ownerDataNascimento`, updatedPlant.ownerDataNascimento);
+            }
+            form.setValue(`plants.${index}.address`, updatedPlant.address);
+          }
+        }, 50);
       });
     }
   }, [ownerCpfCnpj, ownerName, ownerType, ownerAddress, ownerNumeroParceiroNegocio, ownerDataNascimento, plants?.length, form, performAutoFillPlant]);
@@ -127,14 +144,27 @@ export const useGeneratorForm = () => {
     const plantIndex = currentPlants.length;
     form.setValue('plants', [...currentPlants, newPlant]);
 
-    // Auto-fill imediato dos dados da nova usina
-    console.log('🔄 [GENERATOR FORM] Nova usina adicionada, executando auto-fill imediatamente');
+    // Auto-fill IMEDIATO e FORÇADO dos dados da nova usina
+    console.log('🔄 [GENERATOR FORM] Nova usina adicionada, executando auto-fill FORÇADO imediatamente');
     setTimeout(() => {
       const formData = form.getValues();
       const updatedFormData = performAutoFillPlant(formData, plantIndex);
       if (updatedFormData.plants[plantIndex]) {
-        console.log(`✅ [GENERATOR FORM] Auto-fill executado para nova usina ${plantIndex + 1}`);
-        form.setValue(`plants.${plantIndex}`, updatedFormData.plants[plantIndex]);
+        console.log(`✅ [GENERATOR FORM] Auto-fill FORÇADO executado para nova usina ${plantIndex + 1}`);
+        const updatedPlant = updatedFormData.plants[plantIndex];
+        
+        // Atualizar TODOS os campos individualmente para garantir que apareçam na tela
+        form.setValue(`plants.${plantIndex}`, updatedPlant);
+        form.setValue(`plants.${plantIndex}.ownerType`, updatedPlant.ownerType);
+        form.setValue(`plants.${plantIndex}.ownerCpfCnpj`, updatedPlant.ownerCpfCnpj);
+        form.setValue(`plants.${plantIndex}.ownerName`, updatedPlant.ownerName);
+        form.setValue(`plants.${plantIndex}.ownerNumeroParceiroNegocio`, updatedPlant.ownerNumeroParceiroNegocio);
+        if (updatedPlant.ownerDataNascimento) {
+          form.setValue(`plants.${plantIndex}.ownerDataNascimento`, updatedPlant.ownerDataNascimento);
+        }
+        form.setValue(`plants.${plantIndex}.address`, updatedPlant.address);
+        
+        console.log(`✅ [GENERATOR FORM] Todos os campos da usina ${plantIndex + 1} preenchidos:`, updatedPlant);
       }
     }, 100);
   }, [form, performAutoFillPlant]);

@@ -16,17 +16,18 @@ export const useGeneratorFormMapping = () => {
       console.log('📋 [AUTO-FILL PLANT] Dados do proprietário encontrados:', owner);
       console.log('📋 [AUTO-FILL PLANT] Usina antes do preenchimento:', plant);
       
-      // Preencher dados básicos da usina com dados do proprietário
+      // Preencher TODOS os dados básicos da usina com dados do proprietário
       plant.ownerType = owner.type;
       plant.ownerCpfCnpj = owner.cpfCnpj || '';
       plant.ownerName = owner.name || '';
       plant.ownerNumeroParceiroNegocio = owner.numeroParceiroNegocio || '';
       
+      // Preencher data de nascimento se for pessoa física
       if (owner.type === 'fisica') {
         plant.ownerDataNascimento = owner.dataNascimento || '';
       }
 
-      // Copiar endereço completo do proprietário para a usina
+      // Copiar endereço COMPLETO do proprietário para a usina
       if (owner.address) {
         plant.address = {
           cep: owner.address.cep || '',
@@ -37,10 +38,21 @@ export const useGeneratorFormMapping = () => {
           cidade: owner.address.cidade || '',
           estado: owner.address.estado || ''
         };
-        console.log('📋 [AUTO-FILL PLANT] Endereço copiado:', plant.address);
+        console.log('📋 [AUTO-FILL PLANT] Endereço completo copiado:', plant.address);
       }
 
-      console.log('✅ [AUTO-FILL PLANT] Dados da usina preenchidos automaticamente:', plant);
+      // Inicializar contatos vazios se não existirem
+      if (!plant.contacts || plant.contacts.length === 0) {
+        plant.contacts = [];
+      }
+
+      // Forçar atualização dos campos que podem estar vazios
+      if (!plant.apelido) plant.apelido = '';
+      if (!plant.uc) plant.uc = '';
+      if (!plant.observacoes) plant.observacoes = '';
+      if (!plant.observacoesInstalacao) plant.observacoesInstalacao = '';
+
+      console.log('✅ [AUTO-FILL PLANT] Todos os dados da usina preenchidos automaticamente:', plant);
     }
 
     return updatedFormData;
