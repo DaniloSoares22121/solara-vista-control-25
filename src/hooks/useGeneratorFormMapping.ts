@@ -3,43 +3,61 @@ import { useCallback } from 'react';
 import { GeneratorFormData } from '@/types/generator';
 
 export const useGeneratorFormMapping = () => {
-  // Manter funções para compatibilidade com código existente
   const performAutoFillPlant = useCallback((formData: GeneratorFormData, plantIndex: number): GeneratorFormData => {
-    console.log('⚠️ [DEPRECATED] Use useGeneratorAutoFill hook instead');
-    return formData;
+    console.log('🔄 [AUTO-FILL PLANT] Executando auto-fill para usina:', plantIndex);
+    
+    const owner = formData.owner;
+    if (!owner) return formData;
+
+    const updatedFormData = { ...formData };
+    const plant = updatedFormData.plants[plantIndex];
+    
+    if (plant && owner.cpfCnpj && owner.name) {
+      console.log('📋 [AUTO-FILL PLANT] Preenchendo dados da usina com dados do proprietário');
+      
+      plant.ownerType = owner.type;
+      plant.ownerCpfCnpj = owner.cpfCnpj;
+      plant.ownerName = owner.name;
+      plant.ownerNumeroParceiroNegocio = owner.numeroParceiroNegocio;
+      
+      if (owner.type === 'fisica') {
+        plant.ownerDataNascimento = owner.dataNascimento || '';
+      }
+
+      // Copiar endereço se a usina não tiver endereço preenchido
+      if (!plant.address.cep && owner.address.cep) {
+        plant.address = { ...owner.address };
+      }
+
+      console.log('✅ [AUTO-FILL PLANT] Dados da usina preenchidos automaticamente');
+    }
+
+    return updatedFormData;
   }, []);
 
   const performAutoFillDistributorLogin = useCallback((formData: GeneratorFormData): GeneratorFormData => {
-    console.log('⚠️ [DEPRECATED] Use useGeneratorAutoFill hook instead');
-    return formData;
-  }, []);
+    console.log('🔄 [AUTO-FILL DISTRIBUTOR] Executando auto-fill para login da distribuidora');
+    
+    const owner = formData.owner;
+    if (!owner || !owner.cpfCnpj) return formData;
 
-  const performAutoFillPaymentData = useCallback((formData: GeneratorFormData): GeneratorFormData => {
-    console.log('⚠️ [DEPRECATED] Use useGeneratorAutoFill hook instead');
-    return formData;
-  }, []);
+    const updatedFormData = { ...formData };
+    
+    if (!updatedFormData.distributorLogin.cpfCnpj) {
+      updatedFormData.distributorLogin.cpfCnpj = owner.cpfCnpj;
+      
+      if (owner.type === 'fisica' && owner.dataNascimento) {
+        updatedFormData.distributorLogin.dataNascimento = owner.dataNascimento;
+      }
+      
+      console.log('✅ [AUTO-FILL DISTRIBUTOR] Dados do login preenchidos automaticamente');
+    }
 
-  const performAutoFillAdministrator = useCallback((formData: GeneratorFormData): GeneratorFormData => {
-    console.log('⚠️ [DEPRECATED] Use useGeneratorAutoFill hook instead');
-    return formData;
-  }, []);
-
-  const performAutoFillFromUC = useCallback((formData: GeneratorFormData, plantIndex: number, uc: string): GeneratorFormData => {
-    console.log('⚠️ [DEPRECATED] Use useGeneratorAutoFill hook instead');
-    return formData;
-  }, []);
-
-  const performAutoFillAllPlants = useCallback((formData: GeneratorFormData): GeneratorFormData => {
-    console.log('⚠️ [DEPRECATED] Use useGeneratorAutoFill hook instead');
-    return formData;
+    return updatedFormData;
   }, []);
 
   return {
     performAutoFillPlant,
-    performAutoFillDistributorLogin,
-    performAutoFillPaymentData,
-    performAutoFillAdministrator,
-    performAutoFillFromUC,
-    performAutoFillAllPlants
+    performAutoFillDistributorLogin
   };
 };

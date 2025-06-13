@@ -32,21 +32,62 @@ export const useSubscriberDataMapping = () => {
     return 'person';
   }, []);
 
-  // Manter funções para compatibilidade
   const performAutoFill = useCallback((formData: SubscriberFormData): SubscriberFormData => {
-    console.log('⚠️ [DEPRECATED] Use useSubscriberAutoFill hook instead');
+    console.log('🔄 [AUTO-FILL] Executando auto-fill para:', formData.subscriberType);
+    
+    if (formData.subscriberType === 'person' && formData.personalData) {
+      const { cpf, fullName, birthDate, partnerNumber, address } = formData.personalData;
+      
+      console.log('📋 [AUTO-FILL] Dados PF encontrados:', { cpf, fullName, partnerNumber });
+      
+      if (cpf && fullName) {
+        const updatedFormData = {
+          ...formData,
+          energyAccount: {
+            ...formData.energyAccount,
+            holderType: 'person' as const,
+            cpfCnpj: cpf,
+            holderName: fullName,
+            birthDate: birthDate || '',
+            partnerNumber: partnerNumber || '',
+            address: address.cep ? { ...address } : formData.energyAccount.address,
+          }
+        };
+        
+        console.log('✅ [AUTO-FILL] PF - Dados preenchidos automaticamente');
+        return updatedFormData;
+      }
+    } else if (formData.subscriberType === 'company' && formData.companyData) {
+      const { cnpj, companyName, partnerNumber, address } = formData.companyData;
+      
+      console.log('📋 [AUTO-FILL] Dados PJ encontrados:', { cnpj, companyName, partnerNumber });
+      
+      if (cnpj && companyName) {
+        const updatedFormData = {
+          ...formData,
+          energyAccount: {
+            ...formData.energyAccount,
+            holderType: 'company' as const,
+            cpfCnpj: cnpj,
+            holderName: companyName,
+            birthDate: '', // PJ não tem data de nascimento
+            partnerNumber: partnerNumber || '',
+            address: address.cep ? { ...address } : formData.energyAccount.address,
+          }
+        };
+        
+        console.log('✅ [AUTO-FILL] PJ - Dados preenchidos automaticamente');
+        return updatedFormData;
+      }
+    }
+    
+    console.log('⚠️ [AUTO-FILL] Nenhum dado para auto-fill encontrado');
     return formData;
   }, []);
 
   return {
     mapAddress,
     determineSubscriberType,
-    performAutoFill, // Deprecated - usar useSubscriberAutoFill
-    performAutoFillEnergyAccount: performAutoFill,
-    performAutoFillAdministrator: performAutoFill,
-    performAutoFillTitleTransfer: performAutoFill,
-    performAutoFillPlanContract: performAutoFill,
-    performAutoFillNotifications: performAutoFill,
-    performAutoFillAll: performAutoFill
+    performAutoFill
   };
 };
