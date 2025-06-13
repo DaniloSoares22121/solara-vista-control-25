@@ -16,6 +16,7 @@ const GeneratorDistributorLoginForm = ({ form }: GeneratorDistributorLoginFormPr
   const ownerType = form.watch('owner.type');
   const ownerCpfCnpj = form.watch('owner.cpfCnpj');
   const ownerDataNascimento = form.watch('owner.dataNascimento');
+  const plants = form.watch('plants');
 
   // Auto-preencher dados do distributor login com dados do proprietário
   useEffect(() => {
@@ -30,7 +31,13 @@ const GeneratorDistributorLoginForm = ({ form }: GeneratorDistributorLoginFormPr
     if (ownerType === 'fisica' && ownerDataNascimento && !form.getValues('distributorLogin.dataNascimento')) {
       form.setValue('distributorLogin.dataNascimento', ownerDataNascimento);
     }
-  }, [ownerType, ownerCpfCnpj, ownerDataNascimento, form]);
+
+    // Preencher UC com a primeira usina cadastrada
+    if (plants && plants.length > 0 && plants[0].uc && !form.getValues('distributorLogin.uc')) {
+      console.log('🔄 [DISTRIBUTOR AUTO-FILL] Preenchendo UC da primeira usina:', plants[0].uc);
+      form.setValue('distributorLogin.uc', plants[0].uc);
+    }
+  }, [ownerType, ownerCpfCnpj, ownerDataNascimento, plants, form]);
 
   const handleCpfFound = (cpfData: any) => {
     console.log('📍 [DISTRIBUTOR CPF] CPF encontrado:', cpfData);
