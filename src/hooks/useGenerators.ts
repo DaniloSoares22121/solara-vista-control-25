@@ -35,6 +35,10 @@ export const useGenerators = () => {
     try {
       const newGenerator = await supabaseGeneratorService.createGenerator(generatorData);
       console.log('✅ [HOOK] Geradora criada com sucesso:', newGenerator);
+      
+      // Atualizar a lista imediatamente após criação
+      setGenerators(prevGenerators => [newGenerator, ...prevGenerators]);
+      
       return newGenerator;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Erro ao criar geradora';
@@ -50,6 +54,8 @@ export const useGenerators = () => {
     
     try {
       await supabaseGeneratorService.deleteGenerator(id);
+      // Atualizar a lista imediatamente após exclusão
+      setGenerators(prevGenerators => prevGenerators.filter(gen => gen.id !== id));
       console.log('✅ [HOOK] Geradora excluída com sucesso');
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Erro ao excluir geradora';
@@ -65,6 +71,10 @@ export const useGenerators = () => {
     
     try {
       const updatedGenerator = await supabaseGeneratorService.updateGenerator(id, generatorData);
+      // Atualizar a lista imediatamente após atualização
+      setGenerators(prevGenerators => 
+        prevGenerators.map(gen => gen.id === id ? updatedGenerator : gen)
+      );
       console.log('✅ [HOOK] Geradora atualizada com sucesso:', updatedGenerator);
       return updatedGenerator;
     } catch (err) {
@@ -100,7 +110,14 @@ export const useGenerators = () => {
         },
         (payload) => {
           console.log('✅ [REALTIME] Nova geradora inserida:', payload.new);
-          setGenerators(prev => [payload.new, ...prev]);
+          setGenerators(prev => {
+            // Verificar se a geradora já existe na lista
+            const exists = prev.some(gen => gen.id === payload.new.id);
+            if (!exists) {
+              return [payload.new, ...prev];
+            }
+            return prev;
+          });
         }
       )
       .on(
@@ -134,6 +151,9 @@ export const useGenerators = () => {
     // Subscribe to the channel
     channel.subscribe((status) => {
       console.log('✅ [REALTIME] Status da inscrição:', status);
+      if (status === 'SUBSCRIBED') {
+        console.log('🔔 [REALTIME] Canal inscrito com sucesso, realtime ativo!');
+      }
     });
 
     // Cleanup function
