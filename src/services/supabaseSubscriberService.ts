@@ -40,17 +40,27 @@ export const subscriberService = {
       throw new Error('Usuário não autenticado');
     }
 
-    // Safely process data, ensuring no undefined values cause issues
+    // Safely process data, ensuring proper handling of undefined values
     const safeData = (obj: any) => {
       if (obj === undefined || obj === null) {
         return null;
       }
       try {
-        // Remove any undefined values from the object
-        const cleanObj = JSON.parse(JSON.stringify(obj, (key, value) => 
-          value === undefined ? null : value
-        ));
-        return cleanObj;
+        // Process the object to handle undefined values properly
+        const processValue = (value: any): any => {
+          if (value === undefined) return null;
+          if (value === null) return null;
+          if (typeof value === 'object' && value !== null) {
+            const processed: any = {};
+            for (const [key, val] of Object.entries(value)) {
+              processed[key] = processValue(val);
+            }
+            return processed;
+          }
+          return value;
+        };
+        
+        return processValue(obj);
       } catch (error) {
         console.error('Error processing data:', error);
         return null;
@@ -71,6 +81,7 @@ export const subscriberService = {
     };
 
     console.log('Enviando dados para o Supabase:', subscriberData);
+    console.log('Plan Contract sendo salvo:', subscriberData.plan_contract);
 
     const { data, error } = await supabase
       .from('subscribers')
@@ -96,9 +107,21 @@ export const subscriberService = {
         return null;
       }
       try {
-        return JSON.parse(JSON.stringify(obj, (key, value) => 
-          value === undefined ? null : value
-        ));
+        // Process the object to handle undefined values properly
+        const processValue = (value: any): any => {
+          if (value === undefined) return null;
+          if (value === null) return null;
+          if (typeof value === 'object' && value !== null) {
+            const processed: any = {};
+            for (const [key, val] of Object.entries(value)) {
+              processed[key] = processValue(val);
+            }
+            return processed;
+          }
+          return value;
+        };
+        
+        return processValue(obj);
       } catch (error) {
         console.error('Error processing data:', error);
         return null;
@@ -111,7 +134,10 @@ export const subscriberService = {
     }
     if (formData.administratorData) updateData.administrator = safeData(formData.administratorData);
     if (formData.energyAccount) updateData.energy_account = safeData(formData.energyAccount);
-    if (formData.planContract) updateData.plan_contract = safeData(formData.planContract);
+    if (formData.planContract) {
+      updateData.plan_contract = safeData(formData.planContract);
+      console.log('Atualizando Plan Contract:', updateData.plan_contract);
+    }
     if (formData.planDetails) updateData.plan_details = safeData(formData.planDetails);
     if (formData.notificationSettings) updateData.notifications = safeData(formData.notificationSettings);
     if (formData.attachments) updateData.attachments = safeData(formData.attachments);

@@ -91,10 +91,10 @@ export const useSubscriberForm = (existingData?: SubscriberDataFromDB) => {
           selectedPlan: (planContract.selectedPlan as string) || '',
           compensationMode: (planContract.compensationMode as 'autoConsumption' | 'sharedGeneration') || 'autoConsumption',
           adhesionDate: (planContract.adhesionDate as string) || '',
-          informedKwh: (planContract.informedKwh as number) || 0,
-          contractedKwh: (planContract.contractedKwh as number) || 0,
+          informedKwh: typeof planContract.informedKwh === 'number' ? planContract.informedKwh : undefined,
+          contractedKwh: typeof planContract.contractedKwh === 'number' ? planContract.contractedKwh : undefined,
           loyalty: (planContract.loyalty as 'none' | 'oneYear' | 'twoYears') || 'none',
-          discountPercentage: (planContract.discountPercentage as number) || 0,
+          discountPercentage: typeof planContract.discountPercentage === 'number' ? planContract.discountPercentage : undefined,
         } : initialFormData.planContract,
         
         planDetails: planDetails ? {
@@ -109,6 +109,7 @@ export const useSubscriberForm = (existingData?: SubscriberDataFromDB) => {
       };
       
       console.log('✅ Dados carregados com sucesso:', loadedData);
+      console.log('📋 Plan Contract carregado:', loadedData.planContract);
       setFormData(loadedData);
       setIsEditing(true);
       setIsLoaded(true);
