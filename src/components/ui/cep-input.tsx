@@ -7,7 +7,7 @@ import { Loader2 } from 'lucide-react';
 interface CepInputProps {
   value: string;
   onChange: (value: string) => void;
-  onCepFound?: (cep: string) => void;
+  onCepFound?: (cepData: any) => void;
   placeholder?: string;
   className?: string;
 }
@@ -32,15 +32,16 @@ export const CepInput = ({
     // Auto-lookup when CEP is complete and different from last lookup
     if (cleanCep.length === 8 && cleanCep !== lastLookup) {
       setLastLookup(cleanCep);
-      console.log('Buscando CEP:', cleanCep);
+      console.log('🔍 [CEP-INPUT] Buscando CEP:', cleanCep);
       try {
         const cepData = await lookupCep(cleanCep);
-        console.log('Dados do CEP retornados:', cepData);
+        console.log('📍 [CEP-INPUT] Dados do CEP retornados:', cepData);
         if (cepData && onCepFound) {
-          onCepFound(cleanCep);
+          // Passa os dados completos do CEP, não apenas o número
+          onCepFound(cepData);
         }
       } catch (error) {
-        console.error('Erro ao buscar CEP:', error);
+        console.error('❌ [CEP-INPUT] Erro ao buscar CEP:', error);
       }
     } else if (cleanCep.length < 8) {
       setLastLookup('');

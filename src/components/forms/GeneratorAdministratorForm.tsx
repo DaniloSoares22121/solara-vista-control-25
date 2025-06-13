@@ -18,7 +18,7 @@ const GeneratorAdministratorForm = ({ form }: GeneratorAdministratorFormProps) =
     if (cepData && !cepData.erro) {
       // Atualizar os campos do formulário do administrador
       setTimeout(() => {
-        console.log('📍 [ADMIN CEP] Preenchendo campos do formulário...');
+        console.log('📍 [ADMIN CEP] Preenchendo campos do formulário com dados:', cepData);
         form.setValue('administrator.address.endereco', cepData.logradouro || '');
         form.setValue('administrator.address.bairro', cepData.bairro || '');
         form.setValue('administrator.address.cidade', cepData.localidade || '');
