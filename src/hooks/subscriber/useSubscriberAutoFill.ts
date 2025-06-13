@@ -68,7 +68,7 @@ export const useSubscriberAutoFill = () => {
       return formData;
     }
 
-    if (formData.companyData.address && (!formData.administratorData?.address || !formData.administratorData.address.cep)) {
+    if (formData.companyData.address && formData.companyData.address.cep && (!formData.administratorData?.address || !formData.administratorData.address.cep)) {
       return {
         ...formData,
         administratorData: {
@@ -148,6 +148,7 @@ export const useSubscriberAutoFill = () => {
       
       if (percentage > 0) {
         updatedFormData.planContract.discountPercentage = percentage;
+        updatedFormData.planContract.contractedKwh = kwh;
       }
     }
     

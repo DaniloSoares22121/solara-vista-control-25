@@ -25,15 +25,15 @@ export const useGeneratorAutoFill = () => {
       }
 
       // Endereço completo
-      if (owner.address) {
+      if (owner.address && owner.address.cep) {
         plant.address = {
-          cep: owner.address.cep || '',
-          endereco: owner.address.endereco || '',
-          numero: owner.address.numero || '',
-          complemento: owner.address.complemento || '',
-          bairro: owner.address.bairro || '',
-          cidade: owner.address.cidade || '',
-          estado: owner.address.estado || ''
+          cep: owner.address.cep,
+          endereco: owner.address.endereco,
+          numero: owner.address.numero,
+          complemento: owner.address.complemento,
+          bairro: owner.address.bairro,
+          cidade: owner.address.cidade,
+          estado: owner.address.estado
         };
       }
 
@@ -113,18 +113,34 @@ export const useGeneratorAutoFill = () => {
     const updatedFormData = { ...formData };
     
     // Endereço do administrador
-    if (owner.address && (!updatedFormData.administrator?.address || !updatedFormData.administrator.address.cep)) {
+    if (owner.address && owner.address.cep && (!updatedFormData.administrator?.address || !updatedFormData.administrator.address.cep)) {
       if (!updatedFormData.administrator) {
         updatedFormData.administrator = {
           cpf: '',
           nome: '',
           dataNascimento: '',
-          address: owner.address,
+          address: {
+            cep: owner.address.cep,
+            endereco: owner.address.endereco,
+            numero: owner.address.numero,
+            complemento: owner.address.complemento,
+            bairro: owner.address.bairro,
+            cidade: owner.address.cidade,
+            estado: owner.address.estado
+          },
           telefone: '',
           email: ''
         };
       } else if (!updatedFormData.administrator.address || !updatedFormData.administrator.address.cep) {
-        updatedFormData.administrator.address = owner.address;
+        updatedFormData.administrator.address = {
+          cep: owner.address.cep,
+          endereco: owner.address.endereco,
+          numero: owner.address.numero,
+          complemento: owner.address.complemento,
+          bairro: owner.address.bairro,
+          cidade: owner.address.cidade,
+          estado: owner.address.estado
+        };
       }
     }
     

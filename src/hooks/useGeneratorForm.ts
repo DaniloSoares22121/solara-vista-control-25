@@ -246,10 +246,13 @@ export const useGeneratorForm = (existingData?: any) => {
         if (!formData.concessionaria) errors.push('Selecione uma concessionária');
         if (!formData.owner?.cpfCnpj) errors.push('CPF/CNPJ é obrigatório');
         if (!formData.owner?.name) errors.push('Nome é obrigatório');
-        // Removendo validações muito restritivas para permitir passagem da primeira tela
         break;
       case 2:
         if (!formData.plants || formData.plants.length === 0) errors.push('Cadastre pelo menos uma usina');
+        formData.plants.forEach((plant, index) => {
+          if (!plant.uc) errors.push(`UC da usina ${index + 1} é obrigatória`);
+          if (!plant.apelido) errors.push(`Apelido da usina ${index + 1} é obrigatório`);
+        });
         break;
       case 3:
         if (!formData.distributorLogin?.uc) errors.push('UC é obrigatória');
