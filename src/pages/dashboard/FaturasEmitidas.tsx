@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import DashboardLayout from '@/components/DashboardLayout';
@@ -10,13 +9,10 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Search, FileText, Download, Filter, DollarSign, Calendar, TrendingUp, Eye } from 'lucide-react';
 import { faturaValidacaoService, type FaturaEmitida } from '@/services/faturaValidacaoService';
-import FaturaViewModal from '@/components/FaturaViewModal';
 
 const FaturasEmitidas = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('todos');
-  const [selectedFatura, setSelectedFatura] = useState<FaturaEmitida | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const { data: faturas = [], isLoading } = useQuery({
     queryKey: ['faturas-emitidas'],
@@ -40,8 +36,7 @@ const FaturasEmitidas = () => {
   const taxaRecebimento = totalFaturas > 0 ? Math.round((faturasPagas / totalFaturas) * 100) : 0;
 
   const handleViewFatura = (fatura: FaturaEmitida) => {
-    setSelectedFatura(fatura);
-    setIsModalOpen(true);
+    window.open(fatura.fatura_url, '_blank');
   };
 
   const formatDate = (dateString: string) => {
@@ -285,20 +280,6 @@ const FaturasEmitidas = () => {
             )}
           </CardContent>
         </Card>
-
-        {/* Modal para visualizar fatura */}
-        {selectedFatura && (
-          <FaturaViewModal
-            isOpen={isModalOpen}
-            onClose={() => {
-              setIsModalOpen(false);
-              setSelectedFatura(null);
-            }}
-            faturaUrl={selectedFatura.fatura_url}
-            documento={selectedFatura.documento}
-            uc={selectedFatura.uc}
-          />
-        )}
       </div>
     </DashboardLayout>
   );
