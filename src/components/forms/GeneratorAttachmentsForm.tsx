@@ -6,7 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { UseFormReturn } from 'react-hook-form';
 import { GeneratorFormData } from '@/types/generator';
 import { Upload, FileText, X, CheckCircle } from 'lucide-react';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 
 interface GeneratorAttachmentsFormProps {
   form: UseFormReturn<GeneratorFormData>;
@@ -33,22 +33,20 @@ const GeneratorAttachmentsForm = ({ form }: GeneratorAttachmentsFormProps) => {
     procuracao: useRef<HTMLInputElement>(null),
   };
 
-  // Sincronizar dados do formulário com o estado local - versão melhorada
-  useEffect(() => {
+  // Função para atualizar estado local baseado no formulário
+  const updateLocalState = useCallback(() => {
     const formAttachments = form.getValues('attachments');
     
     if (formAttachments && typeof formAttachments === 'object') {
       const validFiles: Record<string, FileUploadData> = {};
       
       Object.entries(formAttachments).forEach(([key, value]) => {
-        // Verificação mais flexível - aceita qualquer objeto que tenha as propriedades básicas
         if (value && 
             typeof value === 'object' && 
             'name' in value && 
             'size' in value &&
             'type' in value) {
           
-          // Se tem um File object, usa ele. Se não, cria um mock para exibição
           const fileObject = 'file' in value && value.file instanceof File 
             ? value.file 
             : new File([''], value.name as string, { type: value.type as string });
@@ -67,7 +65,18 @@ const GeneratorAttachmentsForm = ({ form }: GeneratorAttachmentsFormProps) => {
     } else {
       setFiles({});
     }
-  }, [form.watch('attachments')]);
+  }, [form]);
+
+  // Sincronizar quando attachments mudar
+  useEffect(() => {
+    updateLocalState();
+  }, [updateLocalState]);
+
+  // Watch mudanças no campo attachments
+  const watchedAttachments = form.watch('attachments');
+  useEffect(() => {
+    updateLocalState();
+  }, [watchedAttachments, updateLocalState]);
 
   const handleFileUpload = (fieldName: string, selectedFile: File | null) => {
     if (!selectedFile) {
@@ -93,7 +102,7 @@ const GeneratorAttachmentsForm = ({ form }: GeneratorAttachmentsFormProps) => {
       return;
     }
 
-    // Criar objeto do arquivo com o File original preservado
+    // Criar objeto do arquivo
     const fileData: FileUploadData = {
       file: selectedFile,
       name: selectedFile.name,
@@ -102,17 +111,25 @@ const GeneratorAttachmentsForm = ({ form }: GeneratorAttachmentsFormProps) => {
       uploadedAt: new Date().toISOString()
     };
 
-    // Atualizar formulário primeiro
+    // Atualizar formulário diretamente
     const currentAttachments = form.getValues('attachments') || {};
     const updatedAttachments = { 
       ...currentAttachments, 
       [fieldName]: fileData
     };
     
-    form.setValue('attachments', updatedAttachments, { shouldValidate: true });
-    
-    // Forçar trigger do watch para atualizar o useEffect
-    form.trigger('attachments');
+    // Usar setValue com trigger imediato
+    form.setValue('attachments', updatedAttachments, { 
+      shouldValidate: true,
+      shouldTouch: true,
+      shouldDirty: true 
+    });
+
+    // Atualizar estado local imediatamente
+    setFiles(prev => ({
+      ...prev,
+      [fieldName]: fileData
+    }));
   };
 
   const removeFile = (fieldName: string) => {
@@ -121,15 +138,23 @@ const GeneratorAttachmentsForm = ({ form }: GeneratorAttachmentsFormProps) => {
     const updatedAttachments = { ...currentAttachments };
     delete updatedAttachments[fieldName];
     
-    form.setValue('attachments', updatedAttachments, { shouldValidate: true });
+    form.setValue('attachments', updatedAttachments, { 
+      shouldValidate: true,
+      shouldTouch: true,
+      shouldDirty: true 
+    });
     
     // Limpar input
     if (fileInputRefs[fieldName as keyof typeof fileInputRefs].current) {
       fileInputRefs[fieldName as keyof typeof fileInputRefs].current!.value = '';
     }
     
-    // Forçar trigger do watch para atualizar o useEffect
-    form.trigger('attachments');
+    // Atualizar estado local imediatamente
+    setFiles(prev => {
+      const newFiles = { ...prev };
+      delete newFiles[fieldName];
+      return newFiles;
+    });
   };
 
   const FileUploadField = ({ 
