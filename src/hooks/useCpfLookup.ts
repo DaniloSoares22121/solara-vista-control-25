@@ -33,27 +33,73 @@ export const useCpfLookup = () => {
     try {
       console.log('🔍 Buscando dados do CPF:', cleanCpf);
       
-      // Usando API pública para consulta de CPF (simulada - APIs reais de CPF são restritas)
-      // Em produção, você precisaria de uma API autorizada para consultar dados de CPF
+      // Usando API ReceitaWS para consulta de CPF
+      const response = await fetch(`https://www.receitaws.com.br/v1/cpf/${cleanCpf}`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Erro na API: ${response.status}`);
+      }
+
+      const data = await response.json();
       
-      // Por enquanto, vamos simular uma resposta baseada no CPF
-      await new Promise(resolve => setTimeout(resolve, 1500)); // Simula delay da API
-      
-      // Simulação de dados (em produção seria uma API real autorizada)
-      const mockData = {
+      // Verificar se houve erro na resposta
+      if (data.status === 'ERROR') {
+        console.error('❌ Erro na consulta CPF:', data.message);
+        toast.error(data.message || 'Erro ao consultar CPF');
+        return null;
+      }
+
+      // Mapear dados da API para nossa interface
+      const cpfData: CpfData = {
         cpf: cleanCpf,
-        nome: 'Nome será preenchido manualmente',
-        situacao: 'regular',
-        nascimento: ''
+        nome: data.nome || '',
+        situacao: data.situacao || 'regular',
+        nascimento: data.nascimento || ''
       };
       
-      console.log('✅ Dados do CPF simulados:', mockData);
-      toast.info('Funcionalidade de CPF preparada. Em produção seria integrada com API autorizada.');
+      console.log('✅ Dados do CPF encontrados:', cpfData);
+      toast.success('Dados do CPF carregados com sucesso!');
       
-      return mockData;
+      return cpfData;
     } catch (error) {
-      console.error('Erro ao buscar CPF:', error);
-      toast.error('Serviço de consulta CPF temporariamente indisponível.');
+      console.error('❌ Erro ao buscar CPF:', error);
+      
+      // Fallback para API alternativa se a primeira falhar
+      try {
+        console.log('🔄 Tentando API alternativa...');
+        
+        const fallbackResponse = await fetch(`https://api.cpfcnpj.com.br/${cleanCpf}`, {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json',
+          },
+        });
+
+        if (fallbackResponse.ok) {
+          const fallbackData = await fallbackResponse.json();
+          
+          const cpfData: CpfData = {
+            cpf: cleanCpf,
+            nome: fallbackData.name || '',
+            situacao: fallbackData.status || 'regular',
+            nascimento: fallbackData.birthdate || ''
+          };
+          
+          console.log('✅ Dados do CPF encontrados (API alternativa):', cpfData);
+          toast.success('Dados do CPF carregados com sucesso!');
+          
+          return cpfData;
+        }
+      } catch (fallbackError) {
+        console.error('❌ Erro na API alternativa:', fallbackError);
+      }
+      
+      toast.error('Erro ao consultar CPF. Tente novamente em alguns instantes.');
       return null;
     } finally {
       setIsLoading(false);
