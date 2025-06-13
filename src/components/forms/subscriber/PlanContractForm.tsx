@@ -119,11 +119,14 @@ const PlanContractForm = ({ form }: PlanContractFormProps) => {
                 <FormLabel className="text-gray-700 font-medium">kWh Informado pelo Vendedor *</FormLabel>
                 <FormControl>
                   <Input 
-                    {...field} 
+                    value={field.value || ''}
                     type="number"
                     placeholder="Ex: 450"
                     className="border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                    onChange={(e) => field.onChange(Number(e.target.value))}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      field.onChange(value === '' ? undefined : Number(value));
+                    }}
                   />
                 </FormControl>
                 <FormMessage />
@@ -139,11 +142,14 @@ const PlanContractForm = ({ form }: PlanContractFormProps) => {
                 <FormLabel className="text-gray-700 font-medium">kWh Contratado *</FormLabel>
                 <FormControl>
                   <Input 
-                    {...field} 
+                    value={field.value || ''}
                     type="number" 
                     placeholder="Ex: 500"
                     className="border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                    onChange={(e) => field.onChange(Number(e.target.value))}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      field.onChange(value === '' ? undefined : Number(value));
+                    }}
                   />
                 </FormControl>
                 <FormMessage />

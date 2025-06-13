@@ -86,15 +86,15 @@ export const initialFormData: SubscriberFormData = {
     selectedPlan: '',
     compensationMode: 'autoConsumption',
     adhesionDate: '',
-    informedKwh: 0,
-    contractedKwh: 0,
+    informedKwh: undefined,
+    contractedKwh: undefined,
     loyalty: 'none',
-    discountPercentage: 0,
+    discountPercentage: undefined,
   },
   planDetails: {
     paysPisAndCofins: true,
     paysWireB: false,
-    addDistributorValue: false, // Alterado para false por padrão
+    addDistributorValue: false,
     exemptFromPayment: false,
   },
   notificationSettings: {
