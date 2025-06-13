@@ -1,3 +1,4 @@
+
 import { useState, useCallback, useEffect } from 'react';
 import { SubscriberFormData, SubscriberDataFromDB } from '@/types/subscriber';
 import { useCepConsistency } from '@/hooks/useCepConsistency';
@@ -16,7 +17,17 @@ export const useSubscriberForm = (existingData?: SubscriberDataFromDB) => {
   const { handleCepLookup: handleCepLookupConsistent } = useCepConsistency();
   const { validateStep } = useSubscriberFormValidation();
   const { isSubmitting, addContact: addContactAction, removeContact: removeContactAction, submitForm: submitFormAction } = useSubscriberFormActions();
-  const { mapAddress, determineSubscriberType, performAutoFill } = useSubscriberDataMapping();
+  const { 
+    mapAddress, 
+    determineSubscriberType, 
+    performAutoFill,
+    performAutoFillAll,
+    performAutoFillEnergyAccount,
+    performAutoFillAdministrator,
+    performAutoFillTitleTransfer,
+    performAutoFillPlanContract,
+    performAutoFillNotifications
+  } = useSubscriberDataMapping();
 
   // Load existing data if editing - APENAS UMA VEZ
   useEffect(() => {
@@ -117,41 +128,71 @@ export const useSubscriberForm = (existingData?: SubscriberDataFromDB) => {
     }
   }, [existingData, mapAddress, determineSubscriberType, isLoaded]);
 
-  // Auto-fill para novos assinantes - EXECUTAR SEMPRE QUE OS DADOS MUDAREM
+  // MEGA AUTOMAÇÃO: Aplicar todas as automações sempre que qualquer dado relevante mudar
   useEffect(() => {
     if (isLoaded && !isEditing && !existingData) {
-      console.log('🔄 [AUTO-FILL] Verificando necessidade de auto-fill...');
+      console.log('🚀 [SUBSCRIBER FORM] MEGA AUTOMAÇÃO ATIVADA - Sincronizando TUDO');
       
-      // Executar auto-fill quando dados pessoais ou da empresa mudarem
+      // Verificar se há dados suficientes para automação
       const hasPersonalData = formData.subscriberType === 'person' && 
-        formData.personalData?.cpf && formData.personalData?.fullName;
+        (formData.personalData?.cpf || formData.personalData?.fullName || formData.personalData?.address?.cep);
       
       const hasCompanyData = formData.subscriberType === 'company' && 
-        formData.companyData?.cnpj && formData.companyData?.companyName;
+        (formData.companyData?.cnpj || formData.companyData?.companyName || formData.companyData?.address?.cep);
       
       if (hasPersonalData || hasCompanyData) {
-        console.log('🔄 [AUTO-FILL] Executando auto-fill...');
-        const newFormData = performAutoFill(formData);
+        console.log('🔄 [SUBSCRIBER FORM] Executando automações completas...');
+        const currentFormData = formData;
+        const automatedFormData = performAutoFillAll(currentFormData);
         
-        // Apenas atualizar se houver mudanças
-        if (JSON.stringify(newFormData.energyAccount) !== JSON.stringify(formData.energyAccount)) {
-          console.log('✅ [AUTO-FILL] Atualizando dados da conta de energia');
-          setFormData(newFormData);
+        // Verificar se algo mudou para evitar loops infinitos
+        const currentDataString = JSON.stringify(currentFormData);
+        const automatedDataString = JSON.stringify(automatedFormData);
+        
+        if (currentDataString !== automatedDataString) {
+          console.log('📝 [SUBSCRIBER FORM] Aplicando automações detectadas');
+          setFormData(automatedFormData);
         }
       }
     }
   }, [
+    // Dados pessoais
     formData.personalData?.cpf,
     formData.personalData?.fullName,
     formData.personalData?.partnerNumber,
+    formData.personalData?.birthDate,
+    formData.personalData?.address?.cep,
+    formData.personalData?.address?.street,
+    formData.personalData?.phone,
+    formData.personalData?.email,
+    
+    // Dados da empresa
     formData.companyData?.cnpj,
     formData.companyData?.companyName,
     formData.companyData?.partnerNumber,
+    formData.companyData?.address?.cep,
+    formData.companyData?.address?.street,
+    formData.companyData?.phone,
+    formData.companyData?.email,
+    
+    // Conta de energia
+    formData.energyAccount.uc,
+    
+    // Transferência de titularidade
+    formData.titleTransfer?.willTransfer,
+    
+    // Contrato do plano
+    formData.planContract.informedKwh,
+    formData.planContract.loyalty,
+    
+    // Tipo de assinante
     formData.subscriberType,
+    
+    // Estados de controle
     isLoaded,
     isEditing,
-    performAutoFill,
-    existingData
+    existingData,
+    performAutoFillAll
   ]);
 
   const updateFormData = useCallback((section: keyof SubscriberFormData, data: unknown) => {
@@ -223,11 +264,11 @@ export const useSubscriberForm = (existingData?: SubscriberDataFromDB) => {
   }, [formData, removeContactAction]);
 
   const autoFillEnergyAccount = useCallback(() => {
-    console.log('🔄 [MANUAL AUTO-FILL] Executando preenchimento manual...');
-    const newFormData = performAutoFill(formData);
+    console.log('🔄 [MANUAL AUTO-FILL] Executando preenchimento manual completo...');
+    const newFormData = performAutoFillAll(formData);
     setFormData(newFormData);
-    toast.success('Dados da conta de energia preenchidos automaticamente!', { duration: 1000 });
-  }, [formData, performAutoFill]);
+    toast.success('Todos os dados foram preenchidos automaticamente!', { duration: 2000 });
+  }, [formData, performAutoFillAll]);
 
   const submitForm = useCallback(async (subscriberId?: string) => {
     const result = await submitFormAction(formData, subscriberId);
