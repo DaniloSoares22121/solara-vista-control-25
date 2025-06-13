@@ -125,23 +125,30 @@ export const useGeneratorForm = () => {
     const formData = form.getValues();
     const errors: string[] = [];
 
+    console.log('🔍 Validando step:', step, 'Dados:', formData);
+
     switch (step) {
       case 1: // Concessionária e Proprietário
         if (!formData.concessionaria) errors.push('Selecione uma concessionária');
-        if (!formData.owner.cpfCnpj) errors.push('CPF/CNPJ é obrigatório');
-        if (!formData.owner.numeroParceiroNegocio) errors.push('Número Parceiro de Negócio é obrigatório');
-        if (!formData.owner.name) errors.push('Nome é obrigatório');
-        if (!formData.owner.address.cep) errors.push('CEP é obrigatório');
-        if (!formData.owner.address.endereco) errors.push('Endereço é obrigatório');
-        if (!formData.owner.address.numero) errors.push('Número é obrigatório');
-        if (!formData.owner.address.bairro) errors.push('Bairro é obrigatório');
-        if (!formData.owner.address.cidade) errors.push('Cidade é obrigatória');
-        if (!formData.owner.address.estado) errors.push('Estado é obrigatório');
-        if (!formData.owner.telefone) errors.push('Telefone é obrigatório');
-        if (!formData.owner.email) errors.push('E-mail é obrigatório');
+        if (!formData.owner?.cpfCnpj) errors.push('CPF/CNPJ é obrigatório');
+        if (!formData.owner?.numeroParceiroNegocio) errors.push('Número Parceiro de Negócio é obrigatório');
+        if (!formData.owner?.name) errors.push('Nome é obrigatório');
+        if (!formData.owner?.address?.cep) errors.push('CEP é obrigatório');
+        if (!formData.owner?.address?.endereco) errors.push('Endereço é obrigatório');
+        if (!formData.owner?.address?.numero) errors.push('Número é obrigatório');
+        if (!formData.owner?.address?.bairro) errors.push('Bairro é obrigatório');
+        if (!formData.owner?.address?.cidade) errors.push('Cidade é obrigatória');
+        if (!formData.owner?.address?.estado) errors.push('Estado é obrigatório');
+        if (!formData.owner?.telefone) errors.push('Telefone é obrigatório');
+        if (!formData.owner?.email) errors.push('E-mail é obrigatório');
         
-        if (formData.owner.type === 'fisica' && !formData.owner.dataNascimento) {
-          errors.push('Data de nascimento é obrigatória');
+        if (formData.owner?.type === 'fisica' && !formData.owner?.dataNascimento) {
+          errors.push('Data de nascimento é obrigatória para Pessoa Física');
+        }
+
+        if (formData.owner?.type === 'juridica') {
+          if (!formData.owner?.razaoSocial) errors.push('Razão Social é obrigatória para Pessoa Jurídica');
+          // Tornar campos do administrador opcionais para pessoa jurídica
         }
         break;
 
@@ -173,11 +180,20 @@ export const useGeneratorForm = () => {
         break;
 
       case 3: // Login da Distribuidora
-        if (!formData.distributorLogin.uc) errors.push('UC é obrigatória');
-        if (!formData.distributorLogin.cpfCnpj) errors.push('CPF/CNPJ é obrigatório');
+        if (!formData.distributorLogin?.uc) errors.push('UC é obrigatória');
+        if (!formData.distributorLogin?.cpfCnpj) errors.push('CPF/CNPJ é obrigatório');
+        break;
+
+      case 4: // Pagamento (opcional)
+        // Todos os campos de pagamento são opcionais
+        break;
+
+      case 5: // Anexos (opcional)
+        // Todos os anexos são opcionais
         break;
     }
 
+    console.log('📋 Resultado da validação:', { isValid: errors.length === 0, errors });
     return { isValid: errors.length === 0, errors };
   }, [form]);
 

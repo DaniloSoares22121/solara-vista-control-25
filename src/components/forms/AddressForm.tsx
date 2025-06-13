@@ -1,9 +1,9 @@
 
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { MaskedInput } from '@/components/ui/masked-input';
 import { UseFormReturn } from 'react-hook-form';
 import { MapPin } from 'lucide-react';
+import { CepInput } from '@/components/ui/cep-input';
 
 interface AddressFormProps {
   form: UseFormReturn<any>;
@@ -23,11 +23,23 @@ const AddressForm = ({
   onAddressChange 
 }: AddressFormProps) => {
   
-  const handleCepChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const cep = e.target.value;
-    form.setValue(`${prefix}.cep`, cep);
-    if (onCepChange) {
-      onCepChange(cep);
+  const handleCepFound = (cepData: any) => {
+    console.log('📍 CEP encontrado, preenchendo endereço:', cepData);
+    
+    if (cepData) {
+      form.setValue(`${prefix}.endereco`, cepData.logradouro || '');
+      form.setValue(`${prefix}.bairro`, cepData.bairro || '');
+      form.setValue(`${prefix}.cidade`, cepData.localidade || '');
+      form.setValue(`${prefix}.estado`, cepData.uf || '');
+      
+      if (onAddressChange) {
+        onAddressChange({
+          endereco: cepData.logradouro || '',
+          bairro: cepData.bairro || '',
+          cidade: cepData.localidade || '',
+          estado: cepData.uf || ''
+        });
+      }
     }
   };
 
@@ -55,14 +67,16 @@ const AddressForm = ({
             <FormItem>
               <FormLabel>CEP *</FormLabel>
               <FormControl>
-                <MaskedInput 
-                  {...field} 
-                  mask="99999-999"
-                  placeholder="00000-000"
-                  onChange={(e) => {
-                    field.onChange(e);
-                    handleCepChange(e);
+                <CepInput
+                  value={field.value || ''}
+                  onChange={(value) => {
+                    field.onChange(value);
+                    if (onCepChange) {
+                      onCepChange(value);
+                    }
                   }}
+                  onCepFound={handleCepFound}
+                  placeholder="00000-000"
                 />
               </FormControl>
               <FormMessage />
