@@ -25,24 +25,27 @@ const GeneratorPlantsForm = ({ form }: GeneratorPlantsFormProps) => {
   });
 
   const addPlant = () => {
-    appendPlant({
+    const owner = form.getValues('owner');
+    console.log('🌱 [PLANTS FORM] Adicionando nova usina com dados do proprietário:', owner);
+    
+    const newPlant = {
       apelido: '',
       uc: '',
-      tipoUsina: 'micro',
-      modalidadeCompensacao: 'autoconsumo',
-      ownerType: 'fisica',
-      ownerCpfCnpj: '',
-      ownerName: '',
-      ownerDataNascimento: '',
-      ownerNumeroParceiroNegocio: '',
+      tipoUsina: 'micro' as const,
+      modalidadeCompensacao: 'autoconsumo' as const,
+      ownerType: owner.type || 'fisica',
+      ownerCpfCnpj: owner.cpfCnpj || '',
+      ownerName: owner.name || '',
+      ownerDataNascimento: owner.dataNascimento || '',
+      ownerNumeroParceiroNegocio: owner.numeroParceiroNegocio || '',
       address: {
-        cep: '',
-        endereco: '',
-        numero: '',
-        complemento: '',
-        bairro: '',
-        cidade: '',
-        estado: '',
+        cep: owner.address?.cep || '',
+        endereco: owner.address?.endereco || '',
+        numero: owner.address?.numero || '',
+        complemento: owner.address?.complemento || '',
+        bairro: owner.address?.bairro || '',
+        cidade: owner.address?.cidade || '',
+        estado: owner.address?.estado || '',
       },
       contacts: [],
       observacoes: '',
@@ -58,12 +61,16 @@ const GeneratorPlantsForm = ({ form }: GeneratorPlantsFormProps) => {
       potenciaTotalInversores: 0,
       geracaoProjetada: 0,
       observacoesInstalacao: '',
-    });
+    };
+
+    console.log('✅ [PLANTS FORM] Nova usina criada com auto-preenchimento:', newPlant);
+    appendPlant(newPlant);
   };
 
   // Adicionar primeira usina automaticamente se não houver nenhuma
   useEffect(() => {
     if (plantFields.length === 0) {
+      console.log('📋 [PLANTS FORM] Nenhuma usina encontrada, adicionando primeira usina automaticamente');
       addPlant();
     }
   }, [plantFields.length]);

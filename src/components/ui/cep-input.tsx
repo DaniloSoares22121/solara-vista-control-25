@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { useCepLookup } from '@/hooks/useCepLookup';
-import { Loader2, CheckCircle } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 
 interface CepInputProps {
   value: string;
@@ -21,7 +21,6 @@ export const CepInput = ({
 }: CepInputProps) => {
   const { lookupCep, loading, formatCep } = useCepLookup();
   const [lastLookup, setLastLookup] = useState('');
-  const [cepFound, setCepFound] = useState(false);
 
   const handleChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const inputValue = e.target.value;
@@ -29,7 +28,6 @@ export const CepInput = ({
     const cleanCep = inputValue.replace(/\D/g, '');
     
     onChange(formattedValue);
-    setCepFound(false);
     
     // Auto-lookup when CEP is complete and different from last lookup
     if (cleanCep.length === 8 && cleanCep !== lastLookup) {
@@ -39,10 +37,7 @@ export const CepInput = ({
         const cepData = await lookupCep(cleanCep);
         console.log('Dados do CEP retornados:', cepData);
         if (cepData && onCepFound) {
-          setCepFound(true);
           onCepFound(cleanCep);
-          // Remove o aviso após 3 segundos
-          setTimeout(() => setCepFound(false), 3000);
         }
       } catch (error) {
         console.error('Erro ao buscar CEP:', error);
@@ -53,27 +48,19 @@ export const CepInput = ({
   };
 
   return (
-    <div className="space-y-2">
-      {cepFound && (
-        <div className="flex items-center space-x-2 text-sm text-green-600 bg-green-50 p-2 rounded-lg border border-green-200">
-          <CheckCircle className="h-4 w-4" />
-          <span>CEP encontrado! Endereço preenchido automaticamente.</span>
+    <div className="relative">
+      <Input
+        value={value}
+        onChange={handleChange}
+        placeholder={placeholder}
+        maxLength={9}
+        className={className}
+      />
+      {loading && (
+        <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+          <Loader2 className="h-4 w-4 animate-spin text-green-600" />
         </div>
       )}
-      <div className="relative">
-        <Input
-          value={value}
-          onChange={handleChange}
-          placeholder={placeholder}
-          maxLength={9}
-          className={className}
-        />
-        {loading && (
-          <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-            <Loader2 className="h-4 w-4 animate-spin text-green-600" />
-          </div>
-        )}
-      </div>
     </div>
   );
 };

@@ -53,6 +53,8 @@ export const useGeneratorForm = () => {
   const ownerCpfCnpj = form.watch('owner.cpfCnpj');
   const ownerDataNascimento = form.watch('owner.dataNascimento');
   const ownerType = form.watch('owner.type');
+  const ownerName = form.watch('owner.name');
+  const ownerAddress = form.watch('owner.address');
 
   useEffect(() => {
     if (ownerCpfCnpj) {
@@ -65,6 +67,24 @@ export const useGeneratorForm = () => {
       }
     }
   }, [ownerCpfCnpj, ownerDataNascimento, ownerType, form, performAutoFillDistributorLogin]);
+
+  // Auto-fill para usinas existentes quando dados do proprietário mudarem
+  useEffect(() => {
+    const plants = form.getValues('plants');
+    if (plants.length > 0 && (ownerCpfCnpj || ownerName || ownerAddress)) {
+      console.log('🔄 [GENERATOR FORM] Atualizando usinas existentes com novos dados do proprietário');
+      
+      plants.forEach((_, index) => {
+        const currentFormData = form.getValues();
+        const updatedFormData = performAutoFillPlant(currentFormData, index);
+        
+        if (JSON.stringify(updatedFormData.plants[index]) !== JSON.stringify(currentFormData.plants[index])) {
+          form.setValue(`plants.${index}`, updatedFormData.plants[index]);
+          console.log(`✅ [GENERATOR FORM] Usina ${index + 1} atualizada com dados do proprietário`);
+        }
+      });
+    }
+  }, [ownerCpfCnpj, ownerName, ownerAddress, ownerDataNascimento, ownerType, form, performAutoFillPlant]);
 
   const handleCepLookup = async (cep: string, type: string, index?: number) => {
     // TODO: Implementar lookup de CEP
