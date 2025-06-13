@@ -1,4 +1,5 @@
 import React, { useRef } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -78,6 +79,10 @@ const InvoiceLayout: React.FC = () => {
   const data = mockInvoiceData;
   const invoiceRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+  const location = useLocation();
+
+  // Check if we're on the /fatura-layout route
+  const isLayoutRoute = location.pathname === '/fatura-layout';
 
   // Prepare data for the chart
   const chartData = data.historico.map(item => ({
@@ -98,6 +103,30 @@ const InvoiceLayout: React.FC = () => {
         throw new Error('Referência da fatura não encontrada');
       }
 
+      // If we're on /fatura-layout route, just download the custom model
+      if (isLayoutRoute) {
+        // Generate only the custom PDF
+        const customPdfBytes = await generateCustomPDF('invoice-layout');
+        
+        // Create blob and download
+        const blob = new Blob([customPdfBytes], { type: 'application/pdf' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `modelo-fatura-${Date.now()}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        
+        toast({
+          title: "PDF baixado com sucesso!",
+          description: "O modelo da fatura foi baixado.",
+        });
+        return;
+      }
+
+      // Original behavior for other routes
       // Gera PDF customizado
       const customPdfBytes = await generateCustomPDF('invoice-layout');
       
@@ -161,7 +190,7 @@ const InvoiceLayout: React.FC = () => {
             className="bg-green-600 hover:bg-green-700 text-white"
           >
             <Download className="w-4 h-4 mr-2" />
-            Baixar PDF Completo
+            {isLayoutRoute ? 'Baixar Modelo PDF' : 'Baixar PDF Completo'}
           </Button>
         </div>
 
