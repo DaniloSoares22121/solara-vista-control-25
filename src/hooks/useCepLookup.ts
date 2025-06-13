@@ -1,6 +1,5 @@
 
 import { useState } from 'react';
-import { toast } from 'sonner';
 
 interface CepResponse {
   cep: string;
@@ -32,15 +31,12 @@ export const useCepLookup = () => {
       const data = await response.json();
       
       if (data.erro) {
-        toast.error('CEP não encontrado');
         return null;
       }
       
-      toast.success('CEP encontrado! Endereço preenchido automaticamente.');
       return data;
     } catch (error) {
       console.error('Erro ao buscar CEP:', error);
-      toast.error('Erro ao buscar CEP. Verifique sua conexão.');
       return null;
     } finally {
       setLoading(false);

@@ -1,7 +1,6 @@
 
 import { useCallback } from 'react';
 import { useCepLookup } from '@/hooks/useCepLookup';
-import { toast } from 'sonner';
 
 // Hook centralizado para consistência do CEP em todos os formulários
 export const useCepConsistency = () => {
@@ -21,12 +20,9 @@ export const useCepConsistency = () => {
         
         if (cepData) {
           onSuccess(cepData);
-        } else {
-          toast.error('CEP não encontrado', { duration: 2000 });
         }
       } catch (error) {
         console.error('❌ Erro ao buscar CEP:', error);
-        toast.error('Erro ao consultar CEP', { duration: 2000 });
       }
     }
   }, [lookupCep]);
