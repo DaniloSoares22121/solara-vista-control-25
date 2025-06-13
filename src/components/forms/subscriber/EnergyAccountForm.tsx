@@ -45,7 +45,12 @@ const EnergyAccountForm = ({ form }: EnergyAccountFormProps) => {
         form.setValue('energyAccount.holderType', 'person');
         form.setValue('energyAccount.cpfCnpj', personalData.cpf);
         form.setValue('energyAccount.holderName', personalData.fullName);
-        form.setValue('energyAccount.birthDate', personalData.birthDate || '');
+        
+        // Preencher data de nascimento
+        if (personalData.birthDate) {
+          form.setValue('energyAccount.birthDate', personalData.birthDate);
+        }
+        
         form.setValue('energyAccount.partnerNumber', personalData.partnerNumber || '');
         
         // Preencher endereço se disponível
@@ -99,6 +104,21 @@ const EnergyAccountForm = ({ form }: EnergyAccountFormProps) => {
       autoFillWithSubscriberData();
     }
   }, []);
+
+  // Monitorar mudanças nos dados do assinante para auto-preencher
+  useEffect(() => {
+    const subscription = form.watch((value, { name, type }) => {
+      // Se mudaram dados pessoais ou da empresa, tentar auto-preencher
+      if (name?.startsWith('personalData') || name?.startsWith('companyData')) {
+        console.log('🔄 [ENERGY ACCOUNT] Detectada mudança nos dados do assinante');
+        setTimeout(() => {
+          autoFillWithSubscriberData();
+        }, 100);
+      }
+    });
+    
+    return () => subscription.unsubscribe();
+  }, [form]);
 
   return (
     <div className="space-y-6">
