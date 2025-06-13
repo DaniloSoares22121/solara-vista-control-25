@@ -33,7 +33,7 @@ const GeneratorAttachmentsForm = ({ form }: GeneratorAttachmentsFormProps) => {
     procuracao: useRef<HTMLInputElement>(null),
   };
 
-  // Sincronizar dados do formulário com o estado local
+  // Sincronizar dados do formulário com o estado local - versão melhorada
   useEffect(() => {
     const formAttachments = form.getValues('attachments');
     
@@ -41,27 +41,33 @@ const GeneratorAttachmentsForm = ({ form }: GeneratorAttachmentsFormProps) => {
       const validFiles: Record<string, FileUploadData> = {};
       
       Object.entries(formAttachments).forEach(([key, value]) => {
+        // Verificação mais flexível - aceita qualquer objeto que tenha as propriedades básicas
         if (value && 
             typeof value === 'object' && 
-            'file' in value && 
-            'name' in value &&
+            'name' in value && 
             'size' in value &&
-            'type' in value &&
-            'uploadedAt' in value &&
-            value.file instanceof File) {
-          validFiles[key] = value as FileUploadData;
+            'type' in value) {
+          
+          // Se tem um File object, usa ele. Se não, cria um mock para exibição
+          const fileObject = 'file' in value && value.file instanceof File 
+            ? value.file 
+            : new File([''], value.name as string, { type: value.type as string });
+          
+          validFiles[key] = {
+            file: fileObject,
+            name: value.name as string,
+            size: value.size as number,
+            type: value.type as string,
+            uploadedAt: ('uploadedAt' in value ? value.uploadedAt : new Date().toISOString()) as string
+          };
         }
       });
       
-      if (Object.keys(validFiles).length > 0) {
-        setFiles(validFiles);
-      } else {
-        setFiles({});
-      }
+      setFiles(validFiles);
     } else {
       setFiles({});
     }
-  }, [form]);
+  }, [form.watch('attachments')]);
 
   const handleFileUpload = (fieldName: string, selectedFile: File | null) => {
     if (!selectedFile) {
@@ -89,37 +95,27 @@ const GeneratorAttachmentsForm = ({ form }: GeneratorAttachmentsFormProps) => {
 
     // Criar objeto do arquivo com o File original preservado
     const fileData: FileUploadData = {
-      file: selectedFile, // MANTER O ARQUIVO ORIGINAL
+      file: selectedFile,
       name: selectedFile.name,
       size: selectedFile.size,
       type: selectedFile.type,
       uploadedAt: new Date().toISOString()
     };
 
-    // Atualizar estado local primeiro
-    setFiles(prevFiles => {
-      const newFiles = { ...prevFiles, [fieldName]: fileData };
-      return newFiles;
-    });
-    
-    // Atualizar formulário com estrutura correta - MANTER O FILE OBJECT
+    // Atualizar formulário primeiro
     const currentAttachments = form.getValues('attachments') || {};
     const updatedAttachments = { 
       ...currentAttachments, 
-      [fieldName]: fileData // Salvar o objeto completo com File
+      [fieldName]: fileData
     };
     
     form.setValue('attachments', updatedAttachments, { shouldValidate: true });
+    
+    // Forçar trigger do watch para atualizar o useEffect
+    form.trigger('attachments');
   };
 
   const removeFile = (fieldName: string) => {
-    // Atualizar estado local
-    setFiles(prev => {
-      const newFiles = { ...prev };
-      delete newFiles[fieldName];
-      return newFiles;
-    });
-    
     // Atualizar formulário
     const currentAttachments = form.getValues('attachments') || {};
     const updatedAttachments = { ...currentAttachments };
@@ -131,6 +127,9 @@ const GeneratorAttachmentsForm = ({ form }: GeneratorAttachmentsFormProps) => {
     if (fileInputRefs[fieldName as keyof typeof fileInputRefs].current) {
       fileInputRefs[fieldName as keyof typeof fileInputRefs].current!.value = '';
     }
+    
+    // Forçar trigger do watch para atualizar o useEffect
+    form.trigger('attachments');
   };
 
   const FileUploadField = ({ 
@@ -143,7 +142,7 @@ const GeneratorAttachmentsForm = ({ form }: GeneratorAttachmentsFormProps) => {
     required?: boolean;
   }) => {
     const fileData = files[name];
-    const hasFile = !!fileData && fileData.file instanceof File;
+    const hasFile = !!fileData && fileData.name && fileData.size > 0;
     
     return (
       <FormField
