@@ -81,12 +81,21 @@ export interface PaymentData {
   pix: string;
 }
 
+// Estrutura correta para os anexos - com objeto File preservado
+export interface FileUploadData {
+  file: File;
+  name: string;
+  size: number;
+  type: string;
+  uploadedAt: string;
+}
+
 export interface GeneratorAttachments {
-  contrato?: File;
-  cnh?: File;
-  contratoSocial?: File;
-  conta?: File;
-  procuracao?: File;
+  contrato?: FileUploadData;
+  cnh?: FileUploadData;
+  contratoSocial?: FileUploadData;
+  conta?: FileUploadData;
+  procuracao?: FileUploadData;
 }
 
 export interface GeneratorFormData {

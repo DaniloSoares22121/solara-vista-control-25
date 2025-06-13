@@ -73,7 +73,44 @@ const generatorSchema = z.object({
     conta: z.string().optional(),
     pix: z.string().optional(),
   }),
-  attachments: z.object({}).default({}),
+  // Ajustar validação dos anexos para aceitar a estrutura correta
+  attachments: z.object({
+    contrato: z.object({
+      file: z.instanceof(File),
+      name: z.string(),
+      size: z.number(),
+      type: z.string(),
+      uploadedAt: z.string(),
+    }).optional(),
+    cnh: z.object({
+      file: z.instanceof(File),
+      name: z.string(),
+      size: z.number(),
+      type: z.string(),
+      uploadedAt: z.string(),
+    }).optional(),
+    contratoSocial: z.object({
+      file: z.instanceof(File),
+      name: z.string(),
+      size: z.number(),
+      type: z.string(),
+      uploadedAt: z.string(),
+    }).optional(),
+    conta: z.object({
+      file: z.instanceof(File),
+      name: z.string(),
+      size: z.number(),
+      type: z.string(),
+      uploadedAt: z.string(),
+    }).optional(),
+    procuracao: z.object({
+      file: z.instanceof(File),
+      name: z.string(),
+      size: z.number(),
+      type: z.string(),
+      uploadedAt: z.string(),
+    }).optional(),
+  }).default({}),
 });
 
 interface NovaGeradoraProps {

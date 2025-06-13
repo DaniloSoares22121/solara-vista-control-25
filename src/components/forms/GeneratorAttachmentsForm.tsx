@@ -42,7 +42,6 @@ const GeneratorAttachmentsForm = ({ form }: GeneratorAttachmentsFormProps) => {
       const validFiles: Record<string, FileUploadData> = {};
       
       Object.entries(formAttachments).forEach(([key, value]) => {
-        // Verificar se é um objeto válido com as propriedades corretas
         if (value && 
             typeof value === 'object' && 
             'file' in value && 
@@ -102,9 +101,9 @@ const GeneratorAttachmentsForm = ({ form }: GeneratorAttachmentsFormProps) => {
 
     console.log('✅ [FILE UPLOAD] Arquivo válido, salvando...');
 
-    // Criar objeto do arquivo
+    // Criar objeto do arquivo com o File original preservado
     const fileData: FileUploadData = {
-      file: selectedFile,
+      file: selectedFile, // MANTER O ARQUIVO ORIGINAL
       name: selectedFile.name,
       size: selectedFile.size,
       type: selectedFile.type,
@@ -125,17 +124,18 @@ const GeneratorAttachmentsForm = ({ form }: GeneratorAttachmentsFormProps) => {
       return newFiles;
     });
     
-    // Atualizar formulário com estrutura correta
+    // Atualizar formulário com estrutura correta - MANTER O FILE OBJECT
     const currentAttachments = form.getValues('attachments') || {};
     const updatedAttachments = { 
       ...currentAttachments, 
-      [fieldName]: fileData 
+      [fieldName]: fileData // Salvar o objeto completo com File
     };
     
     console.log('📝 [FORM] Atualizando formulário com:', {
       fieldName,
       fileName: fileData.name,
-      totalAttachments: Object.keys(updatedAttachments).length
+      totalAttachments: Object.keys(updatedAttachments).length,
+      hasFileObject: fileData.file instanceof File
     });
     
     form.setValue('attachments', updatedAttachments, { shouldValidate: true });
@@ -144,6 +144,7 @@ const GeneratorAttachmentsForm = ({ form }: GeneratorAttachmentsFormProps) => {
     setTimeout(() => {
       const saved = form.getValues('attachments');
       console.log('🔍 [FORM VERIFY] Dados salvos no form:', saved);
+      console.log('🔍 [FORM VERIFY] Arquivo salvo tem File object:', saved?.[fieldName]?.file instanceof File);
     }, 100);
   };
 
