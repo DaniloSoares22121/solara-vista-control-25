@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { SubscriberFormData } from '@/types/subscriber';
 import { FormProvider } from 'react-hook-form';
@@ -98,12 +99,7 @@ export const useSubscriberSteps = ({
       component: (
         <FormProvider {...form}>
           <EnergyAccountForm 
-            data={formData.energyAccount} 
-            onUpdate={(data) => updateFormData('energyAccount', data)}
-            onCepLookup={(cep) => handleCepLookup(cep, 'energy')}
-            onAutoFill={autoFillEnergyAccount}
             form={form}
-            subscriberData={formData}
           />
         </FormProvider>
       )
@@ -129,8 +125,6 @@ export const useSubscriberSteps = ({
       component: (
         <FormProvider {...form}>
           <PlanContractForm 
-            data={formData.planContract} 
-            onUpdate={(data) => updateFormData('planContract', data)}
             form={form}
           />
         </FormProvider>
