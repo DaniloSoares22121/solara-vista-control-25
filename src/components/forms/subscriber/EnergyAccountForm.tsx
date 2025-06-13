@@ -1,7 +1,6 @@
 
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { MaskedInput } from '@/components/ui/masked-input';
 import { CepInput } from '@/components/ui/cep-input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { UseFormReturn } from 'react-hook-form';
@@ -20,10 +19,10 @@ const EnergyAccountForm = ({ form }: EnergyAccountFormProps) => {
     try {
       const address = await lookupCep(cep);
       if (address) {
-        form.setValue('energyAccount.address.endereco', address.logradouro || '');
-        form.setValue('energyAccount.address.bairro', address.bairro || '');
-        form.setValue('energyAccount.address.cidade', address.localidade || '');
-        form.setValue('energyAccount.address.estado', address.uf || '');
+        form.setValue('energyAccount.address.street', address.logradouro || '');
+        form.setValue('energyAccount.address.neighborhood', address.bairro || '');
+        form.setValue('energyAccount.address.city', address.localidade || '');
+        form.setValue('energyAccount.address.state', address.uf || '');
       }
     } catch (error) {
       console.error('Erro ao buscar CEP:', error);
@@ -76,17 +75,15 @@ const EnergyAccountForm = ({ form }: EnergyAccountFormProps) => {
 
               <FormField
                 control={form.control}
-                name="energyAccount.averageConsumption"
+                name="energyAccount.partnerNumber"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-blue-800 font-medium">Consumo Médio (kWh/mês) *</FormLabel>
+                    <FormLabel className="text-blue-800 font-medium">Número do Parceiro</FormLabel>
                     <FormControl>
                       <Input 
                         {...field} 
-                        type="number" 
-                        placeholder="Ex: 450"
+                        placeholder="Digite o número do parceiro"
                         className="border-blue-200 focus:border-blue-500 focus:ring-blue-500"
-                        onChange={(e) => field.onChange(Number(e.target.value))}
                       />
                     </FormControl>
                     <FormMessage />
@@ -117,7 +114,7 @@ const EnergyAccountForm = ({ form }: EnergyAccountFormProps) => {
                         <CepInput
                           value={field.value}
                           onChange={field.onChange}
-                          onCepComplete={handleCepLookup}
+                          onCepFound={handleCepLookup}
                           className="border-purple-200 focus:border-purple-500 focus:ring-purple-500"
                         />
                       </FormControl>
@@ -128,7 +125,7 @@ const EnergyAccountForm = ({ form }: EnergyAccountFormProps) => {
 
                 <FormField
                   control={form.control}
-                  name="energyAccount.address.numero"
+                  name="energyAccount.address.number"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-purple-800 font-medium">Número *</FormLabel>
@@ -146,7 +143,7 @@ const EnergyAccountForm = ({ form }: EnergyAccountFormProps) => {
 
                 <FormField
                   control={form.control}
-                  name="energyAccount.address.complemento"
+                  name="energyAccount.address.complement"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-purple-800 font-medium">Complemento</FormLabel>
@@ -165,7 +162,7 @@ const EnergyAccountForm = ({ form }: EnergyAccountFormProps) => {
 
               <FormField
                 control={form.control}
-                name="energyAccount.address.endereco"
+                name="energyAccount.address.street"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-purple-800 font-medium">Endereço *</FormLabel>
@@ -184,7 +181,7 @@ const EnergyAccountForm = ({ form }: EnergyAccountFormProps) => {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <FormField
                   control={form.control}
-                  name="energyAccount.address.bairro"
+                  name="energyAccount.address.neighborhood"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-purple-800 font-medium">Bairro *</FormLabel>
@@ -202,7 +199,7 @@ const EnergyAccountForm = ({ form }: EnergyAccountFormProps) => {
 
                 <FormField
                   control={form.control}
-                  name="energyAccount.address.cidade"
+                  name="energyAccount.address.city"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-purple-800 font-medium">Cidade *</FormLabel>
@@ -220,7 +217,7 @@ const EnergyAccountForm = ({ form }: EnergyAccountFormProps) => {
 
                 <FormField
                   control={form.control}
-                  name="energyAccount.address.estado"
+                  name="energyAccount.address.state"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-purple-800 font-medium">Estado *</FormLabel>

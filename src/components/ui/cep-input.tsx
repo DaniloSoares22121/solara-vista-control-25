@@ -7,7 +7,7 @@ import { Loader2, CheckCircle } from 'lucide-react';
 interface CepInputProps {
   value: string;
   onChange: (value: string) => void;
-  onCepFound?: (cepData: any) => void;
+  onCepFound?: (cep: string) => void;
   placeholder?: string;
   className?: string;
 }
@@ -40,7 +40,7 @@ export const CepInput = ({
         console.log('Dados do CEP retornados:', cepData);
         if (cepData && onCepFound) {
           setCepFound(true);
-          onCepFound(cepData);
+          onCepFound(cleanCep);
           // Remove o aviso após 3 segundos
           setTimeout(() => setCepFound(false), 3000);
         }
