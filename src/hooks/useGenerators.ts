@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { supabaseGeneratorService } from '@/services/supabaseGeneratorService';
 import { GeneratorFormData } from '@/types/generator';
+import { supabase } from '@/integrations/supabase/client';
 
 export const useGenerators = () => {
   const [generators, setGenerators] = useState<any[]>([]);
@@ -32,7 +33,7 @@ export const useGenerators = () => {
     
     try {
       const newGenerator = await supabaseGeneratorService.createGenerator(generatorData);
-      setGenerators(prev => [newGenerator, ...prev]);
+      // Não adicionar manualmente - deixar o realtime fazer isso
       console.log('✅ [HOOK] Geradora criada com sucesso:', newGenerator);
       return newGenerator;
     } catch (err) {
@@ -49,7 +50,7 @@ export const useGenerators = () => {
     
     try {
       await supabaseGeneratorService.deleteGenerator(id);
-      setGenerators(prev => prev.filter(gen => gen.id !== id));
+      // Não remover manualmente - deixar o realtime fazer isso
       console.log('✅ [HOOK] Geradora excluída com sucesso');
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Erro ao excluir geradora';
@@ -65,7 +66,7 @@ export const useGenerators = () => {
     
     try {
       const updatedGenerator = await supabaseGeneratorService.updateGenerator(id, generatorData);
-      setGenerators(prev => prev.map(gen => gen.id === id ? updatedGenerator : gen));
+      // Não atualizar manualmente - deixar o realtime fazer isso
       console.log('✅ [HOOK] Geradora atualizada com sucesso:', updatedGenerator);
       return updatedGenerator;
     } catch (err) {
@@ -78,6 +79,51 @@ export const useGenerators = () => {
 
   useEffect(() => {
     loadGenerators();
+
+    // Configurar listeners de tempo real
+    const channel = supabase
+      .channel('generators-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'generators'
+        },
+        (payload) => {
+          console.log('✅ [REALTIME] Nova geradora inserida:', payload.new);
+          setGenerators(prev => [payload.new, ...prev]);
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'generators'
+        },
+        (payload) => {
+          console.log('✅ [REALTIME] Geradora atualizada:', payload.new);
+          setGenerators(prev => prev.map(gen => gen.id === payload.new.id ? payload.new : gen));
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'DELETE',
+          schema: 'public',
+          table: 'generators'
+        },
+        (payload) => {
+          console.log('✅ [REALTIME] Geradora excluída:', payload.old);
+          setGenerators(prev => prev.filter(gen => gen.id !== payload.old.id));
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   return {

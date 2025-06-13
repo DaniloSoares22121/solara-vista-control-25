@@ -127,26 +127,26 @@ export const useGeneratorForm = () => {
 
     console.log('🔍 Validando step:', step, 'Dados:', formData);
 
-    // Remover todas as validações - permitir navegar entre etapas sem restrições
+    // Permitir navegar entre todas as etapas sem validações restritivas
     switch (step) {
       case 1: // Concessionária e Proprietário
-        // Sem validações obrigatórias
+        // Permitir navegar mesmo com campos vazios
         break;
 
       case 2: // Usinas
-        // Sem validações obrigatórias
+        // Permitir navegar mesmo sem usinas cadastradas
         break;
 
       case 3: // Login da Distribuidora
-        // Sem validações obrigatórias
+        // Permitir navegar mesmo sem dados completos
         break;
 
       case 4: // Pagamento (opcional)
-        // Sem validações obrigatórias
+        // Sempre permitir
         break;
 
       case 5: // Anexos (opcional)
-        // Sem validações obrigatórias
+        // Sempre permitir
         break;
     }
 
