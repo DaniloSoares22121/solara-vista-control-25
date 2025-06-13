@@ -1,33 +1,211 @@
 
 import { useState, useCallback, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
 import { GeneratorFormData } from '@/types/generator';
-import { useGenerators } from '@/hooks/useGenerators';
-import { useGeneratorFormMapping } from '@/hooks/useGeneratorFormMapping';
+import { useCepConsistency } from '@/hooks/useCepConsistency';
+import { useGeneratorAutoFill } from '@/hooks/generator/useGeneratorAutoFill';
 import { toast } from 'sonner';
 
-export const useGeneratorForm = () => {
-  const { createGenerator } = useGenerators();
-  const [isLoading, setIsLoading] = useState(false);
-  const { 
-    performAutoFillPlant, 
-    performAutoFillDistributorLogin, 
-    performAutoFillPaymentData,
-    performAutoFillAdministrator,
-    performAutoFillFromUC,
-    performAutoFillAllPlants
-  } = useGeneratorFormMapping();
+const initialGeneratorData: GeneratorFormData = {
+  concessionaria: 'equatorial-goias',
+  owner: {
+    type: 'fisica',
+    cpfCnpj: '',
+    name: '',
+    numeroParceiroNegocio: '',
+    dataNascimento: '',
+    telefone: '',
+    email: '',
+    address: {
+      cep: '',
+      endereco: '',
+      numero: '',
+      complemento: '',
+      bairro: '',
+      cidade: '',
+      estado: ''
+    }
+  },
+  plants: [{
+    apelido: '',
+    uc: '',
+    endereco: '',
+    ownerType: 'fisica',
+    ownerCpfCnpj: '',
+    ownerName: '',
+    ownerNumeroParceiroNegocio: '',
+    ownerDataNascimento: '',
+    potenciaTotalUsina: 0,
+    geracaoProjetada: 0,
+    address: {
+      cep: '',
+      endereco: '',
+      numero: '',
+      complemento: '',
+      bairro: '',
+      cidade: '',
+      estado: ''
+    },
+    contacts: []
+  }],
+  distributorLogin: {
+    cpfCnpj: '',
+    dataNascimento: '',
+    uc: '',
+    senha: ''
+  },
+  paymentData: {
+    pix: '',
+    bankData: {
+      banco: '',
+      agencia: '',
+      conta: '',
+      tipoConta: 'corrente'
+    }
+  },
+  administrator: {
+    cpf: '',
+    nome: '',
+    dataNascimento: '',
+    address: {
+      cep: '',
+      endereco: '',
+      numero: '',
+      complemento: '',
+      bairro: '',
+      cidade: '',
+      estado: ''
+    },
+    telefone: '',
+    email: ''
+  },
+  attachments: {}
+};
 
-  const form = useForm<GeneratorFormData>({
-    defaultValues: {
-      concessionaria: 'equatorial-goias',
-      owner: {
-        type: 'fisica',
-        cpfCnpj: '',
-        numeroParceiroNegocio: '',
-        name: '',
-        dataNascimento: '',
-        address: {
+export const useGeneratorForm = (existingData?: any) => {
+  const [formData, setFormData] = useState<GeneratorFormData>(initialGeneratorData);
+  const [currentStep, setCurrentStep] = useState(1);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isEditing, setIsEditing] = useState(!!existingData);
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  const { handleCepLookup: handleCepLookupConsistent } = useCepConsistency();
+  const { executeAllAutoFills } = useGeneratorAutoFill();
+
+  // Load existing data if editing
+  useEffect(() => {
+    if (existingData && !isLoaded) {
+      console.log('🔄 Carregando dados existentes da geradora:', existingData);
+      setFormData(existingData);
+      setIsLoaded(true);
+    } else if (!existingData) {
+      setIsLoaded(true);
+    }
+  }, [existingData, isLoaded]);
+
+  // Auto-fill automation when data changes
+  useEffect(() => {
+    if (isLoaded && !isEditing) {
+      console.log('🚀 [GENERATOR FORM] Executando automações...');
+      
+      const hasOwnerData = formData.owner?.cpfCnpj || formData.owner?.name;
+      
+      if (hasOwnerData) {
+        const automatedData = executeAllAutoFills(formData);
+        
+        if (JSON.stringify(formData) !== JSON.stringify(automatedData)) {
+          console.log('📝 [GENERATOR FORM] Aplicando automações');
+          setFormData(automatedData);
+        }
+      }
+    }
+  }, [
+    formData.owner?.cpfCnpj,
+    formData.owner?.name,
+    formData.owner?.numeroParceiroNegocio,
+    formData.owner?.dataNascimento,
+    formData.owner?.address?.cep,
+    formData.owner?.telefone,
+    formData.owner?.email,
+    formData.plants?.[0]?.uc,
+    isLoaded,
+    isEditing,
+    executeAllAutoFills
+  ]);
+
+  const updateFormData = useCallback((section: keyof GeneratorFormData, data: unknown) => {
+    console.log('🔄 Atualizando formData da geradora:', section, data);
+    setFormData(prev => {
+      if (section === 'plants' && Array.isArray(data)) {
+        return { ...prev, [section]: data };
+      }
+      
+      const currentSectionData = prev[section];
+      
+      if (typeof data === 'object' && data !== null && typeof currentSectionData === 'object' && currentSectionData !== null) {
+        return {
+          ...prev,
+          [section]: { ...currentSectionData, ...data }
+        };
+      } else {
+        return {
+          ...prev,
+          [section]: data
+        };
+      }
+    });
+  }, []);
+
+  const handleCepLookup = useCallback(async (cep: string, addressType: 'owner' | 'plant' | 'administrator', plantIndex?: number) => {
+    await handleCepLookupConsistent(cep, (cepData) => {
+      const addressUpdate = {
+        cep: cepData.cep,
+        endereco: cepData.logradouro,
+        bairro: cepData.bairro,
+        cidade: cepData.localidade,
+        estado: cepData.uf,
+      };
+
+      setFormData(prev => {
+        const newFormData = { ...prev };
+        
+        switch (addressType) {
+          case 'owner':
+            if (newFormData.owner?.address) {
+              newFormData.owner.address = { ...newFormData.owner.address, ...addressUpdate };
+            }
+            break;
+          case 'plant':
+            if (plantIndex !== undefined && newFormData.plants?.[plantIndex]?.address) {
+              newFormData.plants[plantIndex].address = { ...newFormData.plants[plantIndex].address, ...addressUpdate };
+            }
+            break;
+          case 'administrator':
+            if (newFormData.administrator?.address) {
+              newFormData.administrator.address = { ...newFormData.administrator.address, ...addressUpdate };
+            }
+            break;
+        }
+        
+        return newFormData;
+      });
+    });
+  }, [handleCepLookupConsistent]);
+
+  const addPlant = useCallback(() => {
+    setFormData(prev => ({
+      ...prev,
+      plants: [...prev.plants, {
+        apelido: '',
+        uc: '',
+        endereco: '',
+        ownerType: prev.owner?.type || 'fisica',
+        ownerCpfCnpj: prev.owner?.cpfCnpj || '',
+        ownerName: prev.owner?.name || '',
+        ownerNumeroParceiroNegocio: prev.owner?.numeroParceiroNegocio || '',
+        ownerDataNascimento: prev.owner?.dataNascimento || '',
+        potenciaTotalUsina: 0,
+        geracaoProjetada: 0,
+        address: prev.owner?.address ? { ...prev.owner.address } : {
           cep: '',
           endereco: '',
           numero: '',
@@ -36,235 +214,60 @@ export const useGeneratorForm = () => {
           cidade: '',
           estado: ''
         },
-        telefone: '',
-        email: '',
-        observacoes: ''
-      },
-      plants: [],
-      distributorLogin: {
-        uc: '',
-        cpfCnpj: '',
-        dataNascimento: ''
-      },
-      paymentData: {
-        banco: '',
-        agencia: '',
-        conta: '',
-        pix: ''
-      },
-      attachments: {}
-    }
-  });
-
-  // Watch de TODOS os dados para automação máxima
-  const ownerData = form.watch('owner');
-  const plants = form.watch('plants');
-  const distributorLogin = form.watch('distributorLogin');
-
-  // AUTOMAÇÃO MEGA AGRESSIVA: Aplicar todas as automações sempre que qualquer dado muda
-  useEffect(() => {
-    console.log('🚀 [GENERATOR FORM] MEGA AUTOMAÇÃO ATIVADA - Sincronizando TUDO');
-    
-    const currentFormData = form.getValues();
-    const automatedFormData = performAutoFillAllPlants(currentFormData);
-    
-    // Verificar se algo mudou para evitar loops infinitos
-    const currentDataString = JSON.stringify(currentFormData);
-    const automatedDataString = JSON.stringify(automatedFormData);
-    
-    if (currentDataString !== automatedDataString) {
-      console.log('📝 [GENERATOR FORM] Aplicando automações detectadas');
-      
-      // Atualizar distribuidora
-      if (JSON.stringify(automatedFormData.distributorLogin) !== JSON.stringify(currentFormData.distributorLogin)) {
-        form.setValue('distributorLogin', automatedFormData.distributorLogin);
-      }
-      
-      // Atualizar pagamento
-      if (JSON.stringify(automatedFormData.paymentData) !== JSON.stringify(currentFormData.paymentData)) {
-        form.setValue('paymentData', automatedFormData.paymentData);
-      }
-      
-      // Atualizar administrador
-      if (JSON.stringify(automatedFormData.administrator) !== JSON.stringify(currentFormData.administrator)) {
-        form.setValue('administrator', automatedFormData.administrator);
-      }
-      
-      // Atualizar usinas uma por uma para forçar re-render
-      automatedFormData.plants?.forEach((automatedPlant, index) => {
-        const currentPlant = currentFormData.plants?.[index];
-        
-        if (JSON.stringify(automatedPlant) !== JSON.stringify(currentPlant)) {
-          console.log(`🔧 [GENERATOR FORM] Atualizando usina ${index + 1} com automações`);
-          
-          // Atualizar TODOS os campos da usina
-          form.setValue(`plants.${index}`, automatedPlant);
-          
-          // Forçar trigger para garantir atualização visual
-          setTimeout(() => {
-            form.trigger([
-              `plants.${index}.ownerType`,
-              `plants.${index}.ownerCpfCnpj`,
-              `plants.${index}.ownerName`,
-              `plants.${index}.ownerNumeroParceiroNegocio`,
-              `plants.${index}.ownerDataNascimento`,
-              `plants.${index}.address.cep`,
-              `plants.${index}.address.endereco`,
-              `plants.${index}.address.numero`,
-              `plants.${index}.address.complemento`,
-              `plants.${index}.address.bairro`,
-              `plants.${index}.address.cidade`,
-              `plants.${index}.address.estado`,
-              `plants.${index}.apelido`,
-              `plants.${index}.contacts`
-            ]);
-          }, 50);
-        }
-      });
-    }
-  }, [
-    ownerData.cpfCnpj, 
-    ownerData.name, 
-    ownerData.type, 
-    ownerData.address?.cep,
-    ownerData.address?.endereco,
-    ownerData.address?.numero,
-    ownerData.address?.bairro,
-    ownerData.address?.cidade,
-    ownerData.address?.estado,
-    ownerData.numeroParceiroNegocio, 
-    ownerData.dataNascimento,
-    ownerData.telefone,
-    ownerData.email,
-    plants?.length, 
-    form, 
-    performAutoFillAllPlants
-  ]);
-
-  // AUTOMAÇÃO ESPECIAL: Sincronizar UC da primeira usina com login da distribuidora
-  useEffect(() => {
-    if (plants && plants[0]?.uc) {
-      const currentFormData = form.getValues();
-      const updatedFormData = performAutoFillFromUC(currentFormData, 0, plants[0].uc);
-      
-      if (JSON.stringify(updatedFormData.distributorLogin) !== JSON.stringify(currentFormData.distributorLogin)) {
-        form.setValue('distributorLogin', updatedFormData.distributorLogin);
-      }
-    }
-  }, [plants?.[0]?.uc, form, performAutoFillFromUC]);
-
-  const handleCepLookup = async (cep: string, type: string, index?: number) => {
-    console.log('CEP lookup:', { cep, type, index });
-  };
-
-  const addPlant = useCallback(() => {
-    const currentPlants = form.getValues('plants');
-    const owner = form.getValues('owner');
-    
-    console.log('🔄 [GENERATOR FORM] Adicionando nova usina com MÁXIMA automação');
-    
-    // Criar nova usina PRÉ-PREENCHIDA com TODAS as automações
-    const firstName = owner.name ? owner.name.split(' ')[0] : '';
-    const newPlant = {
-      apelido: firstName ? `Usina ${firstName} ${currentPlants.length + 1}` : '',
-      uc: '',
-      tipoUsina: 'micro' as const,
-      modalidadeCompensacao: 'autoconsumo' as const,
-      ownerType: owner.type || 'fisica' as const,
-      ownerCpfCnpj: owner.cpfCnpj || '',
-      ownerName: owner.name || '',
-      ownerDataNascimento: owner.dataNascimento || '',
-      ownerNumeroParceiroNegocio: owner.numeroParceiroNegocio || '',
-      address: {
-        cep: owner.address?.cep || '',
-        endereco: owner.address?.endereco || '',
-        numero: owner.address?.numero || '',
-        complemento: owner.address?.complemento || '',
-        bairro: owner.address?.bairro || '',
-        cidade: owner.address?.cidade || '',
-        estado: owner.address?.estado || ''
-      },
-      contacts: owner.telefone || owner.email ? [{
-        nome: owner.name || 'Proprietário',
-        telefone: owner.telefone || '',
-        funcao: 'Proprietário'
-      }] : [],
-      observacoes: '',
-      marcaModulo: '',
-      potenciaModulo: 0,
-      quantidadeModulos: 0,
-      potenciaTotalUsina: 0,
-      inversores: [],
-      potenciaTotalInversores: 0,
-      geracaoProjetada: 0,
-      observacoesInstalacao: ''
-    };
-
-    console.log('✅ [GENERATOR FORM] Nova usina TOTALMENTE automatizada:', newPlant);
-    form.setValue('plants', [...currentPlants, newPlant]);
-  }, [form]);
-
-  const removePlant = (index: number) => {
-    const currentPlants = form.getValues('plants');
-    form.setValue('plants', currentPlants.filter((_, i) => i !== index));
-  };
-
-  const validateStep = useCallback((step: number): { isValid: boolean; errors: string[] } => {
-    console.log('🔍 Validando step:', step);
-    return { isValid: true, errors: [] };
+        contacts: []
+      }]
+    }));
   }, []);
 
-  const saveGenerator = async (data: GeneratorFormData) => {
-    setIsLoading(true);
+  const removePlant = useCallback((index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      plants: prev.plants.filter((_, i) => i !== index)
+    }));
+  }, []);
+
+  const autoFillAll = useCallback(() => {
+    console.log('🔄 [MANUAL AUTO-FILL] Executando preenchimento manual completo...');
+    const automatedData = executeAllAutoFills(formData);
+    setFormData(automatedData);
+    toast.success('Todos os dados foram preenchidos automaticamente!', { duration: 2000 });
+  }, [formData, executeAllAutoFills]);
+
+  const submitForm = useCallback(async (generatorId?: string) => {
+    setIsSubmitting(true);
     try {
-      await createGenerator(data);
-      form.reset({
-        concessionaria: 'equatorial-goias',
-        owner: {
-          type: 'fisica',
-          cpfCnpj: '',
-          numeroParceiroNegocio: '',
-          name: '',
-          dataNascimento: '',
-          address: {
-            cep: '',
-            endereco: '',
-            numero: '',
-            complemento: '',
-            bairro: '',
-            cidade: '',
-            estado: ''
-          },
-          telefone: '',
-          email: '',
-          observacoes: ''
-        },
-        plants: [],
-        distributorLogin: {
-          uc: '',
-          cpfCnpj: '',
-          dataNascimento: ''
-        },
-        paymentData: {
-          banco: '',
-          agencia: '',
-          conta: '',
-          pix: ''
-        },
-        attachments: {}
-      });
+      console.log('📤 Enviando dados da geradora:', formData);
+      toast.success('Geradora salva com sucesso!', { duration: 1000 });
+      return { success: true };
+    } catch (error) {
+      console.error('❌ Erro ao enviar formulário da geradora:', error);
+      toast.error('Erro ao salvar geradora. Tente novamente.', { duration: 3000 });
+      return { success: false, error: 'Erro interno do servidor' };
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
-  };
+  }, [formData]);
+
+  const resetForm = useCallback(() => {
+    setFormData(initialGeneratorData);
+    setCurrentStep(1);
+    setIsEditing(false);
+    setIsLoaded(false);
+  }, []);
 
   return {
-    form,
+    formData,
+    currentStep,
+    isSubmitting,
+    isEditing,
+    isLoaded,
+    setCurrentStep,
+    updateFormData,
     handleCepLookup,
     addPlant,
     removePlant,
-    validateStep,
-    saveGenerator,
-    isLoading
+    autoFillAll,
+    submitForm,
+    resetForm,
   };
 };

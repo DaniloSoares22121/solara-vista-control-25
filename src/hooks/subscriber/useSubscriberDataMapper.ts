@@ -1,8 +1,8 @@
 
 import { useCallback } from 'react';
-import { SubscriberFormData, Address, SubscriberDataFromDB } from '@/types/subscriber';
+import { Address, SubscriberDataFromDB } from '@/types/subscriber';
 
-export const useSubscriberDataMapping = () => {
+export const useSubscriberDataMapper = () => {
   const mapAddress = useCallback((addr: Record<string, unknown> | null | undefined): Address => {
     if (!addr) return {
       cep: '',
@@ -32,21 +32,8 @@ export const useSubscriberDataMapping = () => {
     return 'person';
   }, []);
 
-  // Manter funções para compatibilidade
-  const performAutoFill = useCallback((formData: SubscriberFormData): SubscriberFormData => {
-    console.log('⚠️ [DEPRECATED] Use useSubscriberAutoFill hook instead');
-    return formData;
-  }, []);
-
   return {
     mapAddress,
-    determineSubscriberType,
-    performAutoFill, // Deprecated - usar useSubscriberAutoFill
-    performAutoFillEnergyAccount: performAutoFill,
-    performAutoFillAdministrator: performAutoFill,
-    performAutoFillTitleTransfer: performAutoFill,
-    performAutoFillPlanContract: performAutoFill,
-    performAutoFillNotifications: performAutoFill,
-    performAutoFillAll: performAutoFill
+    determineSubscriberType
   };
 };

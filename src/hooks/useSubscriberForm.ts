@@ -1,10 +1,10 @@
-
 import { useState, useCallback, useEffect } from 'react';
 import { SubscriberFormData, SubscriberDataFromDB } from '@/types/subscriber';
 import { useCepConsistency } from '@/hooks/useCepConsistency';
 import { useSubscriberFormValidation } from '@/hooks/useSubscriberFormValidation';
 import { useSubscriberFormActions } from '@/hooks/useSubscriberFormActions';
-import { useSubscriberDataMapping } from '@/hooks/useSubscriberDataMapping';
+import { useSubscriberDataMapper } from '@/hooks/subscriber/useSubscriberDataMapper';
+import { useSubscriberAutoFill } from '@/hooks/subscriber/useSubscriberAutoFill';
 import { initialFormData } from '@/constants/subscriberFormDefaults';
 import { toast } from 'sonner';
 
@@ -17,19 +17,10 @@ export const useSubscriberForm = (existingData?: SubscriberDataFromDB) => {
   const { handleCepLookup: handleCepLookupConsistent } = useCepConsistency();
   const { validateStep } = useSubscriberFormValidation();
   const { isSubmitting, addContact: addContactAction, removeContact: removeContactAction, submitForm: submitFormAction } = useSubscriberFormActions();
-  const { 
-    mapAddress, 
-    determineSubscriberType, 
-    performAutoFill,
-    performAutoFillAll,
-    performAutoFillEnergyAccount,
-    performAutoFillAdministrator,
-    performAutoFillTitleTransfer,
-    performAutoFillPlanContract,
-    performAutoFillNotifications
-  } = useSubscriberDataMapping();
+  const { mapAddress, determineSubscriberType } = useSubscriberDataMapper();
+  const { executeAllAutoFills } = useSubscriberAutoFill();
 
-  // Load existing data if editing - APENAS UMA VEZ
+  // Load existing data if editing
   useEffect(() => {
     if (existingData && !isLoaded) {
       console.log('🔄 Carregando dados existentes:', existingData);
@@ -119,7 +110,6 @@ export const useSubscriberForm = (existingData?: SubscriberDataFromDB) => {
         attachments: (attachments as any) || {},
       };
       
-      console.log('✅ Dados carregados com sucesso:', loadedData);
       setFormData(loadedData);
       setIsEditing(true);
       setIsLoaded(true);
@@ -128,71 +118,41 @@ export const useSubscriberForm = (existingData?: SubscriberDataFromDB) => {
     }
   }, [existingData, mapAddress, determineSubscriberType, isLoaded]);
 
-  // MEGA AUTOMAÇÃO: Aplicar todas as automações sempre que qualquer dado relevante mudar
+  // Auto-fill automation when data changes
   useEffect(() => {
-    if (isLoaded && !isEditing && !existingData) {
-      console.log('🚀 [SUBSCRIBER FORM] MEGA AUTOMAÇÃO ATIVADA - Sincronizando TUDO');
+    if (isLoaded && !isEditing) {
+      console.log('🚀 [SUBSCRIBER FORM] Executando automações...');
       
-      // Verificar se há dados suficientes para automação
-      const hasPersonalData = formData.subscriberType === 'person' && 
-        (formData.personalData?.cpf || formData.personalData?.fullName || formData.personalData?.address?.cep);
+      const hasRelevantData = (formData.subscriberType === 'person' && formData.personalData?.cpf) ||
+                             (formData.subscriberType === 'company' && formData.companyData?.cnpj);
       
-      const hasCompanyData = formData.subscriberType === 'company' && 
-        (formData.companyData?.cnpj || formData.companyData?.companyName || formData.companyData?.address?.cep);
-      
-      if (hasPersonalData || hasCompanyData) {
-        console.log('🔄 [SUBSCRIBER FORM] Executando automações completas...');
-        const currentFormData = formData;
-        const automatedFormData = performAutoFillAll(currentFormData);
+      if (hasRelevantData) {
+        const automatedData = executeAllAutoFills(formData);
         
-        // Verificar se algo mudou para evitar loops infinitos
-        const currentDataString = JSON.stringify(currentFormData);
-        const automatedDataString = JSON.stringify(automatedFormData);
-        
-        if (currentDataString !== automatedDataString) {
-          console.log('📝 [SUBSCRIBER FORM] Aplicando automações detectadas');
-          setFormData(automatedFormData);
+        if (JSON.stringify(formData) !== JSON.stringify(automatedData)) {
+          console.log('📝 [SUBSCRIBER FORM] Aplicando automações');
+          setFormData(automatedData);
         }
       }
     }
   }, [
-    // Dados pessoais
     formData.personalData?.cpf,
     formData.personalData?.fullName,
     formData.personalData?.partnerNumber,
     formData.personalData?.birthDate,
     formData.personalData?.address?.cep,
-    formData.personalData?.address?.street,
-    formData.personalData?.phone,
-    formData.personalData?.email,
-    
-    // Dados da empresa
     formData.companyData?.cnpj,
     formData.companyData?.companyName,
     formData.companyData?.partnerNumber,
     formData.companyData?.address?.cep,
-    formData.companyData?.address?.street,
-    formData.companyData?.phone,
-    formData.companyData?.email,
-    
-    // Conta de energia
     formData.energyAccount.uc,
-    
-    // Transferência de titularidade
     formData.titleTransfer?.willTransfer,
-    
-    // Contrato do plano
     formData.planContract.informedKwh,
     formData.planContract.loyalty,
-    
-    // Tipo de assinante
     formData.subscriberType,
-    
-    // Estados de controle
     isLoaded,
     isEditing,
-    existingData,
-    performAutoFillAll
+    executeAllAutoFills
   ]);
 
   const updateFormData = useCallback((section: keyof SubscriberFormData, data: unknown) => {
@@ -264,11 +224,11 @@ export const useSubscriberForm = (existingData?: SubscriberDataFromDB) => {
   }, [formData, removeContactAction]);
 
   const autoFillEnergyAccount = useCallback(() => {
-    console.log('🔄 [MANUAL AUTO-FILL] Executando preenchimento manual completo...');
-    const newFormData = performAutoFillAll(formData);
-    setFormData(newFormData);
-    toast.success('Todos os dados foram preenchidos automaticamente!', { duration: 2000 });
-  }, [formData, performAutoFillAll]);
+    console.log('🔄 [MANUAL AUTO-FILL] Executando preenchimento manual...');
+    const automatedData = executeAllAutoFills(formData);
+    setFormData(automatedData);
+    toast.success('Dados preenchidos automaticamente!', { duration: 2000 });
+  }, [formData, executeAllAutoFills]);
 
   const submitForm = useCallback(async (subscriberId?: string) => {
     const result = await submitFormAction(formData, subscriberId);
