@@ -1,10 +1,10 @@
-
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { MaskedInput } from '@/components/ui/masked-input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { UseFormReturn } from 'react-hook-form';
+import { CpfInput } from '@/components/ui/cpf-input';
 import AddressForm from './AddressForm';
 
 interface DadosPessoaFisicaFormProps {
@@ -12,6 +12,16 @@ interface DadosPessoaFisicaFormProps {
 }
 
 const DadosPessoaFisicaForm = ({ form }: DadosPessoaFisicaFormProps) => {
+  const handleCpfFound = (cpfData: any) => {
+    console.log('📋 [GENERATOR PF] Dados do CPF encontrados:', cpfData);
+    
+    // Por enquanto, apenas logamos os dados
+    // Em produção com API real, preencheria os dados disponíveis
+    if (cpfData.nome && cpfData.nome !== 'Nome será preenchido manualmente') {
+      form.setValue('name', cpfData.nome);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <h3 className="text-lg font-semibold">3A. Dados do Assinante (Pessoa Física)</h3>
@@ -24,10 +34,11 @@ const DadosPessoaFisicaForm = ({ form }: DadosPessoaFisicaFormProps) => {
             <FormItem>
               <FormLabel>CPF *</FormLabel>
               <FormControl>
-                <MaskedInput 
-                  {...field} 
-                  mask="999.999.999-99" 
-                  placeholder="000.000.000-00" 
+                <CpfInput
+                  value={field.value || ''}
+                  onChange={field.onChange}
+                  onCpfFound={handleCpfFound}
+                  placeholder="000.000.000-00"
                 />
               </FormControl>
               <FormMessage />

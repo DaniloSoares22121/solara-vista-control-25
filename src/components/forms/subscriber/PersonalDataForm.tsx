@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
@@ -8,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { UseFormReturn } from 'react-hook-form';
 import { PersonalData, Address } from '@/types/subscriber';
 import { CepInput } from '@/components/ui/cep-input';
+import { CpfInput } from '@/components/ui/cpf-input';
 import ContactsSection from './ContactsSection';
 import { useCepLookup } from '@/hooks/useCepLookup';
 
@@ -29,6 +29,17 @@ const PersonalDataForm = ({
   form
 }: PersonalDataFormProps) => {
   const { lookupCep, loading } = useCepLookup();
+
+  const handleCpfFound = (cpfData: any) => {
+    console.log('📋 [PERSONAL DATA] Dados do CPF encontrados:', cpfData);
+    
+    // Por enquanto, apenas logamos os dados
+    // Em produção com API real, preencheria os dados disponíveis
+    if (cpfData.nome && cpfData.nome !== 'Nome será preenchido manualmente') {
+      form.setValue('personalData.fullName', cpfData.nome);
+      onUpdate({ fullName: cpfData.nome });
+    }
+  };
 
   const handleAddressChange = (addressUpdate: Partial<Address>) => {
     const currentAddress = data?.address || {
@@ -102,14 +113,15 @@ const PersonalDataForm = ({
             <FormItem>
               <FormLabel>CPF *</FormLabel>
               <FormControl>
-                <MaskedInput 
+                <CpfInput
                   value={field.value || ''}
-                  mask="999.999.999-99" 
-                  placeholder="000.000.000-00" 
-                  onChange={(e) => {
-                    field.onChange(e);
-                    onUpdate({ cpf: e.target.value });
+                  onChange={(value) => {
+                    field.onChange(value);
+                    onUpdate({ cpf: value });
                   }}
+                  onCpfFound={handleCpfFound}
+                  placeholder="000.000.000-00"
+                  className="transition-all duration-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </FormControl>
               <FormMessage />
