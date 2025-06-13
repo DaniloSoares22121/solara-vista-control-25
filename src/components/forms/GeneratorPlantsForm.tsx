@@ -44,11 +44,7 @@ const GeneratorPlantsForm = ({ form }: GeneratorPlantsFormProps) => {
         cidade: '',
         estado: '',
       },
-      contacts: [{
-        nome: '',
-        telefone: '',
-        funcao: '',
-      }],
+      contacts: [],
       observacoes: '',
       marcaModulo: '',
       potenciaModulo: 0,
@@ -166,6 +162,15 @@ const PlantForm = ({ form, plantIndex, onRemove, canRemove }: PlantFormProps) =>
     });
   };
 
+  // Formatação de números com vírgula
+  const formatNumber = (value: number): string => {
+    return value.toString().replace('.', ',');
+  };
+
+  const parseNumber = (value: string): number => {
+    return parseFloat(value.replace(',', '.')) || 0;
+  };
+
   return (
     <Card className="border-0 shadow-lg">
       <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-100 border-b">
@@ -278,16 +283,16 @@ const PlantForm = ({ form, plantIndex, onRemove, canRemove }: PlantFormProps) =>
           </div>
         </div>
 
-        {/* Dados do Proprietário da Usina */}
+        {/* Dados da Usina */}
         <div className="space-y-4">
-          <h4 className="font-medium text-gray-900 border-b pb-2">Proprietário da Usina</h4>
+          <h4 className="font-medium text-gray-900 border-b pb-2">Dados da Usina</h4>
           
           <FormField
             control={form.control}
             name={`plants.${plantIndex}.ownerType`}
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Tipo de Proprietário *</FormLabel>
+                <FormLabel>Tipo de Conta *</FormLabel>
                 <FormControl>
                   <RadioGroup
                     onValueChange={field.onChange}
@@ -385,10 +390,10 @@ const PlantForm = ({ form, plantIndex, onRemove, canRemove }: PlantFormProps) =>
           title="Endereço da Usina"
         />
 
-        {/* Contatos da Usina */}
+        {/* Contatos da Usina (Opcional) */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h4 className="font-medium text-gray-900 border-b pb-2">Contatos da Usina</h4>
+            <h4 className="font-medium text-gray-900 border-b pb-2">Contatos da Usina (Opcional)</h4>
             <Button 
               type="button" 
               variant="outline" 
@@ -407,7 +412,7 @@ const PlantForm = ({ form, plantIndex, onRemove, canRemove }: PlantFormProps) =>
                 name={`plants.${plantIndex}.contacts.${contactIndex}.nome`}
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Nome do Contato {contactIndex + 1} *</FormLabel>
+                    <FormLabel>Nome do Contato {contactIndex + 1}</FormLabel>
                     <FormControl>
                       <Input placeholder="Nome completo" {...field} />
                     </FormControl>
@@ -421,7 +426,7 @@ const PlantForm = ({ form, plantIndex, onRemove, canRemove }: PlantFormProps) =>
                 name={`plants.${plantIndex}.contacts.${contactIndex}.telefone`}
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Telefone *</FormLabel>
+                    <FormLabel>Telefone</FormLabel>
                     <FormControl>
                       <MaskedInput 
                         {...field} 
@@ -439,7 +444,7 @@ const PlantForm = ({ form, plantIndex, onRemove, canRemove }: PlantFormProps) =>
                 name={`plants.${plantIndex}.contacts.${contactIndex}.funcao`}
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Função *</FormLabel>
+                    <FormLabel>Função</FormLabel>
                     <FormControl>
                       <Input placeholder="Ex: Zelador, Supervisor" {...field} />
                     </FormControl>
@@ -449,17 +454,15 @@ const PlantForm = ({ form, plantIndex, onRemove, canRemove }: PlantFormProps) =>
               />
 
               <div className="flex items-end">
-                {contactFields.length > 1 && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => removeContact(contactIndex)}
-                    className="text-red-600 hover:text-red-700"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
-                )}
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => removeContact(contactIndex)}
+                  className="text-red-600 hover:text-red-700"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
               </div>
             </div>
           ))}
@@ -532,7 +535,7 @@ const PlantForm = ({ form, plantIndex, onRemove, canRemove }: PlantFormProps) =>
                     <div className="relative">
                       <Input 
                         {...field} 
-                        value={field.value?.toFixed(2) || '0.00'}
+                        value={formatNumber(field.value || 0)}
                         readOnly
                         className="bg-gray-50"
                       />
@@ -570,7 +573,7 @@ const PlantForm = ({ form, plantIndex, onRemove, canRemove }: PlantFormProps) =>
                   <FormItem>
                     <FormLabel>Marca do Inversor *</FormLabel>
                     <FormControl>
-                      <Input placeholder="Ex: Growatt" {...field} />
+                      <Input placeholder="Ex: Sungrow" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -585,12 +588,10 @@ const PlantForm = ({ form, plantIndex, onRemove, canRemove }: PlantFormProps) =>
                     <FormLabel>Potência (kW) *</FormLabel>
                     <FormControl>
                       <Input 
-                        type="number" 
-                        step="0.1"
                         placeholder="50" 
-                        {...field} 
+                        value={field.value ? formatNumber(field.value) : ''}
                         onChange={(e) => {
-                          const value = parseFloat(e.target.value) || 0;
+                          const value = parseNumber(e.target.value);
                           field.onChange(value);
                         }}
                       />
@@ -649,7 +650,7 @@ const PlantForm = ({ form, plantIndex, onRemove, canRemove }: PlantFormProps) =>
                     <div className="relative">
                       <Input 
                         {...field} 
-                        value={field.value?.toFixed(2) || '0.00'}
+                        value={formatNumber(field.value || 0)}
                         readOnly
                         className="bg-white"
                       />
@@ -674,10 +675,12 @@ const PlantForm = ({ form, plantIndex, onRemove, canRemove }: PlantFormProps) =>
                   <FormLabel>Geração Projetada (kWh/mês) *</FormLabel>
                   <FormControl>
                     <Input 
-                      type="number" 
                       placeholder="12000" 
-                      {...field} 
-                      onChange={(e) => field.onChange(Number(e.target.value))}
+                      value={field.value ? formatNumber(field.value) : ''}
+                      onChange={(e) => {
+                        const value = parseNumber(e.target.value);
+                        field.onChange(value);
+                      }}
                     />
                   </FormControl>
                   <FormMessage />
@@ -695,24 +698,6 @@ const PlantForm = ({ form, plantIndex, onRemove, canRemove }: PlantFormProps) =>
                 <FormControl>
                   <Textarea 
                     placeholder="Observações sobre a usina..." 
-                    {...field} 
-                    rows={3}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name={`plants.${plantIndex}.observacoesInstalacao`}
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Observações da Instalação</FormLabel>
-                <FormControl>
-                  <Textarea 
-                    placeholder="Observações sobre a instalação fotovoltaica..." 
                     {...field} 
                     rows={3}
                   />

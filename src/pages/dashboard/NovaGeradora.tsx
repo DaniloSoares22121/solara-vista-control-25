@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { X, ChevronLeft, ChevronRight, Save, CheckCircle, Zap, ArrowLeft } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useGenerators } from '@/hooks/useGenerators';
+import { useGeneratorForm } from '@/hooks/useGeneratorForm';
 import GeneratorConcessionariaForm from '@/components/forms/GeneratorConcessionariaForm';
 import GeneratorOwnerTypeForm from '@/components/forms/GeneratorOwnerTypeForm';
 import GeneratorOwnerDataForm from '@/components/forms/GeneratorOwnerDataForm';
@@ -35,30 +36,30 @@ const generatorSchema = z.object({
       cep: z.string().min(1, 'CEP é obrigatório'),
       endereco: z.string().min(1, 'Endereço é obrigatório'),
       numero: z.string().min(1, 'Número é obrigatório'),
-      complemento: z.string(),
+      complemento: z.string().optional(),
       bairro: z.string().min(1, 'Bairro é obrigatório'),
       cidade: z.string().min(1, 'Cidade é obrigatória'),
       estado: z.string().min(1, 'Estado é obrigatório'),
     }),
     telefone: z.string().min(1, 'Telefone é obrigatório'),
     email: z.string().email('E-mail inválido'),
-    observacoes: z.string(),
+    observacoes: z.string().optional(),
   }),
   administrator: z.object({
-    cpf: z.string(),
-    nome: z.string(),
-    dataNascimento: z.string(),
+    cpf: z.string().optional(),
+    nome: z.string().optional(),
+    dataNascimento: z.string().optional(),
     address: z.object({
-      cep: z.string(),
-      endereco: z.string(),
-      numero: z.string(),
-      complemento: z.string(),
-      bairro: z.string(),
-      cidade: z.string(),
-      estado: z.string(),
-    }),
-    telefone: z.string(),
-    email: z.string(),
+      cep: z.string().optional(),
+      endereco: z.string().optional(),
+      numero: z.string().optional(),
+      complemento: z.string().optional(),
+      bairro: z.string().optional(),
+      cidade: z.string().optional(),
+      estado: z.string().optional(),
+    }).optional(),
+    telefone: z.string().optional(),
+    email: z.string().optional(),
   }).optional(),
   plants: z.array(z.any()).min(1, 'Cadastre pelo menos uma usina'),
   distributorLogin: z.object({
@@ -67,9 +68,9 @@ const generatorSchema = z.object({
     dataNascimento: z.string().optional(),
   }),
   paymentData: z.object({
-    banco: z.string().min(1, 'Banco é obrigatório'),
-    agencia: z.string().min(1, 'Agência é obrigatória'),
-    conta: z.string().min(1, 'Conta é obrigatória'),
+    banco: z.string().optional(),
+    agencia: z.string().optional(),
+    conta: z.string().optional(),
     pix: z.string().optional(),
   }),
   attachments: z.object({}).default({}),
@@ -87,6 +88,7 @@ const NovaGeradora = ({ onClose, editMode = false, generatorData }: NovaGeradora
   const totalSteps = 5;
   const { toast } = useToast();
   const { createGenerator, updateGenerator } = useGenerators();
+  const { validateStep } = useGeneratorForm();
 
   const form = useForm<GeneratorFormData>({
     resolver: zodResolver(generatorSchema),
@@ -215,6 +217,17 @@ const NovaGeradora = ({ onClose, editMode = false, generatorData }: NovaGeradora
   };
 
   const nextStep = () => {
+    // Validar etapa atual antes de prosseguir
+    const validation = validateStep(currentStep);
+    if (!validation.isValid) {
+      toast({
+        title: "Erro de validação",
+        description: validation.errors.join(', '),
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (currentStep < totalSteps) {
       setCurrentStep(currentStep + 1);
     }
@@ -227,7 +240,8 @@ const NovaGeradora = ({ onClose, editMode = false, generatorData }: NovaGeradora
   };
 
   const canProceed = () => {
-    return true;
+    const validation = validateStep(currentStep);
+    return validation.isValid;
   };
 
   return (
@@ -419,7 +433,7 @@ const NovaGeradora = ({ onClose, editMode = false, generatorData }: NovaGeradora
                         </div>
                         <div>
                           <CardTitle className="text-2xl text-green-800 font-bold">
-                            Dados para Recebimento
+                            Dados para Recebimento (Opcional)
                           </CardTitle>
                           <p className="text-green-600 mt-1 text-base">
                             Configure as informações bancárias e chave PIX para pagamentos
@@ -501,7 +515,7 @@ const NovaGeradora = ({ onClose, editMode = false, generatorData }: NovaGeradora
                     <Button
                       type="submit"
                       onClick={form.handleSubmit(onSubmit)}
-                      disabled={!canProceed() || saving}
+                      disabled={saving}
                       className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white px-10 py-3 text-base font-medium flex items-center gap-3 shadow-lg"
                     >
                       <Save className="w-5 h-5" />
@@ -511,7 +525,7 @@ const NovaGeradora = ({ onClose, editMode = false, generatorData }: NovaGeradora
                     <Button
                       type="button"
                       onClick={nextStep}
-                      disabled={!canProceed() || saving}
+                      disabled={saving}
                       className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white flex items-center gap-3 px-8 py-3 text-base font-medium shadow-lg"
                     >
                       Próxima Etapa

@@ -41,6 +41,7 @@ const NewGeneratorModal = ({ isOpen, onClose, onSuccess }: NewGeneratorModalProp
     handleCepLookup,
     addPlant,
     removePlant,
+    validateStep,
     saveGenerator,
     isLoading
   } = useGeneratorForm();
@@ -102,6 +103,17 @@ const NewGeneratorModal = ({ isOpen, onClose, onSuccess }: NewGeneratorModalProp
   const totalSteps = steps.length;
 
   const handleNext = () => {
+    // Validar etapa atual antes de prosseguir
+    const validation = validateStep(currentStep);
+    if (!validation.isValid) {
+      toast({
+        title: "Erro de validação",
+        description: validation.errors.join(', '),
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (currentStep < totalSteps) {
       setCurrentStep(prev => prev + 1);
     }
