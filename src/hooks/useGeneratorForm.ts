@@ -9,7 +9,14 @@ import { toast } from 'sonner';
 export const useGeneratorForm = () => {
   const { createGenerator } = useGenerators();
   const [isLoading, setIsLoading] = useState(false);
-  const { performAutoFillPlant, performAutoFillDistributorLogin } = useGeneratorFormMapping();
+  const { 
+    performAutoFillPlant, 
+    performAutoFillDistributorLogin, 
+    performAutoFillPaymentData,
+    performAutoFillAdministrator,
+    performAutoFillFromUC,
+    performAutoFillAllPlants
+  } = useGeneratorFormMapping();
 
   const form = useForm<GeneratorFormData>({
     defaultValues: {
@@ -49,85 +56,102 @@ export const useGeneratorForm = () => {
     }
   });
 
-  // Watch dos dados do proprietário
-  const ownerCpfCnpj = form.watch('owner.cpfCnpj');
-  const ownerDataNascimento = form.watch('owner.dataNascimento');
-  const ownerName = form.watch('owner.name');
-  const ownerType = form.watch('owner.type');
-  const ownerAddress = form.watch('owner.address');
-  const ownerNumeroParceiroNegocio = form.watch('owner.numeroParceiroNegocio');
+  // Watch de TODOS os dados para automação máxima
+  const ownerData = form.watch('owner');
   const plants = form.watch('plants');
+  const distributorLogin = form.watch('distributorLogin');
 
-  // Auto-fill para login da distribuidora
+  // AUTOMAÇÃO MEGA AGRESSIVA: Aplicar todas as automações sempre que qualquer dado muda
   useEffect(() => {
-    if (ownerCpfCnpj) {
-      console.log('🔄 [GENERATOR FORM] Auto-fill do login da distribuidora');
+    console.log('🚀 [GENERATOR FORM] MEGA AUTOMAÇÃO ATIVADA - Sincronizando TUDO');
+    
+    const currentFormData = form.getValues();
+    const automatedFormData = performAutoFillAllPlants(currentFormData);
+    
+    // Verificar se algo mudou para evitar loops infinitos
+    const currentDataString = JSON.stringify(currentFormData);
+    const automatedDataString = JSON.stringify(automatedFormData);
+    
+    if (currentDataString !== automatedDataString) {
+      console.log('📝 [GENERATOR FORM] Aplicando automações detectadas');
+      
+      // Atualizar distribuidora
+      if (JSON.stringify(automatedFormData.distributorLogin) !== JSON.stringify(currentFormData.distributorLogin)) {
+        form.setValue('distributorLogin', automatedFormData.distributorLogin);
+      }
+      
+      // Atualizar pagamento
+      if (JSON.stringify(automatedFormData.paymentData) !== JSON.stringify(currentFormData.paymentData)) {
+        form.setValue('paymentData', automatedFormData.paymentData);
+      }
+      
+      // Atualizar administrador
+      if (JSON.stringify(automatedFormData.administrator) !== JSON.stringify(currentFormData.administrator)) {
+        form.setValue('administrator', automatedFormData.administrator);
+      }
+      
+      // Atualizar usinas uma por uma para forçar re-render
+      automatedFormData.plants?.forEach((automatedPlant, index) => {
+        const currentPlant = currentFormData.plants?.[index];
+        
+        if (JSON.stringify(automatedPlant) !== JSON.stringify(currentPlant)) {
+          console.log(`🔧 [GENERATOR FORM] Atualizando usina ${index + 1} com automações`);
+          
+          // Atualizar TODOS os campos da usina
+          form.setValue(`plants.${index}`, automatedPlant);
+          
+          // Forçar trigger para garantir atualização visual
+          setTimeout(() => {
+            form.trigger([
+              `plants.${index}.ownerType`,
+              `plants.${index}.ownerCpfCnpj`,
+              `plants.${index}.ownerName`,
+              `plants.${index}.ownerNumeroParceiroNegocio`,
+              `plants.${index}.ownerDataNascimento`,
+              `plants.${index}.address.cep`,
+              `plants.${index}.address.endereco`,
+              `plants.${index}.address.numero`,
+              `plants.${index}.address.complemento`,
+              `plants.${index}.address.bairro`,
+              `plants.${index}.address.cidade`,
+              `plants.${index}.address.estado`,
+              `plants.${index}.apelido`,
+              `plants.${index}.contacts`
+            ]);
+          }, 50);
+        }
+      });
+    }
+  }, [
+    ownerData.cpfCnpj, 
+    ownerData.name, 
+    ownerData.type, 
+    ownerData.address?.cep,
+    ownerData.address?.endereco,
+    ownerData.address?.numero,
+    ownerData.address?.bairro,
+    ownerData.address?.cidade,
+    ownerData.address?.estado,
+    ownerData.numeroParceiroNegocio, 
+    ownerData.dataNascimento,
+    ownerData.telefone,
+    ownerData.email,
+    plants?.length, 
+    form, 
+    performAutoFillAllPlants
+  ]);
+
+  // AUTOMAÇÃO ESPECIAL: Sincronizar UC da primeira usina com login da distribuidora
+  useEffect(() => {
+    if (plants && plants[0]?.uc) {
       const currentFormData = form.getValues();
-      const updatedFormData = performAutoFillDistributorLogin(currentFormData);
+      const updatedFormData = performAutoFillFromUC(currentFormData, 0, plants[0].uc);
       
       if (JSON.stringify(updatedFormData.distributorLogin) !== JSON.stringify(currentFormData.distributorLogin)) {
         form.setValue('distributorLogin', updatedFormData.distributorLogin);
       }
     }
-  }, [ownerCpfCnpj, ownerDataNascimento, form, performAutoFillDistributorLogin]);
-
-  // Auto-fill AGRESSIVO para todas as usinas sempre que houver mudanças nos dados do proprietário
-  useEffect(() => {
-    const owner = form.getValues('owner');
-    const currentPlants = form.getValues('plants');
-    
-    if (currentPlants && currentPlants.length > 0 && (owner.cpfCnpj || owner.name)) {
-      console.log('🔄 [GENERATOR FORM] FORÇANDO auto-fill de TODAS as usinas com dados do proprietário');
-      
-      currentPlants.forEach((plant, index) => {
-        console.log(`🔄 [GENERATOR FORM] Processando usina ${index + 1}`);
-        
-        // Aplicar auto-fill
-        const currentFormData = form.getValues();
-        const updatedFormData = performAutoFillPlant(currentFormData, index);
-        const updatedPlant = updatedFormData.plants[index];
-        
-        if (updatedPlant) {
-          console.log(`✅ [GENERATOR FORM] Atualizando usina ${index + 1} com dados:`, updatedPlant);
-          
-          // Atualizar TODOS os campos da usina individualmente para forçar re-render
-          form.setValue(`plants.${index}.ownerType`, updatedPlant.ownerType);
-          form.setValue(`plants.${index}.ownerCpfCnpj`, updatedPlant.ownerCpfCnpj);
-          form.setValue(`plants.${index}.ownerName`, updatedPlant.ownerName);
-          form.setValue(`plants.${index}.ownerNumeroParceiroNegocio`, updatedPlant.ownerNumeroParceiroNegocio);
-          
-          if (updatedPlant.ownerDataNascimento) {
-            form.setValue(`plants.${index}.ownerDataNascimento`, updatedPlant.ownerDataNascimento);
-          }
-          
-          // Atualizar endereço campo por campo
-          form.setValue(`plants.${index}.address.cep`, updatedPlant.address.cep);
-          form.setValue(`plants.${index}.address.endereco`, updatedPlant.address.endereco);
-          form.setValue(`plants.${index}.address.numero`, updatedPlant.address.numero);
-          form.setValue(`plants.${index}.address.complemento`, updatedPlant.address.complemento);
-          form.setValue(`plants.${index}.address.bairro`, updatedPlant.address.bairro);
-          form.setValue(`plants.${index}.address.cidade`, updatedPlant.address.cidade);
-          form.setValue(`plants.${index}.address.estado`, updatedPlant.address.estado);
-          
-          // Forçar trigger dos campos para garantir que apareçam na tela
-          form.trigger([
-            `plants.${index}.ownerType`,
-            `plants.${index}.ownerCpfCnpj`,
-            `plants.${index}.ownerName`,
-            `plants.${index}.ownerNumeroParceiroNegocio`,
-            `plants.${index}.ownerDataNascimento`,
-            `plants.${index}.address.cep`,
-            `plants.${index}.address.endereco`,
-            `plants.${index}.address.numero`,
-            `plants.${index}.address.complemento`,
-            `plants.${index}.address.bairro`,
-            `plants.${index}.address.cidade`,
-            `plants.${index}.address.estado`
-          ]);
-        }
-      });
-    }
-  }, [ownerCpfCnpj, ownerName, ownerType, ownerAddress, ownerNumeroParceiroNegocio, ownerDataNascimento, plants?.length, form, performAutoFillPlant]);
+  }, [plants?.[0]?.uc, form, performAutoFillFromUC]);
 
   const handleCepLookup = async (cep: string, type: string, index?: number) => {
     console.log('CEP lookup:', { cep, type, index });
@@ -137,9 +161,12 @@ export const useGeneratorForm = () => {
     const currentPlants = form.getValues('plants');
     const owner = form.getValues('owner');
     
-    // Criar nova usina já com dados do proprietário
+    console.log('🔄 [GENERATOR FORM] Adicionando nova usina com MÁXIMA automação');
+    
+    // Criar nova usina PRÉ-PREENCHIDA com TODAS as automações
+    const firstName = owner.name ? owner.name.split(' ')[0] : '';
     const newPlant = {
-      apelido: '',
+      apelido: firstName ? `Usina ${firstName} ${currentPlants.length + 1}` : '',
       uc: '',
       tipoUsina: 'micro' as const,
       modalidadeCompensacao: 'autoconsumo' as const,
@@ -157,7 +184,11 @@ export const useGeneratorForm = () => {
         cidade: owner.address?.cidade || '',
         estado: owner.address?.estado || ''
       },
-      contacts: [],
+      contacts: owner.telefone || owner.email ? [{
+        nome: owner.name || 'Proprietário',
+        telefone: owner.telefone || '',
+        funcao: 'Proprietário'
+      }] : [],
       observacoes: '',
       marcaModulo: '',
       potenciaModulo: 0,
@@ -169,32 +200,8 @@ export const useGeneratorForm = () => {
       observacoesInstalacao: ''
     };
 
-    const plantIndex = currentPlants.length;
-    console.log('🔄 [GENERATOR FORM] Adicionando nova usina PRÉ-PREENCHIDA:', newPlant);
-    
-    // Adicionar a nova usina
+    console.log('✅ [GENERATOR FORM] Nova usina TOTALMENTE automatizada:', newPlant);
     form.setValue('plants', [...currentPlants, newPlant]);
-    
-    // Garantir que os dados apareçam na tela imediatamente
-    setTimeout(() => {
-      console.log(`✅ [GENERATOR FORM] Forçando atualização da nova usina ${plantIndex + 1}`);
-      
-      // Trigger todos os campos para garantir que apareçam
-      form.trigger([
-        `plants.${plantIndex}.ownerType`,
-        `plants.${plantIndex}.ownerCpfCnpj`,
-        `plants.${plantIndex}.ownerName`,
-        `plants.${plantIndex}.ownerNumeroParceiroNegocio`,
-        `plants.${plantIndex}.ownerDataNascimento`,
-        `plants.${plantIndex}.address.cep`,
-        `plants.${plantIndex}.address.endereco`,
-        `plants.${plantIndex}.address.numero`,
-        `plants.${plantIndex}.address.complemento`,
-        `plants.${plantIndex}.address.bairro`,
-        `plants.${plantIndex}.address.cidade`,
-        `plants.${plantIndex}.address.estado`
-      ]);
-    }, 100);
   }, [form]);
 
   const removePlant = (index: number) => {
