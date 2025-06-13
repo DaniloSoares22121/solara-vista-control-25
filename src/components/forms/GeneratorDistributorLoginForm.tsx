@@ -6,6 +6,7 @@ import { GeneratorFormData } from '@/types/generator';
 import { Lock, User, Calendar } from 'lucide-react';
 import { CpfInput } from '@/components/ui/cpf-input';
 import { CnpjInput } from '@/components/ui/cnpj-input';
+import { useEffect } from 'react';
 
 interface GeneratorDistributorLoginFormProps {
   form: UseFormReturn<GeneratorFormData>;
@@ -13,6 +14,23 @@ interface GeneratorDistributorLoginFormProps {
 
 const GeneratorDistributorLoginForm = ({ form }: GeneratorDistributorLoginFormProps) => {
   const ownerType = form.watch('owner.type');
+  const ownerCpfCnpj = form.watch('owner.cpfCnpj');
+  const ownerDataNascimento = form.watch('owner.dataNascimento');
+
+  // Auto-preencher dados do distributor login com dados do proprietário
+  useEffect(() => {
+    console.log('🔄 [DISTRIBUTOR AUTO-FILL] Preenchendo dados automaticamente');
+    
+    // Preencher CPF/CNPJ se ainda não estiver preenchido
+    if (ownerCpfCnpj && !form.getValues('distributorLogin.cpfCnpj')) {
+      form.setValue('distributorLogin.cpfCnpj', ownerCpfCnpj);
+    }
+    
+    // Preencher data de nascimento se for pessoa física e ainda não estiver preenchida
+    if (ownerType === 'fisica' && ownerDataNascimento && !form.getValues('distributorLogin.dataNascimento')) {
+      form.setValue('distributorLogin.dataNascimento', ownerDataNascimento);
+    }
+  }, [ownerType, ownerCpfCnpj, ownerDataNascimento, form]);
 
   const handleCpfFound = (cpfData: any) => {
     console.log('📍 [DISTRIBUTOR CPF] CPF encontrado:', cpfData);

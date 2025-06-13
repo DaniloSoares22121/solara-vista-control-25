@@ -1,3 +1,4 @@
+
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -67,12 +68,12 @@ const GeneratorPlantsForm = ({ form }: GeneratorPlantsFormProps) => {
       observacoes: '',
       marcaModulo: '',
       potenciaModulo: 580, // Sugestão automática para 2024
-      quantidadeModulos: 0, // Changed from empty string to 0
+      quantidadeModulos: 0,
       potenciaTotalUsina: 0,
       inversores: [{
         marca: '',
-        potencia: 0, // Changed from empty string to 0
-        quantidade: 0, // Changed from empty string to 0
+        potencia: 0,
+        quantidade: 0,
       }],
       potenciaTotalInversores: 0,
       geracaoProjetada: 0,
@@ -175,22 +176,29 @@ const PlantForm = ({ form, plantIndex, onRemove, canRemove, concessionaria }: Pl
     }
   }, [potenciaModulo, quantidadeModulos, form, plantIndex, calculateTotalPower, suggestPlantType]);
 
-  // Cálculo da potência total dos inversores - corrigido
+  // Cálculo da potência total dos inversores - CORRIGIDO
   useEffect(() => {
     if (inversores && inversores.length > 0) {
-      // Verificar se todos os inversores têm dados válidos
-      const hasValidInverters = inversores.some(inv => inv.potencia > 0 && inv.quantidade > 0);
+      console.log('🔄 [INVERTER CALC] Dados dos inversores:', inversores);
       
-      if (hasValidInverters) {
-        const total = calculateInverterTotalPower(inversores);
-        console.log('🔄 [INVERTER CALC] Calculando potência total dos inversores:', { inversores, total });
-        
-        if (total !== potenciaTotalInversores) {
-          form.setValue(`plants.${plantIndex}.potenciaTotalInversores`, total);
-        }
+      // Calcular o total independentemente de valores zerados
+      let total = 0;
+      inversores.forEach((inversor: any) => {
+        const potencia = Number(inversor.potencia) || 0;
+        const quantidade = Number(inversor.quantidade) || 0;
+        total += potencia * quantidade;
+        console.log('🔍 [INVERTER CALC] Inversor:', { potencia, quantidade, subtotal: potencia * quantidade });
+      });
+      
+      console.log('🔄 [INVERTER CALC] Total calculado:', total);
+      
+      // Sempre atualizar, mesmo que seja 0
+      if (total !== potenciaTotalInversores) {
+        console.log('✅ [INVERTER CALC] Atualizando potência total dos inversores:', total);
+        form.setValue(`plants.${plantIndex}.potenciaTotalInversores`, total);
       }
     }
-  }, [inversores, form, plantIndex, calculateInverterTotalPower, potenciaTotalInversores]);
+  }, [inversores, form, plantIndex, potenciaTotalInversores]);
 
   useEffect(() => {
     if (potenciaTotalUsina && estado) {
@@ -218,8 +226,8 @@ const PlantForm = ({ form, plantIndex, onRemove, canRemove, concessionaria }: Pl
   const addInverter = () => {
     appendInverter({
       marca: '',
-      potencia: 0, // Changed from empty string to 0
-      quantidade: 0, // Changed from empty string to 0
+      potencia: 0,
+      quantidade: 0,
     });
   };
 
@@ -699,7 +707,11 @@ const PlantForm = ({ form, plantIndex, onRemove, canRemove, concessionaria }: Pl
                         type="number"
                         placeholder="50" 
                         {...field}
-                        onChange={(e) => field.onChange(Number(e.target.value) || 0)}
+                        onChange={(e) => {
+                          const value = Number(e.target.value) || 0;
+                          field.onChange(value);
+                          console.log('🔄 [INVERTER INPUT] Potência alterada:', value);
+                        }}
                         value={field.value || ''}
                       />
                     </FormControl>
@@ -719,7 +731,11 @@ const PlantForm = ({ form, plantIndex, onRemove, canRemove, concessionaria }: Pl
                         type="number" 
                         placeholder="2" 
                         {...field} 
-                        onChange={(e) => field.onChange(Number(e.target.value) || 0)}
+                        onChange={(e) => {
+                          const value = Number(e.target.value) || 0;
+                          field.onChange(value);
+                          console.log('🔄 [INVERTER INPUT] Quantidade alterada:', value);
+                        }}
                         value={field.value || ''}
                       />
                     </FormControl>
