@@ -1,4 +1,3 @@
-
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import { PDFDocument } from 'pdf-lib';
@@ -15,10 +14,15 @@ export interface FaturaPDFData {
 }
 
 export const generateCustomPDF = async (elementId: string): Promise<Uint8Array> => {
+  console.log('🎨 [PDF] Procurando elemento:', elementId);
   const element = document.getElementById(elementId);
+  
   if (!element) {
-    throw new Error('Elemento não encontrado para gerar PDF');
+    console.error('❌ [PDF] Elemento não encontrado:', elementId);
+    throw new Error(`Elemento '${elementId}' não encontrado para gerar PDF`);
   }
+
+  console.log('✅ [PDF] Elemento encontrado, gerando canvas...');
 
   // Captura o elemento como canvas
   const canvas = await html2canvas(element, {
@@ -29,6 +33,8 @@ export const generateCustomPDF = async (elementId: string): Promise<Uint8Array> 
     height: element.scrollHeight,
     width: element.scrollWidth
   });
+
+  console.log('📷 [PDF] Canvas gerado, criando PDF...');
 
   // Cria PDF com jsPDF
   const imgData = canvas.toDataURL('image/png');
@@ -56,34 +62,41 @@ export const generateCustomPDF = async (elementId: string): Promise<Uint8Array> 
     heightLeft -= pageHeight;
   }
 
+  console.log('✅ [PDF] PDF customizado criado');
   return new Uint8Array(pdf.output('arraybuffer'));
 };
 
 export const combinePDFs = async (originalPdfUrl: string, customPdfBytes: Uint8Array): Promise<Uint8Array> => {
   try {
+    console.log('🔗 [PDF] Iniciando combinação de PDFs...');
+    
     // Baixa o PDF original
     const originalResponse = await fetch(originalPdfUrl);
     if (!originalResponse.ok) {
       throw new Error('Erro ao baixar PDF original');
     }
     const originalPdfBytes = await originalResponse.arrayBuffer();
+    console.log('📥 [PDF] PDF original baixado');
 
     // Cria documentos PDF
     const originalPdf = await PDFDocument.load(originalPdfBytes);
     const customPdf = await PDFDocument.load(customPdfBytes);
     const combinedPdf = await PDFDocument.create();
 
+    console.log('📄 [PDF] Adicionando páginas customizadas...');
     // Adiciona páginas do PDF customizado primeiro
     const customPages = await combinedPdf.copyPages(customPdf, customPdf.getPageIndices());
     customPages.forEach((page) => combinedPdf.addPage(page));
 
+    console.log('📄 [PDF] Adicionando páginas originais...');
     // Adiciona páginas do PDF original
     const originalPages = await combinedPdf.copyPages(originalPdf, originalPdf.getPageIndices());
     originalPages.forEach((page) => combinedPdf.addPage(page));
 
+    console.log('✅ [PDF] PDFs combinados com sucesso');
     return new Uint8Array(await combinedPdf.save());
   } catch (error) {
-    console.error('Erro ao combinar PDFs:', error);
+    console.error('❌ [PDF] Erro ao combinar PDFs:', error);
     throw error;
   }
 };
