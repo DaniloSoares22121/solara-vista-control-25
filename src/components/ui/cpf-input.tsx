@@ -28,7 +28,7 @@ export const CpfInput: React.FC<CpfInputProps> = ({
   const searchTimeoutRef = useRef<NodeJS.Timeout>();
   const lastSearchedRef = useRef<string>('');
 
-  // Debounce para evitar muitas chamadas à API
+  // Debounce reduzido para 1 segundo para ser mais rápido
   useEffect(() => {
     if (searchTimeoutRef.current) {
       clearTimeout(searchTimeoutRef.current);
@@ -36,7 +36,7 @@ export const CpfInput: React.FC<CpfInputProps> = ({
 
     searchTimeoutRef.current = setTimeout(() => {
       setDebouncedValue(value);
-    }, 2000); // 2 segundos de debounce
+    }, 1000); // Reduzido de 2000ms para 1000ms
 
     return () => {
       if (searchTimeoutRef.current) {
