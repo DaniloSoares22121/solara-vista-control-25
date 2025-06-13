@@ -1,29 +1,54 @@
-
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { MaskedInput } from '@/components/ui/masked-input';
 import { UseFormReturn } from 'react-hook-form';
 import { GeneratorFormData } from '@/types/generator';
 import { UserCheck, Phone, Mail, Info, MapPin } from 'lucide-react';
+import { CpfInput } from '@/components/ui/cpf-input';
 import { CepInput } from '@/components/ui/cep-input';
+import { MaskedInput } from '@/components/ui/masked-input';
 
 interface GeneratorAdministratorFormProps {
   form: UseFormReturn<GeneratorFormData>;
 }
 
 const GeneratorAdministratorForm = ({ form }: GeneratorAdministratorFormProps) => {
+  const handleAdministratorCpfFound = (cpfData: any) => {
+    console.log('📍 [ADMIN CPF] CPF encontrado para administrador:', cpfData);
+    
+    if (cpfData) {
+      // Preencher nome
+      if (cpfData.nome && !form.getValues('administrator.nome')) {
+        form.setValue('administrator.nome', cpfData.nome);
+      }
+      
+      // Preencher data de nascimento (converter DD/MM/YYYY para YYYY-MM-DD)
+      if (cpfData.nascimento && !form.getValues('administrator.dataNascimento')) {
+        const [day, month, year] = cpfData.nascimento.split('/');
+        if (day && month && year) {
+          const isoDate = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+          form.setValue('administrator.dataNascimento', isoDate);
+        }
+      }
+    }
+  };
+
   const handleAdministratorCepFound = (cepData: any) => {
     console.log('📍 [ADMIN CEP] CEP encontrado para administrador:', cepData);
     
     if (cepData && !cepData.erro) {
-      // Atualizar os campos do formulário do administrador
-      setTimeout(() => {
-        console.log('📍 [ADMIN CEP] Preenchendo campos do formulário com dados:', cepData);
+      // Preencher campos de endereço apenas se estiverem vazios
+      if (!form.getValues('administrator.address.endereco')) {
         form.setValue('administrator.address.endereco', cepData.logradouro || '');
+      }
+      if (!form.getValues('administrator.address.bairro')) {
         form.setValue('administrator.address.bairro', cepData.bairro || '');
+      }
+      if (!form.getValues('administrator.address.cidade')) {
         form.setValue('administrator.address.cidade', cepData.localidade || '');
+      }
+      if (!form.getValues('administrator.address.estado')) {
         form.setValue('administrator.address.estado', cepData.uf || '');
-      }, 100);
+      }
     }
   };
 
@@ -61,9 +86,10 @@ const GeneratorAdministratorForm = ({ form }: GeneratorAdministratorFormProps) =
               <FormItem>
                 <FormLabel className="text-sm font-semibold text-gray-700">CPF do Administrador</FormLabel>
                 <FormControl>
-                  <MaskedInput 
-                    {...field} 
-                    mask="999.999.999-99"
+                  <CpfInput
+                    value={field.value || ''}
+                    onChange={field.onChange}
+                    onCpfFound={handleAdministratorCpfFound}
                     placeholder="000.000.000-00"
                     className="transition-all duration-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                   />
@@ -98,10 +124,9 @@ const GeneratorAdministratorForm = ({ form }: GeneratorAdministratorFormProps) =
               <FormItem>
                 <FormLabel className="text-sm font-semibold text-gray-700">Data de Nascimento</FormLabel>
                 <FormControl>
-                  <MaskedInput 
+                  <Input 
+                    type="date" 
                     {...field} 
-                    mask="99/99/9999"
-                    placeholder="DD/MM/AAAA"
                     className="transition-all duration-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                   />
                 </FormControl>
@@ -180,9 +205,7 @@ const GeneratorAdministratorForm = ({ form }: GeneratorAdministratorFormProps) =
                 <FormControl>
                   <CepInput
                     value={field.value || ''}
-                    onChange={(value) => {
-                      field.onChange(value);
-                    }}
+                    onChange={field.onChange}
                     onCepFound={handleAdministratorCepFound}
                     placeholder="00000-000"
                     className="transition-all duration-200 focus:ring-2 focus:ring-teal-500 focus:border-teal-500"

@@ -1,6 +1,5 @@
 
 import { useState } from 'react';
-import { toast } from 'sonner';
 
 interface CnpjData {
   cnpj: string;
@@ -39,7 +38,7 @@ export const useCnpjLookup = () => {
     
     // Validação básica do CNPJ
     if (cleanCnpj.length !== 14) {
-      toast.error('CNPJ deve ter 14 dígitos');
+      console.log('❌ CNPJ deve ter 14 dígitos');
       return null;
     }
 
@@ -69,19 +68,6 @@ export const useCnpjLookup = () => {
       // Verificar se houve erro na resposta
       if (data.return !== 'OK') {
         console.error('❌ Erro na consulta CNPJ:', data.message || 'Erro desconhecido');
-        
-        // Mensagens de erro específicas
-        const errorMessages: { [key: string]: string } = {
-          'Parametro Invalido.': 'Parâmetros inválidos. Verifique o CNPJ.',
-          'CNPJ Nao existe.': 'CNPJ não encontrado na Receita Federal.',
-          'Token Inválido ou sem saldo para a consulta.': 'Token sem saldo ou inválido.',
-          'Limite Excedido': 'Limite de consultas excedido. Tente novamente em alguns minutos.',
-          'Timeout.': 'Timeout na consulta. Tente novamente.',
-          'Consulta não retornou': 'Serviço temporariamente indisponível.',
-        };
-        
-        const errorMessage = errorMessages[data.message] || data.message || 'Erro ao consultar CNPJ';
-        toast.error(errorMessage);
         return null;
       }
 
@@ -106,12 +92,10 @@ export const useCnpjLookup = () => {
       };
       
       console.log('✅ Dados do CNPJ encontrados:', cnpjData);
-      toast.success(`Dados do CNPJ carregados! Consumidos ${data.consumed} crédito(s).`);
       
       return cnpjData;
     } catch (error) {
       console.error('❌ Erro ao buscar CNPJ:', error);
-      toast.error('Erro ao consultar CNPJ. Verifique sua conexão e tente novamente.');
       return null;
     } finally {
       setIsLoading(false);

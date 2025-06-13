@@ -1,6 +1,5 @@
 
 import { useState } from 'react';
-import { toast } from 'sonner';
 
 interface CpfData {
   cpf: string;
@@ -24,7 +23,7 @@ export const useCpfLookup = () => {
     
     // Validação básica do CPF
     if (cleanCpf.length !== 11) {
-      toast.error('CPF deve ter 11 dígitos');
+      console.log('❌ CPF deve ter 11 dígitos');
       return null;
     }
 
@@ -61,19 +60,6 @@ export const useCpfLookup = () => {
       // Verificar se houve erro na resposta
       if (data.return !== 'OK') {
         console.error('❌ Erro na consulta CPF:', data.message || 'Erro desconhecido');
-        
-        // Mensagens de erro específicas
-        const errorMessages: { [key: string]: string } = {
-          'Parametro Invalido.': 'Parâmetros inválidos. Verifique o CPF.',
-          'CPF Inválido.': 'CPF não encontrado na Receita Federal.',
-          'Data Nascimento Inválida': 'Data de nascimento inválida.',
-          'Token Inválido ou sem saldo para a consulta.': 'Token sem saldo ou inválido.',
-          'Limite Excedido': 'Limite de consultas excedido. Tente novamente em alguns minutos.',
-          'Timeout.': 'Timeout na consulta. Tente novamente.',
-        };
-        
-        const errorMessage = errorMessages[data.message] || data.message || 'Erro ao consultar CPF';
-        toast.error(errorMessage);
         return null;
       }
 
@@ -86,12 +72,10 @@ export const useCpfLookup = () => {
       };
       
       console.log('✅ Dados do CPF encontrados:', cpfData);
-      toast.success(`Dados do CPF carregados! Consumidos ${data.consumed} crédito(s).`);
       
       return cpfData;
     } catch (error) {
       console.error('❌ Erro ao buscar CPF:', error);
-      toast.error('Erro ao consultar CPF. Verifique sua conexão e tente novamente.');
       return null;
     } finally {
       setIsLoading(false);
