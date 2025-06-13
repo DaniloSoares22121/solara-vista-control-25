@@ -10,14 +10,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Search, FileCheck, FileX, Clock, CheckCircle, XCircle, Filter, Eye, Download, ThumbsUp, ThumbsDown } from 'lucide-react';
 import { faturaValidacaoService, type FaturaValidacao as FaturaValidacaoType } from '@/services/faturaValidacaoService';
-import FaturaViewModal from '@/components/FaturaViewModal';
 import { toast } from 'sonner';
 
 const FaturaValidacao = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
-  const [selectedFatura, setSelectedFatura] = useState<FaturaValidacaoType | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const { data: faturas = [], isLoading, refetch } = useQuery({
     queryKey: ['faturas-validacao'],
@@ -56,8 +53,7 @@ const FaturaValidacao = () => {
   };
 
   const handleViewFatura = (fatura: FaturaValidacaoType) => {
-    setSelectedFatura(fatura);
-    setIsModalOpen(true);
+    window.open(fatura.fatura_url, '_blank');
   };
 
   const formatDate = (dateString: string) => {
@@ -309,20 +305,6 @@ const FaturaValidacao = () => {
             )}
           </CardContent>
         </Card>
-
-        {/* Modal para visualizar fatura */}
-        {selectedFatura && (
-          <FaturaViewModal
-            isOpen={isModalOpen}
-            onClose={() => {
-              setIsModalOpen(false);
-              setSelectedFatura(null);
-            }}
-            faturaUrl={selectedFatura.fatura_url}
-            documento={selectedFatura.documento}
-            uc={selectedFatura.uc}
-          />
-        )}
       </div>
     </DashboardLayout>
   );
