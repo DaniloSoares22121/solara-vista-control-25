@@ -52,6 +52,11 @@ export const useGeneratorForm = () => {
   // Auto-fill para login da distribuidora quando os dados do proprietário mudarem
   const ownerCpfCnpj = form.watch('owner.cpfCnpj');
   const ownerDataNascimento = form.watch('owner.dataNascimento');
+  const ownerName = form.watch('owner.name');
+  const ownerType = form.watch('owner.type');
+  const ownerAddress = form.watch('owner.address');
+  const ownerNumeroParceiroNegocio = form.watch('owner.numeroParceiroNegocio');
+  const plants = form.watch('plants');
 
   useEffect(() => {
     if (ownerCpfCnpj) {
@@ -64,6 +69,21 @@ export const useGeneratorForm = () => {
       }
     }
   }, [ownerCpfCnpj, ownerDataNascimento, form, performAutoFillDistributorLogin]);
+
+  // Auto-fill para usinas quando os dados do proprietário mudarem
+  useEffect(() => {
+    if (ownerCpfCnpj && ownerName && plants && plants.length > 0) {
+      console.log('🔄 [GENERATOR FORM] Dados do proprietário mudaram, executando auto-fill das usinas');
+      const currentFormData = form.getValues();
+      
+      plants.forEach((plant, index) => {
+        const updatedFormData = performAutoFillPlant(currentFormData, index);
+        if (JSON.stringify(updatedFormData.plants[index]) !== JSON.stringify(currentFormData.plants[index])) {
+          form.setValue(`plants.${index}`, updatedFormData.plants[index]);
+        }
+      });
+    }
+  }, [ownerCpfCnpj, ownerName, ownerType, ownerAddress, ownerNumeroParceiroNegocio, ownerDataNascimento, plants?.length, form, performAutoFillPlant]);
 
   const handleCepLookup = async (cep: string, type: string, index?: number) => {
     // TODO: Implementar lookup de CEP
@@ -110,7 +130,7 @@ export const useGeneratorForm = () => {
     setTimeout(() => {
       const formData = form.getValues();
       const updatedFormData = performAutoFillPlant(formData, plantIndex);
-      if (updatedFormData.plants[plantIndex] !== formData.plants[plantIndex]) {
+      if (updatedFormData.plants[plantIndex]) {
         form.setValue(`plants.${plantIndex}`, updatedFormData.plants[plantIndex]);
       }
     }, 100);

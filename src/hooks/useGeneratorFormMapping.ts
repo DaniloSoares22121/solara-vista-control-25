@@ -12,24 +12,33 @@ export const useGeneratorFormMapping = () => {
     const updatedFormData = { ...formData };
     const plant = updatedFormData.plants[plantIndex];
     
-    if (plant && owner.cpfCnpj && owner.name) {
+    if (plant) {
       console.log('📋 [AUTO-FILL PLANT] Preenchendo dados da usina com dados do proprietário');
       
+      // Preencher dados básicos da usina com dados do proprietário
       plant.ownerType = owner.type;
-      plant.ownerCpfCnpj = owner.cpfCnpj;
-      plant.ownerName = owner.name;
-      plant.ownerNumeroParceiroNegocio = owner.numeroParceiroNegocio;
+      plant.ownerCpfCnpj = owner.cpfCnpj || '';
+      plant.ownerName = owner.name || '';
+      plant.ownerNumeroParceiroNegocio = owner.numeroParceiroNegocio || '';
       
       if (owner.type === 'fisica') {
         plant.ownerDataNascimento = owner.dataNascimento || '';
       }
 
-      // Copiar endereço se a usina não tiver endereço preenchido
-      if (!plant.address.cep && owner.address.cep) {
-        plant.address = { ...owner.address };
+      // Copiar endereço completo do proprietário para a usina
+      if (owner.address) {
+        plant.address = {
+          cep: owner.address.cep || '',
+          endereco: owner.address.endereco || '',
+          numero: owner.address.numero || '',
+          complemento: owner.address.complemento || '',
+          bairro: owner.address.bairro || '',
+          cidade: owner.address.cidade || '',
+          estado: owner.address.estado || ''
+        };
       }
 
-      console.log('✅ [AUTO-FILL PLANT] Dados da usina preenchidos automaticamente');
+      console.log('✅ [AUTO-FILL PLANT] Dados da usina preenchidos automaticamente:', plant);
     }
 
     return updatedFormData;
