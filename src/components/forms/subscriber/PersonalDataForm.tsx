@@ -33,11 +33,21 @@ const PersonalDataForm = ({
   const handleCpfFound = (cpfData: any) => {
     console.log('📋 [PERSONAL DATA] Dados do CPF encontrados:', cpfData);
     
-    // Por enquanto, apenas logamos os dados
-    // Em produção com API real, preencheria os dados disponíveis
+    // Preenche os dados disponíveis
     if (cpfData.nome && cpfData.nome !== 'Nome será preenchido manualmente') {
       form.setValue('personalData.fullName', cpfData.nome);
       onUpdate({ fullName: cpfData.nome });
+    }
+    
+    // Se a data de nascimento vier da API, também preenche
+    if (cpfData.nascimento) {
+      // Converte de DD/MM/YYYY para YYYY-MM-DD
+      const [day, month, year] = cpfData.nascimento.split('/');
+      if (day && month && year) {
+        const isoDate = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+        form.setValue('personalData.birthDate', isoDate);
+        onUpdate({ birthDate: isoDate });
+      }
     }
   };
 
@@ -120,6 +130,7 @@ const PersonalDataForm = ({
                     onUpdate({ cpf: value });
                   }}
                   onCpfFound={handleCpfFound}
+                  birthDate={form.getValues('personalData.birthDate')}
                   placeholder="000.000.000-00"
                   className="transition-all duration-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />

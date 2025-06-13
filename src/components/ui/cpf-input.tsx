@@ -11,6 +11,7 @@ interface CpfInputProps {
   onCpfFound?: (cpfData: any) => void;
   placeholder?: string;
   className?: string;
+  birthDate?: string; // Data de nascimento para melhorar a consulta
 }
 
 export const CpfInput: React.FC<CpfInputProps> = ({
@@ -18,7 +19,8 @@ export const CpfInput: React.FC<CpfInputProps> = ({
   onChange,
   onCpfFound,
   placeholder = "000.000.000-00",
-  className
+  className,
+  birthDate
 }) => {
   const [debouncedValue, setDebouncedValue] = useState('');
   const [hasSearched, setHasSearched] = useState(false);
@@ -59,7 +61,7 @@ export const CpfInput: React.FC<CpfInputProps> = ({
         setHasSearched(true);
         lastSearchedRef.current = debouncedValue;
         
-        const cpfData = await lookupCpf(debouncedValue);
+        const cpfData = await lookupCpf(debouncedValue, birthDate);
         if (cpfData) {
           onCpfFound(cpfData);
         }
@@ -67,7 +69,7 @@ export const CpfInput: React.FC<CpfInputProps> = ({
     };
 
     handleCpfLookup();
-  }, [debouncedValue, lookupCpf, onCpfFound, isLoading, hasSearched]);
+  }, [debouncedValue, lookupCpf, onCpfFound, isLoading, hasSearched, birthDate]);
 
   // Reset hasSearched quando o valor do CPF mudar significativamente
   useEffect(() => {

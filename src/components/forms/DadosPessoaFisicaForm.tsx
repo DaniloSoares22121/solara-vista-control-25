@@ -15,10 +15,19 @@ const DadosPessoaFisicaForm = ({ form }: DadosPessoaFisicaFormProps) => {
   const handleCpfFound = (cpfData: any) => {
     console.log('📋 [GENERATOR PF] Dados do CPF encontrados:', cpfData);
     
-    // Por enquanto, apenas logamos os dados
-    // Em produção com API real, preencheria os dados disponíveis
+    // Preenche os dados disponíveis
     if (cpfData.nome && cpfData.nome !== 'Nome será preenchido manualmente') {
       form.setValue('name', cpfData.nome);
+    }
+    
+    // Se a data de nascimento vier da API, também preenche
+    if (cpfData.nascimento) {
+      // Converte de DD/MM/YYYY para YYYY-MM-DD
+      const [day, month, year] = cpfData.nascimento.split('/');
+      if (day && month && year) {
+        const isoDate = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+        form.setValue('dataNascimento', isoDate);
+      }
     }
   };
 
@@ -38,6 +47,7 @@ const DadosPessoaFisicaForm = ({ form }: DadosPessoaFisicaFormProps) => {
                   value={field.value || ''}
                   onChange={field.onChange}
                   onCpfFound={handleCpfFound}
+                  birthDate={form.getValues('dataNascimento')}
                   placeholder="000.000.000-00"
                 />
               </FormControl>
