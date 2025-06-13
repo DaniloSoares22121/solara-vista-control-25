@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import DashboardLayout from '@/components/DashboardLayout';
@@ -7,14 +8,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Search, FileText, Download, Filter, DollarSign, Calendar, TrendingUp, Eye } from 'lucide-react';
+import { Search, FileText, Download, Filter, DollarSign, Calendar, TrendingUp, Eye, Trash2 } from 'lucide-react';
 import { faturaValidacaoService, type FaturaEmitida } from '@/services/faturaValidacaoService';
+import { toast } from 'sonner';
 
 const FaturasEmitidas = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('todos');
 
-  const { data: faturas = [], isLoading } = useQuery({
+  const { data: faturas = [], isLoading, refetch } = useQuery({
     queryKey: ['faturas-emitidas'],
     queryFn: faturaValidacaoService.getFaturasEmitidas,
   });
@@ -37,6 +39,19 @@ const FaturasEmitidas = () => {
 
   const handleViewFatura = (fatura: FaturaEmitida) => {
     window.open(fatura.fatura_url, '_blank');
+  };
+
+  const handleDeleteFatura = async (id: string) => {
+    if (!confirm('Tem certeza que deseja excluir esta fatura?')) return;
+    
+    try {
+      await faturaValidacaoService.deleteFaturaEmitida(id);
+      toast.success('Fatura excluída com sucesso!');
+      refetch();
+    } catch (error) {
+      console.error('Erro ao excluir fatura:', error);
+      toast.error('Erro ao excluir fatura');
+    }
   };
 
   const formatDate = (dateString: string) => {
@@ -269,6 +284,15 @@ const FaturasEmitidas = () => {
                               title="Baixar fatura"
                             >
                               <Download className="w-3 h-3 sm:w-4 sm:h-4 text-green-600" />
+                            </Button>
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              onClick={() => handleDeleteFatura(fatura.id)}
+                              className="p-1 sm:p-2 h-7 sm:h-8 w-7 sm:w-8 text-red-600 hover:text-red-700 hover:bg-red-50"
+                              title="Excluir fatura"
+                            >
+                              <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
                             </Button>
                           </div>
                         </TableCell>

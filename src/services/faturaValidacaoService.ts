@@ -88,6 +88,22 @@ export const faturaValidacaoService = {
     return (data || []) as FaturaValidacao[];
   },
 
+  async deleteFaturaValidacao(id: string): Promise<void> {
+    console.log('Deletando fatura validação:', id);
+    
+    const { error } = await supabase
+      .from('faturas_validacao')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error('Erro ao deletar fatura validação:', error);
+      throw error;
+    }
+
+    console.log('Fatura validação deletada com sucesso');
+  },
+
   async updateStatusFatura(id: string, status: 'pendente' | 'aprovada' | 'rejeitada'): Promise<void> {
     console.log('Atualizando status da fatura:', id, 'para:', status);
     
@@ -171,5 +187,21 @@ export const faturaValidacaoService = {
 
     console.log('Faturas emitidas encontradas:', data?.length || 0);
     return (data || []) as FaturaEmitida[];
+  },
+
+  async deleteFaturaEmitida(id: string): Promise<void> {
+    console.log('Deletando fatura emitida:', id);
+    
+    const { error } = await supabase
+      .from('faturas_emitidas')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error('Erro ao deletar fatura emitida:', error);
+      throw error;
+    }
+
+    console.log('Fatura emitida deletada com sucesso');
   }
 };

@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Search, FileCheck, FileX, Clock, CheckCircle, XCircle, Filter, Eye, Download, ThumbsUp, ThumbsDown } from 'lucide-react';
+import { Search, FileCheck, FileX, Clock, CheckCircle, XCircle, Filter, Eye, Download, ThumbsUp, ThumbsDown, Trash2 } from 'lucide-react';
 import { faturaValidacaoService, type FaturaValidacao as FaturaValidacaoType } from '@/services/faturaValidacaoService';
 import { toast } from 'sonner';
 
@@ -49,6 +49,19 @@ const FaturaValidacao = () => {
     } catch (error) {
       console.error('Erro ao atualizar status:', error);
       toast.error('Erro ao atualizar status da fatura');
+    }
+  };
+
+  const handleDeleteFatura = async (id: string) => {
+    if (!confirm('Tem certeza que deseja excluir esta fatura?')) return;
+    
+    try {
+      await faturaValidacaoService.deleteFaturaValidacao(id);
+      toast.success('Fatura excluída com sucesso!');
+      refetch();
+    } catch (error) {
+      console.error('Erro ao excluir fatura:', error);
+      toast.error('Erro ao excluir fatura');
     }
   };
 
@@ -295,6 +308,15 @@ const FaturaValidacao = () => {
                                 </Button>
                               </>
                             )}
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              onClick={() => handleDeleteFatura(fatura.id)}
+                              className="p-1 sm:p-2 h-7 sm:h-8 w-7 sm:w-8 text-red-600 hover:text-red-700 hover:bg-red-50"
+                              title="Excluir fatura"
+                            >
+                              <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
+                            </Button>
                           </div>
                         </TableCell>
                       </TableRow>
