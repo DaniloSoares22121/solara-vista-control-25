@@ -20,6 +20,7 @@ import GeneratorPaymentForm from '@/components/forms/GeneratorPaymentForm';
 import GeneratorAttachmentsForm from '@/components/forms/GeneratorAttachmentsForm';
 import { GeneratorFormData } from '@/types/generator';
 import DashboardLayout from '@/components/DashboardLayout';
+import { AutoSaveStatus } from '@/components/forms/AutoSaveStatus';
 
 const generatorSchema = z.object({
   concessionaria: z.string().min(1, 'Selecione uma concessionária'),
@@ -87,7 +88,7 @@ const NovaGeradora = ({ onClose, editMode = false, generatorData }: NovaGeradora
   const totalSteps = 5;
   const { toast } = useToast();
   const { createGenerator, updateGenerator } = useGenerators();
-  const { validateStep } = useGeneratorForm();
+  const { validateStep, autoSave } = useGeneratorForm();
 
   const form = useForm<GeneratorFormData>({
     resolver: zodResolver(generatorSchema),
@@ -262,21 +263,24 @@ const NovaGeradora = ({ onClose, editMode = false, generatorData }: NovaGeradora
                   <p className="text-gray-600 text-lg">
                     {editMode 
                       ? 'Atualize as informações da unidade geradora' 
-                      : 'Cadastre uma nova unidade geradora de energia solar'
+                      : 'Cadastre uma nova unidade geradora com automações inteligentes'
                     }
                   </p>
                 </div>
               </div>
             </div>
             
-            <Button
-              onClick={onClose}
-              variant="outline"
-              className="flex items-center space-x-2 border-green-200 text-green-700 hover:bg-green-50 shadow-md"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              <span>Voltar para Lista</span>
-            </Button>
+            <div className="flex items-center gap-4">
+              <AutoSaveStatus autoSave={autoSave} form={form} />
+              <Button
+                onClick={onClose}
+                variant="outline"
+                className="flex items-center space-x-2 border-green-200 text-green-700 hover:bg-green-50 shadow-md"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                <span>Voltar para Lista</span>
+              </Button>
+            </div>
           </div>
 
           {/* Progress Steps */}
@@ -375,7 +379,7 @@ const NovaGeradora = ({ onClose, editMode = false, generatorData }: NovaGeradora
                             Configuração das Usinas
                           </CardTitle>
                           <p className="text-blue-600 mt-1 text-base">
-                            Defina as especificações técnicas das unidades geradoras
+                            Especificações técnicas com cálculos e validações automáticas
                           </p>
                         </div>
                       </div>
@@ -503,7 +507,10 @@ const NovaGeradora = ({ onClose, editMode = false, generatorData }: NovaGeradora
                   <Button
                     type="button"
                     variant="outline"
-                    onClick={() => form.reset()}
+                    onClick={() => {
+                      form.reset();
+                      autoSave.clearAutoSave();
+                    }}
                     disabled={saving}
                     className="px-8 py-3 text-base font-medium border-2"
                   >

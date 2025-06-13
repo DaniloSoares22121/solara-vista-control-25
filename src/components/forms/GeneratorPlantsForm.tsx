@@ -8,11 +8,14 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { UseFormReturn, useFieldArray } from 'react-hook-form';
 import { GeneratorFormData } from '@/types/generator';
 import AddressForm from './AddressForm';
-import { Plus, Trash2, Calculator } from 'lucide-react';
+import { Plus, Trash2, Calculator, CheckCircle, AlertTriangle, Info } from 'lucide-react';
 import { useEffect } from 'react';
+import { useGeneratorCalculations } from '@/hooks/useGeneratorCalculations';
+import { useGeneratorValidations } from '@/hooks/useGeneratorValidations';
 
 interface GeneratorPlantsFormProps {
   form: UseFormReturn<GeneratorFormData>;
@@ -24,9 +27,13 @@ const GeneratorPlantsForm = ({ form }: GeneratorPlantsFormProps) => {
     name: "plants"
   });
 
+  const { validateInverterCompatibility } = useGeneratorCalculations();
+  const { validateUC } = useGeneratorValidations();
+  const concessionaria = form.watch('concessionaria');
+
   const addPlant = () => {
     const owner = form.getValues('owner');
-    console.log('🌱 [PLANTS FORM] Adicionando nova usina com dados do proprietário:', owner);
+    console.log('🌱 [PLANTS FORM] Adicionando nova usina com automações');
     
     const newPlant = {
       apelido: '',
@@ -47,10 +54,14 @@ const GeneratorPlantsForm = ({ form }: GeneratorPlantsFormProps) => {
         cidade: owner.address?.cidade || '',
         estado: owner.address?.estado || '',
       },
-      contacts: [],
+      contacts: owner.name ? [{
+        nome: owner.name,
+        telefone: owner.telefone || '',
+        funcao: 'Proprietário'
+      }] : [],
       observacoes: '',
       marcaModulo: '',
-      potenciaModulo: 0,
+      potenciaModulo: 580, // Sugestão automática para 2024
       quantidadeModulos: 0,
       potenciaTotalUsina: 0,
       inversores: [{
@@ -63,14 +74,13 @@ const GeneratorPlantsForm = ({ form }: GeneratorPlantsFormProps) => {
       observacoesInstalacao: '',
     };
 
-    console.log('✅ [PLANTS FORM] Nova usina criada com auto-preenchimento:', newPlant);
     appendPlant(newPlant);
   };
 
-  // Adicionar primeira usina automaticamente se não houver nenhuma
+  // Adicionar primeira usina automaticamente
   useEffect(() => {
     if (plantFields.length === 0) {
-      console.log('📋 [PLANTS FORM] Nenhuma usina encontrada, adicionando primeira usina automaticamente');
+      console.log('📋 [PLANTS FORM] Adicionando primeira usina automaticamente');
       addPlant();
     }
   }, [plantFields.length]);
@@ -101,6 +111,7 @@ const GeneratorPlantsForm = ({ form }: GeneratorPlantsFormProps) => {
           plantIndex={plantIndex}
           onRemove={() => removePlant(plantIndex)}
           canRemove={plantFields.length > 1}
+          concessionaria={concessionaria}
         />
       ))}
     </div>
@@ -112,9 +123,10 @@ interface PlantFormProps {
   plantIndex: number;
   onRemove: () => void;
   canRemove: boolean;
+  concessionaria: string;
 }
 
-const PlantForm = ({ form, plantIndex, onRemove, canRemove }: PlantFormProps) => {
+const PlantForm = ({ form, plantIndex, onRemove, canRemove, concessionaria }: PlantFormProps) => {
   const { fields: contactFields, append: appendContact, remove: removeContact } = useFieldArray({
     control: form.control,
     name: `plants.${plantIndex}.contacts`
@@ -125,33 +137,23 @@ const PlantForm = ({ form, plantIndex, onRemove, canRemove }: PlantFormProps) =>
     name: `plants.${plantIndex}.inversores`
   });
 
+  const { validateInverterCompatibility } = useGeneratorCalculations();
+  const { validateUC } = useGeneratorValidations();
+
   const ownerType = form.watch(`plants.${plantIndex}.ownerType`);
   const potenciaModulo = form.watch(`plants.${plantIndex}.potenciaModulo`);
   const quantidadeModulos = form.watch(`plants.${plantIndex}.quantidadeModulos`);
+  const potenciaTotalUsina = form.watch(`plants.${plantIndex}.potenciaTotalUsina`);
+  const potenciaTotalInversores = form.watch(`plants.${plantIndex}.potenciaTotalInversores`);
   const inversores = form.watch(`plants.${plantIndex}.inversores`) || [];
+  const uc = form.watch(`plants.${plantIndex}.uc`);
+  const geracaoProjetada = form.watch(`plants.${plantIndex}.geracaoProjetada`);
 
-  // Calcular potência total da usina
-  useEffect(() => {
-    if (potenciaModulo && quantidadeModulos) {
-      const potenciaTotal = (potenciaModulo * quantidadeModulos) / 1000;
-      form.setValue(`plants.${plantIndex}.potenciaTotalUsina`, potenciaTotal);
-    }
-  }, [potenciaModulo, quantidadeModulos, form, plantIndex]);
-
-  // Calcular potência total dos inversores
-  useEffect(() => {
-    console.log('🔧 Calculando potência total dos inversores:', inversores);
-    if (inversores && inversores.length > 0) {
-      let potenciaTotal = 0;
-      inversores.forEach((inv) => {
-        if (inv.potencia && inv.quantidade) {
-          potenciaTotal += inv.potencia * inv.quantidade;
-        }
-      });
-      console.log('✅ Potência total calculada:', potenciaTotal);
-      form.setValue(`plants.${plantIndex}.potenciaTotalInversores`, potenciaTotal);
-    }
-  }, [inversores, form, plantIndex]);
+  // Validações em tempo real
+  const ucValidation = uc && concessionaria ? validateUC(uc, concessionaria) : { isValid: true, message: '' };
+  const inverterCompatibility = potenciaTotalUsina && potenciaTotalInversores 
+    ? validateInverterCompatibility(potenciaTotalUsina, potenciaTotalInversores)
+    : { isValid: true, message: '' };
 
   const addContact = () => {
     appendContact({
@@ -169,7 +171,6 @@ const PlantForm = ({ form, plantIndex, onRemove, canRemove }: PlantFormProps) =>
     });
   };
 
-  // Formatação de números com vírgula
   const formatNumber = (value: number): string => {
     return value.toString().replace('.', ',');
   };
@@ -189,6 +190,11 @@ const PlantForm = ({ form, plantIndex, onRemove, canRemove }: PlantFormProps) =>
             <Badge className="bg-blue-100 text-blue-800 border-blue-200">
               {form.watch(`plants.${plantIndex}.apelido`) || `Usina ${plantIndex + 1}`}
             </Badge>
+            {geracaoProjetada > 0 && (
+              <Badge className="bg-green-100 text-green-800 border-green-200">
+                {geracaoProjetada.toLocaleString()} kWh/mês
+              </Badge>
+            )}
             {canRemove && (
               <Button
                 type="button"
@@ -205,6 +211,34 @@ const PlantForm = ({ form, plantIndex, onRemove, canRemove }: PlantFormProps) =>
       </CardHeader>
 
       <CardContent className="p-6 space-y-6">
+        {/* Alertas de Validação */}
+        {!ucValidation.isValid && (
+          <Alert className="border-red-200 bg-red-50">
+            <AlertTriangle className="h-4 w-4 text-red-600" />
+            <AlertDescription className="text-red-800">
+              {ucValidation.message}
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {!inverterCompatibility.isValid && (
+          <Alert className="border-yellow-200 bg-yellow-50">
+            <AlertTriangle className="h-4 w-4 text-yellow-600" />
+            <AlertDescription className="text-yellow-800">
+              {inverterCompatibility.message}
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {inverterCompatibility.isValid && potenciaTotalUsina > 0 && potenciaTotalInversores > 0 && (
+          <Alert className="border-green-200 bg-green-50">
+            <CheckCircle className="h-4 w-4 text-green-600" />
+            <AlertDescription className="text-green-800">
+              {inverterCompatibility.message}
+            </AlertDescription>
+          </Alert>
+        )}
+
         {/* Dados Básicos da Usina */}
         <div className="space-y-4">
           <h4 className="font-medium text-gray-900 border-b pb-2">Dados Básicos</h4>
@@ -231,7 +265,12 @@ const PlantForm = ({ form, plantIndex, onRemove, canRemove }: PlantFormProps) =>
                 <FormItem>
                   <FormLabel>Unidade Consumidora *</FormLabel>
                   <FormControl>
-                    <Input placeholder="00000000000000" {...field} />
+                    <div className="relative">
+                      <Input placeholder="00000000000000" {...field} />
+                      {ucValidation.isValid && uc && (
+                        <CheckCircle className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-green-500" />
+                      )}
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -252,11 +291,11 @@ const PlantForm = ({ form, plantIndex, onRemove, canRemove }: PlantFormProps) =>
                     >
                       <div className="flex items-center space-x-2">
                         <RadioGroupItem value="mini" id={`mini-${plantIndex}`} />
-                        <label htmlFor={`mini-${plantIndex}`} className="text-sm">Mini</label>
+                        <label htmlFor={`mini-${plantIndex}`} className="text-sm">Mini (75kW+)</label>
                       </div>
                       <div className="flex items-center space-x-2">
                         <RadioGroupItem value="micro" id={`micro-${plantIndex}`} />
-                        <label htmlFor={`micro-${plantIndex}`} className="text-sm">Micro</label>
+                        <label htmlFor={`micro-${plantIndex}`} className="text-sm">Micro (até 75kW)</label>
                       </div>
                     </RadioGroup>
                   </FormControl>
@@ -397,10 +436,10 @@ const PlantForm = ({ form, plantIndex, onRemove, canRemove }: PlantFormProps) =>
           title="Endereço da Usina"
         />
 
-        {/* Contatos da Usina (Opcional) */}
+        {/* Contatos da Usina */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h4 className="font-medium text-gray-900 border-b pb-2">Contatos da Usina (Opcional)</h4>
+            <h4 className="font-medium text-gray-900 border-b pb-2">Contatos da Usina</h4>
             <Button 
               type="button" 
               variant="outline" 
@@ -411,6 +450,15 @@ const PlantForm = ({ form, plantIndex, onRemove, canRemove }: PlantFormProps) =>
               Adicionar Contato
             </Button>
           </div>
+
+          {contactFields.length === 0 && (
+            <Alert className="border-blue-200 bg-blue-50">
+              <Info className="h-4 w-4 text-blue-600" />
+              <AlertDescription className="text-blue-800">
+                Contato do proprietário foi adicionado automaticamente. Adicione mais contatos se necessário.
+              </AlertDescription>
+            </Alert>
+          )}
 
           {contactFields.map((contact, contactIndex) => (
             <div key={contact.id} className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 border rounded-lg">
@@ -501,12 +549,19 @@ const PlantForm = ({ form, plantIndex, onRemove, canRemove }: PlantFormProps) =>
                 <FormItem>
                   <FormLabel>Potência do Módulo (W) *</FormLabel>
                   <FormControl>
-                    <Input 
-                      type="number" 
-                      placeholder="570" 
-                      {...field} 
-                      onChange={(e) => field.onChange(Number(e.target.value))}
-                    />
+                    <div className="relative">
+                      <Input 
+                        type="number" 
+                        placeholder="580" 
+                        {...field} 
+                        onChange={(e) => field.onChange(Number(e.target.value))}
+                      />
+                      {field.value === 580 && (
+                        <Badge className="absolute -top-2 -right-2 bg-green-100 text-green-800 text-xs">
+                          Sugerido 2024
+                        </Badge>
+                      )}
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -679,16 +734,17 @@ const PlantForm = ({ form, plantIndex, onRemove, canRemove }: PlantFormProps) =>
               name={`plants.${plantIndex}.geracaoProjetada`}
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Geração Projetada (kWh/mês) *</FormLabel>
+                  <FormLabel>Geração Projetada (kWh/mês)</FormLabel>
                   <FormControl>
-                    <Input 
-                      placeholder="12000" 
-                      value={field.value ? formatNumber(field.value) : ''}
-                      onChange={(e) => {
-                        const value = parseNumber(e.target.value);
-                        field.onChange(value);
-                      }}
-                    />
+                    <div className="relative">
+                      <Input 
+                        {...field} 
+                        value={formatNumber(field.value || 0)}
+                        readOnly
+                        className="bg-gray-50"
+                      />
+                      <Calculator className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -704,7 +760,7 @@ const PlantForm = ({ form, plantIndex, onRemove, canRemove }: PlantFormProps) =>
                 <FormLabel>Observações da Usina</FormLabel>
                 <FormControl>
                   <Textarea 
-                    placeholder="Observações sobre a usina..." 
+                    placeholder="Observações automáticas serão geradas..." 
                     {...field} 
                     rows={3}
                   />
