@@ -81,18 +81,28 @@ const EnergyAccountForm = ({ form }: EnergyAccountFormProps) => {
       }
     } else if (subscriberType === 'company') {
       const companyData = form.getValues('companyData');
+      const administratorData = form.getValues('administratorData');
       
       console.log('📋 [ENERGY ACCOUNT] Dados da empresa encontrados:', companyData);
+      console.log('📋 [ENERGY ACCOUNT] Dados do administrador encontrados:', administratorData);
       
       if (companyData?.cnpj && companyData?.companyName) {
-        // Preencher dados básicos
+        // Preencher dados básicos da empresa
         form.setValue('energyAccount.holderType', 'company');
         form.setValue('energyAccount.cpfCnpj', companyData.cnpj);
         form.setValue('energyAccount.holderName', companyData.companyName);
-        form.setValue('energyAccount.birthDate', ''); // PJ não tem data de nascimento
         form.setValue('energyAccount.partnerNumber', companyData.partnerNumber || '');
         
-        // Preencher endereço completo
+        // Para PJ, preencher com data de nascimento do administrador
+        console.log('📅 [ENERGY ACCOUNT] Data de nascimento do administrador:', administratorData?.birthDate);
+        if (administratorData?.birthDate) {
+          form.setValue('energyAccount.birthDate', administratorData.birthDate);
+          console.log('✅ [ENERGY ACCOUNT] Data de nascimento do administrador preenchida:', administratorData.birthDate);
+        } else {
+          form.setValue('energyAccount.birthDate', ''); // Limpar se não houver
+        }
+        
+        // Preencher endereço completo da empresa
         console.log('🏠 [ENERGY ACCOUNT] Endereço da empresa:', companyData.address);
         if (companyData.address) {
           const address = companyData.address;
@@ -143,8 +153,8 @@ const EnergyAccountForm = ({ form }: EnergyAccountFormProps) => {
   // Monitorar mudanças nos dados do assinante para auto-preencher em tempo real
   useEffect(() => {
     const subscription = form.watch((value, { name, type }) => {
-      // Se mudaram dados pessoais ou da empresa, tentar auto-preencher
-      if (name?.startsWith('personalData') || name?.startsWith('companyData') || name === 'subscriberType') {
+      // Se mudaram dados pessoais, da empresa OU do administrador, tentar auto-preencher
+      if (name?.startsWith('personalData') || name?.startsWith('companyData') || name?.startsWith('administratorData') || name === 'subscriberType') {
         console.log('🔄 [ENERGY ACCOUNT] Detectada mudança nos dados do assinante:', name);
         
         // Verificar se os dados estão completos antes de preencher
