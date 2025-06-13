@@ -8,6 +8,7 @@ import { UseFormReturn } from 'react-hook-form';
 import { CompanyData, AdministratorData, Address } from '@/types/subscriber';
 import { CepInput } from '@/components/ui/cep-input';
 import { CnpjInput } from '@/components/ui/cnpj-input';
+import { CpfInput } from '@/components/ui/cpf-input';
 import ContactsSection from './ContactsSection';
 
 interface CompanyDataFormProps {
@@ -84,6 +85,27 @@ const CompanyDataForm = ({
       if (cnpjData.municipio) form.setValue('companyData.address.city', cnpjData.municipio);
       if (cnpjData.uf) form.setValue('companyData.address.state', cnpjData.uf);
     }, 100);
+  };
+
+  const handleAdministratorCpfFound = (cpfData: any) => {
+    console.log('📋 [COMPANY DATA] Dados do CPF do administrador encontrados:', cpfData);
+    
+    // Preenche os dados disponíveis do administrador
+    if (cpfData.nome && cpfData.nome !== 'Nome será preenchido manualmente') {
+      form.setValue('administratorData.fullName', cpfData.nome);
+      onUpdateAdministrator({ fullName: cpfData.nome });
+    }
+    
+    // Se a data de nascimento vier da API, também preenche
+    if (cpfData.nascimento) {
+      // Converte de DD/MM/YYYY para YYYY-MM-DD
+      const [day, month, year] = cpfData.nascimento.split('/');
+      if (day && month && year) {
+        const isoDate = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+        form.setValue('administratorData.birthDate', isoDate);
+        onUpdateAdministrator({ birthDate: isoDate });
+      }
+    }
   };
 
   const handleCompanyAddressChange = (addressUpdate: Partial<Address>) => {
@@ -498,14 +520,15 @@ const CompanyDataForm = ({
               <FormItem>
                 <FormLabel>CPF do Administrador *</FormLabel>
                 <FormControl>
-                  <MaskedInput 
-                    mask="999.999.999-99" 
-                    placeholder="000.000.000-00" 
+                  <CpfInput
                     value={getStringValue(administratorData?.cpf)}
-                    onChange={(e) => {
-                      field.onChange(e);
-                      onUpdateAdministrator({ cpf: e.target.value });
+                    onChange={(value) => {
+                      field.onChange(value);
+                      onUpdateAdministrator({ cpf: value });
                     }}
+                    onCpfFound={handleAdministratorCpfFound}
+                    birthDate={form.getValues('administratorData.birthDate')}
+                    placeholder="000.000.000-00"
                   />
                 </FormControl>
                 <FormMessage />
