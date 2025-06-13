@@ -1,4 +1,3 @@
-
 import React, { useCallback, useEffect } from 'react';
 import { useSubscriberForm } from '@/hooks/useSubscriberForm';
 import { useSubscriberSteps } from '@/components/subscribers/SubscriberSteps';
@@ -57,12 +56,10 @@ const SubscriberForm: React.FC<SubscriberFormProps> = ({
       if (result.success && onSuccess) {
         onSuccess(subscriberId);
         
-        // Se não está editando (é um novo cadastro), recarregar a página após um breve delay
-        if (!subscriberId) {
-          setTimeout(() => {
-            window.location.reload();
-          }, 1500);
-        }
+        // Pequeno delay para garantir que o backend processou
+        setTimeout(() => {
+          console.log('✅ [FORM] Notificando sucesso para o componente pai');
+        }, 100);
       }
     } catch (error) {
       toast.error('Erro ao salvar assinante. Tente novamente.');

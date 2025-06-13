@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -16,7 +17,7 @@ const Assinantes = () => {
   const [editingSubscriber, setEditingSubscriber] = useState<SubscriberRecord | null>(null);
   const [viewingSubscriber, setViewingSubscriber] = useState<SubscriberRecord | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const { subscribers, isLoading, deleteSubscriber } = useSubscribers();
+  const { subscribers, isLoading, deleteSubscriber, refetch } = useSubscribers();
 
   // Monitor changes in subscribers count for real-time feedback
   useEffect(() => {
@@ -50,10 +51,15 @@ const Assinantes = () => {
     setViewingSubscriber(subscriber);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (confirm('Tem certeza que deseja remover este assinante?')) {
       console.log('🗑️ [ASSINANTES] Removendo assinante:', id);
       deleteSubscriber(id);
+      
+      // Força atualização após deletar
+      setTimeout(() => {
+        refetch();
+      }, 500);
     }
   };
 
@@ -61,6 +67,9 @@ const Assinantes = () => {
     console.log('❌ [ASSINANTES] Fechando formulário');
     setShowForm(false);
     setEditingSubscriber(null);
+    
+    // Força atualização quando fecha o formulário
+    refetch();
   };
 
   const handleNewSubscriber = () => {
@@ -74,16 +83,14 @@ const Assinantes = () => {
     setShowForm(false);
     setEditingSubscriber(null);
     
+    // Força atualização imediata
+    refetch();
+    
     // Show success message
     if (editingSubscriber) {
       toast.success('Assinante atualizado! A lista foi atualizada automaticamente.', { duration: 2000 });
     } else {
-      toast.success('Novo assinante cadastrado! Recarregando a página...', { duration: 2000 });
-      
-      // Para novos cadastros, garantir que a página seja recarregada
-      setTimeout(() => {
-        window.location.reload();
-      }, 1500);
+      toast.success('Novo assinante cadastrado! A lista foi atualizada automaticamente.', { duration: 2000 });
     }
   };
 
@@ -201,9 +208,10 @@ const Assinantes = () => {
               <Button 
                 variant="outline"
                 className="flex items-center space-x-2 border-green-200 text-green-700 hover:bg-green-50 shadow-md"
+                onClick={() => refetch()}
               >
                 <Activity className="w-4 h-4" />
-                <span>Relatórios</span>
+                <span>Atualizar Lista</span>
               </Button>
               
               <Button 

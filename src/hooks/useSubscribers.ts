@@ -17,7 +17,7 @@ export const useSubscribers = () => {
   } = useQuery({
     queryKey: ['subscribers'],
     queryFn: subscriberService.getSubscribers,
-    staleTime: 30000, // Cache por 30 segundos
+    staleTime: 5000, // Cache por apenas 5 segundos para garantir dados frescos
     retry: 3,
   });
 
@@ -37,35 +37,23 @@ export const useSubscribers = () => {
         (payload) => {
           console.log('🔄 [SUBSCRIBERS] Mudança detectada:', payload.eventType, payload);
           
+          // Sempre invalida e refaz a query para garantir dados frescos
+          queryClient.invalidateQueries({ queryKey: ['subscribers'] });
+          
           switch (payload.eventType) {
             case 'INSERT':
               console.log('✅ [SUBSCRIBERS] Novo assinante criado:', payload.new);
-              // Adicionar o novo assinante ao cache
-              queryClient.setQueryData(['subscribers'], (oldData: SubscriberRecord[] = []) => {
-                return [payload.new as SubscriberRecord, ...oldData];
-              });
-              // Invalidar para garantir consistência
-              queryClient.invalidateQueries({ queryKey: ['subscribers'] });
+              toast.success('Novo assinante adicionado!', { duration: 1500 });
               break;
               
             case 'UPDATE':
               console.log('📝 [SUBSCRIBERS] Assinante atualizado:', payload.new);
-              // Atualizar o assinante específico no cache
-              queryClient.setQueryData(['subscribers'], (oldData: SubscriberRecord[] = []) => {
-                return oldData.map(subscriber => 
-                  subscriber.id === payload.new.id ? payload.new as SubscriberRecord : subscriber
-                );
-              });
-              queryClient.setQueryData(['subscriber', payload.new.id], payload.new);
+              toast.success('Assinante atualizado!', { duration: 1500 });
               break;
               
             case 'DELETE':
               console.log('🗑️ [SUBSCRIBERS] Assinante removido:', payload.old);
-              // Remover o assinante do cache
-              queryClient.setQueryData(['subscribers'], (oldData: SubscriberRecord[] = []) => {
-                return oldData.filter(subscriber => subscriber.id !== payload.old.id);
-              });
-              queryClient.removeQueries({ queryKey: ['subscriber', payload.old.id] });
+              toast.success('Assinante removido!', { duration: 1500 });
               break;
           }
         }
@@ -84,8 +72,9 @@ export const useSubscribers = () => {
     mutationFn: subscriberService.createSubscriber,
     onSuccess: (data) => {
       console.log('✅ [SUBSCRIBERS] Assinante criado com sucesso:', data);
-      // O tempo real já vai atualizar o cache, mas vamos garantir
-      queryClient.setQueryData(['subscriber', data.id], data);
+      // Força atualização imediata
+      queryClient.invalidateQueries({ queryKey: ['subscribers'] });
+      refetch();
       toast.success('Assinante criado com sucesso!', { duration: 1500 });
     },
     onError: (error: any) => {
@@ -100,8 +89,10 @@ export const useSubscribers = () => {
       subscriberService.updateSubscriber(id, data),
     onSuccess: (data, variables) => {
       console.log('✅ [SUBSCRIBERS] Assinante atualizado com sucesso:', data);
-      // O tempo real já vai atualizar o cache
+      // Força atualização imediata
+      queryClient.invalidateQueries({ queryKey: ['subscribers'] });
       queryClient.setQueryData(['subscriber', variables.id], data);
+      refetch();
       toast.success('Assinante atualizado com sucesso!', { duration: 1500 });
     },
     onError: (error: any) => {
@@ -115,7 +106,10 @@ export const useSubscribers = () => {
     mutationFn: subscriberService.deleteSubscriber,
     onSuccess: (_, deletedId) => {
       console.log('✅ [SUBSCRIBERS] Assinante removido com sucesso:', deletedId);
-      // O tempo real já vai atualizar o cache
+      // Força atualização imediata
+      queryClient.invalidateQueries({ queryKey: ['subscribers'] });
+      queryClient.removeQueries({ queryKey: ['subscriber', deletedId] });
+      refetch();
       toast.success('Assinante removido com sucesso!', { duration: 1500 });
     },
     onError: (error: any) => {
