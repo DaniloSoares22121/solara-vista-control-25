@@ -7,6 +7,7 @@ import { faturaValidacaoService } from '@/services/faturaValidacaoService';
 
 export const useFaturaPDF = () => {
   const [isLoading, setIsLoading] = useState(false);
+  const [processedPdfUrl, setProcessedPdfUrl] = useState<string | null>(null);
   const { toast } = useToast();
 
   const processarFaturaCompleta = async (
@@ -17,24 +18,26 @@ export const useFaturaPDF = () => {
     tipoConsulta: 'select' | 'manual' = 'manual'
   ) => {
     setIsLoading(true);
+    setProcessedPdfUrl(null);
+    
     try {
       console.log('🔍 [FATURA] Iniciando processamento para UC:', uc);
       
       // Verificar se já existe PDF salvo
       const faturaExistente = await getFaturaPDF(uc);
       if (faturaExistente) {
-        console.log('📄 [FATURA] PDF existente encontrado, abrindo...');
-        window.open(faturaExistente.pdf_combinado_url, '_blank');
+        console.log('📄 [FATURA] PDF existente encontrado');
+        setProcessedPdfUrl(faturaExistente.pdf_combinado_url);
         toast({
           title: "PDF encontrado",
-          description: "Abrindo PDF salvo anteriormente.",
+          description: "Fatura processada anteriormente encontrada.",
         });
         return faturaExistente.pdf_combinado_url;
       }
 
       console.log('🌐 [FATURA] Chamando API para baixar fatura original...');
       
-      // Chamar API para baixar fatura original PRIMEIRO
+      // Chamar API para baixar fatura original
       const response = await supabase.functions.invoke('baixar-fatura', {
         body: {
           uc,
@@ -51,36 +54,27 @@ export const useFaturaPDF = () => {
       const { fatura_url, message } = response.data;
       console.log('✅ [FATURA] Fatura original baixada:', fatura_url);
 
-      let finalPdfUrl = fatura_url;
-
-      // Tentar gerar PDF customizado apenas se o elemento existir
-      try {
-        console.log('🎨 [FATURA] Tentando gerar PDF customizado...');
-        const customPdfBytes = await generateCustomPDF('invoice-layout');
-        console.log('✅ [FATURA] PDF customizado gerado, combinando...');
-        
-        // Combinar PDFs (customizado + original)
-        const combinedPdfBytes = await combinePDFs(fatura_url, customPdfBytes);
-        
-        // Upload para storage
-        const fileName = `fatura_${uc}_${Date.now()}.pdf`;
-        finalPdfUrl = await uploadPDFToStorage(combinedPdfBytes, fileName);
-        console.log('📤 [FATURA] PDF combinado enviado para storage:', finalPdfUrl);
-        
-        // Salvar no banco
-        await saveFaturaPDF({
-          numero_fatura: uc,
-          pdf_original_url: fatura_url,
-          pdf_customizado_url: null,
-          pdf_combinado_url: finalPdfUrl
-        });
-        console.log('💾 [FATURA] PDF salvo no banco de dados');
-        
-      } catch (pdfError) {
-        console.warn('⚠️ [FATURA] Erro ao gerar PDF customizado, usando original:', pdfError);
-        // Se não conseguir gerar o PDF customizado, usa apenas o original
-        finalPdfUrl = fatura_url;
-      }
+      // SEMPRE gerar PDF customizado e combinar
+      console.log('🎨 [FATURA] Gerando PDF customizado...');
+      const customPdfBytes = await generateCustomPDF('invoice-layout');
+      console.log('✅ [FATURA] PDF customizado gerado, combinando com original...');
+      
+      // Combinar PDFs (customizado + original)
+      const combinedPdfBytes = await combinePDFs(fatura_url, customPdfBytes);
+      
+      // Upload para storage
+      const fileName = `fatura_combinada_${uc}_${Date.now()}.pdf`;
+      const finalPdfUrl = await uploadPDFToStorage(combinedPdfBytes, fileName);
+      console.log('📤 [FATURA] PDF combinado enviado para storage:', finalPdfUrl);
+      
+      // Salvar no banco
+      await saveFaturaPDF({
+        numero_fatura: uc,
+        pdf_original_url: fatura_url,
+        pdf_customizado_url: null,
+        pdf_combinado_url: finalPdfUrl
+      });
+      console.log('💾 [FATURA] PDF salvo no banco de dados');
 
       // Se for de assinante cadastrado, salvar em validação
       if (tipoConsulta === 'select' && subscriberId) {
@@ -93,40 +87,37 @@ export const useFaturaPDF = () => {
             data_nascimento: dataNascimento,
             tipo_pessoa: dataNascimento ? 'fisica' : 'juridica',
             fatura_url: finalPdfUrl,
-            pdf_path: `fatura_${uc}_${Date.now()}.pdf`,
+            pdf_path: fileName,
             message: message
           });
           
           toast({
             title: "Fatura processada com sucesso!",
-            description: "PDF gerado e salvo em 'Faturas em Validação'.",
+            description: "PDF combinado criado e salvo em 'Faturas em Validação'.",
           });
         } catch (error) {
           console.error('❌ [FATURA] Erro ao salvar em validação:', error);
           toast({
-            title: "PDF gerado com sucesso!",
+            title: "PDF combinado criado!",
             description: "Mas houve erro ao salvar em validação.",
             variant: "destructive"
           });
         }
       } else {
         toast({
-          title: "PDF gerado com sucesso!",
-          description: "O PDF foi criado e está sendo exibido.",
+          title: "PDF combinado criado!",
+          description: "Fatura processada e combinada com sucesso.",
         });
       }
 
-      // Abrir PDF na tela
-      console.log('🖥️ [FATURA] Abrindo PDF na tela:', finalPdfUrl);
-      window.open(finalPdfUrl, '_blank');
-      
+      setProcessedPdfUrl(finalPdfUrl);
       return finalPdfUrl;
 
     } catch (error) {
       console.error('❌ [FATURA] Erro ao processar fatura:', error);
       toast({
         title: "Erro ao processar fatura",
-        description: error instanceof Error ? error.message : "Ocorreu um erro ao gerar o PDF. Tente novamente.",
+        description: error instanceof Error ? error.message : "Ocorreu um erro ao processar a fatura. Tente novamente.",
         variant: "destructive"
       });
       throw error;
@@ -139,9 +130,15 @@ export const useFaturaPDF = () => {
     return processarFaturaCompleta(uc, documento, dataNascimento);
   };
 
+  const resetProcessedPdf = () => {
+    setProcessedPdfUrl(null);
+  };
+
   return {
     processarFatura,
     processarFaturaCompleta,
+    processedPdfUrl,
+    resetProcessedPdf,
     isLoading
   };
 };

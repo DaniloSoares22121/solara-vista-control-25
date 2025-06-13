@@ -9,7 +9,7 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { MaskedInput } from '@/components/ui/masked-input';
 import FaturaPDFViewer from '@/components/FaturaPDFViewer';
-import { FileText, Search, Download, Zap, Clock, Check, Timer, Users, Edit, User, Building2, Calendar, CreditCard, AlertCircle, CheckCircle2, Save, Sparkles, Star, ChevronDown } from 'lucide-react';
+import { FileText, Search, Download, Zap, Clock, Check, Timer, Users, Edit, User, Building2, Calendar, CreditCard, AlertCircle, CheckCircle2, Save, Sparkles, Star, ChevronDown, ExternalLink } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { useSubscribers } from '@/hooks/useSubscribers';
@@ -23,7 +23,7 @@ interface FaturaResponse {
 
 const FaturaUnica = () => {
   const { subscribers, isLoading: isLoadingSubscribers } = useSubscribers();
-  const { processarFaturaCompleta, isLoading: isProcessingFatura } = useFaturaPDF();
+  const { processarFaturaCompleta, processedPdfUrl, resetProcessedPdf, isLoading: isProcessingFatura } = useFaturaPDF();
   
   // Estado para controlar o modo de entrada
   const [entryMode, setEntryMode] = useState<'select' | 'manual'>('select');
@@ -43,7 +43,6 @@ const FaturaUnica = () => {
 
   // Estados para visualização do PDF
   const [pdfViewerOpen, setPdfViewerOpen] = useState(false);
-  const [processedPdfUrl, setProcessedPdfUrl] = useState('');
   const [consultaProgress, setConsultaProgress] = useState(0);
   const [timeRemaining, setTimeRemaining] = useState(0);
 
@@ -129,7 +128,7 @@ const FaturaUnica = () => {
       console.log('Consultando fatura com dados:', dados);
 
       // Processar fatura usando o hook atualizado
-      const pdfUrl = await processarFaturaCompleta(
+      await processarFaturaCompleta(
         dados.uc,
         dados.documento,
         dados.dataNascimento,
@@ -140,12 +139,6 @@ const FaturaUnica = () => {
       // Limpar intervalos
       clearInterval(progressInterval);
       clearInterval(timerInterval);
-
-      // Mostrar PDF na tela
-      if (pdfUrl) {
-        setProcessedPdfUrl(pdfUrl);
-        setPdfViewerOpen(true);
-      }
 
       setConsultaProgress(100);
       setTimeRemaining(0);
@@ -181,11 +174,28 @@ const FaturaUnica = () => {
       dataNascimento: '',
       tipo: 'fisica'
     });
-    setProcessedPdfUrl('');
+    resetProcessedPdf();
     setPdfViewerOpen(false);
     setConsultaProgress(0);
     setTimeRemaining(0);
     setEntryMode('select');
+  };
+
+  const handleVisualizarPDF = () => {
+    if (processedPdfUrl) {
+      setPdfViewerOpen(true);
+    }
+  };
+
+  const handleDownloadPDF = () => {
+    if (processedPdfUrl) {
+      const link = document.createElement('a');
+      link.href = processedPdfUrl;
+      link.download = `fatura_combinada_${manualData.uc}_${manualData.documento}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
   };
 
   const getSelectedSubscriberName = () => {
@@ -299,7 +309,7 @@ const FaturaUnica = () => {
             </div>
           </div>
 
-          {!isConsultingFatura && !pdfViewerOpen && (
+          {!isConsultingFatura && !processedPdfUrl && (
             <div className="max-w-4xl mx-auto space-y-8">
               {/* Mode Selection - Ultra Enhanced Design */}
               <Card className="border-0 shadow-2xl bg-white/80 backdrop-blur-sm overflow-hidden hover:shadow-3xl transition-all duration-500">
@@ -692,29 +702,90 @@ const FaturaUnica = () => {
             </Card>
           )}
 
-          {/* PDF Viewer */}
+          {/* Resultado do Processamento */}
+          {processedPdfUrl && !isConsultingFatura && (
+            <Card className="border-0 shadow-2xl bg-white/90 backdrop-blur-lg max-w-4xl mx-auto overflow-hidden">
+              <div className="bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 p-8 relative overflow-hidden">
+                <div className="absolute inset-0 bg-white/10 backdrop-blur-sm"></div>
+                <div className="text-center text-white relative z-10">
+                  <div className="w-16 h-16 mx-auto mb-4 bg-white/20 rounded-3xl flex items-center justify-center">
+                    <CheckCircle2 className="w-8 h-8" />
+                  </div>
+                  <h3 className="text-3xl font-bold mb-2">Fatura Processada com Sucesso!</h3>
+                  <p className="opacity-90 text-lg">PDF combinado criado e pronto para visualização</p>
+                </div>
+              </div>
+              
+              <CardContent className="p-8">
+                <div className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-6 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 rounded-2xl">
+                    <div className="space-y-1">
+                      <div className="text-xs font-medium text-green-600 uppercase tracking-wide">UC</div>
+                      <div className="text-green-800 font-semibold">{manualData.uc}</div>
+                    </div>
+                    <div className="space-y-1">
+                      <div className="text-xs font-medium text-green-600 uppercase tracking-wide">Documento</div>
+                      <div className="text-green-800 font-semibold">{manualData.documento}</div>
+                    </div>
+                    <div className="space-y-1">
+                      <div className="text-xs font-medium text-green-600 uppercase tracking-wide">Status</div>
+                      <Badge className="bg-green-100 text-green-700 border-green-200">
+                        <CheckCircle2 className="w-3 h-3 mr-1" />
+                        Processado
+                      </Badge>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    <Button 
+                      onClick={handleVisualizarPDF}
+                      className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-xl h-14 text-lg font-semibold"
+                    >
+                      <ExternalLink className="w-5 h-5 mr-3" />
+                      Visualizar PDF Combinado
+                    </Button>
+                    
+                    <Button 
+                      variant="outline"
+                      onClick={handleDownloadPDF}
+                      className="h-14 border-2 border-green-300 hover:bg-green-50 text-lg font-semibold"
+                    >
+                      <Download className="w-5 h-5 mr-3" />
+                      Baixar PDF
+                    </Button>
+                    
+                    <Button
+                      variant="ghost"
+                      onClick={resetForm}
+                      className="h-14 text-lg font-semibold hover:bg-gray-100"
+                    >
+                      Nova Consulta
+                    </Button>
+                  </div>
+
+                  {entryMode === 'select' && selectedSubscriberId && (
+                    <div className="p-4 bg-gradient-to-r from-emerald-50 to-green-50 border border-emerald-200 rounded-xl">
+                      <div className="flex items-center gap-3 text-emerald-700">
+                        <Save className="w-5 h-5" />
+                        <span className="font-medium">Fatura salva automaticamente em "Faturas em Validação"</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* PDF Viewer Modal */}
           <FaturaPDFViewer
             isOpen={pdfViewerOpen}
             onClose={() => setPdfViewerOpen(false)}
-            pdfUrl={processedPdfUrl}
+            pdfUrl={processedPdfUrl || ''}
             uc={manualData.uc}
             documento={manualData.documento}
             isSavedToValidation={entryMode === 'select' && !!selectedSubscriberId}
             subscriberName={entryMode === 'select' ? getSelectedSubscriberName() : undefined}
           />
-
-          {/* Botão para resetar após visualização */}
-          {pdfViewerOpen && (
-            <div className="fixed bottom-6 right-6 z-50">
-              <Button
-                onClick={resetForm}
-                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-2xl"
-              >
-                <Search className="w-4 h-4 mr-2" />
-                Nova Consulta
-              </Button>
-            </div>
-          )}
         </div>
       </div>
     </DashboardLayout>
