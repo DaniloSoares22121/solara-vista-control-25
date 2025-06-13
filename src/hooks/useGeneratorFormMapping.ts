@@ -4,30 +4,33 @@ import { GeneratorFormData } from '@/types/generator';
 
 export const useGeneratorFormMapping = () => {
   const performAutoFillPlant = useCallback((formData: GeneratorFormData, plantIndex: number): GeneratorFormData => {
-    console.log('🔄 [AUTO-FILL PLANT] Executando auto-fill para usina:', plantIndex);
+    console.log('🔄 [AUTO-FILL PLANT] Executando auto-fill AGRESSIVO para usina:', plantIndex);
     
     const owner = formData.owner;
-    if (!owner) return formData;
+    if (!owner) {
+      console.log('❌ [AUTO-FILL PLANT] Nenhum proprietário encontrado');
+      return formData;
+    }
 
     const updatedFormData = { ...formData };
     const plant = updatedFormData.plants[plantIndex];
     
     if (plant) {
-      console.log('📋 [AUTO-FILL PLANT] Dados do proprietário encontrados:', owner);
-      console.log('📋 [AUTO-FILL PLANT] Usina antes do preenchimento:', plant);
+      console.log('📋 [AUTO-FILL PLANT] Dados do proprietário:', owner);
+      console.log('📋 [AUTO-FILL PLANT] Usina ANTES do preenchimento:', plant);
       
-      // Preencher TODOS os dados básicos da usina com dados do proprietário
+      // FORÇAR preenchimento de TODOS os dados da usina
       plant.ownerType = owner.type;
       plant.ownerCpfCnpj = owner.cpfCnpj || '';
       plant.ownerName = owner.name || '';
       plant.ownerNumeroParceiroNegocio = owner.numeroParceiroNegocio || '';
       
-      // Preencher data de nascimento se for pessoa física
-      if (owner.type === 'fisica') {
-        plant.ownerDataNascimento = owner.dataNascimento || '';
+      // Data de nascimento para pessoa física
+      if (owner.type === 'fisica' && owner.dataNascimento) {
+        plant.ownerDataNascimento = owner.dataNascimento;
       }
 
-      // Copiar endereço COMPLETO do proprietário para a usina
+      // FORÇAR cópia completa do endereço
       if (owner.address) {
         plant.address = {
           cep: owner.address.cep || '',
@@ -38,21 +41,17 @@ export const useGeneratorFormMapping = () => {
           cidade: owner.address.cidade || '',
           estado: owner.address.estado || ''
         };
-        console.log('📋 [AUTO-FILL PLANT] Endereço completo copiado:', plant.address);
+        console.log('📋 [AUTO-FILL PLANT] Endereço FORÇADAMENTE copiado:', plant.address);
       }
 
-      // Inicializar contatos vazios se não existirem
+      // Garantir que contatos existam
       if (!plant.contacts || plant.contacts.length === 0) {
         plant.contacts = [];
       }
 
-      // Forçar atualização dos campos que podem estar vazios
-      if (!plant.apelido) plant.apelido = '';
-      if (!plant.uc) plant.uc = '';
-      if (!plant.observacoes) plant.observacoes = '';
-      if (!plant.observacoesInstalacao) plant.observacoesInstalacao = '';
-
-      console.log('✅ [AUTO-FILL PLANT] Todos os dados da usina preenchidos automaticamente:', plant);
+      console.log('✅ [AUTO-FILL PLANT] Usina APÓS preenchimento AGRESSIVO:', plant);
+    } else {
+      console.log('❌ [AUTO-FILL PLANT] Usina não encontrada no índice:', plantIndex);
     }
 
     return updatedFormData;
@@ -73,7 +72,7 @@ export const useGeneratorFormMapping = () => {
         updatedFormData.distributorLogin.dataNascimento = owner.dataNascimento;
       }
       
-      console.log('✅ [AUTO-FILL DISTRIBUTOR] Dados do login preenchidos automaticamente');
+      console.log('✅ [AUTO-FILL DISTRIBUTOR] Dados preenchidos automaticamente');
     }
 
     return updatedFormData;

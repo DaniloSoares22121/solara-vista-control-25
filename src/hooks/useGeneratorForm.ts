@@ -49,7 +49,7 @@ export const useGeneratorForm = () => {
     }
   });
 
-  // Auto-fill para login da distribuidora quando os dados do proprietário mudarem
+  // Watch dos dados do proprietário
   const ownerCpfCnpj = form.watch('owner.cpfCnpj');
   const ownerDataNascimento = form.watch('owner.dataNascimento');
   const ownerName = form.watch('owner.name');
@@ -58,9 +58,10 @@ export const useGeneratorForm = () => {
   const ownerNumeroParceiroNegocio = form.watch('owner.numeroParceiroNegocio');
   const plants = form.watch('plants');
 
+  // Auto-fill para login da distribuidora
   useEffect(() => {
     if (ownerCpfCnpj) {
-      console.log('🔄 [GENERATOR FORM] Dados do proprietário mudaram, executando auto-fill do login');
+      console.log('🔄 [GENERATOR FORM] Auto-fill do login da distribuidora');
       const currentFormData = form.getValues();
       const updatedFormData = performAutoFillDistributorLogin(currentFormData);
       
@@ -70,64 +71,91 @@ export const useGeneratorForm = () => {
     }
   }, [ownerCpfCnpj, ownerDataNascimento, form, performAutoFillDistributorLogin]);
 
-  // Auto-fill FORÇADO para usinas sempre que houver mudanças nos dados do proprietário
+  // Auto-fill AGRESSIVO para todas as usinas sempre que houver mudanças nos dados do proprietário
   useEffect(() => {
-    if (plants && plants.length > 0 && (ownerCpfCnpj || ownerName || ownerAddress)) {
-      console.log('🔄 [GENERATOR FORM] Forçando auto-fill das usinas com todos os dados do proprietário');
-      const currentFormData = form.getValues();
+    const owner = form.getValues('owner');
+    const currentPlants = form.getValues('plants');
+    
+    if (currentPlants && currentPlants.length > 0 && (owner.cpfCnpj || owner.name)) {
+      console.log('🔄 [GENERATOR FORM] FORÇANDO auto-fill de TODAS as usinas com dados do proprietário');
       
-      // Executar auto-fill para TODAS as usinas
-      plants.forEach((plant, index) => {
-        console.log(`🔄 [GENERATOR FORM] Processando usina ${index + 1}:`, plant);
+      currentPlants.forEach((plant, index) => {
+        console.log(`🔄 [GENERATOR FORM] Processando usina ${index + 1}`);
+        
+        // Aplicar auto-fill
+        const currentFormData = form.getValues();
         const updatedFormData = performAutoFillPlant(currentFormData, index);
+        const updatedPlant = updatedFormData.plants[index];
         
-        // SEMPRE atualizar, mesmo se aparentemente igual
-        console.log(`🔄 [GENERATOR FORM] Forçando atualização da usina ${index + 1}`);
-        form.setValue(`plants.${index}`, updatedFormData.plants[index]);
-        
-        // Forçar re-render dos campos específicos
-        setTimeout(() => {
-          const updatedPlant = updatedFormData.plants[index];
-          if (updatedPlant) {
-            form.setValue(`plants.${index}.ownerType`, updatedPlant.ownerType);
-            form.setValue(`plants.${index}.ownerCpfCnpj`, updatedPlant.ownerCpfCnpj);
-            form.setValue(`plants.${index}.ownerName`, updatedPlant.ownerName);
-            form.setValue(`plants.${index}.ownerNumeroParceiroNegocio`, updatedPlant.ownerNumeroParceiroNegocio);
-            if (updatedPlant.ownerDataNascimento) {
-              form.setValue(`plants.${index}.ownerDataNascimento`, updatedPlant.ownerDataNascimento);
-            }
-            form.setValue(`plants.${index}.address`, updatedPlant.address);
+        if (updatedPlant) {
+          console.log(`✅ [GENERATOR FORM] Atualizando usina ${index + 1} com dados:`, updatedPlant);
+          
+          // Atualizar TODOS os campos da usina individualmente para forçar re-render
+          form.setValue(`plants.${index}.ownerType`, updatedPlant.ownerType);
+          form.setValue(`plants.${index}.ownerCpfCnpj`, updatedPlant.ownerCpfCnpj);
+          form.setValue(`plants.${index}.ownerName`, updatedPlant.ownerName);
+          form.setValue(`plants.${index}.ownerNumeroParceiroNegocio`, updatedPlant.ownerNumeroParceiroNegocio);
+          
+          if (updatedPlant.ownerDataNascimento) {
+            form.setValue(`plants.${index}.ownerDataNascimento`, updatedPlant.ownerDataNascimento);
           }
-        }, 50);
+          
+          // Atualizar endereço campo por campo
+          form.setValue(`plants.${index}.address.cep`, updatedPlant.address.cep);
+          form.setValue(`plants.${index}.address.endereco`, updatedPlant.address.endereco);
+          form.setValue(`plants.${index}.address.numero`, updatedPlant.address.numero);
+          form.setValue(`plants.${index}.address.complemento`, updatedPlant.address.complemento);
+          form.setValue(`plants.${index}.address.bairro`, updatedPlant.address.bairro);
+          form.setValue(`plants.${index}.address.cidade`, updatedPlant.address.cidade);
+          form.setValue(`plants.${index}.address.estado`, updatedPlant.address.estado);
+          
+          // Forçar trigger dos campos para garantir que apareçam na tela
+          form.trigger([
+            `plants.${index}.ownerType`,
+            `plants.${index}.ownerCpfCnpj`,
+            `plants.${index}.ownerName`,
+            `plants.${index}.ownerNumeroParceiroNegocio`,
+            `plants.${index}.ownerDataNascimento`,
+            `plants.${index}.address.cep`,
+            `plants.${index}.address.endereco`,
+            `plants.${index}.address.numero`,
+            `plants.${index}.address.complemento`,
+            `plants.${index}.address.bairro`,
+            `plants.${index}.address.cidade`,
+            `plants.${index}.address.estado`
+          ]);
+        }
       });
     }
   }, [ownerCpfCnpj, ownerName, ownerType, ownerAddress, ownerNumeroParceiroNegocio, ownerDataNascimento, plants?.length, form, performAutoFillPlant]);
 
   const handleCepLookup = async (cep: string, type: string, index?: number) => {
-    // TODO: Implementar lookup de CEP
     console.log('CEP lookup:', { cep, type, index });
   };
 
   const addPlant = useCallback(() => {
     const currentPlants = form.getValues('plants');
+    const owner = form.getValues('owner');
+    
+    // Criar nova usina já com dados do proprietário
     const newPlant = {
       apelido: '',
       uc: '',
       tipoUsina: 'micro' as const,
       modalidadeCompensacao: 'autoconsumo' as const,
-      ownerType: 'fisica' as const,
-      ownerCpfCnpj: '',
-      ownerName: '',
-      ownerDataNascimento: '',
-      ownerNumeroParceiroNegocio: '',
+      ownerType: owner.type || 'fisica' as const,
+      ownerCpfCnpj: owner.cpfCnpj || '',
+      ownerName: owner.name || '',
+      ownerDataNascimento: owner.dataNascimento || '',
+      ownerNumeroParceiroNegocio: owner.numeroParceiroNegocio || '',
       address: {
-        cep: '',
-        endereco: '',
-        numero: '',
-        complemento: '',
-        bairro: '',
-        cidade: '',
-        estado: ''
+        cep: owner.address?.cep || '',
+        endereco: owner.address?.endereco || '',
+        numero: owner.address?.numero || '',
+        complemento: owner.address?.complemento || '',
+        bairro: owner.address?.bairro || '',
+        cidade: owner.address?.cidade || '',
+        estado: owner.address?.estado || ''
       },
       contacts: [],
       observacoes: '',
@@ -142,32 +170,32 @@ export const useGeneratorForm = () => {
     };
 
     const plantIndex = currentPlants.length;
+    console.log('🔄 [GENERATOR FORM] Adicionando nova usina PRÉ-PREENCHIDA:', newPlant);
+    
+    // Adicionar a nova usina
     form.setValue('plants', [...currentPlants, newPlant]);
-
-    // Auto-fill IMEDIATO e FORÇADO dos dados da nova usina
-    console.log('🔄 [GENERATOR FORM] Nova usina adicionada, executando auto-fill FORÇADO imediatamente');
+    
+    // Garantir que os dados apareçam na tela imediatamente
     setTimeout(() => {
-      const formData = form.getValues();
-      const updatedFormData = performAutoFillPlant(formData, plantIndex);
-      if (updatedFormData.plants[plantIndex]) {
-        console.log(`✅ [GENERATOR FORM] Auto-fill FORÇADO executado para nova usina ${plantIndex + 1}`);
-        const updatedPlant = updatedFormData.plants[plantIndex];
-        
-        // Atualizar TODOS os campos individualmente para garantir que apareçam na tela
-        form.setValue(`plants.${plantIndex}`, updatedPlant);
-        form.setValue(`plants.${plantIndex}.ownerType`, updatedPlant.ownerType);
-        form.setValue(`plants.${plantIndex}.ownerCpfCnpj`, updatedPlant.ownerCpfCnpj);
-        form.setValue(`plants.${plantIndex}.ownerName`, updatedPlant.ownerName);
-        form.setValue(`plants.${plantIndex}.ownerNumeroParceiroNegocio`, updatedPlant.ownerNumeroParceiroNegocio);
-        if (updatedPlant.ownerDataNascimento) {
-          form.setValue(`plants.${plantIndex}.ownerDataNascimento`, updatedPlant.ownerDataNascimento);
-        }
-        form.setValue(`plants.${plantIndex}.address`, updatedPlant.address);
-        
-        console.log(`✅ [GENERATOR FORM] Todos os campos da usina ${plantIndex + 1} preenchidos:`, updatedPlant);
-      }
+      console.log(`✅ [GENERATOR FORM] Forçando atualização da nova usina ${plantIndex + 1}`);
+      
+      // Trigger todos os campos para garantir que apareçam
+      form.trigger([
+        `plants.${plantIndex}.ownerType`,
+        `plants.${plantIndex}.ownerCpfCnpj`,
+        `plants.${plantIndex}.ownerName`,
+        `plants.${plantIndex}.ownerNumeroParceiroNegocio`,
+        `plants.${plantIndex}.ownerDataNascimento`,
+        `plants.${plantIndex}.address.cep`,
+        `plants.${plantIndex}.address.endereco`,
+        `plants.${plantIndex}.address.numero`,
+        `plants.${plantIndex}.address.complemento`,
+        `plants.${plantIndex}.address.bairro`,
+        `plants.${plantIndex}.address.cidade`,
+        `plants.${plantIndex}.address.estado`
+      ]);
     }, 100);
-  }, [form, performAutoFillPlant]);
+  }, [form]);
 
   const removePlant = (index: number) => {
     const currentPlants = form.getValues('plants');
@@ -175,37 +203,9 @@ export const useGeneratorForm = () => {
   };
 
   const validateStep = useCallback((step: number): { isValid: boolean; errors: string[] } => {
-    const formData = form.getValues();
-    const errors: string[] = [];
-
-    console.log('🔍 Validando step:', step, 'Dados:', formData);
-
-    // Remover todas as validações - permitir navegar entre etapas sem restrições
-    switch (step) {
-      case 1: // Concessionária e Proprietário
-        // Sem validações obrigatórias
-        break;
-
-      case 2: // Usinas
-        // Sem validações obrigatórias
-        break;
-
-      case 3: // Login da Distribuidora
-        // Sem validações obrigatórias
-        break;
-
-      case 4: // Pagamento (opcional)
-        // Sem validações obrigatórias
-        break;
-
-      case 5: // Anexos (opcional)
-        // Sem validações obrigatórias
-        break;
-    }
-
-    console.log('📋 Resultado da validação:', { isValid: true, errors: [] });
+    console.log('🔍 Validando step:', step);
     return { isValid: true, errors: [] };
-  }, [form]);
+  }, []);
 
   const saveGenerator = async (data: GeneratorFormData) => {
     setIsLoading(true);
