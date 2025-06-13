@@ -4,14 +4,29 @@ import { Input } from '@/components/ui/input';
 import { MaskedInput } from '@/components/ui/masked-input';
 import { UseFormReturn } from 'react-hook-form';
 import { GeneratorFormData } from '@/types/generator';
-import AddressForm from './AddressForm';
-import { UserCheck, Phone, Mail, Info } from 'lucide-react';
+import { UserCheck, Phone, Mail, Info, MapPin } from 'lucide-react';
+import { CepInput } from '@/components/ui/cep-input';
 
 interface GeneratorAdministratorFormProps {
   form: UseFormReturn<GeneratorFormData>;
 }
 
 const GeneratorAdministratorForm = ({ form }: GeneratorAdministratorFormProps) => {
+  const handleAdministratorCepFound = (cepData: any) => {
+    console.log('📍 [ADMIN CEP] CEP encontrado para administrador:', cepData);
+    
+    if (cepData && !cepData.erro) {
+      // Atualizar os campos do formulário do administrador
+      setTimeout(() => {
+        console.log('📍 [ADMIN CEP] Preenchendo campos do formulário...');
+        form.setValue('administrator.address.endereco', cepData.logradouro || '');
+        form.setValue('administrator.address.bairro', cepData.bairro || '');
+        form.setValue('administrator.address.cidade', cepData.localidade || '');
+        form.setValue('administrator.address.estado', cepData.uf || '');
+      }, 100);
+    }
+  };
+
   return (
     <div className="space-y-8">
       {/* Aviso sobre campos opcionais */}
@@ -143,17 +158,150 @@ const GeneratorAdministratorForm = ({ form }: GeneratorAdministratorFormProps) =
 
       {/* Endereço do Administrador */}
       <div className="bg-gradient-to-r from-teal-50 to-cyan-50 p-6 rounded-xl border border-teal-100">
-        <div className="flex items-center gap-3 mb-4">
-          <Info className="w-5 h-5 text-teal-600" />
-          <p className="text-sm text-teal-700">
-            Endereço do administrador (opcional - preencha apenas se diferente do endereço da empresa)
-          </p>
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-8 h-8 bg-teal-500 rounded-lg flex items-center justify-center">
+            <MapPin className="w-4 h-4 text-white" />
+          </div>
+          <div>
+            <h4 className="font-medium text-teal-900 text-lg">Endereço Residencial do Administrador (Opcional)</h4>
+            <p className="text-sm text-teal-700 mt-1">
+              Preencha apenas se diferente do endereço da empresa
+            </p>
+          </div>
         </div>
-        <AddressForm 
-          form={form} 
-          prefix="administrator.address" 
-          title="Endereço do Administrador (Opcional)"
-        />
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <FormField
+            control={form.control}
+            name="administrator.address.cep"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-sm font-semibold text-gray-700">CEP</FormLabel>
+                <FormControl>
+                  <CepInput
+                    value={field.value || ''}
+                    onChange={(value) => {
+                      field.onChange(value);
+                    }}
+                    onCepFound={handleAdministratorCepFound}
+                    placeholder="00000-000"
+                    className="transition-all duration-200 focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="administrator.address.endereco"
+            render={({ field }) => (
+              <FormItem className="md:col-span-2">
+                <FormLabel className="text-sm font-semibold text-gray-700">Endereço</FormLabel>
+                <FormControl>
+                  <Input 
+                    placeholder="Rua, Avenida, etc." 
+                    {...field}
+                    className="transition-all duration-200 focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="administrator.address.numero"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-sm font-semibold text-gray-700">Número</FormLabel>
+                <FormControl>
+                  <Input 
+                    placeholder="123" 
+                    {...field}
+                    className="transition-all duration-200 focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="administrator.address.complemento"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-sm font-semibold text-gray-700">Complemento</FormLabel>
+                <FormControl>
+                  <Input 
+                    placeholder="Apto, Sala, etc." 
+                    {...field}
+                    className="transition-all duration-200 focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="administrator.address.bairro"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-sm font-semibold text-gray-700">Bairro</FormLabel>
+                <FormControl>
+                  <Input 
+                    placeholder="Nome do bairro" 
+                    {...field}
+                    className="transition-all duration-200 focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="administrator.address.cidade"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-sm font-semibold text-gray-700">Cidade</FormLabel>
+                <FormControl>
+                  <Input 
+                    placeholder="Nome da cidade" 
+                    {...field}
+                    className="transition-all duration-200 focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="administrator.address.estado"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-sm font-semibold text-gray-700">Estado</FormLabel>
+                <FormControl>
+                  <Input 
+                    placeholder="UF" 
+                    maxLength={2} 
+                    {...field}
+                    className="transition-all duration-200 focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
       </div>
     </div>
   );
