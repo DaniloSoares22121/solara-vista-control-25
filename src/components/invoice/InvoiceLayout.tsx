@@ -4,7 +4,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { formatCurrency, formatDate } from '@/utils/formatters';
-import { QrCode, Zap, DollarSign, Calendar, User, FileText, TrendingDown } from 'lucide-react';
+import { QrCode, Zap, DollarSign, Calendar, User, FileText, TrendingDown, Barcode } from 'lucide-react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 
 interface InvoiceData {
   numero: string;
@@ -32,6 +33,7 @@ interface InvoiceData {
   historico: Array<{ mes: string; valor: number; semEnergyPay: number; comEnergyPay: number }>;
   economiaTotal: number;
   pixCode: string;
+  codigoBarras: string;
 }
 
 const mockInvoiceData: InvoiceData = {
@@ -66,11 +68,20 @@ const mockInvoiceData: InvoiceData = {
     { mes: "JUN/25", valor: 948.01, semEnergyPay: 948.01, comEnergyPay: 758.40 }
   ],
   economiaTotal: 189.61,
-  pixCode: "00020101021126580014br.gov.bcb.pix2536pix.lovable.dev/qr/v2/cobv/9d3d2f1a-4b8e-4c7d-8f2e-1a2b3c4d5e6f5204000053039865802BR5925Energy Pay Energia Solar6009SAO PAULO62070503***6304D2A4"
+  pixCode: "00020101021126580014br.gov.bcb.pix2536pix.lovable.dev/qr/v2/cobv/9d3d2f1a-4b8e-4c7d-8f2e-1a2b3c4d5e6f5204000053039865802BR5925Energy Pay Energia Solar6009SAO PAULO62070503***6304D2A4",
+  codigoBarras: "03391234567890123456789012345678901234567890"
 };
 
 const InvoiceLayout: React.FC = () => {
   const data = mockInvoiceData;
+
+  // Prepare data for the chart
+  const chartData = data.historico.map(item => ({
+    mes: item.mes,
+    semEnergyPay: item.semEnergyPay,
+    comEnergyPay: item.comEnergyPay,
+    economia: item.semEnergyPay - item.comEnergyPay
+  }));
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -228,7 +239,7 @@ const InvoiceLayout: React.FC = () => {
               </CardContent>
             </Card>
 
-            {/* Histórico de Economia */}
+            {/* Histórico de Economia - Agora com gráfico */}
             <Card className="border-0 shadow-xl">
               <CardContent className="p-8">
                 <div className="flex items-center gap-3 mb-6">
@@ -237,26 +248,55 @@ const InvoiceLayout: React.FC = () => {
                   </div>
                   <h3 className="text-xl font-semibold text-gray-900">HISTÓRICO DE ECONOMIA</h3>
                 </div>
-                <div className="grid grid-cols-3 md:grid-cols-6 gap-4 mb-6">
-                  {data.historico.map((item, index) => (
-                    <div key={index} className="text-center">
-                      <div className="bg-gradient-to-t from-green-600 to-green-500 text-white rounded-xl p-4 mb-3 shadow-lg">
-                        <div className="h-16 flex items-end justify-center">
-                          <div 
-                            className="bg-white bg-opacity-30 rounded-sm w-full transition-all duration-300 hover:bg-opacity-40"
-                            style={{ height: `${(item.comEnergyPay / item.semEnergyPay) * 100}%` }}
-                          ></div>
-                        </div>
-                      </div>
-                      <p className="text-sm font-semibold text-gray-900">{item.mes}</p>
-                      <p className="text-xs text-gray-600">{formatCurrency(item.comEnergyPay)}</p>
-                    </div>
-                  ))}
+                
+                <div className="h-80 mb-6">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                      <XAxis 
+                        dataKey="mes" 
+                        axisLine={false}
+                        tickLine={false}
+                        tick={{ fontSize: 12, fill: '#6b7280' }}
+                      />
+                      <YAxis 
+                        axisLine={false}
+                        tickLine={false}
+                        tick={{ fontSize: 12, fill: '#6b7280' }}
+                        tickFormatter={(value) => `R$ ${value.toLocaleString()}`}
+                      />
+                      <Tooltip 
+                        contentStyle={{
+                          backgroundColor: 'white',
+                          border: '1px solid #e5e7eb',
+                          borderRadius: '8px',
+                          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                        }}
+                        formatter={(value, name) => [
+                          `R$ ${Number(value).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
+                          name === 'semEnergyPay' ? 'Sem Energy Pay' : 'Com Energy Pay'
+                        ]}
+                      />
+                      <Bar 
+                        dataKey="semEnergyPay" 
+                        fill="#ef4444" 
+                        radius={[4, 4, 0, 0]}
+                        name="semEnergyPay"
+                      />
+                      <Bar 
+                        dataKey="comEnergyPay" 
+                        fill="#10b981" 
+                        radius={[4, 4, 0, 0]}
+                        name="comEnergyPay"
+                      />
+                    </BarChart>
+                  </ResponsiveContainer>
                 </div>
+
                 <div className="grid grid-cols-2 gap-6 text-center bg-gray-50 rounded-xl p-6">
                   <div>
                     <p className="text-sm text-gray-600 mb-2">Valor SEM Energy Pay</p>
-                    <p className="font-bold text-xl text-gray-900">{formatCurrency(948.01)}</p>
+                    <p className="font-bold text-xl text-red-500">{formatCurrency(948.01)}</p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-600 mb-2">Valor COM Energy Pay</p>
@@ -315,6 +355,50 @@ const InvoiceLayout: React.FC = () => {
                 <div className="text-center bg-green-50 rounded-xl p-6 border border-green-200">
                   <p className="text-sm text-gray-600 mb-2">Valor</p>
                   <p className="text-3xl font-bold text-green-600">{formatCurrency(data.valor)}</p>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Pagamento via Boleto */}
+            <Card className="border-0 shadow-xl">
+              <CardContent className="p-8">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center">
+                    <Barcode className="w-5 h-5 text-orange-600" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-gray-900">PAGAMENTO VIA BOLETO</h3>
+                </div>
+                
+                <div className="text-center mb-6">
+                  <p className="text-gray-600 mb-4">Código de barras do boleto</p>
+                  <div className="bg-white border-2 border-gray-200 rounded-xl p-4 mb-4 shadow-inner">
+                    <div className="flex items-center justify-center mb-2">
+                      <Barcode className="w-24 h-12 text-gray-400" />
+                    </div>
+                    <p className="text-xs font-mono text-gray-600 break-all leading-relaxed">
+                      {data.codigoBarras}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="space-y-4 mb-6">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-orange-600 text-white rounded-full flex items-center justify-center text-sm font-bold">1</div>
+                    <span className="text-gray-700">Copie o código de barras</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-orange-600 text-white rounded-full flex items-center justify-center text-sm font-bold">2</div>
+                    <span className="text-gray-700">Cole no app do seu banco</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-orange-600 text-white rounded-full flex items-center justify-center text-sm font-bold">3</div>
+                    <span className="text-gray-700">Confirme o pagamento</span>
+                  </div>
+                </div>
+
+                <div className="text-center bg-orange-50 rounded-xl p-6 border border-orange-200">
+                  <p className="text-sm text-gray-600 mb-2">Valor</p>
+                  <p className="text-3xl font-bold text-orange-600">{formatCurrency(data.valor)}</p>
                 </div>
               </CardContent>
             </Card>
