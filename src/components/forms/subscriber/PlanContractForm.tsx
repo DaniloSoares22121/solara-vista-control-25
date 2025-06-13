@@ -20,13 +20,13 @@ const PlanContractForm = ({ form }: PlanContractFormProps) => {
   const [selectedDiscount, setSelectedDiscount] = useState<number | undefined>();
   
   const watchedValues = {
-    contractedKwh: form.watch('planDetails.contractedKwh') || 0,
-    loyalty: form.watch('planDetails.loyalty') || 'none'
+    contractedKwh: form.watch('planContract.contractedKwh') || 0,
+    loyalty: form.watch('planContract.loyalty') || 'none'
   };
 
   const handleDiscountSelect = (percentage: number) => {
     setSelectedDiscount(percentage);
-    form.setValue('planDetails.discountPercentage', percentage);
+    form.setValue('planContract.discountPercentage', percentage);
   };
 
   return (
@@ -57,7 +57,7 @@ const PlanContractForm = ({ form }: PlanContractFormProps) => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FormField
                 control={form.control}
-                name="planDetails.contractedKwh"
+                name="planContract.contractedKwh"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-green-800 font-medium">Consumo Contratado (kWh/mês) *</FormLabel>
@@ -77,7 +77,7 @@ const PlanContractForm = ({ form }: PlanContractFormProps) => {
 
               <FormField
                 control={form.control}
-                name="planDetails.discountPercentage"
+                name="planContract.discountPercentage"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-green-800 font-medium">Desconto Aplicado (%)</FormLabel>
@@ -109,7 +109,7 @@ const PlanContractForm = ({ form }: PlanContractFormProps) => {
             
             <FormField
               control={form.control}
-              name="planDetails.loyalty"
+              name="planContract.loyalty"
               render={({ field }) => (
                 <FormItem>
                   <FormControl>
@@ -147,33 +147,32 @@ const PlanContractForm = ({ form }: PlanContractFormProps) => {
             />
           </div>
 
-          {/* Pagamento */}
-          <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-6 rounded-xl border border-purple-100">
+          {/* Plano e Compensação */}
+          <div className="bg-gradient-to-r from-blue-50 to-cyan-50 p-6 rounded-xl border border-blue-100">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-8 h-8 bg-purple-500 rounded-lg flex items-center justify-center">
-                <CreditCard className="w-4 h-4 text-white" />
+              <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
+                <FileText className="w-4 h-4 text-white" />
               </div>
-              <h4 className="text-lg font-semibold text-purple-900">Forma de Pagamento</h4>
+              <h4 className="text-lg font-semibold text-blue-900">Plano e Compensação</h4>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FormField
                 control={form.control}
-                name="planDetails.paymentMethod"
+                name="planContract.selectedPlan"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-purple-800 font-medium">Método de Pagamento *</FormLabel>
+                    <FormLabel className="text-blue-800 font-medium">Plano Selecionado *</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
-                        <SelectTrigger className="border-purple-200 focus:border-purple-500 focus:ring-purple-500">
-                          <SelectValue placeholder="Selecione o método" />
+                        <SelectTrigger className="border-blue-200 focus:border-blue-500 focus:ring-blue-500">
+                          <SelectValue placeholder="Selecione o plano" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="boleto">Boleto Bancário</SelectItem>
-                        <SelectItem value="cartao">Cartão de Crédito</SelectItem>
-                        <SelectItem value="debito">Débito Automático</SelectItem>
-                        <SelectItem value="pix">PIX</SelectItem>
+                        <SelectItem value="basico">Plano Básico</SelectItem>
+                        <SelectItem value="intermediario">Plano Intermediário</SelectItem>
+                        <SelectItem value="premium">Plano Premium</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -183,22 +182,19 @@ const PlanContractForm = ({ form }: PlanContractFormProps) => {
 
               <FormField
                 control={form.control}
-                name="planDetails.dueDate"
+                name="planContract.compensationMode"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-purple-800 font-medium">Dia do Vencimento *</FormLabel>
+                    <FormLabel className="text-blue-800 font-medium">Modalidade de Compensação *</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
-                        <SelectTrigger className="border-purple-200 focus:border-purple-500 focus:ring-purple-500">
-                          <SelectValue placeholder="Dia do mês" />
+                        <SelectTrigger className="border-blue-200 focus:border-blue-500 focus:ring-blue-500">
+                          <SelectValue placeholder="Selecione a modalidade" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {Array.from({ length: 28 }, (_, i) => i + 1).map((day) => (
-                          <SelectItem key={day} value={day.toString()}>
-                            Dia {day}
-                          </SelectItem>
-                        ))}
+                        <SelectItem value="autoConsumption">Autoconsumo Remoto</SelectItem>
+                        <SelectItem value="sharedGeneration">Geração Compartilhada</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -208,27 +204,27 @@ const PlanContractForm = ({ form }: PlanContractFormProps) => {
             </div>
           </div>
 
-          {/* Data de Início */}
-          <div className="bg-gradient-to-r from-blue-50 to-cyan-50 p-6 rounded-xl border border-blue-100">
+          {/* Data de Início e kWh Informado */}
+          <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-6 rounded-xl border border-purple-100">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
+              <div className="w-8 h-8 bg-purple-500 rounded-lg flex items-center justify-center">
                 <Clock className="w-4 h-4 text-white" />
               </div>
-              <h4 className="text-lg font-semibold text-blue-900">Período do Contrato</h4>
+              <h4 className="text-lg font-semibold text-purple-900">Informações do Contrato</h4>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <FormField
                 control={form.control}
-                name="planDetails.startDate"
+                name="planContract.adhesionDate"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-blue-800 font-medium">Data de Início *</FormLabel>
+                    <FormLabel className="text-purple-800 font-medium">Data de Adesão *</FormLabel>
                     <FormControl>
                       <Input 
                         {...field} 
                         type="date"
-                        className="border-blue-200 focus:border-blue-500 focus:ring-blue-500"
+                        className="border-purple-200 focus:border-purple-500 focus:ring-purple-500"
                       />
                     </FormControl>
                     <FormMessage />
@@ -238,24 +234,19 @@ const PlanContractForm = ({ form }: PlanContractFormProps) => {
 
               <FormField
                 control={form.control}
-                name="planDetails.contractPeriod"
+                name="planContract.informedKwh"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-blue-800 font-medium">Período do Contrato (meses) *</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger className="border-blue-200 focus:border-blue-500 focus:ring-blue-500">
-                          <SelectValue placeholder="Selecione o período" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="12">12 meses</SelectItem>
-                        <SelectItem value="24">24 meses</SelectItem>
-                        <SelectItem value="36">36 meses</SelectItem>
-                        <SelectItem value="48">48 meses</SelectItem>
-                        <SelectItem value="60">60 meses</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <FormLabel className="text-purple-800 font-medium">kWh Informado *</FormLabel>
+                    <FormControl>
+                      <Input 
+                        {...field} 
+                        type="number"
+                        placeholder="Ex: 450"
+                        className="border-purple-200 focus:border-purple-500 focus:ring-purple-500"
+                        onChange={(e) => field.onChange(Number(e.target.value))}
+                      />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
