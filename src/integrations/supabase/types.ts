@@ -63,6 +63,36 @@ export type Database = {
         }
         Relationships: []
       }
+      faturas_pdf: {
+        Row: {
+          created_at: string
+          id: string
+          numero_fatura: string
+          pdf_combinado_url: string
+          pdf_customizado_url: string | null
+          pdf_original_url: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          numero_fatura: string
+          pdf_combinado_url: string
+          pdf_customizado_url?: string | null
+          pdf_original_url: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          numero_fatura?: string
+          pdf_combinado_url?: string
+          pdf_customizado_url?: string | null
+          pdf_original_url?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       faturas_validacao: {
         Row: {
           created_at: string

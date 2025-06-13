@@ -51,7 +51,7 @@ export const useFaturaPDF = () => {
       await saveFaturaPDF({
         numero_fatura: uc,
         pdf_original_url: fatura_url,
-        pdf_customizado_url: '', // Poderia salvar separadamente se necessário
+        pdf_customizado_url: null, // Poderia salvar separadamente se necessário
         pdf_combinado_url: pdfUrl
       });
 

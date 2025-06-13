@@ -8,7 +8,7 @@ export interface FaturaPDFData {
   id: string;
   numero_fatura: string;
   pdf_original_url: string;
-  pdf_customizado_url: string;
+  pdf_customizado_url: string | null;
   pdf_combinado_url: string;
   created_at: string;
   user_id: string;
@@ -89,9 +89,16 @@ export const combinePDFs = async (originalPdfUrl: string, customPdfBytes: Uint8A
 };
 
 export const uploadPDFToStorage = async (pdfBytes: Uint8Array, fileName: string): Promise<string> => {
+  const { data: user } = await supabase.auth.getUser();
+  if (!user.user) {
+    throw new Error('Usuário não autenticado');
+  }
+
+  const filePath = `${user.user.id}/${fileName}`;
+  
   const { data, error } = await supabase.storage
     .from('faturas')
-    .upload(`pdfs/${fileName}`, pdfBytes, {
+    .upload(filePath, pdfBytes, {
       contentType: 'application/pdf',
       upsert: true
     });
