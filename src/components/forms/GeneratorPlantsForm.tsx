@@ -1,4 +1,3 @@
-
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -12,7 +11,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { UseFormReturn, useFieldArray } from 'react-hook-form';
 import { GeneratorFormData } from '@/types/generator';
 import AddressForm from './AddressForm';
-import { Plus, Trash2, Calculator, CheckCircle, AlertTriangle, Info } from 'lucide-react';
+import { Plus, Trash2, Calculator, CheckCircle, AlertTriangle, Info, RefreshCw } from 'lucide-react';
 import { useEffect } from 'react';
 import { useGeneratorCalculations } from '@/hooks/useGeneratorCalculations';
 import { useGeneratorValidations } from '@/hooks/useGeneratorValidations';
@@ -200,14 +199,22 @@ const PlantForm = ({ form, plantIndex, onRemove, canRemove, concessionaria }: Pl
     }
   }, [inversores, form, plantIndex, potenciaTotalInversores]);
 
-  useEffect(() => {
+  // Função para recalcular geração automaticamente
+  const recalculateGeneration = () => {
     if (potenciaTotalUsina && estado) {
       const generation = estimateGeneration(potenciaTotalUsina, estado);
-      if (generation.estimatedGeneration !== geracaoProjetada) {
-        form.setValue(`plants.${plantIndex}.geracaoProjetada`, generation.estimatedGeneration);
-      }
+      form.setValue(`plants.${plantIndex}.geracaoProjetada`, generation.estimatedGeneration);
+      console.log('🔄 [GENERATION CALC] Geração recalculada:', generation.estimatedGeneration, 'kWh/mês');
     }
-  }, [potenciaTotalUsina, estado, form, plantIndex, estimateGeneration]);
+  };
+
+  // Auto-recalcular apenas quando potência ou estado mudarem (não forçar sempre)
+  useEffect(() => {
+    if (potenciaTotalUsina && estado && geracaoProjetada === 0) {
+      // Só calcular automaticamente se a geração estiver zerada
+      recalculateGeneration();
+    }
+  }, [potenciaTotalUsina, estado]);
 
   // Validações em tempo real
   const ucValidation = uc && concessionaria ? validateUC(uc, concessionaria) : { isValid: true, message: '' };
@@ -785,7 +792,7 @@ const PlantForm = ({ form, plantIndex, onRemove, canRemove, concessionaria }: Pl
           </div>
         </div>
 
-        {/* Geração e Observações */}
+        {/* Geração e Observações - ATUALIZADO */}
         <div className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormField
@@ -797,14 +804,28 @@ const PlantForm = ({ form, plantIndex, onRemove, canRemove, concessionaria }: Pl
                   <FormControl>
                     <div className="relative">
                       <Input 
+                        type="number"
                         {...field} 
-                        value={field.value ? field.value.toLocaleString('pt-BR') : '0'}
-                        readOnly
-                        className="bg-gray-50"
+                        onChange={(e) => field.onChange(Number(e.target.value) || 0)}
+                        value={field.value || ''}
+                        placeholder="Digite ou use o botão para calcular"
+                        className="pr-12"
                       />
-                      <Calculator className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={recalculateGeneration}
+                        className="absolute right-1 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0 hover:bg-blue-50"
+                        title="Recalcular automaticamente"
+                      >
+                        <RefreshCw className="w-4 h-4 text-blue-600" />
+                      </Button>
                     </div>
                   </FormControl>
+                  <div className="text-xs text-gray-500 mt-1">
+                    Fórmula: Potência × Irradiância × 30 dias × 0.8 (fator de performance)
+                  </div>
                   <FormMessage />
                 </FormItem>
               )}
