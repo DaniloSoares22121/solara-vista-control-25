@@ -63,32 +63,15 @@ export const useGeneratorValidations = () => {
   const validateUC = useCallback((uc: string, concessionaria: string): { isValid: boolean; message: string } => {
     const cleanUc = uc.replace(/\D/g, '');
     
-    // Validações básicas por concessionária
-    const validationRules: Record<string, { length: number; format: RegExp }> = {
-      'equatorial-goias': { length: 14, format: /^\d{14}$/ },
-      'celg': { length: 14, format: /^\d{14}$/ },
-      'enel-goias': { length: 14, format: /^\d{14}$/ }
-    };
-    
-    const rule = validationRules[concessionaria];
-    if (!rule) {
-      return { isValid: true, message: '' }; // Concessionária não mapeada
-    }
-    
-    if (cleanUc.length !== rule.length) {
+    // Validação básica - apenas verificar se não está vazio
+    if (cleanUc.length === 0) {
       return { 
         isValid: false, 
-        message: `UC deve ter ${rule.length} dígitos para esta concessionária.` 
+        message: 'UC é obrigatória.' 
       };
     }
     
-    if (!rule.format.test(cleanUc)) {
-      return { 
-        isValid: false, 
-        message: 'Formato de UC inválido para esta concessionária.' 
-      };
-    }
-    
+    // Remover validações específicas de formato e comprimento
     return { isValid: true, message: 'UC válida.' };
   }, []);
 
