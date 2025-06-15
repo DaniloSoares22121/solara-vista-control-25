@@ -9,7 +9,6 @@ import Index from "./pages/Index";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import Assinantes from "./pages/dashboard/Assinantes";
-import NovaGeradora from "./pages/dashboard/NovaGeradora";
 import Geradoras from "./pages/dashboard/Geradoras";
 import Representantes from "./pages/dashboard/Representantes";
 import FaturaUnica from "./pages/dashboard/FaturaUnica";
@@ -34,7 +33,6 @@ function App() {
               <Route path="/dashboard" element={<Dashboard />}>
                 <Route index element={<Assinantes />} />
                 <Route path="assinantes" element={<Assinantes />} />
-                <Route path="nova-geradora" element={<NovaGeradora />} />
                 <Route path="geradoras" element={<Geradoras />} />
                 <Route path="representantes" element={<Representantes />} />
                 <Route path="fatura-unica" element={<FaturaUnica />} />
