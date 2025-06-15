@@ -1,316 +1,140 @@
 
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Upload, FileText, Loader2, CheckCircle, X } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { Label } from '@/components/ui/label';
+import { Upload, CheckCircle2, User, FileText } from 'lucide-react';
+import { useSubscribers } from '@/hooks/useSubscribers'; // hook fictício (adapte se necessário)
+import { Badge } from '@/components/ui/badge';
 
-interface ExtractedData {
-  uc: string;
-  mesReferencia: string;
-  vencimento: string;
-  valorTotal: string;
-  consumoKwh: string;
-  demandaKw: string;
-  cliente: string;
-  endereco: string;
-  tipoTarifa: string;
-  grupo: string;
-}
+const subscriberListDummy = [
+  { id: '1', nome: 'João da Silva', uc: '12345', desconto: 10 },
+  { id: '2', nome: 'Maria dos Santos', uc: '67890', desconto: 5 },
+];
 
-const FaturaManual: React.FC = () => {
-  const [file, setFile] = useState<File | null>(null);
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [extractedData, setExtractedData] = useState<ExtractedData | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const { toast } = useToast();
+const FaturaManual = () => {
+  // Etapas: 1=selecionar assinante, 2=upload fatura, 3=confirmar dados
+  const [step, setStep] = useState<1 | 2 | 3>(1);
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = event.target.files?.[0];
-    if (!selectedFile) return;
+  // Dados da seleção
+  const [assinanteId, setAssinanteId] = useState<string>('');
+  const [assinante, setAssinante] = useState<{ id: string; nome: string; uc: string; desconto: number } | null>(null);
 
-    // Validar se é PDF
-    if (selectedFile.type !== 'application/pdf') {
-      setError('Por favor, selecione apenas arquivos PDF.');
-      return;
-    }
+  // Fatura lida (simulado)
+  const [faturaData, setFaturaData] = useState<{ valor: number; consumo: number } | null>(null);
 
-    // Validar tamanho (máx 10MB)
-    const maxSize = 10 * 1024 * 1024;
-    if (selectedFile.size > maxSize) {
-      setError('Arquivo muito grande. Máximo 10MB.');
-      return;
-    }
+  // USAR hook real, ou mock
+  const subscribers = subscriberListDummy;
 
-    setFile(selectedFile);
-    setError(null);
-    setExtractedData(null);
+  // Seleciona assinante
+  const handleAssinanteSelecionado = () => {
+    const sub = subscribers.find((s) => s.id === assinanteId);
+    setAssinante(sub || null);
+    setStep(2);
   };
 
-  const removeFile = () => {
-    setFile(null);
-    setExtractedData(null);
-    setError(null);
-    // Limpar o input
-    const fileInput = document.getElementById('pdf-upload') as HTMLInputElement;
-    if (fileInput) fileInput.value = '';
-  };
-
-  const extractDataFromPDF = async () => {
-    if (!file) return;
-
-    setIsProcessing(true);
-    setError(null);
-
-    try {
-      // Simular extração de dados (aqui você implementaria a lógica real de extração)
-      await new Promise(resolve => setTimeout(resolve, 2000));
-
-      // Dados simulados - em produção, isso viria da extração real do PDF
-      const mockData: ExtractedData = {
-        uc: '1234567890',
-        mesReferencia: 'Janeiro/2024',
-        vencimento: '15/02/2024',
-        valorTotal: 'R$ 245,67',
-        consumoKwh: '387 kWh',
-        demandaKw: '2,5 kW',
-        cliente: 'João Silva Santos',
-        endereco: 'Rua das Flores, 123 - Centro - São Luís/MA',
-        tipoTarifa: 'Convencional B1',
-        grupo: 'B1 - Residencial'
-      };
-
-      setExtractedData(mockData);
-      toast({
-        title: "Dados extraídos com sucesso!",
-        description: "Informações da fatura foram processadas.",
-      });
-
-    } catch (error) {
-      console.error('Erro ao extrair dados:', error);
-      setError('Erro ao processar o PDF. Tente novamente.');
-      toast({
-        title: "Erro ao processar fatura",
-        description: "Não foi possível extrair os dados do PDF.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsProcessing(false);
+  // Simula upload/parse da fatura
+  const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      // Simulando leitura de um PDF (fictício)
+      setTimeout(() => {
+        setFaturaData({
+          valor: 320.75,
+          consumo: 410,
+        });
+        setStep(3);
+      }, 1200);
     }
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex items-center gap-3 mb-6">
-        <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
-          <Upload className="w-5 h-5 text-white" />
-        </div>
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Fatura Manual</h1>
-          <p className="text-gray-600">Faça upload de uma fatura da Equatorial para extrair os dados</p>
-        </div>
-      </div>
-
-      {/* Upload Section */}
+    <div className="max-w-xl mx-auto mt-10 space-y-10 animate-fade-in">
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <FileText className="w-5 h-5" />
-            Upload da Fatura
+            <FileText className="w-6 h-6 text-blue-600" />
+            Fatura Manual
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          {!file ? (
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-gray-400 transition-colors">
-              <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <div className="space-y-2">
-                <Button
-                  onClick={() => document.getElementById('pdf-upload')?.click()}
-                  className="mb-2"
-                >
-                  <Upload className="w-4 h-4 mr-2" />
-                  Selecionar Fatura PDF
-                </Button>
-                <p className="text-sm text-gray-600">
-                  Clique para fazer upload da fatura da Equatorial
-                </p>
-                <p className="text-xs text-gray-500">
-                  Formato: PDF (máx. 10MB)
-                </p>
-              </div>
-              <Input
-                id="pdf-upload"
-                type="file"
-                accept=".pdf"
-                onChange={handleFileUpload}
-                className="hidden"
-              />
-            </div>
-          ) : (
-            <div className="border border-green-300 bg-green-50 rounded-lg p-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                    <FileText className="w-6 h-6 text-green-600" />
-                  </div>
-                  <div>
-                    <p className="font-medium text-gray-900">{file.name}</p>
-                    <p className="text-sm text-gray-500">
-                      {(file.size / 1024 / 1024).toFixed(2)} MB
-                    </p>
-                  </div>
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={removeFile}
-                  className="text-red-600 hover:text-red-700"
-                >
-                  <X className="w-4 h-4" />
-                </Button>
-              </div>
-            </div>
-          )}
-
-          {error && (
-            <Alert variant="destructive">
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
-
-          {file && !extractedData && (
-            <Button
-              onClick={extractDataFromPDF}
-              disabled={isProcessing}
-              className="w-full"
-            >
-              {isProcessing ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Extraindo dados...
-                </>
-              ) : (
-                <>
-                  <FileText className="w-4 h-4 mr-2" />
-                  Extrair Dados da Fatura
-                </>
-              )}
-            </Button>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Extracted Data Section */}
-      {extractedData && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-green-700">
-              <CheckCircle className="w-5 h-5" />
-              Dados Extraídos
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-4">
-                <div>
-                  <label className="text-sm font-medium text-gray-700">UC (Unidade Consumidora)</label>
-                  <p className="text-gray-900 font-mono bg-gray-50 p-2 rounded border">
-                    {extractedData.uc}
-                  </p>
-                </div>
-                
-                <div>
-                  <label className="text-sm font-medium text-gray-700">Cliente</label>
-                  <p className="text-gray-900 bg-gray-50 p-2 rounded border">
-                    {extractedData.cliente}
-                  </p>
-                </div>
-
-                <div>
-                  <label className="text-sm font-medium text-gray-700">Endereço</label>
-                  <p className="text-gray-900 bg-gray-50 p-2 rounded border">
-                    {extractedData.endereco}
-                  </p>
-                </div>
-
-                <div>
-                  <label className="text-sm font-medium text-gray-700">Mês de Referência</label>
-                  <p className="text-gray-900 bg-gray-50 p-2 rounded border">
-                    {extractedData.mesReferencia}
-                  </p>
-                </div>
-
-                <div>
-                  <label className="text-sm font-medium text-gray-700">Vencimento</label>
-                  <p className="text-gray-900 bg-gray-50 p-2 rounded border">
-                    {extractedData.vencimento}
-                  </p>
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <div>
-                  <label className="text-sm font-medium text-gray-700">Valor Total</label>
-                  <p className="text-gray-900 font-semibold text-lg bg-blue-50 p-2 rounded border border-blue-200">
-                    {extractedData.valorTotal}
-                  </p>
-                </div>
-
-                <div>
-                  <label className="text-sm font-medium text-gray-700">Consumo</label>
-                  <p className="text-gray-900 bg-gray-50 p-2 rounded border">
-                    {extractedData.consumoKwh}
-                  </p>
-                </div>
-
-                <div>
-                  <label className="text-sm font-medium text-gray-700">Demanda</label>
-                  <p className="text-gray-900 bg-gray-50 p-2 rounded border">
-                    {extractedData.demandaKw}
-                  </p>
-                </div>
-
-                <div>
-                  <label className="text-sm font-medium text-gray-700">Tipo de Tarifa</label>
-                  <p className="text-gray-900 bg-gray-50 p-2 rounded border">
-                    {extractedData.tipoTarifa}
-                  </p>
-                </div>
-
-                <div>
-                  <label className="text-sm font-medium text-gray-700">Grupo</label>
-                  <p className="text-gray-900 bg-gray-50 p-2 rounded border">
-                    {extractedData.grupo}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-6 flex gap-3">
-              <Button className="flex-1">
-                <CheckCircle className="w-4 h-4 mr-2" />
-                Salvar Dados
-              </Button>
-              <Button variant="outline" onClick={() => setExtractedData(null)}>
-                Processar Nova Fatura
+        <CardContent>
+          {step === 1 && (
+            <div className="space-y-6">
+              <Label className="font-semibold mb-2">Selecione um assinante:</Label>
+              <select
+                className="w-full border px-4 py-2 rounded-lg"
+                value={assinanteId}
+                onChange={e => setAssinanteId(e.target.value)}
+              >
+                <option value="">Selecione o assinante...</option>
+                {subscribers.map(sub => (
+                  <option value={sub.id} key={sub.id}>{sub.nome} • UC: {sub.uc}</option>
+                ))}
+              </select>
+              <Button
+                className="w-full mt-3"
+                disabled={!assinanteId}
+                onClick={handleAssinanteSelecionado}
+              >
+                <CheckCircle2 className="w-4 h-4 mr-2" />
+                Continuar
               </Button>
             </div>
-          </CardContent>
-        </Card>
-      )}
+          )}
 
-      {/* Info Section */}
-      <Card className="bg-blue-50 border-blue-200">
-        <CardContent className="p-4">
-          <h4 className="font-medium text-blue-900 mb-2">📋 Informações Importantes</h4>
-          <div className="text-sm text-blue-800 space-y-1">
-            <p><strong>Formato aceito:</strong> Apenas arquivos PDF</p>
-            <p><strong>Tamanho máximo:</strong> 10MB por arquivo</p>
-            <p><strong>Distribuidora:</strong> Faturas da Equatorial Energia</p>
-            <p><strong>Qualidade:</strong> Certifique-se de que o PDF esteja legível e não seja uma imagem escaneada</p>
-          </div>
+          {step === 2 && assinante && (
+            <div className="space-y-6">
+              <div className="flex items-center gap-3 mb-3">
+                <User className="text-green-700" />
+                <div>
+                  <div className="font-bold">{assinante.nome}</div>
+                  <div className="text-xs text-gray-500">UC: {assinante.uc} <Badge className="ml-1">{assinante.desconto}% desc.</Badge></div>
+                </div>
+              </div>
+              <Label htmlFor="faturaPdf" className="block font-semibold mb-1">Upload da Fatura PDF</Label>
+              <Input type="file" id="faturaPdf" accept="application/pdf" onChange={handleUpload} />
+              <Button type="button" variant="outline" className="mt-4" onClick={() => setStep(1)}>
+                Voltar
+              </Button>
+            </div>
+          )}
+
+          {step === 3 && assinante && faturaData && (
+            <div className="space-y-6">
+              <h3 className="text-lg font-bold text-blue-900">Dados extraídos da fatura</h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <span className="text-gray-700">Assinante:</span>
+                  <div className="font-semibold">{assinante.nome}</div>
+                </div>
+                <div>
+                  <span className="text-gray-700">UC:</span>
+                  <div className="font-semibold">{assinante.uc}</div>
+                </div>
+                <div>
+                  <span className="text-gray-700">Consumo:</span>
+                  <div className="font-semibold">{faturaData.consumo} kWh</div>
+                </div>
+                <div>
+                  <span className="text-gray-700">Valor (sem desconto):</span>
+                  <div className="font-semibold">R$ {faturaData.valor.toFixed(2)}</div>
+                </div>
+                <div>
+                  <span className="text-gray-700">Desconto plano:</span>
+                  <div className="font-semibold text-green-600">{assinante.desconto}%</div>
+                </div>
+                <div>
+                  <span className="text-gray-700">Valor com desconto:</span>
+                  <div className="font-semibold text-green-700">
+                    R$ {(faturaData.valor * (1 - assinante.desconto / 100)).toFixed(2)}
+                  </div>
+                </div>
+              </div>
+              <Button variant="outline" className="mt-3" onClick={() => setStep(2)}>
+                Voltar
+              </Button>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
