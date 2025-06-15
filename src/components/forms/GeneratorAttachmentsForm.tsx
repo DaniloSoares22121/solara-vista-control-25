@@ -1,3 +1,4 @@
+
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -5,7 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { UseFormReturn } from 'react-hook-form';
 import { GeneratorFormData } from '@/types/generator';
 import { Upload, FileText, X, CheckCircle } from 'lucide-react';
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect } from 'react';
 
 interface GeneratorAttachmentsFormProps {
   form: UseFormReturn<GeneratorFormData>;
@@ -32,6 +33,7 @@ const GeneratorAttachmentsForm = ({ form }: GeneratorAttachmentsFormProps) => {
     conta: useRef<HTMLInputElement>(null),
     procuracao: useRef<HTMLInputElement>(null),
   };
+  type AttachmentFieldName = keyof typeof fileInputRefs;
 
   // Atualizar estado local a partir do formulário react-hook-form
   useEffect(() => {
@@ -63,15 +65,15 @@ const GeneratorAttachmentsForm = ({ form }: GeneratorAttachmentsFormProps) => {
   // agora observa também form.watch("attachments") para reacionar em tempo real
 
   // Upload handler: grava valor no form e força renderização
-  const handleFileUpload = async (fieldName: string, selectedFile: File | null) => {
+  const handleFileUpload = async (fieldName: AttachmentFieldName, selectedFile: File | null) => {
     if (!selectedFile) return;
 
     // Validação do tipo de arquivo (pdf/png/jpg/jpeg)
     const allowedTypes = ['application/pdf', 'image/png', 'image/jpeg', 'image/jpg'];
     if (!allowedTypes.includes(selectedFile.type)) {
       alert('Formato inválido. Use PDF, PNG ou JPG.');
-      if (fileInputRefs[fieldName as keyof typeof fileInputRefs].current) {
-        fileInputRefs[fieldName as keyof typeof fileInputRefs].current!.value = '';
+      if (fileInputRefs[fieldName].current) {
+        fileInputRefs[fieldName].current!.value = '';
       }
       return;
     }
@@ -80,8 +82,8 @@ const GeneratorAttachmentsForm = ({ form }: GeneratorAttachmentsFormProps) => {
     const maxSize = 10 * 1024 * 1024;
     if (selectedFile.size > maxSize) {
       alert('Arquivo muito grande. Máximo 10MB.');
-      if (fileInputRefs[fieldName as keyof typeof fileInputRefs].current) {
-        fileInputRefs[fieldName as keyof typeof fileInputRefs].current!.value = '';
+      if (fileInputRefs[fieldName].current) {
+        fileInputRefs[fieldName].current!.value = '';
       }
       return;
     }
@@ -108,7 +110,7 @@ const GeneratorAttachmentsForm = ({ form }: GeneratorAttachmentsFormProps) => {
     setForceUpdate((prev) => prev + 1);
   };
 
-  const removeFile = (fieldName: string) => {
+  const removeFile = (fieldName: AttachmentFieldName) => {
     // Apaga apenas o campo individual do form
     form.setValue(
       `attachments.${fieldName}`,
@@ -116,8 +118,8 @@ const GeneratorAttachmentsForm = ({ form }: GeneratorAttachmentsFormProps) => {
       { shouldValidate: true, shouldTouch: true, shouldDirty: true }
     );
     setForceUpdate((prev) => prev + 1);
-    if (fileInputRefs[fieldName as keyof typeof fileInputRefs].current) {
-      fileInputRefs[fieldName as keyof typeof fileInputRefs].current!.value = '';
+    if (fileInputRefs[fieldName].current) {
+      fileInputRefs[fieldName].current!.value = '';
     }
   };
 
@@ -126,7 +128,7 @@ const GeneratorAttachmentsForm = ({ form }: GeneratorAttachmentsFormProps) => {
     label,
     required = false,
   }: {
-    name: keyof typeof fileInputRefs;
+    name: AttachmentFieldName;
     label: string;
     required?: boolean;
   }) => {
