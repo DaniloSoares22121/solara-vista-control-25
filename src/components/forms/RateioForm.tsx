@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -24,13 +23,13 @@ const RateioForm: React.FC<RateioFormProps> = ({ onSubmit, onCancel }) => {
   const { 
     getGeradoras, 
     getAssinantes,
-    getAssinantesVinculados,
     validateRateio,
     calculateDistribuicao
   } = useRateio();
   const { subscribers, isLoading: assinantesLoading } = useSubscribers();
 
   const geradoras = getGeradoras();
+  // Buscar TODOS assinantes (não só os vinculados)
   const assinantes = getAssinantes();
 
   const [configuracao, setConfiguracao] = useState<RateioConfiguracao>({
@@ -63,20 +62,19 @@ const RateioForm: React.FC<RateioFormProps> = ({ onSubmit, onCancel }) => {
     }
   }, [configuracao.geradoraId, geradoras]);
 
-  // Só exibe assinantes vinculados após seleção da geradora
-  const assinantesVinculados = React.useMemo(() => {
-    if (!selectedGeradora) return [];
-    // Pega assinantes vinculados a esta geradora
-    return getAssinantesVinculados(selectedGeradora.id);
-  }, [selectedGeradora, getAssinantesVinculados]);
+  // Exibe TODOS assinantes disponíveis
+  const assinantesDisponiveis = assinantes;
 
-  // Quando marcar/desmarcar, atualiza os rateioItems (de acordo com checkboxes)
+  // Quando marcar/desmarcar, atualiza os rateioItems
   useEffect(() => {
     if (assinantesSelecionados.length > 0) {
-      const novos = assinantesVinculados
-        .filter(a => assinantesSelecionados.includes(a.assinanteId))
+      const novos = assinantesDisponiveis
+        .filter(a => assinantesSelecionados.includes(a.id))
         .map((assinante) => ({
-          ...assinante,
+          assinanteId: assinante.id,
+          nome: assinante.nome,
+          uc: assinante.uc,
+          consumoNumero: assinante.consumoNumero,
           porcentagem: configuracao.tipoRateio === 'porcentagem' ? 0 : undefined,
           prioridade: configuracao.tipoRateio === 'prioridade' ? undefined : undefined,
           isNew: true,
@@ -86,7 +84,7 @@ const RateioForm: React.FC<RateioFormProps> = ({ onSubmit, onCancel }) => {
       setRateioItems([]);
     }
     // eslint-disable-next-line
-  }, [assinantesSelecionados, configuracao.tipoRateio, assinantesVinculados]);
+  }, [assinantesSelecionados, configuracao.tipoRateio, assinantesDisponiveis]);
 
   // Validação ao modificar items
   useEffect(() => {
@@ -184,33 +182,33 @@ const RateioForm: React.FC<RateioFormProps> = ({ onSubmit, onCancel }) => {
               </>
             )}
 
-            {/* Etapa 2: Assinantes vinculados */}
+            {/* Etapa 2: Seleção e edição de assinantes */}
             {currentStep === 2 && (
               <>
                 <div className="mb-3 flex items-center gap-2">
                   <Button type="button" variant="outline" className="px-4 py-2" onClick={() => setCurrentStep(1)}>
                     <ArrowRight className="w-4 h-4 rotate-180 mr-2" /> Voltar
                   </Button>
-                  <h3 className="font-bold text-lg">Assinantes vinculados</h3>
+                  <h3 className="font-bold text-lg">Assinantes</h3>
                 </div>
                 <Label className="mb-2">Selecione os assinantes que vão receber energia desta geradora:</Label>
-                {assinantesVinculados.length === 0 && (
+                {assinantesDisponiveis.length === 0 && (
                   <div className="border border-dashed border-orange-300 bg-orange-50 rounded-xl px-4 py-4 text-center text-orange-700 font-semibold">
-                    Nenhum assinante está vinculado a esta geradora ainda.
+                    Nenhum assinante cadastrado ainda.
                   </div>
                 )}
-                {assinantesVinculados.length > 0 && (
-                  <div className="space-y-2">
-                    {assinantesVinculados.map(a => (
-                      <label key={a.assinanteId} className="flex items-center gap-3 p-2 rounded-lg hover:bg-blue-50 transition">
+                {assinantesDisponiveis.length > 0 && (
+                  <div className="space-y-2 max-h-60 overflow-y-auto">
+                    {assinantesDisponiveis.map(a => (
+                      <label key={a.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-blue-50 transition">
                         <input
                           type="checkbox"
-                          checked={assinantesSelecionados.includes(a.assinanteId)}
+                          checked={assinantesSelecionados.includes(a.id)}
                           onChange={e => {
                             setAssinantesSelecionados(prev =>
                               e.target.checked
-                                ? [...prev, a.assinanteId]
-                                : prev.filter(id => id !== a.assinanteId)
+                                ? [...prev, a.id]
+                                : prev.filter(id => id !== a.id)
                             );
                           }}
                           className="accent-blue-600 w-5 h-5"
