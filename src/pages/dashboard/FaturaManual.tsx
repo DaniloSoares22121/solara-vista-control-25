@@ -5,8 +5,13 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Upload, CheckCircle2, User, FileText } from 'lucide-react';
-import { useSubscribers } from '@/hooks/useSubscribers';
+import { useSubscribers } from '@/hooks/useSubscribers'; // hook fictício (adapte se necessário)
 import { Badge } from '@/components/ui/badge';
+
+const subscriberListDummy = [
+  { id: '1', nome: 'João da Silva', uc: '12345', desconto: 10 },
+  { id: '2', nome: 'Maria dos Santos', uc: '67890', desconto: 5 },
+];
 
 const FaturaManual = () => {
   // Etapas: 1=selecionar assinante, 2=upload fatura, 3=confirmar dados
@@ -19,26 +24,12 @@ const FaturaManual = () => {
   // Fatura lida (simulado)
   const [faturaData, setFaturaData] = useState<{ valor: number; consumo: number } | null>(null);
 
-  // Usar hook real dos assinantes
-  const { subscribers, isLoading } = useSubscribers();
-
-  // Mapear dados dos assinantes para o formato esperado
-  const subscribersFormatted = subscribers.map(sub => {
-    const subscriberData = sub.subscriber as any;
-    const energyAccount = sub.energy_account as any;
-    const planContract = sub.plan_contract as any;
-    
-    return {
-      id: sub.id,
-      nome: subscriberData?.fullName || subscriberData?.companyName || 'Nome não informado',
-      uc: energyAccount?.uc || 'UC não informada',
-      desconto: planContract?.discountPercentage || 0
-    };
-  });
+  // USAR hook real, ou mock
+  const subscribers = subscriberListDummy;
 
   // Seleciona assinante
   const handleAssinanteSelecionado = () => {
-    const sub = subscribersFormatted.find((s) => s.id === assinanteId);
+    const sub = subscribers.find((s) => s.id === assinanteId);
     setAssinante(sub || null);
     setStep(2);
   };
@@ -57,18 +48,6 @@ const FaturaManual = () => {
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="max-w-xl mx-auto mt-10">
-        <Card>
-          <CardContent className="p-6">
-            <div className="text-center">Carregando assinantes...</div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
   return (
     <div className="max-w-xl mx-auto mt-10 space-y-10 animate-fade-in">
       <Card>
@@ -82,22 +61,16 @@ const FaturaManual = () => {
           {step === 1 && (
             <div className="space-y-6">
               <Label className="font-semibold mb-2">Selecione um assinante:</Label>
-              {subscribersFormatted.length === 0 ? (
-                <div className="border border-dashed border-orange-300 bg-orange-50 rounded-xl px-4 py-4 text-center text-orange-700 font-semibold">
-                  Nenhum assinante cadastrado ainda.
-                </div>
-              ) : (
-                <select
-                  className="w-full border px-4 py-2 rounded-lg"
-                  value={assinanteId}
-                  onChange={e => setAssinanteId(e.target.value)}
-                >
-                  <option value="">Selecione o assinante...</option>
-                  {subscribersFormatted.map(sub => (
-                    <option value={sub.id} key={sub.id}>{sub.nome} • UC: {sub.uc}</option>
-                  ))}
-                </select>
-              )}
+              <select
+                className="w-full border px-4 py-2 rounded-lg"
+                value={assinanteId}
+                onChange={e => setAssinanteId(e.target.value)}
+              >
+                <option value="">Selecione o assinante...</option>
+                {subscribers.map(sub => (
+                  <option value={sub.id} key={sub.id}>{sub.nome} • UC: {sub.uc}</option>
+                ))}
+              </select>
               <Button
                 className="w-full mt-3"
                 disabled={!assinanteId}
