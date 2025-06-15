@@ -10,7 +10,7 @@ import GeneratorDetails from '@/components/GeneratorDetails';
 import NovaGeradora from '@/pages/dashboard/NovaGeradora';
 
 const Geradoras = () => {
-  const { generators, loading, deleteGenerator, refreshGenerators } = useGenerators();
+  const { generators, loading, deleteGenerator } = useGenerators();
   const [selectedGenerator, setSelectedGenerator] = useState<any>(null);
   const [showNewGeneratorForm, setShowNewGeneratorForm] = useState(false);
   const [editingGenerator, setEditingGenerator] = useState<any>(null);
@@ -30,12 +30,6 @@ const Geradoras = () => {
 
   const handleCloseDetails = () => {
     setSelectedGenerator(null);
-  };
-
-  const handleNewGeneratorSuccess = () => {
-    refreshGenerators();
-    setShowNewGeneratorForm(false);
-    setEditingGenerator(null);
   };
 
   const handleCloseForm = () => {

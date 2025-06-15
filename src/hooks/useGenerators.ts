@@ -36,8 +36,8 @@ export const useGenerators = () => {
       const newGenerator = await supabaseGeneratorService.createGenerator(generatorData);
       console.log('✅ [HOOK] Geradora criada com sucesso:', newGenerator);
       
-      // Atualizar a lista imediatamente após criação
-      setGenerators(prevGenerators => [newGenerator, ...prevGenerators]);
+      // NÃO adicionar localmente aqui - deixar o realtime fazer isso
+      // O realtime vai capturar o INSERT e adicionar automaticamente
       
       return newGenerator;
     } catch (err) {
@@ -54,8 +54,7 @@ export const useGenerators = () => {
     
     try {
       await supabaseGeneratorService.deleteGenerator(id);
-      // Atualizar a lista imediatamente após exclusão
-      setGenerators(prevGenerators => prevGenerators.filter(gen => gen.id !== id));
+      // NÃO remover localmente aqui - deixar o realtime fazer isso
       console.log('✅ [HOOK] Geradora excluída com sucesso');
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Erro ao excluir geradora';
@@ -71,10 +70,7 @@ export const useGenerators = () => {
     
     try {
       const updatedGenerator = await supabaseGeneratorService.updateGenerator(id, generatorData);
-      // Atualizar a lista imediatamente após atualização
-      setGenerators(prevGenerators => 
-        prevGenerators.map(gen => gen.id === id ? updatedGenerator : gen)
-      );
+      // NÃO atualizar localmente aqui - deixar o realtime fazer isso
       console.log('✅ [HOOK] Geradora atualizada com sucesso:', updatedGenerator);
       return updatedGenerator;
     } catch (err) {
@@ -114,8 +110,10 @@ export const useGenerators = () => {
             // Verificar se a geradora já existe na lista
             const exists = prev.some(gen => gen.id === payload.new.id);
             if (!exists) {
+              console.log('📝 [REALTIME] Adicionando nova geradora à lista');
               return [payload.new, ...prev];
             }
+            console.log('⚠️ [REALTIME] Geradora já existe na lista, ignorando');
             return prev;
           });
         }
@@ -129,7 +127,11 @@ export const useGenerators = () => {
         },
         (payload) => {
           console.log('✅ [REALTIME] Geradora atualizada:', payload.new);
-          setGenerators(prev => prev.map(gen => gen.id === payload.new.id ? payload.new : gen));
+          setGenerators(prev => {
+            const updated = prev.map(gen => gen.id === payload.new.id ? payload.new : gen);
+            console.log('📝 [REALTIME] Lista atualizada após UPDATE');
+            return updated;
+          });
         }
       )
       .on(
@@ -141,7 +143,11 @@ export const useGenerators = () => {
         },
         (payload) => {
           console.log('✅ [REALTIME] Geradora excluída:', payload.old);
-          setGenerators(prev => prev.filter(gen => gen.id !== payload.old.id));
+          setGenerators(prev => {
+            const filtered = prev.filter(gen => gen.id !== payload.old.id);
+            console.log('📝 [REALTIME] Lista atualizada após DELETE');
+            return filtered;
+          });
         }
       );
 
