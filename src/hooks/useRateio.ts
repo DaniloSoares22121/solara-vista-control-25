@@ -27,11 +27,21 @@ export const useRateio = () => {
         setGeradoras(
           (generatorsData || []).map((g: any) => ({
             id: g.id,
-            apelido: g.plants && Array.isArray(g.plants) && g.plants.length > 0 ? g.plants[0].apelido : g.id,
-            uc: g.plants && Array.isArray(g.plants) && g.plants.length > 0 ? g.plants[0].uc : '',
-            geracao: g.plants && Array.isArray(g.plants) && g.plants.length > 0 ? g.plants[0].geracao : '0 kWh',
-            geracaoNumero: g.plants && Array.isArray(g.plants) && g.plants.length > 0 ? Number(g.plants[0].geracaoNumero) : 0,
-            percentualAlocado: g.plants && Array.isArray(g.plants) && g.plants.length > 0 ? Number(g.plants[0].percentualAlocado) : 0,
+            apelido: g.plants && Array.isArray(g.plants) && g.plants.length > 0 && g.plants[0].apelido
+              ? g.plants[0].apelido
+              : g.id,
+            uc: g.plants && Array.isArray(g.plants) && g.plants.length > 0 && g.plants[0].uc
+              ? g.plants[0].uc
+              : '',
+            geracao: g.plants && Array.isArray(g.plants) && g.plants.length > 0 && g.plants[0].geracao
+              ? g.plants[0].geracao
+              : '0 kWh',
+            geracaoNumero: g.plants && Array.isArray(g.plants) && g.plants.length > 0 && g.plants[0].geracaoNumero
+              ? Number(g.plants[0].geracaoNumero)
+              : 0,
+            percentualAlocado: g.plants && Array.isArray(g.plants) && g.plants.length > 0 && g.plants[0].percentualAlocado
+              ? Number(g.plants[0].percentualAlocado)
+              : 0,
             concessionaria: g.concessionaria || '',
           }))
         );
@@ -43,45 +53,52 @@ export const useRateio = () => {
         if (subErr) throw new Error('Erro ao buscar assinantes');
 
         setAssinantes(
-          (subscribersData || []).map((a: any) => {
-            // Tenta extrair os campos do objeto a.subscriber/plan_details/etc
-            let nome = '';
-            let uc = '';
-            let consumoContratado = '';
-            let consumoNumero = 0;
-            let creditoAcumulado = '';
-            let concessionaria = a.concessionaria || '';
-            // muitos campos costumam vir "dentro" do json subscriber ou plan_details...
-            if (a.subscriber && typeof a.subscriber === 'object') {
-              nome = a.subscriber.nome || '';
-              uc = a.subscriber.uc || '';
-            }
-            if (a.plan_details && typeof a.plan_details === 'object') {
-              consumoContratado = a.plan_details.consumoContratado || '';
-              consumoNumero = Number(a.plan_details.consumoNumero) || 0;
-            }
-            if (a.energy_account && typeof a.energy_account === 'object') {
-              creditoAcumulado = a.energy_account.creditoAcumulado || '';
-            }
-            return {
-              id: a.id,
-              nome: nome,
-              uc: uc,
-              consumoContratado,
-              consumoNumero,
-              creditoAcumulado,
-              concessionaria,
-            };
-          })
+          (subscribersData || [])
+            .map((a: any) => {
+              // Defensive parse para pegar sempre nome/uc do JSON, senão mantém string vazia
+              let nome = '';
+              let uc = '';
+              let consumoContratado = '';
+              let consumoNumero = 0;
+              let creditoAcumulado = '';
+              let concessionaria = a.concessionaria || '';
+
+              if (a.subscriber && typeof a.subscriber === 'object') {
+                nome = a.subscriber.nome ?? '';
+                uc = a.subscriber.uc ?? '';
+              }
+              if (a.plan_details && typeof a.plan_details === 'object') {
+                consumoContratado = a.plan_details.consumoContratado ?? '';
+                consumoNumero = Number(a.plan_details.consumoNumero) || 0;
+              }
+              if (a.energy_account && typeof a.energy_account === 'object') {
+                creditoAcumulado = a.energy_account.creditoAcumulado ?? '';
+              }
+
+              // fallback para id visível
+              if (!nome && a.id) nome = a.id;
+              if (!uc) uc = '';
+
+              // Se não há nome ou uc, ignora este assinante
+              if (!nome || !uc) return null;
+
+              return {
+                id: a.id,
+                nome,
+                uc,
+                consumoContratado,
+                consumoNumero,
+                creditoAcumulado,
+                concessionaria,
+              };
+            })
+            .filter(Boolean) // Remove assinantes vazios
         );
 
-        // Vinculos: neste exemplo, sem endpoint específico para a relação, deixo vazio
         setVinculos([]);
-
         // Rateios do banco
         const rateiosFromDb = await supabaseRateioService.getRateios();
         setRateios(rateiosFromDb);
-
         setError(null);
       } catch (err) {
         setError('Erro ao carregar dados do Supabase');
@@ -98,9 +115,7 @@ export const useRateio = () => {
   const getGeradoras = () => geradoras;
   const getAssinantes = () => assinantes;
 
-  // Retorna os assinantes já vinculados (mock minimizado: não há vinculos RDB no banco, só rateios prévios)
   const getAssinantesVinculados = (geradoraId: string) => {
-    // Sugestão: usar rateios existentes para sugerir últimos vínculos
     const rateioParaGeradora = rateios.find(r => r.geradoraId === geradoraId);
     if (rateioParaGeradora && rateioParaGeradora.assinantes.length) {
       return rateioParaGeradora.assinantes.map(item => ({
@@ -126,17 +141,13 @@ export const useRateio = () => {
 
     if (tipoRateio === "porcentagem") {
       const totalPercentual = rateioItems.reduce((sum, item) => sum + (item.porcentagem || 0), 0);
-      
       if (totalPercentual > 100) {
         errors.push(`Total de ${totalPercentual.toFixed(1)}% excede 100%. Ajuste as porcentagens.`);
       }
-      
       if (totalPercentual < 50) {
         warnings.push(`Apenas ${totalPercentual.toFixed(1)}% da energia será distribuída. Considere adicionar mais assinantes.`);
       }
-
       const energiaSobra = geracaoEsperada * (100 - totalPercentual) / 100;
-      
       return {
         isValid: errors.length === 0,
         errors,
@@ -203,12 +214,10 @@ export const useRateio = () => {
         data.configuracao.tipoRateio,
         data.configuracao.geracaoEsperada
       );
-
       const formDataWithCalculations = {
         ...data,
         rateioItems: rateioCalculado
       };
-
       const result = await supabaseRateioService.createRateio(formDataWithCalculations);
       if (result.success && result.data) {
         setRateios(prev => [result.data!, ...prev]);
