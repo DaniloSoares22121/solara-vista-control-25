@@ -3,7 +3,6 @@ import { NavLink } from 'react-router-dom';
 import { 
   LayoutDashboard, 
   Users, 
-  Calculator, 
   Zap, 
   FileText, 
   FileCheck, 
@@ -30,7 +29,6 @@ import {
 const menuItems = [
   { title: 'Dashboard', url: '/dashboard', icon: LayoutDashboard },
   { title: 'Assinantes', url: '/dashboard/assinantes', icon: Users },
-  { title: 'Cadastrar rateio', url: '/dashboard/rateio', icon: Calculator },
   { title: 'Geradoras', url: '/dashboard/geradoras', icon: Zap },
   { title: 'Fatura única', url: '/dashboard/fatura-unica', icon: FileText },
   { title: 'Fatura Manual', url: '/dashboard/fatura-manual', icon: Upload },
