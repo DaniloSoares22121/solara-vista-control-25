@@ -442,9 +442,17 @@ const RateioForm: React.FC<RateioFormProps> = ({ onSubmit, onCancel }) => {
                         <TableBody>
                           {rateioItems.map((item) => (
                             <TableRow key={item.assinanteId} className="hover:bg-gray-50">
-                              <TableCell className="font-medium">{item.nome}</TableCell>
+                              {/* Assinante Nome + UC com destaque */}
+                              <TableCell>
+                                <div className="flex flex-col">
+                                  <span className="font-semibold text-gray-900 text-base">{item.nome}</span>
+                                  <span className="text-xs text-gray-500">UC: {item.uc}</span>
+                                </div>
+                              </TableCell>
                               <TableCell className="font-mono">{item.uc}</TableCell>
-                              <TableCell>{item.consumoNumero.toLocaleString()} kWh</TableCell>
+                              <TableCell>
+                                <span className="font-medium text-gray-800">{item.consumoNumero.toLocaleString()} kWh</span>
+                              </TableCell>
                               <TableCell>
                                 <Input 
                                   type="number"
