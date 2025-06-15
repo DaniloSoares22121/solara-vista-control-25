@@ -2,123 +2,118 @@
 import { useState, useEffect } from 'react';
 import { RateioData, RateioFormData, Geradora, Assinante, VinculoData, RateioValidation } from '@/types/rateio';
 import { supabaseRateioService } from '@/services/supabaseRateioService';
+import { supabase } from '@/integrations/supabase/client';
 
 export const useRateio = () => {
   const [rateios, setRateios] = useState<RateioData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Dados mockados para desenvolvimento
-  const [geradoras] = useState<Geradora[]>([
-    {
-      id: "ger1",
-      apelido: "Solar Fazenda Norte",
-      uc: "12345678",
-      geracao: "15.000 kWh",
-      geracaoNumero: 15000,
-      percentualAlocado: 75.5,
-      concessionaria: "CEMIG"
-    },
-    {
-      id: "ger2", 
-      apelido: "Solar Rio Verde",
-      uc: "87654321",
-      geracao: "8.500 kWh",
-      geracaoNumero: 8500,
-      percentualAlocado: 45.0,
-      concessionaria: "CPFL"
-    }
-  ]);
+  const [geradoras, setGeradoras] = useState<Geradora[]>([]);
+  const [assinantes, setAssinantes] = useState<Assinante[]>([]);
+  const [vinculos, setVinculos] = useState<VinculoData[]>([]);
 
-  const [assinantes] = useState<Assinante[]>([
-    {
-      id: "ass1",
-      nome: "João Silva",
-      uc: "11111111",
-      consumoContratado: "500 kWh",
-      consumoNumero: 500,
-      creditoAcumulado: "100 kWh",
-      concessionaria: "CEMIG"
-    },
-    {
-      id: "ass2",
-      nome: "Maria Santos", 
-      uc: "22222222",
-      consumoContratado: "300 kWh",
-      consumoNumero: 300,
-      creditoAcumulado: "50 kWh",
-      concessionaria: "CEMIG"
-    },
-    {
-      id: "ass3",
-      nome: "Carlos Oliveira",
-      uc: "33333333", 
-      consumoContratado: "800 kWh",
-      consumoNumero: 800,
-      creditoAcumulado: "200 kWh",
-      concessionaria: "CPFL"
-    }
-  ]);
-
-  const [vinculos] = useState<VinculoData[]>([
-    {
-      geradoraId: "ger1",
-      assinanteId: "ass1",
-      tipoRateio: "porcentagem",
-      valorRateio: 50,
-      percentualAlocacao: 50,
-      status: "ativo"
-    },
-    {
-      geradoraId: "ger1", 
-      assinanteId: "ass2",
-      tipoRateio: "porcentagem",
-      valorRateio: 25.5,
-      percentualAlocacao: 25.5,
-      status: "ativo"
-    }
-  ]);
-
+  // Carregar dados do Supabase ao montar
   useEffect(() => {
-    const loadRateios = async () => {
+    const fetchData = async () => {
+      setIsLoading(true);
       try {
-        setIsLoading(true);
-        console.log('🔄 [RATEIO] Carregando rateios do banco...');
-        const data = await supabaseRateioService.getRateios();
-        setRateios(data);
+        // Buscar geradoras
+        const { data: generatorsData, error: genErr } = await supabase
+          .from('generators')
+          .select('*');
+        if (genErr) throw new Error('Erro ao buscar geradoras');
+
+        setGeradoras(
+          (generatorsData || []).map((g: any) => ({
+            id: g.id,
+            apelido: g.plants && Array.isArray(g.plants) && g.plants.length > 0 ? g.plants[0].apelido : g.id,
+            uc: g.plants && Array.isArray(g.plants) && g.plants.length > 0 ? g.plants[0].uc : '',
+            geracao: g.plants && Array.isArray(g.plants) && g.plants.length > 0 ? g.plants[0].geracao : '0 kWh',
+            geracaoNumero: g.plants && Array.isArray(g.plants) && g.plants.length > 0 ? Number(g.plants[0].geracaoNumero) : 0,
+            percentualAlocado: g.plants && Array.isArray(g.plants) && g.plants.length > 0 ? Number(g.plants[0].percentualAlocado) : 0,
+            concessionaria: g.concessionaria || '',
+          }))
+        );
+
+        // Buscar assinantes
+        const { data: subscribersData, error: subErr } = await supabase
+          .from('subscribers')
+          .select('*');
+        if (subErr) throw new Error('Erro ao buscar assinantes');
+
+        setAssinantes(
+          (subscribersData || []).map((a: any) => {
+            // Tenta extrair os campos do objeto a.subscriber/plan_details/etc
+            let nome = '';
+            let uc = '';
+            let consumoContratado = '';
+            let consumoNumero = 0;
+            let creditoAcumulado = '';
+            let concessionaria = a.concessionaria || '';
+            // muitos campos costumam vir "dentro" do json subscriber ou plan_details...
+            if (a.subscriber && typeof a.subscriber === 'object') {
+              nome = a.subscriber.nome || '';
+              uc = a.subscriber.uc || '';
+            }
+            if (a.plan_details && typeof a.plan_details === 'object') {
+              consumoContratado = a.plan_details.consumoContratado || '';
+              consumoNumero = Number(a.plan_details.consumoNumero) || 0;
+            }
+            if (a.energy_account && typeof a.energy_account === 'object') {
+              creditoAcumulado = a.energy_account.creditoAcumulado || '';
+            }
+            return {
+              id: a.id,
+              nome: nome,
+              uc: uc,
+              consumoContratado,
+              consumoNumero,
+              creditoAcumulado,
+              concessionaria,
+            };
+          })
+        );
+
+        // Vinculos: neste exemplo, sem endpoint específico para a relação, deixo vazio
+        setVinculos([]);
+
+        // Rateios do banco
+        const rateiosFromDb = await supabaseRateioService.getRateios();
+        setRateios(rateiosFromDb);
+
         setError(null);
-        console.log('✅ [RATEIO] Rateios carregados:', data.length);
       } catch (err) {
-        console.error('❌ [RATEIO] Erro ao carregar rateios:', err);
-        setError('Erro ao carregar rateios');
+        setError('Erro ao carregar dados do Supabase');
+        setGeradoras([]);
+        setAssinantes([]);
+        setVinculos([]);
       } finally {
         setIsLoading(false);
       }
     };
-
-    loadRateios();
+    fetchData();
   }, []);
 
   const getGeradoras = () => geradoras;
-  
   const getAssinantes = () => assinantes;
 
+  // Retorna os assinantes já vinculados (mock minimizado: não há vinculos RDB no banco, só rateios prévios)
   const getAssinantesVinculados = (geradoraId: string) => {
-    const vinculosAtivos = vinculos.filter(v => v.geradoraId === geradoraId && v.status === "ativo");
-    return vinculosAtivos.map(vinculo => {
-      const assinante = assinantes.find(a => a.id === vinculo.assinanteId);
-      if (!assinante) return null;
-      
-      return {
-        assinanteId: assinante.id,
-        nome: assinante.nome,
-        uc: assinante.uc,
-        consumoNumero: assinante.consumoNumero,
-        porcentagem: vinculo.tipoRateio === "porcentagem" ? vinculo.valorRateio : undefined,
-        prioridade: vinculo.tipoRateio === "prioridade" ? vinculo.valorRateio : undefined,
-        isNew: false
-      };
-    }).filter(Boolean);
+    // Sugestão: usar rateios existentes para sugerir últimos vínculos
+    const rateioParaGeradora = rateios.find(r => r.geradoraId === geradoraId);
+    if (rateioParaGeradora && rateioParaGeradora.assinantes.length) {
+      return rateioParaGeradora.assinantes.map(item => ({
+        assinanteId: item.assinanteId,
+        nome: item.nome,
+        uc: item.uc,
+        consumoNumero: item.consumoNumero,
+        porcentagem: item.porcentagem,
+        prioridade: item.prioridade,
+        isNew: false,
+      }));
+    }
+    return [];
   };
 
   const validateRateio = (
@@ -150,23 +145,17 @@ export const useRateio = () => {
         energiaSobra
       };
     } else {
-      // Validação para rateio por prioridade
       const prioridades = rateioItems.map(item => item.prioridade).filter(p => p !== undefined).sort((a, b) => a - b);
-      
-      // Verificar sequência
       for (let i = 0; i < prioridades.length; i++) {
         if (prioridades[i] !== i + 1) {
           errors.push("As prioridades devem ser sequenciais (1, 2, 3...)");
           break;
         }
       }
-
-      // Verificar duplicatas
       const prioridadeSet = new Set(prioridades);
       if (prioridadeSet.size !== prioridades.length) {
         errors.push("Não pode haver prioridades duplicadas");
       }
-
       return {
         isValid: errors.length === 0,
         errors,
@@ -186,14 +175,11 @@ export const useRateio = () => {
         valorAlocado: Math.round(geracaoEsperada * (item.porcentagem || 0) / 100)
       }));
     } else {
-      // Rateio por prioridade - distribuir sequencialmente
       const itemsOrdenados = [...rateioItems].sort((a, b) => (a.prioridade || 0) - (b.prioridade || 0));
       let energiaRestante = geracaoEsperada;
-      
       return itemsOrdenados.map(item => {
         const valorAlocado = Math.min(item.consumoNumero, energiaRestante);
         energiaRestante -= valorAlocado;
-        
         return {
           ...item,
           valorAlocado
@@ -204,18 +190,14 @@ export const useRateio = () => {
 
   const createRateio = async (data: RateioFormData) => {
     try {
-      console.log('📊 [RATEIO] Criando rateio:', data);
-      
       const validation = validateRateio(
         data.rateioItems, 
         data.configuracao.tipoRateio,
         data.configuracao.geracaoEsperada
       );
-      
       if (!validation.isValid) {
         return { success: false, error: validation.errors.join(', ') };
       }
-
       const rateioCalculado = calculateDistribuicao(
         data.rateioItems,
         data.configuracao.tipoRateio,
@@ -228,14 +210,11 @@ export const useRateio = () => {
       };
 
       const result = await supabaseRateioService.createRateio(formDataWithCalculations);
-      
       if (result.success && result.data) {
         setRateios(prev => [result.data!, ...prev]);
       }
-      
       return result;
     } catch (error) {
-      console.error('❌ [RATEIO] Erro ao criar rateio:', error);
       return { success: false, error: 'Erro ao criar rateio' };
     }
   };
