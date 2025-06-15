@@ -1,10 +1,9 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useRateioGenerators, useHistoricoRateiosData, useRateioSubscribers, RateioHistoryItem } from '@/hooks/useRateio';
 import { LoadingSpinner } from '../ui/loading-spinner';
-import { AlertCircle, Calendar, TrendingUp, Clock, Eye, FileText, Search, Filter } from 'lucide-react';
+import { AlertCircle, Calendar, TrendingUp, Clock, Eye, FileText, Search, Filter, Plus } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -73,6 +72,9 @@ const HistoricoRateios = () => {
   // Stats calculadas com dados reais
   const totalDistribuido = historico.reduce((acc, curr) => acc + curr.total_distribuido, 0);
   const geradorasAtivas = generators.length;
+
+  // Contar assinantes vinculados à geradora selecionada (se houver)
+  const assinantesVinculados = subscribersData?.length || 0;
 
   return (
     <div className="space-y-6">
@@ -208,7 +210,12 @@ const HistoricoRateios = () => {
                 <div>
                   <CardTitle className="text-lg">Rateios Realizados</CardTitle>
                   <CardDescription>
-                    {isLoadingHistorico ? "Carregando histórico..." : `${historicoFiltrado.length} de ${historico.length} rateio${historico.length !== 1 ? 's' : ''}`}
+                    {isLoadingHistorico ? "Carregando histórico..." : `${historicoFiltrado.length} de ${historico.length} rateio${historico.length !== 1 ? 's' : ''} realizado${historico.length !== 1 ? 's' : ''}`}
+                    {assinantesVinculados > 0 && historico.length === 0 && (
+                      <span className="text-blue-600 ml-2">
+                        • {assinantesVinculados} assinante{assinantesVinculados !== 1 ? 's' : ''} cadastrado{assinantesVinculados !== 1 ? 's' : ''}
+                      </span>
+                    )}
                   </CardDescription>
                 </div>
               </div>
@@ -287,17 +294,20 @@ const HistoricoRateios = () => {
                   <FileText className="h-8 w-8 text-gray-400" />
                 </div>
                 <h3 className="text-lg font-medium text-gray-900 mb-2">
-                  {searchTerm || filterStatus !== 'todos' ? 'Nenhum resultado encontrado' : 'Nenhum rateio encontrado'}
+                  {searchTerm || filterStatus !== 'todos' ? 'Nenhum resultado encontrado' : 'Nenhum rateio realizado'}
                 </h3>
                 <p className="text-gray-500 mb-4">
                   {searchTerm || filterStatus !== 'todos' 
                     ? 'Tente ajustar os filtros de busca.'
-                    : 'Esta geradora ainda não possui histórico de rateios realizados.'
+                    : assinantesVinculados > 0 
+                    ? `Esta geradora possui ${assinantesVinculados} assinante${assinantesVinculados !== 1 ? 's' : ''} cadastrado${assinantesVinculados !== 1 ? 's' : ''}, mas ainda não possui rateios realizados.`
+                    : 'Esta geradora ainda não possui assinantes cadastrados nem rateios realizados.'
                   }
                 </p>
                 {(!searchTerm && filterStatus === 'todos') && (
                   <Button variant="outline" size="sm">
-                    Criar Primeiro Rateio
+                    <Plus className="h-4 w-4 mr-2" />
+                    {assinantesVinculados > 0 ? 'Criar Primeiro Rateio' : 'Cadastrar Assinantes'}
                   </Button>
                 )}
               </div>
