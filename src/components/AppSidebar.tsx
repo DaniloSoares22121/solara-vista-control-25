@@ -12,7 +12,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Sun,
-  Upload
+  Upload,
+  Spline
 } from 'lucide-react';
 import {
   Sidebar,
@@ -30,6 +31,7 @@ const menuItems = [
   { title: 'Dashboard', url: '/dashboard', icon: LayoutDashboard },
   { title: 'Assinantes', url: '/dashboard/assinantes', icon: Users },
   { title: 'Geradoras', url: '/dashboard/geradoras', icon: Zap },
+  { title: 'Rateio de Créditos', url: '/dashboard/rateio', icon: Spline },
   { title: 'Fatura única', url: '/dashboard/fatura-unica', icon: FileText },
   { title: 'Fatura Manual', url: '/dashboard/fatura-manual', icon: Upload },
   { title: 'Faturas em Validação', url: '/dashboard/fatura-validacao', icon: FileCheck },

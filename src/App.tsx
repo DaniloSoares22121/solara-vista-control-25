@@ -12,6 +12,7 @@ import DashboardLayout from './components/DashboardLayout';
 import Assinantes from './pages/dashboard/Assinantes';
 import Geradoras from './pages/dashboard/Geradoras';
 import NovaGeradora from './pages/dashboard/NovaGeradora';
+import Rateio from './pages/dashboard/Rateio';
 import FaturaUnica from './pages/dashboard/FaturaUnica';
 import FaturaManual from './pages/dashboard/FaturaManual';
 import FaturaValidacao from './pages/dashboard/FaturaValidacao';
@@ -61,6 +62,7 @@ function App() {
                 <Route path="assinantes" element={<Assinantes />} />
                 <Route path="geradoras" element={<Geradoras />} />
                 <Route path="geradoras/nova" element={<NovaGeradoraWrapper />} />
+                <Route path="rateio" element={<Rateio />} />
                 <Route path="fatura-unica" element={<FaturaUnica />} />
                 <Route path="fatura-manual" element={<FaturaManual />} />
                 <Route path="fatura-validacao" element={<FaturaValidacao />} />
