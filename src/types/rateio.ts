@@ -1,54 +1,74 @@
 
-export interface RateioSubscriber {
+export interface Geradora {
   id: string;
-  name: string;
+  apelido: string;
   uc: string;
-  contractedConsumption: number; // kWh/mês
-  accumulatedCredit: number; // kWh
-  percentage?: number; // para rateio por porcentagem
-  priority?: number; // para rateio por prioridade
-  lastInvoice?: string;
-  allocatedEnergy?: number; // energia alocada calculada
-  creditUsed?: number; // crédito utilizado
-  remainingCredit?: number; // crédito restante
+  geracao: string; // Ex: "15.000 kWh"
+  geracaoNumero: number; // Ex: 15000
+  percentualAlocado: number; // Ex: 85.5% (quanto já foi distribuído)
+  concessionaria?: string;
 }
 
-export interface RateioGenerator {
+export interface Assinante {
   id: string;
-  nickname: string;
+  nome: string;
   uc: string;
-  generation: number; // kWh
-  ownerName?: string;
-  status?: 'active' | 'inactive';
+  consumoContratado: string; // Ex: "500 kWh"
+  consumoNumero: number; // Ex: 500
+  creditoAcumulado: string; // Ex: "100 kWh"
+  concessionaria?: string;
 }
 
-export interface RateioCalculation {
-  subscriberId: string;
-  allocatedEnergy: number;
-  creditUsed: number;
-  remainingCredit: number;
-  percentage: number;
-  priority?: number;
+export interface VinculoData {
+  geradoraId: string;
+  assinanteId: string;
+  tipoRateio: "porcentagem" | "prioridade";
+  valorRateio: number; // 70 (se porcentagem = 70%) ou 1 (se prioridade = 1ª)
+  percentualAlocacao: number; // Sempre em % para somar na geradora
+  status: "ativo" | "inativo";
+}
+
+export interface RateioItem {
+  assinanteId: string;
+  nome: string;
+  uc: string;
+  consumoNumero: number;
+  porcentagem?: number; // Para rateio por porcentagem
+  prioridade?: number; // Para rateio por prioridade
+  valorAlocado?: number; // kWh calculado que receberá
+  isNew: boolean; // Se é um novo assinante sendo adicionado
+}
+
+export interface RateioConfiguracao {
+  geradoraId: string;
+  novoAssinanteId?: string; // Opcional - se está adicionando novo assinante
+  tipoRateio: "porcentagem" | "prioridade";
+  dia: number;
+  mes: number;
+  ano: number;
+  geracaoEsperada: number; // kWh para este mês
+}
+
+export interface RateioValidation {
+  isValid: boolean;
+  errors: string[];
+  warnings: string[];
+  totalPercentual?: number;
+  energiaSobra?: number;
 }
 
 export interface RateioData {
   id?: string;
-  month: string;
-  year: string;
-  status: 'pending' | 'processed' | 'completed';
-  totalAmount: number;
-  subscribers: RateioSubscriber[];
-  generatorId?: string;
-  generator?: RateioGenerator;
-  type?: 'percentage' | 'priority';
-  date?: {
-    day: number;
-    month: number;
-    year: number;
-  };
-  expectedGeneration?: number;
-  actualGeneration?: number;
-  calculations?: RateioCalculation[];
+  geradoraId: string;
+  geradora?: Geradora;
+  dataRateio: string; // "15/06/2025"
+  tipoRateio: "porcentagem" | "prioridade";
+  geracaoEsperada: number;
+  assinantesVinculados: number;
+  assinantes: RateioItem[];
+  totalDistribuido: number; // kWh total distribuído
+  energiaSobra: number; // kWh que sobrou
+  status: "pending" | "processed" | "completed";
   createdAt?: string;
   updatedAt?: string;
   attachmentUrl?: string;
@@ -57,20 +77,8 @@ export interface RateioData {
   approvedAt?: string;
 }
 
+// Interface para o formulário simplificada
 export interface RateioFormData {
-  generatorId: string;
-  subscriberId: string;
-  type: 'percentage' | 'priority';
-  date: {
-    day: number;
-    month: number;
-    year: number;
-  };
-  expectedGeneration: number;
-}
-
-export interface RateioValidation {
-  isValid: boolean;
-  errors: string[];
-  warnings: string[];
+  configuracao: RateioConfiguracao;
+  rateioItems: RateioItem[];
 }
