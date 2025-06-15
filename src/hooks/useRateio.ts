@@ -16,9 +16,18 @@ export interface RateioSubscriber {
   uc: string;
   consumo: string;
   credito: string;
-  tipo: string;
+  rateio: string;
   ultimaFatura: string;
 }
+
+export interface RateioHistoryItem {
+    id: string;
+    data_rateio: string;
+    tipo_rateio: string;
+    status: string;
+    total_distribuido: number;
+}
+
 
 const fetchGenerators = async (): Promise<RateioGenerator[]> => {
   const { data, error } = await supabase
@@ -61,41 +70,69 @@ const fetchSubscribersForGenerator = async (generatorId: string): Promise<Rateio
     const subscriber = s.subscriber as any;
     const energyAccount = s.energy_account as any;
     const planDetails = s.plan_details as any;
+
+    let rateioDisplay = 'N/A';
+    // Assuming plan_details contains rateio information
+    if (planDetails?.rateio_tipo && planDetails?.rateio_valor) {
+        if (planDetails.rateio_tipo === 'porcentagem') {
+            rateioDisplay = `${planDetails.rateio_valor}%`;
+        } else if (planDetails.rateio_tipo === 'prioridade') {
+            rateioDisplay = `Prioridade ${planDetails.rateio_valor}`;
+        }
+    }
+
     return {
       id: s.id,
       nome: subscriber?.nome_completo || subscriber?.razao_social || 'Assinante sem nome',
       uc: energyAccount?.numero_uc || 'N/A',
       consumo: `${planDetails?.consumo_contratado || 0} kWh`,
-      credito: 'N/A',
-      tipo: 'N/A',
-      ultimaFatura: 'N/A',
+      credito: 'N/A', // Data source to be defined
+      rateio: rateioDisplay,
+      ultimaFatura: 'N/A', // Data source to be defined
     };
   });
 };
 
+const fetchRateioHistoryForGenerator = async (generatorId: string): Promise<RateioHistoryItem[]> => {
+    const { data, error } = await supabase
+        .from('rateios')
+        .select('id, data_rateio, tipo_rateio, status, total_distribuido')
+        .eq('geradora_id', generatorId)
+        .order('data_rateio', { ascending: false });
 
-export const useAssinantesPorGeradoraData = () => {
-  const [selectedGeradoraId, setSelectedGeradoraId] = useState<string | undefined>();
+    if (error) {
+        console.error('Error fetching rateio history:', error);
+        throw new Error('Não foi possível buscar o histórico de rateios.');
+    }
 
-  const { data: generators, isLoading: isLoadingGenerators, error: errorGenerators } = useQuery({
-    queryKey: ['generatorsForRateio'],
-    queryFn: fetchGenerators,
-  });
+    return data || [];
+};
 
-  const { data: subscribers, isLoading: isLoadingSubscribers, error: errorSubscribers } = useQuery({
-    queryKey: ['subscribersForGenerator', selectedGeradoraId],
-    queryFn: () => fetchSubscribersForGenerator(selectedGeradoraId!),
-    enabled: !!selectedGeradoraId,
-  });
+export const useRateioGenerators = () => {
+    return useQuery({
+        queryKey: ['generatorsForRateio'],
+        queryFn: fetchGenerators,
+    });
+}
 
-  return {
-    generators: generators || [],
-    subscribers: subscribers || [],
-    selectedGeradoraId,
-    setSelectedGeradoraId,
-    isLoadingGenerators,
-    isLoadingSubscribers,
-    error: errorGenerators || errorSubscribers,
-    selectedGeradora: generators?.find(g => g.id === selectedGeradoraId),
-  };
+export const useRateioSubscribers = (generatorId?: string) => {
+    return useQuery({
+        queryKey: ['subscribersForGenerator', generatorId],
+        queryFn: () => fetchSubscribersForGenerator(generatorId!),
+        enabled: !!generatorId,
+    });
+}
+
+export const useHistoricoRateiosData = (generatorId?: string) => {
+    const { data, isLoading, error } = useQuery({
+        queryKey: ['rateioHistory', generatorId],
+        queryFn: () => fetchRateioHistoryForGenerator(generatorId!),
+        enabled: !!generatorId,
+    });
+
+    return {
+        historico: data || [],
+        isLoading,
+        error,
+    };
 };

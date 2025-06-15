@@ -1,24 +1,26 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
 import { AlertCircle } from 'lucide-react';
-import { useAssinantesPorGeradoraData } from '@/hooks/useRateio';
+import { useRateioGenerators, useRateioSubscribers } from '@/hooks/useRateio';
 import { LoadingSpinner } from '../ui/loading-spinner';
 
 const AssinantesPorGeradora = () => {
-  const {
-    generators,
-    subscribers,
-    selectedGeradora,
-    setSelectedGeradoraId,
-    isLoadingGenerators,
-    isLoadingSubscribers,
-    error,
-  } = useAssinantesPorGeradoraData();
+  const [selectedGeradoraId, setSelectedGeradoraId] = useState<string | undefined>();
+  
+  const { data: generatorsData, isLoading: isLoadingGenerators, error: errorGenerators } = useRateioGenerators();
+  const generators = generatorsData || [];
+  
+  const { data: subscribersData, isLoading: isLoadingSubscribers, error: errorSubscribers } = useRateioSubscribers(selectedGeradoraId);
+  const subscribers = subscribersData || [];
+
+  const selectedGeradora = generators.find(g => g.id === selectedGeradoraId);
+  const error = errorGenerators || errorSubscribers;
+
 
   return (
     <Card>
@@ -80,7 +82,7 @@ const AssinantesPorGeradora = () => {
                     <TableHead>UC</TableHead>
                     <TableHead>Consumo Contratado</TableHead>
                     <TableHead>Crédito Acumulado</TableHead>
-                    <TableHead>Rateio</TableHead>
+                    <TableHead>Rateio (Pct/Prio)</TableHead>
                     <TableHead>Última Fatura</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -103,7 +105,7 @@ const AssinantesPorGeradora = () => {
                         <TableCell>{sub.uc}</TableCell>
                         <TableCell>{sub.consumo}</TableCell>
                         <TableCell>{sub.credito}</TableCell>
-                        <TableCell>{sub.tipo}</TableCell>
+                        <TableCell>{sub.rateio}</TableCell>
                         <TableCell>{sub.ultimaFatura}</TableCell>
                       </TableRow>
                     ))
