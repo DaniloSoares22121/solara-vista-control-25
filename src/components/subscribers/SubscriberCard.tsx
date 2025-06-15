@@ -197,8 +197,8 @@ const SubscriberCard = ({ subscriber, onEdit, onDelete, onView }: SubscriberCard
           </div>
         </div>
 
-        {/* Actions */}
-        <div className="flex items-center justify-end space-x-2 pt-3 border-t border-gray-100">
+        {/* Actions - Redesigned */}
+        <div className="flex items-center justify-center space-x-3 pt-4 border-t border-gray-100 mt-4">
           <Button
             variant="ghost"
             size="sm"
@@ -206,7 +206,7 @@ const SubscriberCard = ({ subscriber, onEdit, onDelete, onView }: SubscriberCard
               e.stopPropagation();
               onView(subscriber);
             }}
-            className="h-8 w-8 p-0 hover:bg-green-100 hover:text-green-700 transition-all duration-300 rounded-lg shadow-sm hover:shadow-md"
+            className="h-10 w-10 p-0 bg-gradient-to-r from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-200 border border-blue-200 text-blue-600 hover:text-blue-700 transition-all duration-300 rounded-xl shadow-sm hover:shadow-md hover:scale-105"
             title="Visualizar"
           >
             <Eye className="h-4 w-4" />
@@ -218,7 +218,7 @@ const SubscriberCard = ({ subscriber, onEdit, onDelete, onView }: SubscriberCard
               e.stopPropagation();
               onEdit(subscriber);
             }}
-            className="h-8 w-8 p-0 hover:bg-green-100 hover:text-green-700 transition-all duration-300 rounded-lg shadow-sm hover:shadow-md"
+            className="h-10 w-10 p-0 bg-gradient-to-r from-green-50 to-emerald-100 hover:from-green-100 hover:to-emerald-200 border border-green-200 text-green-600 hover:text-green-700 transition-all duration-300 rounded-xl shadow-sm hover:shadow-md hover:scale-105"
             title="Editar"
           >
             <Edit className="h-4 w-4" />
@@ -230,7 +230,7 @@ const SubscriberCard = ({ subscriber, onEdit, onDelete, onView }: SubscriberCard
               e.stopPropagation();
               onDelete(subscriber.id);
             }}
-            className="h-8 w-8 p-0 hover:bg-red-100 hover:text-red-700 transition-all duration-300 rounded-lg shadow-sm hover:shadow-md"
+            className="h-10 w-10 p-0 bg-gradient-to-r from-red-50 to-red-100 hover:from-red-100 hover:to-red-200 border border-red-200 text-red-600 hover:text-red-700 transition-all duration-300 rounded-xl shadow-sm hover:shadow-md hover:scale-105"
             title="Excluir"
           >
             <Trash2 className="h-4 w-4" />
