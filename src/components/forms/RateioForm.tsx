@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,16 +9,22 @@ import { Calendar, Save, X, Zap, Users, AlertCircle, Info } from 'lucide-react';
 import { RateioFormData } from '@/types/rateio';
 import { useGenerators } from '@/hooks/useGenerators';
 import { useSubscribers } from '@/hooks/useSubscribers';
-
 interface RateioFormProps {
   onSubmit: (data: RateioFormData) => void;
   onCancel: () => void;
 }
-
-const RateioForm: React.FC<RateioFormProps> = ({ onSubmit, onCancel }) => {
-  const { generators, loading: loadingGenerators } = useGenerators();
-  const { subscribers, isLoading: loadingSubscribers } = useSubscribers();
-  
+const RateioForm: React.FC<RateioFormProps> = ({
+  onSubmit,
+  onCancel
+}) => {
+  const {
+    generators,
+    loading: loadingGenerators
+  } = useGenerators();
+  const {
+    subscribers,
+    isLoading: loadingSubscribers
+  } = useSubscribers();
   const currentDate = new Date();
   const [formData, setFormData] = useState<RateioFormData>({
     generatorId: '',
@@ -32,17 +37,13 @@ const RateioForm: React.FC<RateioFormProps> = ({ onSubmit, onCancel }) => {
     },
     expectedGeneration: 0
   });
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSubmit(formData);
   };
-
   const selectedGenerator = generators.find(gen => gen.id === formData.generatorId);
   const selectedSubscriber = subscribers.find(sub => sub.id === formData.subscriberId);
-
-  return (
-    <div className="max-w-5xl mx-auto space-y-6">
+  return <div className="max-w-5xl mx-auto space-y-6">
       <Card className="shadow-lg border-0">
         <CardHeader className="bg-gradient-to-r from-green-50 to-blue-50 border-b">
           <CardTitle className="flex items-center space-x-3">
@@ -66,21 +67,15 @@ const RateioForm: React.FC<RateioFormProps> = ({ onSubmit, onCancel }) => {
                   <Label className="text-lg font-semibold text-gray-900">Geradora de Energia</Label>
                 </div>
                 
-                <Select 
-                  value={formData.generatorId} 
-                  onValueChange={(value) => setFormData(prev => ({ ...prev, generatorId: value }))}
-                >
+                <Select value={formData.generatorId} onValueChange={value => setFormData(prev => ({
+                ...prev,
+                generatorId: value
+              }))}>
                   <SelectTrigger className="h-12 text-left">
                     <SelectValue placeholder="Selecione uma geradora..." />
                   </SelectTrigger>
                   <SelectContent>
-                    {loadingGenerators ? (
-                      <SelectItem value="loading" disabled>Carregando geradoras...</SelectItem>
-                    ) : generators.length === 0 ? (
-                      <SelectItem value="empty" disabled>Nenhuma geradora encontrada</SelectItem>
-                    ) : (
-                      generators.map((generator) => (
-                        <SelectItem key={generator.id} value={generator.id}>
+                    {loadingGenerators ? <SelectItem value="loading" disabled>Carregando geradoras...</SelectItem> : generators.length === 0 ? <SelectItem value="empty" disabled>Nenhuma geradora encontrada</SelectItem> : generators.map(generator => <SelectItem key={generator.id} value={generator.id}>
                           <div className="flex items-center justify-between w-full">
                             <div>
                               <div className="font-medium">
@@ -92,9 +87,7 @@ const RateioForm: React.FC<RateioFormProps> = ({ onSubmit, onCancel }) => {
                               </div>
                             </div>
                           </div>
-                        </SelectItem>
-                      ))
-                    )}
+                        </SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
@@ -106,21 +99,15 @@ const RateioForm: React.FC<RateioFormProps> = ({ onSubmit, onCancel }) => {
                   <Label className="text-lg font-semibold text-gray-900">Assinante Principal</Label>
                 </div>
                 
-                <Select 
-                  value={formData.subscriberId} 
-                  onValueChange={(value) => setFormData(prev => ({ ...prev, subscriberId: value }))}
-                >
+                <Select value={formData.subscriberId} onValueChange={value => setFormData(prev => ({
+                ...prev,
+                subscriberId: value
+              }))}>
                   <SelectTrigger className="h-12 text-left">
                     <SelectValue placeholder="Selecione um assinante..." />
                   </SelectTrigger>
                   <SelectContent>
-                    {loadingSubscribers ? (
-                      <SelectItem value="loading" disabled>Carregando assinantes...</SelectItem>
-                    ) : subscribers.length === 0 ? (
-                      <SelectItem value="empty" disabled>Nenhum assinante encontrado</SelectItem>
-                    ) : (
-                      subscribers.map((subscriber) => (
-                        <SelectItem key={subscriber.id} value={subscriber.id}>
+                    {loadingSubscribers ? <SelectItem value="loading" disabled>Carregando assinantes...</SelectItem> : subscribers.length === 0 ? <SelectItem value="empty" disabled>Nenhum assinante encontrado</SelectItem> : subscribers.map(subscriber => <SelectItem key={subscriber.id} value={subscriber.id}>
                           <div className="flex items-center justify-between w-full">
                             <div>
                               <div className="font-medium">
@@ -132,9 +119,7 @@ const RateioForm: React.FC<RateioFormProps> = ({ onSubmit, onCancel }) => {
                               </div>
                             </div>
                           </div>
-                        </SelectItem>
-                      ))
-                    )}
+                        </SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
@@ -142,8 +127,7 @@ const RateioForm: React.FC<RateioFormProps> = ({ onSubmit, onCancel }) => {
 
             {/* Cards de Informações Selecionadas */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {selectedGenerator && (
-                <div className="p-6 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl border border-green-200">
+              {selectedGenerator && <div className="p-6 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl border border-green-200">
                   <h4 className="font-semibold text-green-800 mb-4 flex items-center">
                     <Zap className="w-5 h-5 mr-2" />
                     Geradora Selecionada
@@ -166,11 +150,9 @@ const RateioForm: React.FC<RateioFormProps> = ({ onSubmit, onCancel }) => {
                       <span className="font-medium text-green-900">{selectedGenerator.concessionaria}</span>
                     </div>
                   </div>
-                </div>
-              )}
+                </div>}
 
-              {selectedSubscriber && (
-                <div className="p-6 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border border-blue-200">
+              {selectedSubscriber && <div className="p-6 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border border-blue-200">
                   <h4 className="font-semibold text-blue-800 mb-4 flex items-center">
                     <Users className="w-5 h-5 mr-2" />
                     Assinante Selecionado
@@ -193,8 +175,7 @@ const RateioForm: React.FC<RateioFormProps> = ({ onSubmit, onCancel }) => {
                       <span className="font-medium text-blue-900">{selectedSubscriber.plan_contract?.contractedConsumption || 'N/A'} kWh</span>
                     </div>
                   </div>
-                </div>
-              )}
+                </div>}
             </div>
 
             {/* Configurações do Rateio */}
@@ -210,10 +191,10 @@ const RateioForm: React.FC<RateioFormProps> = ({ onSubmit, onCancel }) => {
                 <div className="space-y-6">
                   <div>
                     <Label className="text-base font-medium text-gray-700">Tipo de Rateio</Label>
-                    <Select 
-                      value={formData.type} 
-                      onValueChange={(value: 'percentage' | 'priority') => setFormData(prev => ({ ...prev, type: value }))}
-                    >
+                    <Select value={formData.type} onValueChange={(value: 'percentage' | 'priority') => setFormData(prev => ({
+                    ...prev,
+                    type: value
+                  }))}>
                       <SelectTrigger className="mt-2 h-12">
                         <SelectValue />
                       </SelectTrigger>
@@ -241,10 +222,7 @@ const RateioForm: React.FC<RateioFormProps> = ({ onSubmit, onCancel }) => {
                     
                     <div className="mt-3 p-4 bg-gray-50 rounded-lg">
                       <p className="text-sm text-gray-600">
-                        {formData.type === 'percentage' 
-                          ? 'A energia será distribuída baseada em porcentagens fixas para cada assinante.'
-                          : 'A energia será distribuída baseada na prioridade de cada assinante, preenchendo primeiro os de maior prioridade.'
-                        }
+                        {formData.type === 'percentage' ? 'A energia será distribuída baseada em porcentagens fixas para cada assinante.' : 'A energia será distribuída baseada na prioridade de cada assinante, preenchendo primeiro os de maior prioridade.'}
                       </p>
                     </div>
                   </div>
@@ -253,67 +231,35 @@ const RateioForm: React.FC<RateioFormProps> = ({ onSubmit, onCancel }) => {
                 <div className="space-y-6">
                   <div>
                     <Label className="text-base font-medium text-gray-700">Geração Esperada (kWh)</Label>
-                    <Input
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      value={formData.expectedGeneration}
-                      onChange={(e) => setFormData(prev => ({
-                        ...prev,
-                        expectedGeneration: parseFloat(e.target.value) || 0
-                      }))}
-                      className="mt-2 h-12 text-lg"
-                      placeholder="Ex: 1500.00"
-                    />
+                    <Input type="number" min="0" step="0.01" value={formData.expectedGeneration} onChange={e => setFormData(prev => ({
+                    ...prev,
+                    expectedGeneration: parseFloat(e.target.value) || 0
+                  }))} className="mt-2 h-12 text-lg" placeholder="Ex: 1500.00" />
                     <p className="text-sm text-gray-500 mt-2">
                       Quantidade de energia que a geradora deve produzir no período
                     </p>
                   </div>
 
-                  <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
-                    <div className="flex items-center space-x-2 mb-2">
-                      <Calendar className="w-4 h-4 text-blue-600" />
-                      <span className="font-medium text-blue-800">Período do Rateio</span>
-                    </div>
-                    <p className="text-sm text-blue-700">
-                      {currentDate.toLocaleDateString('pt-BR', { 
-                        day: '2-digit', 
-                        month: 'long', 
-                        year: 'numeric' 
-                      })}
-                    </p>
-                    <p className="text-xs text-blue-600 mt-1">Data atual será utilizada automaticamente</p>
-                  </div>
+                  
                 </div>
               </div>
             </div>
 
             {/* Validação */}
-            {(!formData.generatorId || !formData.subscriberId) && (
-              <div className="flex items-center space-x-3 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+            {(!formData.generatorId || !formData.subscriberId) && <div className="flex items-center space-x-3 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
                 <AlertCircle className="w-5 h-5 text-yellow-600 flex-shrink-0" />
                 <p className="text-yellow-800">
                   Selecione uma geradora e um assinante para continuar.
                 </p>
-              </div>
-            )}
+              </div>}
 
             {/* Botões de Ação */}
             <div className="flex justify-end space-x-4 pt-6 border-t">
-              <Button 
-                type="button" 
-                variant="outline" 
-                onClick={onCancel} 
-                className="px-8 py-3 h-12"
-              >
+              <Button type="button" variant="outline" onClick={onCancel} className="px-8 py-3 h-12">
                 <X className="w-4 h-4 mr-2" />
                 Cancelar
               </Button>
-              <Button 
-                type="submit" 
-                className="px-8 py-3 h-12 bg-green-600 hover:bg-green-700"
-                disabled={!formData.generatorId || !formData.subscriberId}
-              >
+              <Button type="submit" className="px-8 py-3 h-12 bg-green-600 hover:bg-green-700" disabled={!formData.generatorId || !formData.subscriberId}>
                 <Save className="w-4 h-4 mr-2" />
                 Criar Rateio
               </Button>
@@ -321,8 +267,6 @@ const RateioForm: React.FC<RateioFormProps> = ({ onSubmit, onCancel }) => {
           </form>
         </CardContent>
       </Card>
-    </div>
-  );
+    </div>;
 };
-
 export default RateioForm;
