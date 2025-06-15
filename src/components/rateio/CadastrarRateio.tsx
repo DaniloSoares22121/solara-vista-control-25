@@ -1,11 +1,12 @@
+
 import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from "@/components/ui/button";
 import { useRateioGenerators, useRateioSubscribers } from '@/hooks/useRateio';
 import { LoadingSpinner } from '../ui/loading-spinner';
-import { AlertCircle, Info, CheckCircle2 } from 'lucide-react';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AdicionarAssinantesRateio } from "./AdicionarAssinantesRateio";
 import { rateioService } from "@/services/rateioService";
 import { toast } from "@/hooks/use-toast";
@@ -13,57 +14,49 @@ import { toast } from "@/hooks/use-toast";
 const CadastrarRateio = () => {
   const [selectedGeradoraId, setSelectedGeradoraId] = useState<string | undefined>();
   const [tipoRateio, setTipoRateio] = useState<"porcentagem" | "prioridade">("porcentagem");
-  const [assinantesSelecionados, setAssinantesSelecionados] = useState<any[]>([]);
+  const [assinantes, setAssinantes] = useState<any[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // ### Refatorado ###
-  // Manter as listas separadas por geradora selecionada - abaixo criamos primeiro um state vazio, só inicializa assinantes quando a geradora é selecionada
+  // Obtém geradoras
   const { data: generatorsData, isLoading: isLoadingGenerators, error: errorGenerators } = useRateioGenerators();
   const generators = generatorsData || [];
   const selectedGeradora = generators.find(g => g.id === selectedGeradoraId);
 
+  // Obtém assinantes da geradora selecionada
   const { data: subscribersData, isLoading: isLoadingSubscribers, error: errorSubscribers } = useRateioSubscribers(selectedGeradoraId);
 
-  // Inicializa assinantes apenas quando uma geradora é selecionada
-  const assinantesParaRateio = useMemo(
-    () =>
-      (subscribersData || []).map(a => ({
-        ...a,
-        selecionado: false,
-        valor: "",
-      })),
-    [subscribersData]
-  );
-
-  const [assinantes, setAssinantes] = useState(assinantesParaRateio);
-
-  // Corrige: só reseta assinantes quando MUDAR A GERADORA (para manter preenchido se só mudar assinante)
+  // Prepara lista de assinantes toda vez que trocar de geradora ou quando carregar da API
   React.useEffect(() => {
     if (selectedGeradoraId && subscribersData) {
-      setAssinantes(assinantesParaRateio); // Reset só quando trocar de geradora
+      setAssinantes(
+        (subscribersData || []).map(a => ({
+          ...a,
+          selecionado: false,
+          valor: "",
+        }))
+      );
     } else {
-      setAssinantes([]); // Nenhuma geradora? Nenhum assinante!
+      setAssinantes([]);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedGeradoraId, subscribersData]);
 
   const error = errorGenerators || errorSubscribers;
 
-  // --------- VALIDAÇÃO POR TIPO DE RATEIO ---------
+  // Assinantes selecionados (via checkbox)
   const selecionados = assinantes.filter(a => a.selecionado);
 
-  // Soma de todas as porcentagens
+  // Soma da porcentagem (quando tipo porcentagem)
   const somaPorcentagens = selecionados.reduce(
     (acc, curr) => acc + (tipoRateio === "porcentagem" ? Number(curr.valor || 0) : 0),
     0
   );
 
-  // Prioridades usadas (deve ser únicas, inteiras, não vazias)
+  // Lista de prioridades passadas
   const prioridades = tipoRateio === "prioridade"
     ? selecionados.map(a => Number(a.valor)).filter(Boolean)
     : [];
 
-  // Validação dos campos
+  // Validação
   const validSubmit =
     selecionados.length > 0 &&
     selecionados.every(a => !!a.valor && (!isNaN(Number(a.valor)))) &&
@@ -73,7 +66,7 @@ const CadastrarRateio = () => {
         : (new Set(prioridades)).size === prioridades.length && prioridades.every(n => Number.isInteger(n))
     );
 
-  // Mensagens de status & dicas
+  // Mensagens
   const statusMsg =
     tipoRateio === "porcentagem"
       ? `A soma das porcentagens deve ser exatamente 100%. Atualmente: ${somaPorcentagens}%`
@@ -82,7 +75,7 @@ const CadastrarRateio = () => {
   const hasPriorityDuplicate =
     tipoRateio === "prioridade" && (new Set(prioridades)).size !== prioridades.length;
 
-  // ---------------- SUBMIT ----------------
+  // ----------- SUBMIT HANDLER ----------------------
   const handleSubmit = async () => {
     if (!selectedGeradoraId) {
       toast({
@@ -115,7 +108,8 @@ const CadastrarRateio = () => {
         title: "Sucesso",
         description: "Rateio cadastrado com sucesso!",
       });
-      setAssinantes(assinantesParaRateio);
+      // Mantém a seleção da geradora, mas limpa os valores dos assinantes
+      setAssinantes(assinantes.map(a => ({ ...a, selecionado: false, valor: "" })));
     } catch (err: any) {
       toast({
         title: "Erro ao cadastrar",
@@ -135,7 +129,7 @@ const CadastrarRateio = () => {
       </CardHeader>
       <CardContent className="space-y-6">
 
-        {/* Seleção da Geradora */}
+        {/* Seleção da Geradora e Tipo de Rateio */}
         <div className="flex flex-col sm:flex-row items-center gap-4">
           <Select onValueChange={setSelectedGeradoraId} disabled={isLoadingGenerators || isSubmitting} value={selectedGeradoraId}>
             <SelectTrigger className="w-full sm:w-[300px]">
@@ -160,72 +154,77 @@ const CadastrarRateio = () => {
           </Select>
         </div>
 
-        {/* Só mostra tabelas e configurações se GERADORA FOI SELECIONADA */}
+        {/* Exibe info da Geradora Selecionada */}
         {selectedGeradora && (
-          <>
-            <Card className="bg-muted/40">
-              <CardHeader>
-                <CardTitle className="text-lg">{selectedGeradora.apelido}</CardTitle>
-              </CardHeader>
-              <CardContent className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
-                <div>
-                  <p className="font-semibold text-muted-foreground">UC da Geradora</p>
-                  <p>{selectedGeradora.uc}</p>
-                </div>
-                <div>
-                  <p className="font-semibold text-muted-foreground">Geração Estimada</p>
-                  <p>{selectedGeradora.geracao}</p>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Só traz lista de assinantes após selecionar geradora */}
-            <div className="mt-6">
-              <AdicionarAssinantesRateio
-                assinantes={assinantes}
-                onSelect={setAssinantes}
-                tipoRateio={tipoRateio}
-                disabled={isSubmitting}
-              />
-              {isLoadingSubscribers && <div className="text-center mt-4"><LoadingSpinner size="sm" text="Carregando assinantes..." /></div>}
-            </div>
-
-            {/* Mensagem de validação */}
-            <div className="my-4">
-              {!validSubmit && (
-                <Alert variant="destructive" className="flex items-center gap-2">
-                  <AlertCircle className="h-4 w-4 opacity-70 mr-2" />
-                  <AlertDescription>{statusMsg}</AlertDescription>
-                </Alert>
-              )}
-              {validSubmit && tipoRateio === "porcentagem" && (
-                <div className="flex items-center text-green-700 text-sm gap-2">
-                  <CheckCircle2 className="h-5 w-5" />
-                  Pronto para cadastrar! Soma: <b>{somaPorcentagens}%</b>
-                </div>
-              )}
-              {validSubmit && tipoRateio === "prioridade" && (
-                <div className="flex items-center text-green-700 text-sm gap-2">
-                  <CheckCircle2 className="h-5 w-5" />
-                  Prioridade inserida corretamente!
-                </div>
-              )}
-              {hasPriorityDuplicate && (
-                <div className="text-xs text-red-600 mt-1">
-                  Prioridades devem ser únicas.
-                </div>
-              )}
-            </div>
-
-            <div className="flex items-center justify-end gap-4 mt-6">
-              <Button onClick={handleSubmit} disabled={isSubmitting || isLoadingSubscribers || !validSubmit}>
-                {isSubmitting ? <LoadingSpinner size="sm" /> : "Cadastrar Rateio"}
-              </Button>
-            </div>
-          </>
+          <Card className="bg-muted/40">
+            <CardHeader>
+              <CardTitle className="text-lg">{selectedGeradora.apelido}</CardTitle>
+            </CardHeader>
+            <CardContent className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
+              <div>
+                <p className="font-semibold text-muted-foreground">UC da Geradora</p>
+                <p>{selectedGeradora.uc}</p>
+              </div>
+              <div>
+                <p className="font-semibold text-muted-foreground">Geração Estimada</p>
+                <p>{selectedGeradora.geracao}</p>
+              </div>
+            </CardContent>
+          </Card>
         )}
 
-        {/* Se não selecionou geradora, orienta */}
+        {/* Lista de Assinantes: aparecem somente DEPOIS da seleção da geradora */}
+        {selectedGeradora && (
+          <div className="mt-6 rounded-md border p-2 bg-muted/10">
+            <AdicionarAssinantesRateio
+              assinantes={assinantes}
+              onSelect={setAssinantes}
+              tipoRateio={tipoRateio}
+              disabled={isSubmitting || isLoadingSubscribers}
+            />
+            {isLoadingSubscribers && <div className="text-center mt-4"><LoadingSpinner size="sm" text="Carregando assinantes..." /></div>}
+          </div>
+        )}
+
+        {/* Mensagem de validação aparece quando TENTAR cadastrar ou alterar algum valor */}
+        {selectedGeradora && (
+          <div className="my-4">
+            {!validSubmit && (
+              <Alert variant="destructive" className="flex items-center gap-2">
+                <AlertCircle className="h-4 w-4 opacity-70 mr-2" />
+                <AlertDescription>{statusMsg}</AlertDescription>
+              </Alert>
+            )}
+            {validSubmit && tipoRateio === "porcentagem" && (
+              <div className="flex items-center text-green-700 text-sm gap-2">
+                <CheckCircle2 className="h-5 w-5" />
+                Pronto para cadastrar! Soma: <b>{somaPorcentagens}%</b>
+              </div>
+            )}
+            {validSubmit && tipoRateio === "prioridade" && (
+              <div className="flex items-center text-green-700 text-sm gap-2">
+                <CheckCircle2 className="h-5 w-5" />
+                Prioridade inserida corretamente!
+              </div>
+            )}
+            {hasPriorityDuplicate && (
+              <div className="text-xs text-red-600 mt-1">
+                Prioridades devem ser únicas.
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Botão só aparece se selecionar geradora */}
+        {selectedGeradora && (
+          <div className="flex items-center justify-end gap-4 mt-6">
+            <Button onClick={handleSubmit} disabled={isSubmitting || isLoadingSubscribers || !validSubmit}>
+              {isSubmitting ? <LoadingSpinner size="sm" /> : "Cadastrar Rateio"}
+            </Button>
+          </div>
+        )}
+
+        {/* Se não selecionou geradora, orientação */}
         {!selectedGeradora && !isLoadingGenerators && (
           <div className="text-center text-muted-foreground py-8">
             <p>Por favor, selecione uma geradora para continuar.</p>
@@ -238,3 +237,4 @@ const CadastrarRateio = () => {
 };
 
 export default CadastrarRateio;
+
