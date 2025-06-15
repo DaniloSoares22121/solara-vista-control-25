@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -6,10 +7,9 @@ import { Button } from '@/components/ui/button';
 import { Form } from '@/components/ui/form';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { X, ChevronLeft, ChevronRight, Save, CheckCircle, Zap, ArrowLeft } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Save, CheckCircle, Zap, ArrowLeft } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useGenerators } from '@/hooks/useGenerators';
-import { useGeneratorForm } from '@/hooks/useGeneratorForm';
 import GeneratorConcessionariaForm from '@/components/forms/GeneratorConcessionariaForm';
 import GeneratorOwnerTypeForm from '@/components/forms/GeneratorOwnerTypeForm';
 import GeneratorOwnerDataForm from '@/components/forms/GeneratorOwnerDataForm';
@@ -20,7 +20,6 @@ import GeneratorPaymentForm from '@/components/forms/GeneratorPaymentForm';
 import GeneratorAttachmentsForm from '@/components/forms/GeneratorAttachmentsForm';
 import { GeneratorFormData } from '@/types/generator';
 import DashboardLayout from '@/components/DashboardLayout';
-import { AutoSaveStatus } from '@/components/forms/AutoSaveStatus';
 
 const generatorSchema = z.object({
   concessionaria: z.string().min(1, 'Selecione uma concessionária'),
@@ -73,7 +72,6 @@ const generatorSchema = z.object({
     conta: z.string().optional(),
     pix: z.string().optional(),
   }),
-  // Ajustar validação dos anexos para aceitar a estrutura correta
   attachments: z.object({
     contrato: z.object({
       file: z.instanceof(File),
@@ -125,12 +123,14 @@ const NovaGeradora = ({ onClose, editMode = false, generatorData }: NovaGeradora
   const totalSteps = 5;
   const { toast } = useToast();
   const { createGenerator, updateGenerator } = useGenerators();
-  const { validateStep, autoSave } = useGeneratorForm();
+
+  console.log('🔄 [NOVA_GERADORA] Componente inicializado', { editMode, generatorData });
 
   const form = useForm<GeneratorFormData>({
     resolver: zodResolver(generatorSchema),
+    mode: 'onChange',
     defaultValues: {
-      concessionaria: '',
+      concessionaria: 'equatorial-goias',
       owner: {
         type: 'fisica',
         cpfCnpj: '',
@@ -174,7 +174,7 @@ const NovaGeradora = ({ onClose, editMode = false, generatorData }: NovaGeradora
       console.log('🔄 Preenchendo formulário para edição:', generatorData);
       
       form.reset({
-        concessionaria: generatorData.concessionaria || '',
+        concessionaria: generatorData.concessionaria || 'equatorial-goias',
         owner: generatorData.owner || form.getValues('owner'),
         administrator: generatorData.administrator,
         plants: generatorData.plants || [],
@@ -230,21 +230,15 @@ const NovaGeradora = ({ onClose, editMode = false, generatorData }: NovaGeradora
         toast({
           title: "Sucesso!",
           description: "Geradora atualizada com sucesso.",
-          variant: "default",
         });
       } else {
         await createGenerator(data);
         toast({
           title: "Sucesso!",
-          description: "Geradora cadastrada com sucesso! Aguarde um momento enquanto ela aparece na lista automaticamente.",
-          variant: "default",
+          description: "Geradora cadastrada com sucesso!",
         });
       }
       
-      // Limpar o auto save após sucesso
-      autoSave.clearAutoSave();
-      
-      // Aguardar um breve momento para garantir que o realtime processou
       setTimeout(() => {
         onClose();
       }, 1000);
@@ -262,17 +256,6 @@ const NovaGeradora = ({ onClose, editMode = false, generatorData }: NovaGeradora
   };
 
   const nextStep = () => {
-    // Validar etapa atual antes de prosseguir
-    const validation = validateStep(currentStep);
-    if (!validation.isValid) {
-      toast({
-        title: "Erro de validação",
-        description: validation.errors.join(', '),
-        variant: "destructive",
-      });
-      return;
-    }
-
     if (currentStep < totalSteps) {
       setCurrentStep(currentStep + 1);
     }
@@ -282,11 +265,6 @@ const NovaGeradora = ({ onClose, editMode = false, generatorData }: NovaGeradora
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
     }
-  };
-
-  const canProceed = () => {
-    const validation = validateStep(currentStep);
-    return validation.isValid;
   };
 
   return (
@@ -308,7 +286,7 @@ const NovaGeradora = ({ onClose, editMode = false, generatorData }: NovaGeradora
                   <p className="text-gray-600 text-lg">
                     {editMode 
                       ? 'Atualize as informações da unidade geradora' 
-                      : 'Cadastre uma nova unidade geradora com automações inteligentes'
+                      : 'Cadastre uma nova unidade geradora'
                     }
                   </p>
                 </div>
@@ -316,7 +294,6 @@ const NovaGeradora = ({ onClose, editMode = false, generatorData }: NovaGeradora
             </div>
             
             <div className="flex items-center gap-4">
-              <AutoSaveStatus autoSave={autoSave} form={form} />
               <Button
                 onClick={onClose}
                 variant="outline"
@@ -346,8 +323,6 @@ const NovaGeradora = ({ onClose, editMode = false, generatorData }: NovaGeradora
                       w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold transition-all duration-300 shadow-lg
                       ${currentStep >= step.number 
                         ? 'bg-gradient-to-r from-green-500 to-green-600 text-white scale-110' 
-                        : currentStep === step.number - 1
-                        ? 'bg-gradient-to-r from-orange-400 to-orange-500 text-white'
                         : 'bg-white text-gray-400 border-2 border-gray-200'
                       }
                     `}>
@@ -424,7 +399,7 @@ const NovaGeradora = ({ onClose, editMode = false, generatorData }: NovaGeradora
                             Configuração das Usinas
                           </CardTitle>
                           <p className="text-blue-600 mt-1 text-base">
-                            Especificações técnicas com cálculos e validações automáticas
+                            Especificações técnicas das unidades geradoras
                           </p>
                         </div>
                       </div>
@@ -552,10 +527,7 @@ const NovaGeradora = ({ onClose, editMode = false, generatorData }: NovaGeradora
                   <Button
                     type="button"
                     variant="outline"
-                    onClick={() => {
-                      form.reset();
-                      autoSave.clearAutoSave();
-                    }}
+                    onClick={() => form.reset()}
                     disabled={saving}
                     className="px-8 py-3 text-base font-medium border-2"
                   >
