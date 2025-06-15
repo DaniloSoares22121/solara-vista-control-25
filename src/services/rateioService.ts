@@ -15,16 +15,25 @@ export const rateioService = {
   }) {
     console.log('Cadastrando rateio:', { geradora, tipoRateio, dataRateio, assinantes });
     
+    // Obter o usuário atual
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError || !user) {
+      throw new Error("Usuário não autenticado");
+    }
+    
     // Calcular total distribuído
     const totalDistribuido = assinantes.reduce((acc, curr) => {
       return acc + Number(curr.valor);
     }, 0);
 
     // 1. Criar registro principal de rateio
-    const { data: rateio, error: errRateio } = await (supabase as any)
+    const { data: rateio, error: errRateio } = await supabase
       .from('rateios')
       .insert({
+        user_id: user.id,
         geradora_id: geradora.id,
+        geradora_nome: geradora.apelido,
+        geradora_uc: geradora.uc,
         data_rateio: dataRateio,
         tipo_rateio: tipoRateio,
         status: 'ativo',
@@ -52,14 +61,14 @@ export const rateioService = {
       created_at: new Date().toISOString(),
     }));
 
-    const { error: errItems } = await (supabase as any)
+    const { error: errItems } = await supabase
       .from('rateio_items')
       .insert(rateioItems);
 
     if (errItems) {
       console.error('Erro ao cadastrar itens do rateio:', errItems);
       // Se falhar ao inserir itens, remove o rateio principal
-      await (supabase as any).from('rateios').delete().eq('id', rateio.id);
+      await supabase.from('rateios').delete().eq('id', rateio.id);
       throw new Error("Erro ao cadastrar itens do rateio");
     }
 

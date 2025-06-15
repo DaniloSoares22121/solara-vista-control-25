@@ -1,6 +1,6 @@
 
 -- Criar tabela para rateios
-CREATE TABLE public.rateios (
+CREATE TABLE IF NOT EXISTS public.rateios (
   id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
   user_id UUID NOT NULL,
   geradora_id TEXT NOT NULL,
@@ -11,14 +11,14 @@ CREATE TABLE public.rateios (
   geracao_esperada NUMERIC NOT NULL DEFAULT 0,
   total_distribuido NUMERIC NOT NULL DEFAULT 0,
   energia_sobra NUMERIC NOT NULL DEFAULT 0,
-  status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'processed', 'completed')),
+  status TEXT NOT NULL DEFAULT 'ativo' CHECK (status IN ('ativo', 'pending', 'processed', 'completed')),
   observacoes TEXT,
   created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
   updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
 );
 
 -- Criar tabela para itens do rateio
-CREATE TABLE public.rateio_items (
+CREATE TABLE IF NOT EXISTS public.rateio_items (
   id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
   rateio_id UUID NOT NULL REFERENCES public.rateios(id) ON DELETE CASCADE,
   assinante_id TEXT NOT NULL,
@@ -94,7 +94,15 @@ CREATE POLICY "Users can delete their own rateio items"
     AND rateios.user_id = auth.uid()
   ));
 
--- Triggers para atualizar updated_at automaticamente
+-- Trigger para atualizar updated_at automaticamente
+CREATE OR REPLACE FUNCTION public.handle_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = CURRENT_TIMESTAMP;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
 CREATE TRIGGER update_rateios_updated_at
   BEFORE UPDATE ON public.rateios
   FOR EACH ROW

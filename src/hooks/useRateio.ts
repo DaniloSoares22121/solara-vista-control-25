@@ -121,8 +121,10 @@ const fetchAllSubscribers = async (): Promise<RateioSubscriber[]> => {
 };
 
 const fetchRateioHistoryForGenerator = async (generatorId: string): Promise<RateioHistoryItem[]> => {
-    // The error is because Supabase types might not be updated yet. We use `as any` as a workaround.
-    const { data, error } = await (supabase as any).from('rateios')
+    console.log('Buscando histórico para geradora:', generatorId);
+    
+    const { data, error } = await supabase
+        .from('rateios')
         .select('id, data_rateio, tipo_rateio, status, total_distribuido')
         .eq('geradora_id', generatorId)
         .order('data_rateio', { ascending: false });
@@ -132,6 +134,7 @@ const fetchRateioHistoryForGenerator = async (generatorId: string): Promise<Rate
         throw new Error('Não foi possível buscar o histórico de rateios.');
     }
 
+    console.log('Histórico encontrado:', data);
     return data || [];
 };
 
