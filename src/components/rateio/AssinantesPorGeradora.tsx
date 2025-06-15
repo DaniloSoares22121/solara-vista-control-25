@@ -1,32 +1,24 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Button } from '@/components/ui/button';
-import { Search } from 'lucide-react';
-
-// Mock data - I'll replace this with real data fetching later
-const mockGenerators = [
-  { id: 'gen1', apelido: 'Geradora Solar 1', uc: '12345678', geracao: '15000 kWh' },
-  { id: 'gen2', apelido: 'Fazenda Solar 2', uc: '87654321', geracao: '25000 kWh' },
-];
-
-const mockSubscribers: Record<string, any[]> = {
-  gen1: [
-    { id: 'sub1', nome: 'Maria da Silva', uc: '10203040', consumo: '500 kWh', credito: '150 kWh', tipo: 'Percentual: 10%', ultimaFatura: '05/2025' },
-    { id: 'sub2', nome: 'João Santos', uc: '50607080', consumo: '300 kWh', credito: '50 kWh', tipo: 'Prioridade: 1', ultimaFatura: '05/2025' },
-  ],
-  gen2: [
-    { id: 'sub3', nome: 'Pedro Almeida', uc: '90807060', consumo: '1000 kWh', credito: '300 kWh', tipo: 'Percentual: 25%', ultimaFatura: '05/2025' },
-  ],
-};
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Skeleton } from '@/components/ui/skeleton';
+import { AlertCircle } from 'lucide-react';
+import { useAssinantesPorGeradoraData } from '@/hooks/useRateio';
+import { LoadingSpinner } from '../ui/loading-spinner';
 
 const AssinantesPorGeradora = () => {
-  const [selectedGeradoraId, setSelectedGeradoraId] = useState<string | null>(null);
-
-  const selectedGeradora = mockGenerators.find(g => g.id === selectedGeradoraId);
-  const subscribers = selectedGeradoraId ? mockSubscribers[selectedGeradoraId] || [] : [];
+  const {
+    generators,
+    subscribers,
+    selectedGeradora,
+    setSelectedGeradoraId,
+    isLoadingGenerators,
+    isLoadingSubscribers,
+    error,
+  } = useAssinantesPorGeradoraData();
 
   return (
     <Card>
@@ -36,20 +28,28 @@ const AssinantesPorGeradora = () => {
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="flex items-center gap-4">
-          <Select onValueChange={setSelectedGeradoraId}>
+          <Select onValueChange={setSelectedGeradoraId} disabled={isLoadingGenerators}>
             <SelectTrigger className="w-full sm:w-[300px]">
-              <SelectValue placeholder="Selecione uma geradora..." />
+              <SelectValue placeholder={isLoadingGenerators ? "Carregando geradoras..." : "Selecione uma geradora..."} />
             </SelectTrigger>
             <SelectContent>
-              {mockGenerators.map(g => (
+              {isLoadingGenerators && <div className="flex justify-center p-4"><LoadingSpinner /></div>}
+              {generators.map(g => (
                 <SelectItem key={g.id} value={g.id}>{g.apelido}</SelectItem>
               ))}
             </SelectContent>
           </Select>
-          <Button>
-            <Search className="mr-2 h-4 w-4" /> Buscar
-          </Button>
         </div>
+
+        {error && (
+            <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>Erro</AlertTitle>
+                <AlertDescription>
+                    {(error as Error).message || "Ocorreu um erro ao buscar os dados."}
+                </AlertDescription>
+            </Alert>
+        )}
 
         {selectedGeradora && (
           <Card className="bg-muted/40">
@@ -69,7 +69,7 @@ const AssinantesPorGeradora = () => {
           </Card>
         )}
 
-        {selectedGeradoraId && (
+        {(selectedGeradora || isLoadingSubscribers) && (
           <div>
             <h3 className="text-lg font-semibold mb-4">Assinantes Vinculados</h3>
             <div className="border rounded-lg">
@@ -85,7 +85,18 @@ const AssinantesPorGeradora = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {subscribers.length > 0 ? (
+                  {isLoadingSubscribers ? (
+                    Array.from({ length: 3 }).map((_, index) => (
+                      <TableRow key={index}>
+                        <TableCell><Skeleton className="h-4 w-[200px]" /></TableCell>
+                        <TableCell><Skeleton className="h-4 w-[100px]" /></TableCell>
+                        <TableCell><Skeleton className="h-4 w-[120px]" /></TableCell>
+                        <TableCell><Skeleton className="h-4 w-[120px]" /></TableCell>
+                        <TableCell><Skeleton className="h-4 w-[100px]" /></TableCell>
+                        <TableCell><Skeleton className="h-4 w-[80px]" /></TableCell>
+                      </TableRow>
+                    ))
+                  ) : subscribers.length > 0 ? (
                     subscribers.map(sub => (
                       <TableRow key={sub.id}>
                         <TableCell>{sub.nome}</TableCell>
