@@ -1,4 +1,3 @@
-
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -34,66 +33,40 @@ const GeneratorAttachmentsForm = ({ form }: GeneratorAttachmentsFormProps) => {
     procuracao: useRef<HTMLInputElement>(null),
   };
 
-  // Função para atualizar estado local baseado no formulário
-  const updateLocalState = useCallback(() => {
+  // Atualizar estado local a partir do formulário react-hook-form
+  useEffect(() => {
     const formAttachments = form.getValues('attachments');
-    console.log('🔄 Atualizando estado local, attachments do form:', formAttachments);
-    
-    if (formAttachments && typeof formAttachments === 'object') {
-      const validFiles: Record<string, FileUploadData> = {};
-      
+    // Corrige: só faz parse de arquivos realmente válidos (File)
+    const validFiles: Record<string, FileUploadData> = {};
+    if (formAttachments && typeof formAttachments === "object") {
       Object.entries(formAttachments).forEach(([key, value]) => {
-        if (value && 
-            typeof value === 'object' && 
-            'name' in value && 
-            'size' in value &&
-            'type' in value) {
-          
-          const fileObject = 'file' in value && value.file instanceof File 
-            ? value.file 
-            : new File([''], value.name as string, { type: value.type as string });
-          
+        if (
+          value &&
+          typeof value === "object" &&
+          value.file instanceof File &&
+          value.name &&
+          value.size &&
+          value.type
+        ) {
           validFiles[key] = {
-            file: fileObject,
-            name: value.name as string,
-            size: value.size as number,
-            type: value.type as string,
-            uploadedAt: ('uploadedAt' in value ? value.uploadedAt : new Date().toISOString()) as string
+            file: value.file,
+            name: value.name,
+            size: value.size,
+            type: value.type,
+            uploadedAt: value.uploadedAt || new Date().toISOString(),
           };
-          
-          console.log(`✅ Arquivo válido encontrado [${key}]:`, validFiles[key].name);
         }
       });
-      
-      console.log('📁 Total de arquivos válidos:', Object.keys(validFiles).length);
-      setFiles(validFiles);
-    } else {
-      console.log('❌ Nenhum attachment encontrado no formulário');
-      setFiles({});
     }
-  }, [form]);
+    setFiles(validFiles);
+  }, [form, forceUpdate, form.watch("attachments")]);
+  // agora observa também form.watch("attachments") para reacionar em tempo real
 
-  // Sincronizar quando attachments mudar
-  useEffect(() => {
-    updateLocalState();
-  }, [updateLocalState, forceUpdate]);
-
-  // Watch mudanças no campo attachments
-  const watchedAttachments = form.watch('attachments');
-  useEffect(() => {
-    console.log('👁️ Watch detectou mudança em attachments:', watchedAttachments);
-    updateLocalState();
-  }, [watchedAttachments, updateLocalState]);
-
+  // Upload handler: grava valor no form e força renderização
   const handleFileUpload = async (fieldName: string, selectedFile: File | null) => {
-    console.log(`📤 Iniciando upload para campo [${fieldName}]:`, selectedFile?.name);
-    
-    if (!selectedFile) {
-      console.log('❌ Nenhum arquivo selecionado');
-      return;
-    }
+    if (!selectedFile) return;
 
-    // Validações
+    // Validação do tipo de arquivo (pdf/png/jpg/jpeg)
     const allowedTypes = ['application/pdf', 'image/png', 'image/jpeg', 'image/jpg'];
     if (!allowedTypes.includes(selectedFile.type)) {
       alert('Formato inválido. Use PDF, PNG ou JPG.');
@@ -103,7 +76,8 @@ const GeneratorAttachmentsForm = ({ form }: GeneratorAttachmentsFormProps) => {
       return;
     }
 
-    const maxSize = 10 * 1024 * 1024; // 10MB
+    // Validação tamanho (até 10MB)
+    const maxSize = 10 * 1024 * 1024;
     if (selectedFile.size > maxSize) {
       alert('Arquivo muito grande. Máximo 10MB.');
       if (fileInputRefs[fieldName as keyof typeof fileInputRefs].current) {
@@ -112,94 +86,52 @@ const GeneratorAttachmentsForm = ({ form }: GeneratorAttachmentsFormProps) => {
       return;
     }
 
-    // Criar objeto do arquivo
     const fileData: FileUploadData = {
       file: selectedFile,
       name: selectedFile.name,
       size: selectedFile.size,
       type: selectedFile.type,
-      uploadedAt: new Date().toISOString()
+      uploadedAt: new Date().toISOString(),
     };
 
-    console.log(`💾 Dados do arquivo criados [${fieldName}]:`, fileData);
+    // Atualiza só o attachment individual (mantendo os outros)
+    form.setValue(
+      `attachments.${fieldName}`,
+      fileData,
+      {
+        shouldValidate: true,
+        shouldTouch: true,
+        shouldDirty: true
+      }
+    );
 
-    // Atualizar formulário
-    const currentAttachments = form.getValues('attachments') || {};
-    const updatedAttachments = { 
-      ...currentAttachments, 
-      [fieldName]: fileData
-    };
-    
-    console.log('📝 Atualizando formulário com:', updatedAttachments);
-    
-    // Usar setValue
-    form.setValue('attachments', updatedAttachments, { 
-      shouldValidate: true,
-      shouldTouch: true,
-      shouldDirty: true 
-    });
-
-    // Atualizar estado local imediatamente
-    setFiles(prev => {
-      const newFiles = {
-        ...prev,
-        [fieldName]: fileData
-      };
-      console.log('🔄 Estado local atualizado:', newFiles);
-      return newFiles;
-    });
-
-    // Forçar re-render
-    setForceUpdate(prev => prev + 1);
-    
-    console.log(`✅ Upload concluído para [${fieldName}]`);
+    setForceUpdate((prev) => prev + 1);
   };
 
   const removeFile = (fieldName: string) => {
-    console.log(`🗑️ Removendo arquivo [${fieldName}]`);
-    
-    // Atualizar formulário
-    const currentAttachments = form.getValues('attachments') || {};
-    const updatedAttachments = { ...currentAttachments };
-    delete updatedAttachments[fieldName];
-    
-    form.setValue('attachments', updatedAttachments, { 
-      shouldValidate: true,
-      shouldTouch: true,
-      shouldDirty: true 
-    });
-    
-    // Limpar input
+    // Apaga apenas o campo individual do form
+    form.setValue(
+      `attachments.${fieldName}`,
+      undefined,
+      { shouldValidate: true, shouldTouch: true, shouldDirty: true }
+    );
+    setForceUpdate((prev) => prev + 1);
     if (fileInputRefs[fieldName as keyof typeof fileInputRefs].current) {
       fileInputRefs[fieldName as keyof typeof fileInputRefs].current!.value = '';
     }
-    
-    // Atualizar estado local imediatamente
-    setFiles(prev => {
-      const newFiles = { ...prev };
-      delete newFiles[fieldName];
-      console.log('🔄 Estado local após remoção:', newFiles);
-      return newFiles;
-    });
-
-    // Forçar re-render
-    setForceUpdate(prev => prev + 1);
   };
 
-  const FileUploadField = ({ 
-    name, 
-    label, 
-    required = false 
-  }: { 
-    name: keyof typeof fileInputRefs; 
-    label: string; 
+  const FileUploadField = ({
+    name,
+    label,
+    required = false,
+  }: {
+    name: keyof typeof fileInputRefs;
+    label: string;
     required?: boolean;
   }) => {
     const fileData = files[name];
-    const hasFile = !!fileData && fileData.name && fileData.size > 0;
-    
-    console.log(`🔍 [FIELD ${name}] hasFile: ${hasFile}, fileData:`, fileData);
-    
+    const hasFile = fileData && fileData.file instanceof File && fileData.name && fileData.size > 0;
     return (
       <FormField
         control={form.control}
@@ -265,15 +197,11 @@ const GeneratorAttachmentsForm = ({ form }: GeneratorAttachmentsFormProps) => {
                       </div>
                     </div>
                   )}
-                  
                   <Input
                     ref={fileInputRefs[name]}
                     type="file"
                     accept=".pdf,.jpg,.jpeg,.png"
-                    onChange={(e) => {
-                      const selectedFile = e.target.files?.[0] || null;
-                      handleFileUpload(name, selectedFile);
-                    }}
+                    onChange={(e) => handleFileUpload(name, e.target.files?.[0] || null)}
                     className="hidden"
                   />
                 </CardContent>
