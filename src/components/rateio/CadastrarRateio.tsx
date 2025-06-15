@@ -22,10 +22,10 @@ const CadastrarRateio = () => {
   const generators = generatorsData || [];
   const selectedGeradora = generators.find(g => g.id === selectedGeradoraId);
 
-  // MODIFICADO: Agora obtém TODOS os assinantes disponíveis
+  // Obtém TODOS os assinantes disponíveis
   const { data: subscribersData, isLoading: isLoadingSubscribers, error: errorSubscribers } = useRateioSubscribers();
 
-  // MODIFICADO: Prepara lista de assinantes sempre que carregar da API ou trocar de geradora
+  // Prepara lista de assinantes sempre que carregar da API ou trocar de geradora
   React.useEffect(() => {
     if (subscribersData) {
       setAssinantes(
@@ -58,26 +58,27 @@ const CadastrarRateio = () => {
 
   // Validação
   const validSubmit =
+    selectedGeradoraId &&
     selecionados.length > 0 &&
     selecionados.every(a => !!a.valor && (!isNaN(Number(a.valor)))) &&
     (
       tipoRateio === "porcentagem"
         ? somaPorcentagens === 100
-        : (new Set(prioridades)).size === prioridades.length && prioridades.every(n => Number.isInteger(n))
+        : (new Set(prioridades)).size === prioridades.length && prioridades.every(n => Number.isInteger(n) && n > 0)
     );
 
   // Mensagens
   const statusMsg =
     tipoRateio === "porcentagem"
       ? `A soma das porcentagens deve ser exatamente 100%. Atualmente: ${somaPorcentagens}%`
-      : "Cada prioridade deve ser única e inteira. 1 é a maior prioridade.";
+      : "Cada prioridade deve ser única e inteira (começando em 1). 1 é a maior prioridade.";
 
   const hasPriorityDuplicate =
     tipoRateio === "prioridade" && (new Set(prioridades)).size !== prioridades.length;
 
   // ----------- SUBMIT HANDLER ----------------------
   const handleSubmit = async () => {
-    if (!selectedGeradoraId) {
+    if (!selectedGeradoraId || !selectedGeradora) {
       toast({
         title: "Selecione uma geradora!",
         description: "Você precisa selecionar uma geradora para cadastrar o rateio.",
@@ -85,6 +86,7 @@ const CadastrarRateio = () => {
       });
       return;
     }
+    
     if (!validSubmit) {
       toast({
         title: "Preencha os valores corretamente!",
@@ -98,22 +100,32 @@ const CadastrarRateio = () => {
 
     setIsSubmitting(true);
     try {
+      console.log('Dados para cadastro:', {
+        geradora: selectedGeradora,
+        tipoRateio,
+        assinantes: selecionados
+      });
+
       await rateioService.cadastrarRateio({
         geradora: selectedGeradora,
         tipoRateio,
-        dataRateio: new Date().toISOString(),
+        dataRateio: new Date().toISOString().split('T')[0], // Formato YYYY-MM-DD
         assinantes: selecionados,
       });
+      
       toast({
-        title: "Sucesso",
-        description: "Rateio cadastrado com sucesso!",
+        title: "Sucesso!",
+        description: `Rateio cadastrado com sucesso! ${selecionados.length} assinantes vinculados.`,
       });
-      // Mantém a seleção da geradora, mas limpa os valores dos assinantes
+      
+      // Limpa os valores dos assinantes mas mantém a geradora selecionada
       setAssinantes(assinantes.map(a => ({ ...a, selecionado: false, valor: "" })));
+      
     } catch (err: any) {
+      console.error('Erro ao cadastrar rateio:', err);
       toast({
         title: "Erro ao cadastrar",
-        description: err?.message || "Erro ao cadastrar rateio.",
+        description: err?.message || "Erro inesperado ao cadastrar rateio.",
         variant: "destructive"
       });
     } finally {
@@ -173,7 +185,7 @@ const CadastrarRateio = () => {
           </Card>
         )}
 
-        {/* MODIFICADO: Lista de assinantes aparece sempre que houver uma geradora selecionada */}
+        {/* Lista de assinantes aparece sempre que houver uma geradora selecionada */}
         {selectedGeradora && (
           <div className="mt-6 rounded-md border p-4 bg-muted/10">
             <h3 className="text-lg font-semibold mb-4">Selecionar Assinantes para Vincular à Geradora</h3>
@@ -198,8 +210,8 @@ const CadastrarRateio = () => {
           </div>
         )}
 
-        {/* Mensagem de validação aparece quando TENTAR cadastrar ou alterar algum valor */}
-        {selectedGeradora && (
+        {/* Mensagem de validação */}
+        {selectedGeradora && selecionados.length > 0 && (
           <div className="my-4">
             {!validSubmit && (
               <Alert variant="destructive" className="flex items-center gap-2">
@@ -216,7 +228,7 @@ const CadastrarRateio = () => {
             {validSubmit && tipoRateio === "prioridade" && (
               <div className="flex items-center text-green-700 text-sm gap-2">
                 <CheckCircle2 className="h-5 w-5" />
-                Prioridade inserida corretamente!
+                Prioridades configuradas corretamente!
               </div>
             )}
             {hasPriorityDuplicate && (
@@ -227,8 +239,8 @@ const CadastrarRateio = () => {
           </div>
         )}
 
-        {/* Botão só aparece se selecionar geradora */}
-        {selectedGeradora && (
+        {/* Botão de cadastrar */}
+        {selectedGeradora && selecionados.length > 0 && (
           <div className="flex items-center justify-end gap-4 mt-6">
             <Button onClick={handleSubmit} disabled={isSubmitting || isLoadingSubscribers || !validSubmit}>
               {isSubmitting ? <LoadingSpinner size="sm" /> : "Cadastrar Rateio"}
@@ -236,7 +248,7 @@ const CadastrarRateio = () => {
           </div>
         )}
 
-        {/* Se não selecionou geradora, orientação */}
+        {/* Orientação inicial */}
         {!selectedGeradora && !isLoadingGenerators && (
           <div className="text-center text-muted-foreground py-8">
             <p>Por favor, selecione uma geradora para continuar.</p>
