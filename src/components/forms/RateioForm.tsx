@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -42,6 +41,9 @@ const RateioForm: React.FC<RateioFormProps> = ({ onSubmit, onCancel }) => {
   const [validation, setValidation] = useState<any>({ isValid: true, errors: [], warnings: [] });
   const [currentStep, setCurrentStep] = useState(1);
 
+  // NOVO: seleção múltipla de assinantes na etapa 1
+  const [assinantesSelecionados, setAssinantesSelecionados] = useState<string[]>([]);
+
   // Carregar assinantes vinculados quando geradora é selecionada
   useEffect(() => {
     if (configuracao.geradoraId) {
@@ -60,6 +62,11 @@ const RateioForm: React.FC<RateioFormProps> = ({ onSubmit, onCancel }) => {
     }
   }, [configuracao.geradoraId]);
 
+  // NOVO: lista de assinantes elegíveis baseados na concessionária da geradora
+  const assinantesElegiveis = assinantes.filter(a =>
+    (!selectedGeradora || a.concessionaria === selectedGeradora.concessionaria)
+  );
+
   // Validar sempre que items mudarem
   useEffect(() => {
     if (rateioItems.length > 0) {
@@ -67,6 +74,32 @@ const RateioForm: React.FC<RateioFormProps> = ({ onSubmit, onCancel }) => {
       setValidation(newValidation);
     }
   }, [rateioItems, configuracao.tipoRateio, configuracao.geracaoEsperada]);
+
+  // NOVO: quando muda a lista de selecionados, monta os rateioItems
+  useEffect(() => {
+    if (assinantesSelecionados.length > 0 && currentStep === 1 && configuracao.geradoraId) {
+      const novos = assinantes
+        .filter(a =>
+          assinantesSelecionados.includes(a.id) &&
+          (!selectedGeradora || a.concessionaria === selectedGeradora.concessionaria)
+        )
+        .map((assinante) => ({
+          assinanteId: assinante.id,
+          nome: assinante.nome,
+          uc: assinante.uc,
+          consumoNumero: assinante.consumoNumero,
+          porcentagem: configuracao.tipoRateio === 'porcentagem' ? 0 : undefined,
+          prioridade: configuracao.tipoRateio === 'prioridade' ? undefined : undefined,
+          isNew: true,
+        }));
+      setRateioItems(novos);
+    }
+    // Limpa caso des-selecione todos
+    if (assinantesSelecionados.length === 0 && currentStep === 1) {
+      setRateioItems([]);
+    }
+    // eslint-disable-next-line
+  }, [assinantesSelecionados, currentStep, configuracao.geradoraId]);
 
   const handleAddAssinante = () => {
     if (!configuracao.novoAssinanteId) return;
@@ -217,6 +250,41 @@ const RateioForm: React.FC<RateioFormProps> = ({ onSubmit, onCancel }) => {
                       </div>
                     </div>
                   </div>
+                )}
+                
+                {selectedGeradora && (
+                  <>
+                    <div className="mt-8 p-6 bg-gradient-to-l from-blue-50 via-gray-50 to-green-50 rounded-xl border">
+                      <Label className="text-base font-semibold mb-2">Selecione os Assinantes vinculados</Label>
+                      <div>
+                        <select
+                          multiple
+                          value={assinantesSelecionados}
+                          onChange={e => {
+                            const selected = Array.from(e.target.selectedOptions).map(opt => opt.value);
+                            setAssinantesSelecionados(selected);
+                          }}
+                          className="w-full h-40 border rounded-lg px-4 py-2 bg-white focus:ring-2 focus:ring-blue-400"
+                        >
+                          {assinantesElegiveis.map(assinante => (
+                            <option key={assinante.id} value={assinante.id}>
+                              {assinante.nome} • UC: {assinante.uc} • {assinante.consumoContratado}
+                            </option>
+                          ))}
+                        </select>
+                        <div className="text-xs text-gray-500 mt-2">
+                          Segure Ctrl (Windows) ou Command (Mac) para selecionar vários.
+                        </div>
+                      </div>
+                      <div className="mt-2">
+                        <span className="text-sm font-medium text-gray-600">
+                          {assinantesSelecionados.length === 0
+                            ? 'Nenhum assinante selecionado'
+                            : `${assinantesSelecionados.length} assinante(s) selecionado(s)`}
+                        </span>
+                      </div>
+                    </div>
+                  </>
                 )}
               </div>
             )}
