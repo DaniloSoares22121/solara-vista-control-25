@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { RateioFormData, RateioConfiguracao, RateioItem, Geradora, Assinante } from '@/types/rateio';
 import { useRateio } from '@/hooks/useRateio';
+import { useSubscribers } from '@/hooks/useSubscribers';
 
 interface RateioFormProps {
   onSubmit: (data: RateioFormData) => void;
@@ -26,6 +27,9 @@ const RateioForm: React.FC<RateioFormProps> = ({ onSubmit, onCancel }) => {
     validateRateio,
     calculateDistribuicao
   } = useRateio();
+
+  // Buscando assinantes do Supabase
+  const { subscribers, isLoading: assinantesLoading } = useSubscribers();
 
   const geradoras = getGeradoras();
   const assinantes = getAssinantes();
@@ -63,9 +67,19 @@ const RateioForm: React.FC<RateioFormProps> = ({ onSubmit, onCancel }) => {
   }, [configuracao.geradoraId]);
 
   // NOVO: lista de assinantes elegíveis baseados na concessionária da geradora
-  const assinantesElegiveis = assinantes.filter(a =>
-    (!selectedGeradora || a.concessionaria === selectedGeradora.concessionaria)
-  );
+  const assinantesElegiveis = React.useMemo(() => {
+    if (!selectedGeradora) return [];
+    return subscribers.filter(sub => 
+      sub.concessionaria === selectedGeradora.concessionaria
+    ).map(sub => ({
+      id: sub.id,
+      nome: sub.subscriber?.nome || sub.subscriber?.razao_social || 'Sem nome',
+      uc: sub.energy_account?.uc || '-',
+      consumoContratado: sub.energy_account?.consumo_contratado 
+        ? `${sub.energy_account?.consumo_contratado} kWh`
+        : '-'
+    }));
+  }, [subscribers, selectedGeradora]);
 
   // Validar sempre que items mudarem
   useEffect(() => {
@@ -265,8 +279,15 @@ const RateioForm: React.FC<RateioFormProps> = ({ onSubmit, onCancel }) => {
                             setAssinantesSelecionados(selected);
                           }}
                           className="w-full h-40 border rounded-lg px-4 py-2 bg-white focus:ring-2 focus:ring-blue-400"
+                          disabled={assinantesLoading}
                         >
-                          {assinantesElegiveis.map(assinante => (
+                          {assinantesLoading && (
+                            <option>Carregando assinantes...</option>
+                          )}
+                          {!assinantesLoading && assinantesElegiveis.length === 0 && (
+                            <option disabled>Nenhum assinante disponível para essa geradora</option>
+                          )}
+                          {!assinantesLoading && assinantesElegiveis.map(assinante => (
                             <option key={assinante.id} value={assinante.id}>
                               {assinante.nome} • UC: {assinante.uc} • {assinante.consumoContratado}
                             </option>
