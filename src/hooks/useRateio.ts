@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -95,7 +94,7 @@ const fetchSubscribersForGenerator = async (generatorId: string): Promise<Rateio
 
 const fetchRateioHistoryForGenerator = async (generatorId: string): Promise<RateioHistoryItem[]> => {
     // The error is because Supabase types might not be updated yet. We use `as any` as a workaround.
-    const { data, error } = await (supabase.from('rateios') as any)
+    const { data, error } = await (supabase as any).from('rateios')
         .select('id, data_rateio, tipo_rateio, status, total_distribuido')
         .eq('geradora_id', generatorId)
         .order('data_rateio', { ascending: false });
