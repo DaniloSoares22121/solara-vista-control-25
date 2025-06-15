@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -27,7 +28,6 @@ export interface RateioHistoryItem {
     total_distribuido: number;
 }
 
-
 const fetchGenerators = async (): Promise<RateioGenerator[]> => {
   const { data, error } = await supabase
     .from('generators')
@@ -56,11 +56,11 @@ const fetchGenerators = async (): Promise<RateioGenerator[]> => {
   });
 };
 
-const fetchSubscribersForGenerator = async (generatorId: string): Promise<RateioSubscriber[]> => {
+// MODIFICADO: Agora busca TODOS os assinantes, não apenas os vinculados à geradora
+const fetchAllSubscribers = async (): Promise<RateioSubscriber[]> => {
   const { data, error } = await supabase
     .from('subscribers')
-    .select('id, subscriber, energy_account, plan_details')
-    .eq('plan_details->>generatorId', generatorId);
+    .select('id, subscriber, energy_account, plan_details');
 
   if (error) {
     console.error('Error fetching subscribers:', error);
@@ -118,11 +118,11 @@ export const useRateioGenerators = () => {
     });
 }
 
-export const useRateioSubscribers = (generatorId?: string) => {
+// MODIFICADO: Agora busca todos os assinantes disponíveis
+export const useRateioSubscribers = () => {
     return useQuery({
-        queryKey: ['subscribersForGenerator', generatorId],
-        queryFn: () => fetchSubscribersForGenerator(generatorId!),
-        enabled: !!generatorId,
+        queryKey: ['allSubscribersForRateio'],
+        queryFn: fetchAllSubscribers,
     });
 }
 

@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -21,12 +22,12 @@ const CadastrarRateio = () => {
   const generators = generatorsData || [];
   const selectedGeradora = generators.find(g => g.id === selectedGeradoraId);
 
-  // Obtém assinantes da geradora selecionada
-  const { data: subscribersData, isLoading: isLoadingSubscribers, error: errorSubscribers } = useRateioSubscribers(selectedGeradoraId);
+  // MODIFICADO: Agora obtém TODOS os assinantes disponíveis
+  const { data: subscribersData, isLoading: isLoadingSubscribers, error: errorSubscribers } = useRateioSubscribers();
 
-  // Prepara lista de assinantes toda vez que trocar de geradora ou quando carregar da API
+  // MODIFICADO: Prepara lista de assinantes sempre que carregar da API ou trocar de geradora
   React.useEffect(() => {
-    if (selectedGeradoraId && subscribersData) {
+    if (subscribersData) {
       setAssinantes(
         (subscribersData || []).map(a => ({
           ...a,
@@ -37,7 +38,7 @@ const CadastrarRateio = () => {
     } else {
       setAssinantes([]);
     }
-  }, [selectedGeradoraId, subscribersData]);
+  }, [subscribersData]);
 
   const error = errorGenerators || errorSubscribers;
 
@@ -172,16 +173,17 @@ const CadastrarRateio = () => {
           </Card>
         )}
 
-        {/* --- NOVO: Lista de assinantes aparece sempre que houver uma geradora selecionada --- */}
+        {/* MODIFICADO: Lista de assinantes aparece sempre que houver uma geradora selecionada */}
         {selectedGeradora && (
-          <div className="mt-6 rounded-md border p-2 bg-muted/10">
+          <div className="mt-6 rounded-md border p-4 bg-muted/10">
+            <h3 className="text-lg font-semibold mb-4">Selecionar Assinantes para Vincular à Geradora</h3>
             {isLoadingSubscribers ? (
               <div className="text-center mt-4"><LoadingSpinner size="sm" text="Carregando assinantes..." /></div>
             ) : (
               <>
                 {assinantes.length === 0 ? (
                   <div className="text-center text-muted-foreground py-6">
-                    Nenhum assinante disponível para essa geradora.
+                    Nenhum assinante cadastrado no sistema.
                   </div>
                 ) : (
                   <AdicionarAssinantesRateio
