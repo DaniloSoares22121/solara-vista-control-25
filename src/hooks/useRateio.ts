@@ -56,11 +56,11 @@ const fetchGenerators = async (): Promise<RateioGenerator[]> => {
   });
 };
 
-// MODIFICADO: Agora busca TODOS os assinantes, não apenas os vinculados à geradora
+// Função corrigida para buscar todos os assinantes com dados corretos
 const fetchAllSubscribers = async (): Promise<RateioSubscriber[]> => {
   const { data, error } = await supabase
     .from('subscribers')
-    .select('id, subscriber, energy_account, plan_details');
+    .select('id, subscriber, energy_account, plan_contract');
 
   if (error) {
     console.error('Error fetching subscribers:', error);
@@ -69,28 +69,52 @@ const fetchAllSubscribers = async (): Promise<RateioSubscriber[]> => {
 
   if (!data) return [];
 
+  console.log('Raw subscriber data:', data);
+
   return data.map(s => {
     const subscriber = s.subscriber as any;
     const energyAccount = s.energy_account as any;
-    const planDetails = s.plan_details as any;
+    const planContract = s.plan_contract as any;
 
-    let rateioDisplay = 'N/A';
-    // Assuming plan_details contains rateio information
-    if (planDetails?.rateio_tipo && planDetails?.rateio_valor) {
-        if (planDetails.rateio_tipo === 'porcentagem') {
-            rateioDisplay = `${planDetails.rateio_valor}%`;
-        } else if (planDetails.rateio_tipo === 'prioridade') {
-            rateioDisplay = `Prioridade ${planDetails.rateio_valor}`;
-        }
+    console.log('Processing subscriber:', { subscriber, energyAccount, planContract });
+
+    // Extrai o nome do assinante (pessoa física ou jurídica)
+    let nome = 'Nome não informado';
+    if (subscriber?.nome_completo) {
+      nome = subscriber.nome_completo;
+    } else if (subscriber?.fullName) {
+      nome = subscriber.fullName;
+    } else if (subscriber?.razao_social) {
+      nome = subscriber.razao_social;
+    } else if (subscriber?.companyName) {
+      nome = subscriber.companyName;
+    }
+
+    // Extrai a UC
+    let uc = 'N/A';
+    if (energyAccount?.numero_uc) {
+      uc = energyAccount.numero_uc;
+    } else if (energyAccount?.uc) {
+      uc = energyAccount.uc;
+    }
+
+    // Extrai o consumo contratado
+    let consumo = 'N/A';
+    if (planContract?.consumo_contratado) {
+      consumo = `${planContract.consumo_contratado} kWh`;
+    } else if (planContract?.contractedKwh) {
+      consumo = `${planContract.contractedKwh} kWh`;
+    } else if (planContract?.informedKwh) {
+      consumo = `${planContract.informedKwh} kWh`;
     }
 
     return {
       id: s.id,
-      nome: subscriber?.nome_completo || subscriber?.razao_social || 'Assinante sem nome',
-      uc: energyAccount?.numero_uc || 'N/A',
-      consumo: `${planDetails?.consumo_contratado || 0} kWh`,
+      nome,
+      uc,
+      consumo,
       credito: 'N/A', // Data source to be defined
-      rateio: rateioDisplay,
+      rateio: 'A definir',
       ultimaFatura: 'N/A', // Data source to be defined
     };
   });
@@ -118,7 +142,6 @@ export const useRateioGenerators = () => {
     });
 }
 
-// MODIFICADO: Agora busca todos os assinantes disponíveis
 export const useRateioSubscribers = () => {
     return useQuery({
         queryKey: ['allSubscribersForRateio'],
