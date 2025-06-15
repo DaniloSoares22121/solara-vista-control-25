@@ -1,3 +1,4 @@
+
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -10,11 +11,11 @@ import { useNavigate } from 'react-router-dom';
 const Dashboard = () => {
   const { currentUser } = useAuth();
   const navigate = useNavigate();
-  const { stats, loading, error } = useDashboardStats();
+  const { stats, isLoading, error } = useDashboardStats();
 
   const userDisplayName = currentUser?.user_metadata?.full_name || currentUser?.email || 'Usuário';
 
-  if (loading) {
+  if (isLoading) {
     return <LoadingSpinner size="lg" text="Carregando painel..." />;
   }
 
@@ -26,6 +27,11 @@ const Dashboard = () => {
       </div>
     );
   }
+
+  // Calculate compliance rate from available data
+  const complianceRate = stats?.faturasPagas && stats?.faturasEmitidas 
+    ? Math.round((stats.faturasPagas / stats.faturasEmitidas) * 100) 
+    : 0;
 
   return (
     <div className="space-y-8">
@@ -57,9 +63,9 @@ const Dashboard = () => {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-gray-900">{stats?.activeSubscribers}</div>
+            <div className="text-3xl font-bold text-gray-900">{stats?.totalAssinantes || 0}</div>
             <p className="text-sm text-gray-600 mt-1">
-              {stats?.totalSubscribers} assinantes no total
+              Total de assinantes cadastrados
             </p>
           </CardContent>
         </Card>
@@ -68,15 +74,15 @@ const Dashboard = () => {
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CardTitle className="text-sm font-medium text-gray-600">
-                Energia Distribuída
+                Geradoras Ativas
               </CardTitle>
               <Zap className="w-5 h-5 text-green-600" />
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-gray-900">{stats?.distributedEnergy} kWh</div>
+            <div className="text-3xl font-bold text-gray-900">{stats?.totalGeradoras || 0}</div>
             <p className="text-sm text-gray-600 mt-1">
-              Média de consumo por assinante
+              Geradoras cadastradas
             </p>
           </CardContent>
         </Card>
@@ -91,9 +97,9 @@ const Dashboard = () => {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-gray-900">{stats?.issuedInvoices}</div>
+            <div className="text-3xl font-bold text-gray-900">{stats?.faturasEmitidas || 0}</div>
             <p className="text-sm text-gray-600 mt-1">
-              {stats?.pendingInvoices} pendentes
+              {stats?.faturasPendentes || 0} pendentes de validação
             </p>
           </CardContent>
         </Card>
@@ -102,15 +108,15 @@ const Dashboard = () => {
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CardTitle className="text-sm font-medium text-gray-600">
-                Taxa de Adimplência
+                Taxa de Pagamento
               </CardTitle>
               <TrendingUp className="w-5 h-5 text-purple-600" />
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-green-600">{stats?.complianceRate}%</div>
+            <div className="text-3xl font-bold text-green-600">{complianceRate}%</div>
             <p className="text-sm text-gray-600 mt-1">
-              Em dia com os pagamentos
+              Faturas pagas vs emitidas
             </p>
           </CardContent>
         </Card>
@@ -147,72 +153,36 @@ const Dashboard = () => {
         <Card className="shadow-lg border-0">
           <CardHeader>
             <CardTitle className="text-lg font-semibold">
-              Próximos Passos
+              Resumo Financeiro
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center">
-                <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
-                <span className="text-gray-800">Configurar método de pagamento</span>
-              </div>
-              <ArrowUpRight className="w-4 h-4 text-gray-500" />
-            </div>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <Clock className="w-5 h-5 text-yellow-500 mr-2" />
-                <span className="text-gray-800">Validar faturas pendentes</span>
-              </div>
-              <ArrowUpRight className="w-4 h-4 text-gray-500" />
-            </div>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
                 <FileText className="w-5 h-5 text-blue-500 mr-2" />
-                <span className="text-gray-800">Acompanhar emissão de novas faturas</span>
+                <span className="text-gray-800">Total de Faturas</span>
               </div>
-              <ArrowUpRight className="w-4 h-4 text-gray-500" />
+              <span className="font-semibold text-gray-900">{stats?.totalFaturas || 0}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <TrendingUp className="w-5 h-5 text-green-500 mr-2" />
+                <span className="text-gray-800">Valor Total</span>
+              </div>
+              <span className="font-semibold text-gray-900">
+                R$ {stats?.valorTotal?.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) || '0,00'}
+              </span>
+            </div>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
+                <span className="text-gray-800">Faturas Pagas</span>
+              </div>
+              <span className="font-semibold text-gray-900">{stats?.faturasPagas || 0}</span>
             </div>
           </CardContent>
         </Card>
       </div>
-
-      {/* Recent Activity */}
-      <Card className="shadow-lg border-0">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-lg font-semibold">
-              Atividade Recente
-            </CardTitle>
-            <Button variant="outline" size="sm">
-              <Eye className="w-4 h-4 mr-2" />
-              Ver Todas
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <Users className="w-5 h-5 text-gray-500 mr-2" />
-              <span className="text-gray-800">Novo assinante cadastrado</span>
-            </div>
-            <span className="text-gray-500 text-sm">Há 2 horas</span>
-          </div>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <FileText className="w-5 h-5 text-gray-500 mr-2" />
-              <span className="text-gray-800">Fatura #12345 emitida</span>
-            </div>
-            <span className="text-gray-500 text-sm">Há 1 dia</span>
-          </div>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <Zap className="w-5 h-5 text-gray-500 mr-2" />
-              <span className="text-gray-800">Rateio de energia realizado</span>
-            </div>
-            <span className="text-gray-500 text-sm">Há 3 dias</span>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 };
