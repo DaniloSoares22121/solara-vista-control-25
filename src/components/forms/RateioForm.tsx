@@ -315,7 +315,7 @@ const RateioForm: React.FC<RateioFormProps> = ({ onSubmit, onCancel }) => {
                           </TableHead>
                           <TableHead>Energia Alocada</TableHead>
                           <TableHead>Status</TableHead>
-                          <TableHead width="80">Ações</TableHead>
+                          <TableHead style={{ width: '80px' }}>Ações</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>

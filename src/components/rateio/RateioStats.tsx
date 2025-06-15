@@ -15,8 +15,8 @@ const RateioStats: React.FC<RateioStatsProps> = ({ rateios, isLoading }) => {
     pending: rateios.filter(r => r.status === 'pending').length,
     processed: rateios.filter(r => r.status === 'processed').length,
     completed: rateios.filter(r => r.status === 'completed').length,
-    totalEnergy: rateios.reduce((acc, r) => acc + (r.expectedGeneration || 0), 0),
-    averageSubscribers: rateios.length > 0 ? Math.round(rateios.reduce((acc, r) => acc + r.subscribers.length, 0) / rateios.length) : 0
+    totalEnergy: rateios.reduce((acc, r) => acc + (r.geracaoEsperada || 0), 0),
+    averageSubscribers: rateios.length > 0 ? Math.round(rateios.reduce((acc, r) => acc + r.assinantes.length, 0) / rateios.length) : 0
   };
 
   const statCards = [

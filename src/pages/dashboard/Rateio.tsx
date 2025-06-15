@@ -7,7 +7,7 @@ import RateioForm from '@/components/forms/RateioForm';
 import RateioStats from '@/components/rateio/RateioStats';
 import RateioFilters from '@/components/rateio/RateioFilters';
 import RateioList from '@/components/rateio/RateioList';
-import { RateioFormData, RateioData } from '@/types/rateio';
+import { RateioFormData } from '@/types/rateio';
 
 const Rateio = () => {
   const { rateios, isLoading, error, createRateio } = useRateio();
@@ -17,26 +17,14 @@ const Rateio = () => {
   const [sortBy, setSortBy] = useState('date');
 
   const handleCreateRateio = async (formData: RateioFormData) => {
-    const rateioData: Omit<RateioData, 'id'> = {
-      month: formData.date.month.toString().padStart(2, '0'),
-      year: formData.date.year.toString(),
-      status: 'pending',
-      totalAmount: 0,
-      subscribers: [],
-      generatorId: formData.generatorId,
-      type: formData.type,
-      date: formData.date,
-      expectedGeneration: formData.expectedGeneration,
-    };
-
-    const result = await createRateio(rateioData);
+    const result = await createRateio(formData);
     if (result.success) {
       setShowForm(false);
     }
   };
 
   const filteredRateios = rateios.filter(rateio => {
-    const matchesSearch = `${rateio.month}/${rateio.year}`.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = rateio.dataRateio.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'all' || rateio.status === statusFilter;
     return matchesSearch && matchesStatus;
   });

@@ -58,10 +58,10 @@ const RateioItem: React.FC<RateioItemProps> = ({ rateio, index }) => {
           </div>
           <div>
             <h4 className="text-xl font-bold text-gray-900 mb-1">
-              Rateio {rateio.month}/{rateio.year}
+              Rateio {rateio.dataRateio}
             </h4>
             <p className="text-gray-600">
-              Tipo: <span className="font-medium">{rateio.type === 'percentage' ? 'Por Porcentagem' : 'Por Prioridade'}</span>
+              Tipo: <span className="font-medium">{rateio.tipoRateio === 'porcentagem' ? 'Por Porcentagem' : 'Por Prioridade'}</span>
             </p>
           </div>
           <Badge className={`${statusConfig.color} flex items-center space-x-2 px-4 py-2 shadow-sm`}>
@@ -92,7 +92,7 @@ const RateioItem: React.FC<RateioItemProps> = ({ rateio, index }) => {
             <span className="font-medium text-green-800">Energia Esperada</span>
           </div>
           <p className="text-xl font-bold text-green-900">
-            {(rateio.expectedGeneration || 0).toLocaleString('pt-BR')} kWh
+            {(rateio.geracaoEsperada || 0).toLocaleString('pt-BR')} kWh
           </p>
         </div>
         
@@ -102,17 +102,17 @@ const RateioItem: React.FC<RateioItemProps> = ({ rateio, index }) => {
             <span className="font-medium text-blue-800">Assinantes</span>
           </div>
           <p className="text-xl font-bold text-blue-900">
-            {rateio.subscribers.length} participantes
+            {rateio.assinantes.length} participantes
           </p>
         </div>
         
         <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-4 rounded-xl border border-purple-100">
           <div className="flex items-center space-x-2 mb-3">
             <TrendingUp className="w-4 h-4 text-purple-600" />
-            <span className="font-medium text-purple-800">Valor Total</span>
+            <span className="font-medium text-purple-800">Energia Distribuída</span>
           </div>
           <p className="text-xl font-bold text-purple-900">
-            R$ {rateio.totalAmount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+            {rateio.totalDistribuido.toLocaleString('pt-BR')} kWh
           </p>
         </div>
         
