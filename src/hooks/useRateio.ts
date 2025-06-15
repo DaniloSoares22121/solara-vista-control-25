@@ -123,7 +123,8 @@ const fetchAllSubscribers = async (): Promise<RateioSubscriber[]> => {
 const fetchRateioHistoryForGenerator = async (generatorId: string): Promise<RateioHistoryItem[]> => {
     console.log('Buscando histórico para geradora:', generatorId);
     
-    const { data, error } = await supabase
+    // Usando any temporariamente até que os tipos do Supabase sejam atualizados
+    const { data, error } = await (supabase as any)
         .from('rateios')
         .select('id, data_rateio, tipo_rateio, status, total_distribuido')
         .eq('geradora_id', generatorId)

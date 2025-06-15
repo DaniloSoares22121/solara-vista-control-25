@@ -27,7 +27,8 @@ export const rateioService = {
     }, 0);
 
     // 1. Criar registro principal de rateio
-    const { data: rateio, error: errRateio } = await supabase
+    // Usando any temporariamente até que os tipos do Supabase sejam atualizados
+    const { data: rateio, error: errRateio } = await (supabase as any)
       .from('rateios')
       .insert({
         user_id: user.id,
@@ -61,14 +62,14 @@ export const rateioService = {
       created_at: new Date().toISOString(),
     }));
 
-    const { error: errItems } = await supabase
+    const { error: errItems } = await (supabase as any)
       .from('rateio_items')
       .insert(rateioItems);
 
     if (errItems) {
       console.error('Erro ao cadastrar itens do rateio:', errItems);
       // Se falhar ao inserir itens, remove o rateio principal
-      await supabase.from('rateios').delete().eq('id', rateio.id);
+      await (supabase as any).from('rateios').delete().eq('id', rateio.id);
       throw new Error("Erro ao cadastrar itens do rateio");
     }
 
