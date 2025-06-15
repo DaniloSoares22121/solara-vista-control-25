@@ -5,7 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Button } from "@/components/ui/button";
 import { useRateioGenerators, useRateioSubscribers } from '@/hooks/useRateio';
 import { LoadingSpinner } from '../ui/loading-spinner';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, Info, CheckCircle2 } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AdicionarAssinantesRateio } from "./AdicionarAssinantesRateio";
 import { rateioService } from "@/services/rateioService";
@@ -24,21 +24,57 @@ const CadastrarRateio = () => {
   const { data: subscribersData, isLoading: isLoadingSubscribers, error: errorSubscribers } = useRateioSubscribers(selectedGeradoraId);
 
   // Prepara os assinantes para seleção rateio
-  const assinantesParaRateio = useMemo(() =>
-    (subscribersData || []).map(a => ({
-      ...a,
-      selecionado: false,
-      valor: "",
-    })), [subscribersData]
+  const assinantesParaRateio = useMemo(
+    () =>
+      (subscribersData || []).map(a => ({
+        ...a,
+        selecionado: false,
+        valor: "",
+      })),
+    [subscribersData]
   );
 
   const [assinantes, setAssinantes] = useState(assinantesParaRateio);
 
+  // Sempre resetar assinantes quando mudar a lista base
   React.useEffect(() => {
     setAssinantes(assinantesParaRateio);
   }, [assinantesParaRateio]);
 
   const error = errorGenerators || errorSubscribers;
+
+  // --------- VALIDAÇÃO POR TIPO DE RATEIO ---------
+  const selecionados = assinantes.filter(a => a.selecionado);
+
+  // Soma de todas as porcentagens
+  const somaPorcentagens = selecionados.reduce(
+    (acc, curr) => acc + (tipoRateio === "porcentagem" ? Number(curr.valor || 0) : 0),
+    0
+  );
+
+  // Prioridades usadas (deve ser únicas, inteiras, não vazias)
+  const prioridades = tipoRateio === "prioridade"
+    ? selecionados.map(a => Number(a.valor)).filter(Boolean)
+    : [];
+
+  // Validação dos campos
+  const validSubmit =
+    selecionados.length > 0 &&
+    selecionados.every(a => !!a.valor && (!isNaN(Number(a.valor)))) &&
+    (
+      tipoRateio === "porcentagem"
+        ? somaPorcentagens === 100
+        : (new Set(prioridades)).size === prioridades.length && prioridades.every(n => Number.isInteger(n))
+    );
+
+  // Mensagens de status & dicas
+  const statusMsg =
+    tipoRateio === "porcentagem"
+      ? `A soma das porcentagens deve ser exatamente 100%. Atualmente: ${somaPorcentagens}%`
+      : "Cada prioridade deve ser única e inteira. 1 é a maior prioridade.";
+
+  const hasPriorityDuplicate =
+    tipoRateio === "prioridade" && (new Set(prioridades)).size !== prioridades.length;
 
   const handleSubmit = async () => {
     if (!selectedGeradoraId) {
@@ -49,30 +85,28 @@ const CadastrarRateio = () => {
       });
       return;
     }
-    const escolhidos = assinantes
-      .filter(a => a.selecionado && a.valor)
-      .map(a => ({ subscriber_id: a.id, valor: a.valor }));
-
-    if (escolhidos.length === 0) {
+    if (!validSubmit) {
       toast({
-        title: "Assinantes inválidos",
-        description: "Selecione pelo menos um assinante com valor de rateio válido!",
+        title: "Preencha os valores corretamente!",
+        description: tipoRateio === "porcentagem"
+          ? "A soma das porcentagens deve ser 100%."
+          : "Prioridades devem ser únicas e inteiras (1, 2, 3 ...).",
         variant: "destructive"
       });
       return;
     }
+
     setIsSubmitting(true);
     try {
       await rateioService.cadastrarRateio({
-        geradoraId: selectedGeradoraId,
+        geradora: selectedGeradora,
         tipoRateio,
         dataRateio: new Date().toISOString(),
-        assinantes: escolhidos,
+        assinantes: selecionados,
       });
       toast({
         title: "Sucesso",
         description: "Rateio cadastrado com sucesso!",
-        // Pode omitir variant para sucesso (default)
       });
       setAssinantes(assinantesParaRateio);
     } catch (err: any) {
@@ -90,11 +124,11 @@ const CadastrarRateio = () => {
     <Card>
       <CardHeader>
         <CardTitle>Cadastrar Novo Rateio</CardTitle>
-        <CardDescription>Selecione uma geradora e configure os assinantes para este rateio.</CardDescription>
+        <CardDescription>Vincule vários assinantes a uma geradora e defina regras de rateio.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="flex flex-col sm:flex-row items-center gap-4">
-          <Select onValueChange={value => setSelectedGeradoraId(value)} disabled={isLoadingGenerators || isSubmitting} value={selectedGeradoraId}>
+          <Select onValueChange={setSelectedGeradoraId} disabled={isLoadingGenerators || isSubmitting} value={selectedGeradoraId}>
             <SelectTrigger className="w-full sm:w-[300px]">
               <SelectValue placeholder={isLoadingGenerators ? "Carregando geradoras..." : "Selecione uma geradora..."} />
             </SelectTrigger>
@@ -106,7 +140,7 @@ const CadastrarRateio = () => {
             </SelectContent>
           </Select>
 
-          <Select value={tipoRateio} onValueChange={v => setTipoRateio(v as "porcentagem" | "prioridade")} disabled={isSubmitting} >
+          <Select value={tipoRateio} onValueChange={v => setTipoRateio(v as "porcentagem" | "prioridade")} disabled={isSubmitting}>
             <SelectTrigger className="w-full sm:w-[200px]">
               <SelectValue placeholder="Tipo de Rateio" />
             </SelectTrigger>
@@ -117,14 +151,25 @@ const CadastrarRateio = () => {
           </Select>
         </div>
 
+        <Alert variant="default" className="my-2 flex items-center gap-2">
+          <Info className="h-4 w-4 opacity-70 mr-2" />
+          <AlertDescription>
+            {tipoRateio === "porcentagem" ? (
+              <>Distribua exatamente <b>100%</b> da energia entre os assinantes. Não será possível cadastrar se o total não for 100%.</>
+            ) : (
+              <>Prioridades definem a ordem de preferência do assinante para receber créditos. 1 = maior prioridade.</>
+            )}
+          </AlertDescription>
+        </Alert>
+
         {error && (
-            <Alert variant="destructive">
-                <AlertCircle className="h-4 w-4" />
-                <AlertTitle>Erro</AlertTitle>
-                <AlertDescription>
-                    {(error as Error).message || "Ocorreu um erro ao buscar os dados."}
-                </AlertDescription>
-            </Alert>
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Erro</AlertTitle>
+            <AlertDescription>
+              {(error as Error).message || "Ocorreu um erro ao buscar os dados."}
+            </AlertDescription>
+          </Alert>
         )}
 
         {selectedGeradora && (
@@ -150,11 +195,40 @@ const CadastrarRateio = () => {
                 assinantes={assinantes}
                 onSelect={setAssinantes}
                 tipoRateio={tipoRateio}
+                disabled={isSubmitting}
               />
               {isLoadingSubscribers && <div className="text-center mt-4"><LoadingSpinner size="sm" text="Carregando assinantes..." /></div>}
             </div>
+
+            {/* Mensagem de validação na base do formulário */}
+            <div className="my-4">
+              {!validSubmit && (
+                <Alert variant="destructive" className="flex items-center gap-2">
+                  <AlertCircle className="h-4 w-4 opacity-70 mr-2" />
+                  <AlertDescription>{statusMsg}</AlertDescription>
+                </Alert>
+              )}
+              {validSubmit && tipoRateio === "porcentagem" && (
+                <div className="flex items-center text-green-700 text-sm gap-2">
+                  <CheckCircle2 className="h-5 w-5" />
+                  Pronto para cadastrar! Soma: <b>{somaPorcentagens}%</b>
+                </div>
+              )}
+              {validSubmit && tipoRateio === "prioridade" && (
+                <div className="flex items-center text-green-700 text-sm gap-2">
+                  <CheckCircle2 className="h-5 w-5" />
+                  Prioridade inserida corretamente!
+                </div>
+              )}
+              {hasPriorityDuplicate && (
+                <div className="text-xs text-red-600 mt-1">
+                  Prioridades devem ser únicas.
+                </div>
+              )}
+            </div>
+
             <div className="flex items-center justify-end gap-4 mt-6">
-              <Button onClick={handleSubmit} disabled={isSubmitting || isLoadingSubscribers}>
+              <Button onClick={handleSubmit} disabled={isSubmitting || isLoadingSubscribers || !validSubmit}>
                 {isSubmitting ? <LoadingSpinner size="sm" /> : "Cadastrar Rateio"}
               </Button>
             </div>
@@ -162,9 +236,9 @@ const CadastrarRateio = () => {
         )}
 
         {!selectedGeradora && !isLoadingGenerators && (
-            <div className="text-center text-muted-foreground py-8">
-                <p>Por favor, selecione uma geradora para continuar.</p>
-            </div>
+          <div className="text-center text-muted-foreground py-8">
+            <p>Por favor, selecione uma geradora para continuar.</p>
+          </div>
         )}
       </CardContent>
     </Card>
