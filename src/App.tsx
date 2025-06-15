@@ -21,9 +21,28 @@ import FaturasEmitidas from './pages/dashboard/FaturasEmitidas';
 import Representantes from './pages/dashboard/Representantes';
 import Whatsapp from './pages/dashboard/Whatsapp';
 import FaturaLayout from './pages/FaturaLayout';
+import { Outlet } from 'react-router-dom';
 import './App.css';
 
 const queryClient = new QueryClient();
+
+// Component wrapper for DashboardLayout with Outlet
+const DashboardLayoutWrapper = () => {
+  return (
+    <DashboardLayout>
+      <Outlet />
+    </DashboardLayout>
+  );
+};
+
+// Component wrapper for NovaGeradora with required props
+const NovaGeradoraWrapper = () => {
+  return (
+    <NovaGeradora 
+      onClose={() => window.history.back()} 
+    />
+  );
+};
 
 function App() {
   return (
@@ -38,13 +57,13 @@ function App() {
                 <Route path="/fatura" element={<FaturaLayout />} />
                 <Route path="/dashboard" element={
                   <ProtectedRoute>
-                    <DashboardLayout />
+                    <DashboardLayoutWrapper />
                   </ProtectedRoute>
                 }>
                   <Route index element={<Dashboard />} />
                   <Route path="assinantes" element={<Assinantes />} />
                   <Route path="geradoras" element={<Geradoras />} />
-                  <Route path="geradoras/nova" element={<NovaGeradora />} />
+                  <Route path="geradoras/nova" element={<NovaGeradoraWrapper />} />
                   <Route path="rateio" element={<Rateio />} />
                   <Route path="fatura-unica" element={<FaturaUnica />} />
                   <Route path="fatura-manual" element={<FaturaManual />} />
