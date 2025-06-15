@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -15,12 +14,11 @@ const AssinantesPorGeradora = () => {
   const { data: generatorsData, isLoading: isLoadingGenerators, error: errorGenerators } = useRateioGenerators();
   const generators = generatorsData || [];
   
-  const { data: subscribersData, isLoading: isLoadingSubscribers, error: errorSubscribers } = useRateioSubscribers(selectedGeradoraId);
+  const { data: subscribersData, isLoading: isLoadingSubscribers, error: errorSubscribers } = useRateioSubscribers();
   const subscribers = subscribersData || [];
 
   const selectedGeradora = generators.find(g => g.id === selectedGeradoraId);
   const error = errorGenerators || errorSubscribers;
-
 
   return (
     <Card>
