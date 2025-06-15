@@ -13,7 +13,7 @@ interface GeneratorAttachmentsFormProps {
 }
 
 interface FileUploadData {
-  file: File;
+  file?: File;
   name: string;
   size: number;
   type: string;
@@ -38,31 +38,32 @@ const GeneratorAttachmentsForm = ({ form }: GeneratorAttachmentsFormProps) => {
   // Atualizar estado local a partir do formulário react-hook-form
   useEffect(() => {
     const formAttachments = form.getValues('attachments');
-    // Corrige: só faz parse de arquivos realmente válidos (File)
+    console.log('🔍 [ATTACHMENTS] Carregando anexos do formulário:', formAttachments);
+    
+    // Corrige: aceita arquivos tanto com File quanto sem (para edição)
     const validFiles: Record<string, FileUploadData> = {};
     if (formAttachments && typeof formAttachments === "object") {
       Object.entries(formAttachments).forEach(([key, value]) => {
         if (
           value &&
           typeof value === "object" &&
-          value.file instanceof File &&
           value.name &&
           value.size &&
           value.type
         ) {
           validFiles[key] = {
-            file: value.file,
+            file: value.file instanceof File ? value.file : undefined,
             name: value.name,
             size: value.size,
             type: value.type,
             uploadedAt: value.uploadedAt || new Date().toISOString(),
           };
+          console.log(`✅ [ATTACHMENTS] Anexo ${key} carregado:`, validFiles[key]);
         }
       });
     }
     setFiles(validFiles);
   }, [form, forceUpdate, form.watch("attachments")]);
-  // agora observa também form.watch("attachments") para reacionar em tempo real
 
   // Upload handler: grava valor no form e força renderização
   const handleFileUpload = async (fieldName: AttachmentFieldName, selectedFile: File | null) => {
@@ -96,6 +97,8 @@ const GeneratorAttachmentsForm = ({ form }: GeneratorAttachmentsFormProps) => {
       uploadedAt: new Date().toISOString(),
     };
 
+    console.log(`📎 [ATTACHMENTS] Novo arquivo adicionado ${fieldName}:`, fileData);
+
     // Atualiza só o attachment individual (mantendo os outros)
     form.setValue(
       `attachments.${fieldName}`,
@@ -111,6 +114,8 @@ const GeneratorAttachmentsForm = ({ form }: GeneratorAttachmentsFormProps) => {
   };
 
   const removeFile = (fieldName: AttachmentFieldName) => {
+    console.log(`🗑️ [ATTACHMENTS] Removendo arquivo ${fieldName}`);
+    
     // Apaga apenas o campo individual do form
     form.setValue(
       `attachments.${fieldName}`,
@@ -133,7 +138,8 @@ const GeneratorAttachmentsForm = ({ form }: GeneratorAttachmentsFormProps) => {
     required?: boolean;
   }) => {
     const fileData = files[name];
-    const hasFile = fileData && fileData.file instanceof File && fileData.name && fileData.size > 0;
+    const hasFile = fileData && fileData.name && fileData.size > 0;
+    
     return (
       <FormField
         control={form.control}
@@ -163,19 +169,31 @@ const GeneratorAttachmentsForm = ({ form }: GeneratorAttachmentsFormProps) => {
                           </p>
                           <p className="text-xs text-green-600 font-medium flex items-center gap-1">
                             <CheckCircle className="w-3 h-3" />
-                            Arquivo anexado
+                            {fileData.file ? 'Arquivo anexado' : 'Arquivo existente'}
                           </p>
                         </div>
                       </div>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => removeFile(name)}
-                        className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
-                      >
-                        <X className="w-4 h-4" />
-                      </Button>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => fileInputRefs[name].current?.click()}
+                          className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 border-blue-200"
+                        >
+                          <Upload className="w-4 h-4 mr-1" />
+                          Alterar
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => removeFile(name)}
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+                        >
+                          <X className="w-4 h-4" />
+                        </Button>
+                      </div>
                     </div>
                   ) : (
                     <div className="text-center">
