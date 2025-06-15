@@ -94,8 +94,8 @@ const fetchSubscribersForGenerator = async (generatorId: string): Promise<Rateio
 };
 
 const fetchRateioHistoryForGenerator = async (generatorId: string): Promise<RateioHistoryItem[]> => {
-    const { data, error } = await supabase
-        .from('rateios')
+    // The error is because Supabase types might not be updated yet. We use `as any` as a workaround.
+    const { data, error } = await (supabase.from('rateios') as any)
         .select('id, data_rateio, tipo_rateio, status, total_distribuido')
         .eq('geradora_id', generatorId)
         .order('data_rateio', { ascending: false });
