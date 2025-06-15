@@ -106,8 +106,8 @@ const SubscribersTable = ({ subscribers, onEdit, onDelete, onView, isLoading }: 
         </CardHeader>
       </Card>
 
-      {/* Cards Grid - Layout mais largo e espaçoso */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 lg:gap-8">
+      {/* Cards Grid - Layout equilibrado */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 lg:gap-5">
         {subscribers.map((subscriber) => (
           <SubscriberCard
             key={subscriber.id}
