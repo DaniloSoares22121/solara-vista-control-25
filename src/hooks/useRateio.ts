@@ -42,7 +42,6 @@ const fetchGenerators = async (): Promise<RateioGenerator[]> => {
 
   return data.map(g => {
     const plants = g.plants as any[] | null;
-    // Busca o apelido da primeira planta cadastrada, se houver.
     return {
       id: g.id,
       apelido: plants?.[0]?.apelido || 'Sem apelido',
@@ -56,7 +55,6 @@ const fetchGenerators = async (): Promise<RateioGenerator[]> => {
   });
 };
 
-// Função corrigida para buscar todos os assinantes com dados corretos
 const fetchAllSubscribers = async (): Promise<RateioSubscriber[]> => {
   const { data, error } = await supabase
     .from('subscribers')
@@ -69,16 +67,12 @@ const fetchAllSubscribers = async (): Promise<RateioSubscriber[]> => {
 
   if (!data) return [];
 
-  console.log('Raw subscriber data:', data);
-
   return data.map(s => {
     const subscriber = s.subscriber as any;
     const energyAccount = s.energy_account as any;
     const planContract = s.plan_contract as any;
 
-    console.log('Processing subscriber:', { subscriber, energyAccount, planContract });
-
-    // Extrai o nome do assinante (pessoa física ou jurídica)
+    // Extrai o nome do assinante
     let nome = 'Nome não informado';
     if (subscriber?.nome_completo) {
       nome = subscriber.nome_completo;
@@ -113,9 +107,9 @@ const fetchAllSubscribers = async (): Promise<RateioSubscriber[]> => {
       nome,
       uc,
       consumo,
-      credito: 'N/A', // Data source to be defined
+      credito: 'N/A',
       rateio: 'A definir',
-      ultimaFatura: 'N/A', // Data source to be defined
+      ultimaFatura: 'N/A',
     };
   });
 };
@@ -123,26 +117,40 @@ const fetchAllSubscribers = async (): Promise<RateioSubscriber[]> => {
 const fetchRateioHistoryForGenerator = async (generatorId: string): Promise<RateioHistoryItem[]> => {
     console.log('Buscando histórico para geradora:', generatorId);
     
-    // Usando any temporariamente até que os tipos do Supabase sejam atualizados
-    const { data, error } = await (supabase as any)
-        .from('rateios')
-        .select('id, data_rateio, tipo_rateio, status, total_distribuido')
-        .eq('geradora_id', generatorId)
-        .order('data_rateio', { ascending: false });
+    try {
+        const { data, error } = await (supabase as any)
+            .from('rateios')
+            .select('id, data_rateio, tipo_rateio, status, total_distribuido')
+            .eq('geradora_id', generatorId)
+            .order('data_rateio', { ascending: false });
 
-    if (error) {
-        console.error('Error fetching rateio history:', error);
-        throw new Error('Não foi possível buscar o histórico de rateios.');
+        if (error) {
+            console.error('Error fetching rateio history:', error);
+            
+            // Se a tabela não existe, retorna array vazio em vez de erro
+            if (error.code === '42P01') {
+                console.warn('Tabela rateios não existe ainda. Aguardando criação...');
+                return [];
+            }
+            
+            throw new Error('Não foi possível buscar o histórico de rateios.');
+        }
+
+        console.log('Histórico encontrado:', data);
+        return data || [];
+    } catch (error) {
+        console.error('Erro na busca do histórico:', error);
+        // Retorna array vazio em caso de erro para evitar quebrar a UI
+        return [];
     }
-
-    console.log('Histórico encontrado:', data);
-    return data || [];
 };
 
 export const useRateioGenerators = () => {
     return useQuery({
         queryKey: ['generatorsForRateio'],
         queryFn: fetchGenerators,
+        retry: 2,
+        staleTime: 5 * 60 * 1000, // 5 minutos
     });
 }
 
@@ -150,6 +158,8 @@ export const useRateioSubscribers = () => {
     return useQuery({
         queryKey: ['allSubscribersForRateio'],
         queryFn: fetchAllSubscribers,
+        retry: 2,
+        staleTime: 5 * 60 * 1000, // 5 minutos
     });
 }
 
@@ -158,6 +168,9 @@ export const useHistoricoRateiosData = (generatorId?: string) => {
         queryKey: ['rateioHistory', generatorId],
         queryFn: () => fetchRateioHistoryForGenerator(generatorId!),
         enabled: !!generatorId,
+        retry: 3,
+        retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+        staleTime: 2 * 60 * 1000, // 2 minutos
     });
 
     return {
