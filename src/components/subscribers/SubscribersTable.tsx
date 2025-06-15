@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -107,8 +106,8 @@ const SubscribersTable = ({ subscribers, onEdit, onDelete, onView, isLoading }: 
         </CardHeader>
       </Card>
 
-      {/* Cards Grid - Responsividade Melhorada */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6">
+      {/* Cards Grid - Layout mais largo e espaçoso */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 lg:gap-8">
         {subscribers.map((subscriber) => (
           <SubscriberCard
             key={subscriber.id}

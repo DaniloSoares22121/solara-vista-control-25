@@ -100,7 +100,7 @@ const SubscriberCard = ({ subscriber, onEdit, onDelete, onView }: SubscriberCard
     <Card className="group hover:shadow-2xl transition-all duration-500 border-0 bg-white overflow-hidden hover:scale-105 hover:-translate-y-2">
       <div className="h-2 bg-gradient-to-r from-green-400 via-emerald-400 to-green-500"></div>
       
-      <CardHeader className="pb-4 bg-gradient-to-br from-gray-50 to-white">
+      <CardHeader className="pb-4 bg-gradient-to-br from-gray-50 to-white px-6 py-6">
         <div className="flex items-start justify-between">
           <div className="flex items-center space-x-4 flex-1 min-w-0">
             <div className="relative">
@@ -130,9 +130,9 @@ const SubscriberCard = ({ subscriber, onEdit, onDelete, onView }: SubscriberCard
         </div>
       </CardHeader>
       
-      <CardContent className="pt-0 space-y-4 pb-6">
+      <CardContent className="pt-0 space-y-5 pb-8 px-6">
         {/* Documento formatado */}
-        <div className="flex items-center space-x-3 p-3 bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl">
+        <div className="flex items-center space-x-3 p-4 bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl">
           <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-md">
             <FileText className="w-5 h-5 text-white" />
           </div>
@@ -143,7 +143,7 @@ const SubscriberCard = ({ subscriber, onEdit, onDelete, onView }: SubscriberCard
         </div>
 
         {/* Unidade Consumidora */}
-        <div className="flex items-center space-x-3 p-3 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl">
+        <div className="flex items-center space-x-3 p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl">
           <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl flex items-center justify-center shadow-md">
             <Zap className="w-5 h-5 text-white" />
           </div>
@@ -154,7 +154,7 @@ const SubscriberCard = ({ subscriber, onEdit, onDelete, onView }: SubscriberCard
         </div>
 
         {/* Informações de Contato Formatadas */}
-        <div className="space-y-3">
+        <div className="space-y-4">
           <div className="flex items-center space-x-3">
             <div className="w-8 h-8 bg-gradient-to-br from-green-100 to-emerald-100 rounded-lg flex items-center justify-center">
               <Phone className="w-4 h-4 text-green-600" />
@@ -186,7 +186,7 @@ const SubscriberCard = ({ subscriber, onEdit, onDelete, onView }: SubscriberCard
         </div>
 
         {/* Plano Formatado */}
-        <div className="p-3 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-100">
+        <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-100">
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl flex items-center justify-center shadow-md">
               <FileText className="w-5 h-5 text-white" />
@@ -199,7 +199,7 @@ const SubscriberCard = ({ subscriber, onEdit, onDelete, onView }: SubscriberCard
         </div>
 
         {/* Actions */}
-        <div className="flex items-center justify-end space-x-2 pt-4 border-t border-gray-100">
+        <div className="flex items-center justify-end space-x-3 pt-5 border-t border-gray-100">
           <Button
             variant="ghost"
             size="sm"
