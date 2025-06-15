@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useRateioGenerators, useHistoricoRateiosData, RateioHistoryItem } from '@/hooks/useRateio';
+import { useRateioGenerators, useHistoricoRateiosData, useRateioSubscribers, RateioHistoryItem } from '@/hooks/useRateio';
 import { LoadingSpinner } from '../ui/loading-spinner';
 import { AlertCircle, Calendar, TrendingUp, Clock, Eye, FileText, Search, Filter } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -23,6 +23,8 @@ const HistoricoRateios = () => {
 
   const { data: generatorsData, isLoading: isLoadingGenerators, error: errorGenerators } = useRateioGenerators();
   const generators = generatorsData || [];
+
+  const { data: subscribersData } = useRateioSubscribers();
 
   const {
     historico,
@@ -68,10 +70,9 @@ const HistoricoRateios = () => {
     setIsReportModalOpen(true);
   };
 
-  // Stats calculadas
+  // Stats calculadas com dados reais
   const totalDistribuido = historico.reduce((acc, curr) => acc + curr.total_distribuido, 0);
   const geradorasAtivas = generators.length;
-  const assinantesAtivos = 12; // Mock data
 
   return (
     <div className="space-y-6">
@@ -80,7 +81,6 @@ const HistoricoRateios = () => {
         totalRateios={historico.length}
         totalDistribuido={totalDistribuido}
         geradorasAtivas={geradorasAtivas}
-        assinantesAtivos={assinantesAtivos}
       />
 
       {/* Header Section */}

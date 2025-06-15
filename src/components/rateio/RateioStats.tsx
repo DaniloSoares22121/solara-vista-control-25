@@ -3,20 +3,22 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { TrendingUp, Users, Zap, Calendar, Activity } from 'lucide-react';
+import { useRateioSubscribers } from '@/hooks/useRateio';
 
 interface RateioStatsProps {
   totalRateios: number;
   totalDistribuido: number;
   geradorasAtivas: number;
-  assinantesAtivos: number;
 }
 
 export const RateioStats: React.FC<RateioStatsProps> = ({
   totalRateios,
   totalDistribuido,
-  geradorasAtivas,
-  assinantesAtivos
+  geradorasAtivas
 }) => {
+  const { data: subscribersData } = useRateioSubscribers();
+  const assinantesAtivos = subscribersData?.length || 0;
+
   const stats = [
     {
       title: 'Total de Rateios',
@@ -24,7 +26,7 @@ export const RateioStats: React.FC<RateioStatsProps> = ({
       subtitle: 'realizados',
       icon: Activity,
       color: 'blue',
-      trend: '+12%'
+      trend: totalRateios > 0 ? '+' + totalRateios : '0'
     },
     {
       title: 'Energia Distribuída',
@@ -32,7 +34,7 @@ export const RateioStats: React.FC<RateioStatsProps> = ({
       subtitle: 'kWh total',
       icon: TrendingUp,
       color: 'green',
-      trend: '+8%'
+      trend: totalDistribuido > 0 ? '+' + Math.round(totalDistribuido / 1000) + 'k' : '0'
     },
     {
       title: 'Geradoras Ativas',
@@ -40,15 +42,15 @@ export const RateioStats: React.FC<RateioStatsProps> = ({
       subtitle: 'em operação',
       icon: Zap,
       color: 'yellow',
-      trend: '+3'
+      trend: geradorasAtivas > 0 ? '+' + geradorasAtivas : '0'
     },
     {
       title: 'Assinantes',
       value: assinantesAtivos.toString(),
-      subtitle: 'participando',
+      subtitle: 'cadastrados',
       icon: Users,
       color: 'purple',
-      trend: '+15'
+      trend: assinantesAtivos > 0 ? '+' + assinantesAtivos : '0'
     }
   ];
 
