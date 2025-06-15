@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { RateioData, RateioFormData, Geradora, Assinante, VinculoData, RateioValidation } from '@/types/rateio';
+import { supabaseRateioService } from '@/services/supabaseRateioService';
 
 export const useRateio = () => {
   const [rateios, setRateios] = useState<RateioData[]>([]);
@@ -82,46 +83,13 @@ export const useRateio = () => {
     const loadRateios = async () => {
       try {
         setIsLoading(true);
-        // Simula dados de rateios baseados nos vínculos
-        const rateiosMock: RateioData[] = [
-          {
-            id: "rat1",
-            geradoraId: "ger1",
-            geradora: geradoras[0],
-            dataRateio: "15/06/2025",
-            tipoRateio: "porcentagem",
-            geracaoEsperada: 15000,
-            assinantesVinculados: 2,
-            assinantes: [
-              {
-                assinanteId: "ass1",
-                nome: "João Silva",
-                uc: "11111111",
-                consumoNumero: 500,
-                porcentagem: 50,
-                valorAlocado: 7500,
-                isNew: false
-              },
-              {
-                assinanteId: "ass2",
-                nome: "Maria Santos",
-                uc: "22222222", 
-                consumoNumero: 300,
-                porcentagem: 25.5,
-                valorAlocado: 3825,
-                isNew: false
-              }
-            ],
-            totalDistribuido: 11325,
-            energiaSobra: 3675,
-            status: "completed",
-            createdAt: new Date().toISOString()
-          }
-        ];
-        
-        setRateios(rateiosMock);
+        console.log('🔄 [RATEIO] Carregando rateios do banco...');
+        const data = await supabaseRateioService.getRateios();
+        setRateios(data);
         setError(null);
+        console.log('✅ [RATEIO] Rateios carregados:', data.length);
       } catch (err) {
+        console.error('❌ [RATEIO] Erro ao carregar rateios:', err);
         setError('Erro ao carregar rateios');
       } finally {
         setIsLoading(false);
@@ -254,26 +222,18 @@ export const useRateio = () => {
         data.configuracao.geracaoEsperada
       );
 
-      const totalDistribuido = rateioCalculado.reduce((sum, item) => sum + (item.valorAlocado || 0), 0);
-      const energiaSobra = data.configuracao.geracaoEsperada - totalDistribuido;
-
-      const novoRateio: RateioData = {
-        id: `rat_${Date.now()}`,
-        geradoraId: data.configuracao.geradoraId,
-        dataRateio: `${data.configuracao.dia}/${data.configuracao.mes}/${data.configuracao.ano}`,
-        tipoRateio: data.configuracao.tipoRateio,
-        geracaoEsperada: data.configuracao.geracaoEsperada,
-        assinantesVinculados: rateioCalculado.length,
-        assinantes: rateioCalculado,
-        totalDistribuido,
-        energiaSobra,
-        status: "pending",
-        createdAt: new Date().toISOString()
+      const formDataWithCalculations = {
+        ...data,
+        rateioItems: rateioCalculado
       };
 
-      setRateios(prev => [novoRateio, ...prev]);
+      const result = await supabaseRateioService.createRateio(formDataWithCalculations);
       
-      return { success: true, data: novoRateio };
+      if (result.success && result.data) {
+        setRateios(prev => [result.data!, ...prev]);
+      }
+      
+      return result;
     } catch (error) {
       console.error('❌ [RATEIO] Erro ao criar rateio:', error);
       return { success: false, error: 'Erro ao criar rateio' };

@@ -41,11 +41,9 @@ export interface RateioItem {
 
 export interface RateioConfiguracao {
   geradoraId: string;
+  geradora?: Geradora; // Dados completos da geradora
   novoAssinanteId?: string; // Opcional - se está adicionando novo assinante
   tipoRateio: "porcentagem" | "prioridade";
-  dia: number;
-  mes: number;
-  ano: number;
   geracaoEsperada: number; // kWh para este mês
 }
 

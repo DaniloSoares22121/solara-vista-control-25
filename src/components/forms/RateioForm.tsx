@@ -8,8 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { 
-  Calendar, Save, X, Zap, Users, AlertCircle, Info, Calculator, 
-  Plus, Trash2, Settings, Target, Percent 
+  Save, X, Zap, Users, AlertCircle, Info, Calculator, 
+  Plus, Trash2, Settings, Target, Percent, CheckCircle2, ArrowRight 
 } from 'lucide-react';
 import { RateioFormData, RateioConfiguracao, RateioItem, Geradora, Assinante } from '@/types/rateio';
 import { useRateio } from '@/hooks/useRateio';
@@ -31,19 +31,16 @@ const RateioForm: React.FC<RateioFormProps> = ({ onSubmit, onCancel }) => {
   const geradoras = getGeradoras();
   const assinantes = getAssinantes();
 
-  const currentDate = new Date();
   const [configuracao, setConfiguracao] = useState<RateioConfiguracao>({
     geradoraId: '',
     novoAssinanteId: '',
     tipoRateio: 'porcentagem',
-    dia: currentDate.getDate(),
-    mes: currentDate.getMonth() + 1,
-    ano: currentDate.getFullYear(),
     geracaoEsperada: 0
   });
 
   const [rateioItems, setRateioItems] = useState<RateioItem[]>([]);
   const [validation, setValidation] = useState<any>({ isValid: true, errors: [], warnings: [] });
+  const [currentStep, setCurrentStep] = useState(1);
 
   // Carregar assinantes vinculados quando geradora é selecionada
   useEffect(() => {
@@ -53,8 +50,13 @@ const RateioForm: React.FC<RateioFormProps> = ({ onSubmit, onCancel }) => {
       
       const geradora = geradoras.find(g => g.id === configuracao.geradoraId);
       if (geradora) {
-        setConfiguracao(prev => ({ ...prev, geracaoEsperada: geradora.geracaoNumero }));
+        setConfiguracao(prev => ({ 
+          ...prev, 
+          geracaoEsperada: geradora.geracaoNumero,
+          geradora: geradora
+        }));
       }
+      setCurrentStep(2);
     }
   }, [configuracao.geradoraId]);
 
@@ -117,265 +119,295 @@ const RateioForm: React.FC<RateioFormProps> = ({ onSubmit, onCancel }) => {
     (!selectedGeradora || a.concessionaria === selectedGeradora.concessionaria)
   );
 
+  const canProceed = currentStep === 1 ? configuracao.geradoraId : rateioItems.length > 0 && validation.isValid;
+
   return (
-    <div className="max-w-7xl mx-auto space-y-6">
-      <Card className="shadow-lg border-0">
-        <CardHeader className="bg-gradient-to-r from-green-50 to-blue-50 border-b">
+    <div className="max-w-6xl mx-auto space-y-6">
+      {/* Progress Steps */}
+      <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center space-x-4">
+          <div className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-semibold ${
+            currentStep >= 1 ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-600'
+          }`}>
+            {currentStep > 1 ? <CheckCircle2 className="w-4 h-4" /> : '1'}
+          </div>
+          <span className={`text-sm font-medium ${currentStep >= 1 ? 'text-green-600' : 'text-gray-500'}`}>
+            Selecionar Geradora
+          </span>
+          
+          <ArrowRight className="w-4 h-4 text-gray-400" />
+          
+          <div className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-semibold ${
+            currentStep >= 2 ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-600'
+          }`}>
+            2
+          </div>
+          <span className={`text-sm font-medium ${currentStep >= 2 ? 'text-green-600' : 'text-gray-500'}`}>
+            Configurar Distribuição
+          </span>
+        </div>
+      </div>
+
+      <Card className="shadow-xl border-0 bg-gradient-to-br from-white via-gray-50 to-blue-50">
+        <CardHeader className="bg-gradient-to-r from-green-500 to-blue-500 text-white">
           <CardTitle className="flex items-center space-x-3">
-            <div className="p-2 bg-green-100 rounded-lg">
-              <Calendar className="w-6 h-6 text-green-600" />
+            <div className="p-3 bg-white/20 rounded-xl">
+              <Calculator className="w-7 h-7" />
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-gray-900">Configuração de Rateio</h2>
-              <p className="text-gray-600 mt-1">Configure a distribuição de energia entre assinantes</p>
+              <h2 className="text-2xl font-bold">Novo Rateio de Energia</h2>
+              <p className="text-green-100 mt-1">Configure a distribuição inteligente entre assinantes</p>
             </div>
           </CardTitle>
         </CardHeader>
+        
         <CardContent className="p-8">
           <form onSubmit={handleSubmit} className="space-y-8">
-            {/* Seção 1: Seleção da Geradora */}
-            <div className="space-y-4">
-              <div className="flex items-center space-x-2">
-                <Zap className="w-5 h-5 text-green-600" />
-                <Label className="text-lg font-semibold text-gray-900">1. Selecione a Geradora</Label>
-              </div>
-              
-              <Select value={configuracao.geradoraId} onValueChange={value => setConfiguracao(prev => ({ ...prev, geradoraId: value }))}>
-                <SelectTrigger className="h-12">
-                  <SelectValue placeholder="Busque por nome ou UC da geradora..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {geradoras.map(geradora => (
-                    <SelectItem key={geradora.id} value={geradora.id}>
-                      <div className="flex items-center justify-between w-full">
-                        <div>
-                          <div className="font-medium">{geradora.apelido}</div>
-                          <div className="text-sm text-gray-500">
-                            UC: {geradora.uc} • {geradora.geracao} • {geradora.percentualAlocado}% alocado
+            {/* Etapa 1: Seleção da Geradora */}
+            {currentStep === 1 && (
+              <div className="space-y-6 animate-fade-in">
+                <div className="text-center mb-8">
+                  <Zap className="w-16 h-16 text-green-500 mx-auto mb-4" />
+                  <h3 className="text-2xl font-bold text-gray-900 mb-2">Selecione a Geradora</h3>
+                  <p className="text-gray-600">Escolha qual geradora solar será utilizada para este rateio</p>
+                </div>
+                
+                <Select value={configuracao.geradoraId} onValueChange={value => setConfiguracao(prev => ({ ...prev, geradoraId: value }))}>
+                  <SelectTrigger className="h-16 text-lg">
+                    <SelectValue placeholder="🔍 Busque por nome ou UC da geradora..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {geradoras.map(geradora => (
+                      <SelectItem key={geradora.id} value={geradora.id}>
+                        <div className="flex items-center justify-between w-full py-2">
+                          <div>
+                            <div className="font-semibold text-lg">{geradora.apelido}</div>
+                            <div className="text-sm text-gray-500">
+                              UC: {geradora.uc} • {geradora.geracao} • {geradora.percentualAlocado}% alocado
+                            </div>
                           </div>
                         </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                {selectedGeradora && (
+                  <div className="p-6 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border-2 border-green-200 animate-fade-in">
+                    <div className="flex items-center mb-4">
+                      <CheckCircle2 className="w-6 h-6 text-green-600 mr-3" />
+                      <h4 className="font-bold text-green-800 text-lg">Geradora Selecionada</h4>
+                    </div>
+                    <div className="grid grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <span className="text-green-700 font-medium">Nome:</span>
+                        <div className="font-bold text-gray-900">{selectedGeradora.apelido}</div>
                       </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-              {selectedGeradora && (
-                <div className="p-4 bg-green-50 rounded-lg border border-green-200">
-                  <h4 className="font-semibold text-green-800 mb-2">Geradora Selecionada</h4>
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div><span className="text-green-700">Nome:</span> <span className="font-medium">{selectedGeradora.apelido}</span></div>
-                    <div><span className="text-green-700">UC:</span> <span className="font-medium">{selectedGeradora.uc}</span></div>
-                    <div><span className="text-green-700">Geração:</span> <span className="font-medium">{selectedGeradora.geracao}</span></div>
-                    <div><span className="text-green-700">Já Alocado:</span> <span className="font-medium">{selectedGeradora.percentualAlocado}%</span></div>
+                      <div className="space-y-2">
+                        <span className="text-green-700 font-medium">UC:</span>
+                        <div className="font-bold text-gray-900">{selectedGeradora.uc}</div>
+                      </div>
+                      <div className="space-y-2">
+                        <span className="text-green-700 font-medium">Geração Mensal:</span>
+                        <div className="font-bold text-gray-900">{selectedGeradora.geracao}</div>
+                      </div>
+                      <div className="space-y-2">
+                        <span className="text-green-700 font-medium">Já Alocado:</span>
+                        <div className="font-bold text-gray-900">{selectedGeradora.percentualAlocado}%</div>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              )}
-            </div>
+                )}
+              </div>
+            )}
 
-            {configuracao.geradoraId && (
-              <>
-                {/* Seção 2: Configuração do Rateio */}
-                <div className="space-y-4 border-t pt-6">
-                  <div className="flex items-center space-x-2">
-                    <Settings className="w-5 h-5 text-blue-600" />
-                    <Label className="text-lg font-semibold text-gray-900">2. Configuração do Rateio</Label>
+            {/* Etapa 2: Configuração */}
+            {currentStep === 2 && (
+              <div className="space-y-8 animate-fade-in">
+                {/* Configuração do Tipo */}
+                <div className="space-y-6">
+                  <div className="flex items-center space-x-3">
+                    <Settings className="w-6 h-6 text-blue-600" />
+                    <h3 className="text-xl font-bold text-gray-900">Configuração do Rateio</h3>
                   </div>
                   
-                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div>
-                      <Label>Tipo de Rateio</Label>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div className="space-y-3">
+                      <Label className="text-base font-semibold">Tipo de Distribuição</Label>
                       <Select value={configuracao.tipoRateio} onValueChange={(value: 'porcentagem' | 'prioridade') => setConfiguracao(prev => ({ ...prev, tipoRateio: value }))}>
-                        <SelectTrigger className="mt-2">
+                        <SelectTrigger className="h-12">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="porcentagem">
-                            <div className="flex items-center space-x-2">
-                              <Percent className="w-4 h-4" />
-                              <span>Por Porcentagem</span>
+                            <div className="flex items-center space-x-3 py-2">
+                              <Percent className="w-5 h-5 text-blue-600" />
+                              <div>
+                                <div className="font-semibold">Por Porcentagem</div>
+                                <div className="text-sm text-gray-500">Cada assinante recebe % fixo</div>
+                              </div>
                             </div>
                           </SelectItem>
                           <SelectItem value="prioridade">
-                            <div className="flex items-center space-x-2">
-                              <Target className="w-4 h-4" />
-                              <span>Por Prioridade</span>
+                            <div className="flex items-center space-x-3 py-2">
+                              <Target className="w-5 h-5 text-purple-600" />
+                              <div>
+                                <div className="font-semibold">Por Prioridade</div>
+                                <div className="text-sm text-gray-500">Distribuição sequencial por ordem</div>
+                              </div>
                             </div>
                           </SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
 
-                    <div>
-                      <Label>Data do Rateio</Label>
-                      <div className="flex space-x-2 mt-2">
-                        <Input 
-                          type="number" 
-                          min="1" 
-                          max="31" 
-                          value={configuracao.dia}
-                          onChange={e => setConfiguracao(prev => ({ ...prev, dia: parseInt(e.target.value) }))}
-                          className="w-20"
-                        />
-                        <Select value={configuracao.mes.toString()} onValueChange={value => setConfiguracao(prev => ({ ...prev, mes: parseInt(value) }))}>
-                          <SelectTrigger className="w-24">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {Array.from({ length: 12 }, (_, i) => (
-                              <SelectItem key={i + 1} value={(i + 1).toString()}>
-                                {(i + 1).toString().padStart(2, '0')}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <Input 
-                          type="number" 
-                          min="2020" 
-                          value={configuracao.ano}
-                          onChange={e => setConfiguracao(prev => ({ ...prev, ano: parseInt(e.target.value) }))}
-                          className="w-24"
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <Label>Geração Esperada (kWh)</Label>
+                    <div className="space-y-3">
+                      <Label className="text-base font-semibold">Geração Esperada (kWh)</Label>
                       <Input 
                         type="number" 
                         min="0" 
                         step="0.01"
                         value={configuracao.geracaoEsperada}
                         onChange={e => setConfiguracao(prev => ({ ...prev, geracaoEsperada: parseFloat(e.target.value) || 0 }))}
-                        className="mt-2"
+                        className="h-12 text-lg font-semibold"
                       />
                     </div>
                   </div>
                 </div>
 
-                {/* Seção 3: Adicionar Novo Assinante */}
-                <div className="space-y-4 border-t pt-6">
-                  <div className="flex items-center space-x-2">
-                    <Users className="w-5 h-5 text-purple-600" />
-                    <Label className="text-lg font-semibold text-gray-900">3. Adicionar Novo Assinante (Opcional)</Label>
-                  </div>
-                  
-                  <div className="flex space-x-4">
-                    <div className="flex-1">
-                      <Select value={configuracao.novoAssinanteId} onValueChange={value => setConfiguracao(prev => ({ ...prev, novoAssinanteId: value }))}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecione um assinante para adicionar..." />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {assinantesDisponiveis.map(assinante => (
-                            <SelectItem key={assinante.id} value={assinante.id}>
-                              <div>
-                                <div className="font-medium">{assinante.nome}</div>
-                                <div className="text-sm text-gray-500">
-                                  UC: {assinante.uc} • {assinante.consumoContratado}
-                                </div>
-                              </div>
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                {/* Adicionar Novo Assinante */}
+                {assinantesDisponiveis.length > 0 && (
+                  <div className="space-y-4 p-6 bg-gray-50 rounded-xl">
+                    <div className="flex items-center space-x-3">
+                      <Users className="w-5 h-5 text-purple-600" />
+                      <Label className="text-lg font-semibold text-gray-900">Adicionar Novo Assinante</Label>
                     </div>
-                    <Button type="button" onClick={handleAddAssinante} disabled={!configuracao.novoAssinanteId}>
-                      <Plus className="w-4 h-4 mr-2" />
-                      Adicionar
-                    </Button>
+                    
+                    <div className="flex space-x-4">
+                      <div className="flex-1">
+                        <Select value={configuracao.novoAssinanteId} onValueChange={value => setConfiguracao(prev => ({ ...prev, novoAssinanteId: value }))}>
+                          <SelectTrigger className="h-12">
+                            <SelectValue placeholder="Selecione um assinante para adicionar..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {assinantesDisponiveis.map(assinante => (
+                              <SelectItem key={assinante.id} value={assinante.id}>
+                                <div className="py-1">
+                                  <div className="font-semibold">{assinante.nome}</div>
+                                  <div className="text-sm text-gray-500">
+                                    UC: {assinante.uc} • {assinante.consumoContratado}
+                                  </div>
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <Button 
+                        type="button" 
+                        onClick={handleAddAssinante} 
+                        disabled={!configuracao.novoAssinanteId}
+                        className="h-12 px-6"
+                      >
+                        <Plus className="w-4 h-4 mr-2" />
+                        Adicionar
+                      </Button>
+                    </div>
                   </div>
-                </div>
+                )}
 
-                {/* Seção 4: Distribuição */}
+                {/* Tabela de Distribuição */}
                 {rateioItems.length > 0 && (
-                  <div className="space-y-4 border-t pt-6">
+                  <div className="space-y-6">
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-2">
-                        <Calculator className="w-5 h-5 text-orange-600" />
-                        <Label className="text-lg font-semibold text-gray-900">4. Configurar Distribuição</Label>
+                      <div className="flex items-center space-x-3">
+                        <Calculator className="w-6 h-6 text-orange-600" />
+                        <h3 className="text-xl font-bold text-gray-900">Configurar Distribuição</h3>
                       </div>
                       
-                      <div className="text-sm text-gray-600">
+                      <div className="text-sm font-semibold text-gray-600 bg-white px-4 py-2 rounded-lg border">
                         {configuracao.tipoRateio === 'porcentagem' 
                           ? `Total: ${validation.totalPercentual?.toFixed(1) || 0}%`
-                          : `${rateioItems.length} assinante(s) por prioridade`
+                          : `${rateioItems.length} assinante(s)`
                         }
                       </div>
                     </div>
 
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Assinante</TableHead>
-                          <TableHead>UC</TableHead>
-                          <TableHead>Consumo</TableHead>
-                          <TableHead>
-                            {configuracao.tipoRateio === 'porcentagem' ? 'Porcentagem (%)' : 'Prioridade'}
-                          </TableHead>
-                          <TableHead>Energia Alocada</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead style={{ width: '80px' }}>Ações</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {rateioItems.map((item) => (
-                          <TableRow key={item.assinanteId}>
-                            <TableCell className="font-medium">{item.nome}</TableCell>
-                            <TableCell>{item.uc}</TableCell>
-                            <TableCell>{item.consumoNumero} kWh</TableCell>
-                            <TableCell>
-                              <Input 
-                                type="number"
-                                min="0"
-                                max={configuracao.tipoRateio === 'porcentagem' ? "100" : undefined}
-                                step={configuracao.tipoRateio === 'porcentagem' ? "0.1" : "1"}
-                                value={configuracao.tipoRateio === 'porcentagem' ? item.porcentagem || 0 : item.prioridade || 0}
-                                onChange={e => handleItemChange(
-                                  item.assinanteId, 
-                                  configuracao.tipoRateio === 'porcentagem' ? 'porcentagem' : 'prioridade',
-                                  parseFloat(e.target.value) || 0
-                                )}
-                                className="w-20"
-                              />
-                            </TableCell>
-                            <TableCell>
-                              {item.valorAlocado ? `${item.valorAlocado.toLocaleString()} kWh` : '-'}
-                            </TableCell>
-                            <TableCell>
-                              <Badge variant={item.isNew ? "default" : "secondary"}>
-                                {item.isNew ? "Novo" : "Existente"}
-                              </Badge>
-                            </TableCell>
-                            <TableCell>
-                              <Button 
-                                type="button"
-                                variant="ghost" 
-                                size="sm"
-                                onClick={() => handleRemoveAssinante(item.assinanteId)}
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </Button>
-                            </TableCell>
+                    <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
+                      <Table>
+                        <TableHeader>
+                          <TableRow className="bg-gray-50">
+                            <TableHead className="font-bold">Assinante</TableHead>
+                            <TableHead className="font-bold">UC</TableHead>
+                            <TableHead className="font-bold">Consumo</TableHead>
+                            <TableHead className="font-bold">
+                              {configuracao.tipoRateio === 'porcentagem' ? 'Porcentagem (%)' : 'Prioridade'}
+                            </TableHead>
+                            <TableHead className="font-bold">Energia Alocada</TableHead>
+                            <TableHead className="font-bold">Status</TableHead>
+                            <TableHead className="font-bold">Ações</TableHead>
                           </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
+                        </TableHeader>
+                        <TableBody>
+                          {rateioItems.map((item) => (
+                            <TableRow key={item.assinanteId} className="hover:bg-gray-50">
+                              <TableCell className="font-medium">{item.nome}</TableCell>
+                              <TableCell className="font-mono">{item.uc}</TableCell>
+                              <TableCell>{item.consumoNumero.toLocaleString()} kWh</TableCell>
+                              <TableCell>
+                                <Input 
+                                  type="number"
+                                  min="0"
+                                  max={configuracao.tipoRateio === 'porcentagem' ? "100" : undefined}
+                                  step={configuracao.tipoRateio === 'porcentagem' ? "0.1" : "1"}
+                                  value={configuracao.tipoRateio === 'porcentagem' ? item.porcentagem || 0 : item.prioridade || 0}
+                                  onChange={e => handleItemChange(
+                                    item.assinanteId, 
+                                    configuracao.tipoRateio === 'porcentagem' ? 'porcentagem' : 'prioridade',
+                                    parseFloat(e.target.value) || 0
+                                  )}
+                                  className="w-24 text-center font-semibold"
+                                />
+                              </TableCell>
+                              <TableCell className="font-semibold">
+                                {item.valorAlocado ? `${item.valorAlocado.toLocaleString()} kWh` : '-'}
+                              </TableCell>
+                              <TableCell>
+                                <Badge variant={item.isNew ? "default" : "secondary"} className="font-medium">
+                                  {item.isNew ? "Novo" : "Existente"}
+                                </Badge>
+                              </TableCell>
+                              <TableCell>
+                                <Button 
+                                  type="button"
+                                  variant="ghost" 
+                                  size="sm"
+                                  onClick={() => handleRemoveAssinante(item.assinanteId)}
+                                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
 
                     {/* Validação */}
                     {(validation.errors.length > 0 || validation.warnings.length > 0) && (
-                      <div className="space-y-2">
+                      <div className="space-y-3">
                         {validation.errors.map((error, index) => (
-                          <div key={index} className="flex items-center space-x-2 p-3 bg-red-50 border border-red-200 rounded-lg">
-                            <AlertCircle className="w-5 h-5 text-red-600" />
-                            <span className="text-red-800">{error}</span>
+                          <div key={index} className="flex items-center space-x-3 p-4 bg-red-50 border border-red-200 rounded-xl">
+                            <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
+                            <span className="text-red-800 font-medium">{error}</span>
                           </div>
                         ))}
                         
                         {validation.warnings.map((warning, index) => (
-                          <div key={index} className="flex items-center space-x-2 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                            <Info className="w-5 h-5 text-yellow-600" />
-                            <span className="text-yellow-800">{warning}</span>
+                          <div key={index} className="flex items-center space-x-3 p-4 bg-yellow-50 border border-yellow-200 rounded-xl">
+                            <Info className="w-5 h-5 text-yellow-600 flex-shrink-0" />
+                            <span className="text-yellow-800 font-medium">{warning}</span>
                           </div>
                         ))}
                       </div>
@@ -383,48 +415,72 @@ const RateioForm: React.FC<RateioFormProps> = ({ onSubmit, onCancel }) => {
 
                     {/* Resumo da Distribuição */}
                     {validation.isValid && (
-                      <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                        <h4 className="font-semibold text-blue-800 mb-2">Resumo da Distribuição</h4>
-                        <div className="grid grid-cols-3 gap-4 text-sm">
-                          <div>
-                            <span className="text-blue-700">Geração Esperada:</span>
-                            <div className="font-medium">{configuracao.geracaoEsperada.toLocaleString()} kWh</div>
+                      <div className="p-6 bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl">
+                        <h4 className="font-bold text-blue-800 mb-4 text-lg">📊 Resumo da Distribuição</h4>
+                        <div className="grid grid-cols-3 gap-6">
+                          <div className="text-center">
+                            <div className="text-2xl font-bold text-blue-900">{configuracao.geracaoEsperada.toLocaleString()}</div>
+                            <div className="text-sm text-blue-700 font-medium">kWh Geração Esperada</div>
                           </div>
-                          <div>
-                            <span className="text-blue-700">Energia Distribuída:</span>
-                            <div className="font-medium">
-                              {rateioItems.reduce((sum, item) => sum + (item.valorAlocado || 0), 0).toLocaleString()} kWh
+                          <div className="text-center">
+                            <div className="text-2xl font-bold text-green-900">
+                              {rateioItems.reduce((sum, item) => sum + (item.valorAlocado || 0), 0).toLocaleString()}
                             </div>
+                            <div className="text-sm text-green-700 font-medium">kWh Distribuída</div>
                           </div>
-                          <div>
-                            <span className="text-blue-700">Energia Sobrando:</span>
-                            <div className="font-medium">
-                              {validation.energiaSobra?.toLocaleString() || 0} kWh
+                          <div className="text-center">
+                            <div className="text-2xl font-bold text-orange-900">
+                              {validation.energiaSobra?.toLocaleString() || 0}
                             </div>
+                            <div className="text-sm text-orange-700 font-medium">kWh Disponível</div>
                           </div>
                         </div>
                       </div>
                     )}
                   </div>
                 )}
-
-                {/* Botões de Ação */}
-                <div className="flex justify-end space-x-4 pt-6 border-t">
-                  <Button type="button" variant="outline" onClick={onCancel}>
-                    <X className="w-4 h-4 mr-2" />
-                    Cancelar
-                  </Button>
-                  <Button 
-                    type="submit" 
-                    className="bg-green-600 hover:bg-green-700" 
-                    disabled={!validation.isValid || rateioItems.length === 0}
-                  >
-                    <Save className="w-4 h-4 mr-2" />
-                    Criar Rateio
-                  </Button>
-                </div>
-              </>
+              </div>
             )}
+
+            {/* Botões de Ação */}
+            <div className="flex justify-between pt-8 border-t">
+              <Button type="button" variant="outline" onClick={onCancel} className="px-8">
+                <X className="w-4 h-4 mr-2" />
+                Cancelar
+              </Button>
+              
+              <div className="flex space-x-4">
+                {currentStep === 2 && (
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={() => setCurrentStep(1)}
+                    className="px-6"
+                  >
+                    Voltar
+                  </Button>
+                )}
+                
+                <Button 
+                  type={currentStep === 2 ? "submit" : "button"}
+                  onClick={currentStep === 1 ? () => setCurrentStep(2) : undefined}
+                  className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 px-8" 
+                  disabled={!canProceed}
+                >
+                  {currentStep === 1 ? (
+                    <>
+                      Continuar
+                      <ArrowRight className="w-4 h-4 ml-2" />
+                    </>
+                  ) : (
+                    <>
+                      <Save className="w-4 h-4 mr-2" />
+                      Criar Rateio
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
           </form>
         </CardContent>
       </Card>
