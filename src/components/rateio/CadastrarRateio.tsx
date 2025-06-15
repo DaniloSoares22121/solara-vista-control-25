@@ -42,7 +42,11 @@ const CadastrarRateio = () => {
 
   const handleSubmit = async () => {
     if (!selectedGeradoraId) {
-      toast.error("Selecione uma geradora!");
+      toast({
+        title: "Selecione uma geradora!",
+        description: "Você precisa selecionar uma geradora para cadastrar o rateio.",
+        variant: "destructive"
+      });
       return;
     }
     const escolhidos = assinantes
@@ -50,7 +54,11 @@ const CadastrarRateio = () => {
       .map(a => ({ subscriber_id: a.id, valor: a.valor }));
 
     if (escolhidos.length === 0) {
-      toast.error("Selecione pelo menos um assinante com valor de rateio válido!");
+      toast({
+        title: "Assinantes inválidos",
+        description: "Selecione pelo menos um assinante com valor de rateio válido!",
+        variant: "destructive"
+      });
       return;
     }
     setIsSubmitting(true);
@@ -61,10 +69,18 @@ const CadastrarRateio = () => {
         dataRateio: new Date().toISOString(),
         assinantes: escolhidos,
       });
-      toast.success("Rateio cadastrado com sucesso!");
+      toast({
+        title: "Sucesso",
+        description: "Rateio cadastrado com sucesso!",
+        // Pode omitir variant para sucesso (default)
+      });
       setAssinantes(assinantesParaRateio);
     } catch (err: any) {
-      toast.error(err?.message || "Erro ao cadastrar rateio.");
+      toast({
+        title: "Erro ao cadastrar",
+        description: err?.message || "Erro ao cadastrar rateio.",
+        variant: "destructive"
+      });
     } finally {
       setIsSubmitting(false);
     }
