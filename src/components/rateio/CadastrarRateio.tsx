@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -173,16 +172,27 @@ const CadastrarRateio = () => {
           </Card>
         )}
 
-        {/* Lista de Assinantes: aparecem somente DEPOIS da seleção da geradora */}
+        {/* --- NOVO: Lista de assinantes aparece sempre que houver uma geradora selecionada --- */}
         {selectedGeradora && (
           <div className="mt-6 rounded-md border p-2 bg-muted/10">
-            <AdicionarAssinantesRateio
-              assinantes={assinantes}
-              onSelect={setAssinantes}
-              tipoRateio={tipoRateio}
-              disabled={isSubmitting || isLoadingSubscribers}
-            />
-            {isLoadingSubscribers && <div className="text-center mt-4"><LoadingSpinner size="sm" text="Carregando assinantes..." /></div>}
+            {isLoadingSubscribers ? (
+              <div className="text-center mt-4"><LoadingSpinner size="sm" text="Carregando assinantes..." /></div>
+            ) : (
+              <>
+                {assinantes.length === 0 ? (
+                  <div className="text-center text-muted-foreground py-6">
+                    Nenhum assinante disponível para essa geradora.
+                  </div>
+                ) : (
+                  <AdicionarAssinantesRateio
+                    assinantes={assinantes}
+                    onSelect={setAssinantes}
+                    tipoRateio={tipoRateio}
+                    disabled={isSubmitting}
+                  />
+                )}
+              </>
+            )}
           </div>
         )}
 
@@ -237,4 +247,3 @@ const CadastrarRateio = () => {
 };
 
 export default CadastrarRateio;
-
