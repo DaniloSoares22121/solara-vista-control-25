@@ -66,6 +66,9 @@ const RateioForm: React.FC<RateioFormProps> = ({ onSubmit, onCancel }) => {
     }
   }, [configuracao.geradoraId]);
 
+  // Move this above the assinantesElegiveis definition!
+  const selectedGeradora = geradoras.find(g => g.id === configuracao.geradoraId);
+
   // NOVO: lista de assinantes elegíveis baseados na concessionária da geradora
   const assinantesElegiveis = React.useMemo(() => {
     if (!selectedGeradora) return [];
@@ -160,7 +163,6 @@ const RateioForm: React.FC<RateioFormProps> = ({ onSubmit, onCancel }) => {
     });
   };
 
-  const selectedGeradora = geradoras.find(g => g.id === configuracao.geradoraId);
   const assinantesDisponiveis = assinantes.filter(a => 
     !rateioItems.some(item => item.assinanteId === a.id) &&
     (!selectedGeradora || a.concessionaria === selectedGeradora.concessionaria)
