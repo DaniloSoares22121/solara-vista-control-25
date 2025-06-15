@@ -41,13 +41,17 @@ const fetchGenerators = async (): Promise<RateioGenerator[]> => {
   if (!data) return [];
 
   return data.map(g => {
-    const owner = g.owner as any;
     const plants = g.plants as any[] | null;
+    // Busca o apelido da primeira planta cadastrada, se houver.
     return {
       id: g.id,
-      apelido: owner?.razao_social || owner?.nome_completo || 'Geradora sem nome',
-      uc: plants?.[0]?.ucGeradora || 'N/A',
-      geracao: `${plants?.[0]?.potenciaInstalada || 0} kWp`,
+      apelido: plants?.[0]?.apelido || 'Sem apelido',
+      uc: plants?.[0]?.uc || 'N/A',
+      geracao: plants?.[0]?.geracaoProjetada
+        ? `${plants[0].geracaoProjetada} kWh/mês`
+        : plants?.[0]?.potenciaInstalada
+        ? `${plants[0].potenciaInstalada} kWp`
+        : 'N/A',
     };
   });
 };
