@@ -3,9 +3,10 @@ import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { useRateioGenerators, useRateioSubscribers } from '@/hooks/useRateio';
 import { LoadingSpinner } from '../ui/loading-spinner';
-import { AlertCircle, CheckCircle2 } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Zap, Users, Calculator, ArrowRight, Info } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AdicionarAssinantesRateio } from "./AdicionarAssinantesRateio";
 import { rateioService } from "@/services/rateioService";
@@ -109,13 +110,13 @@ const CadastrarRateio = () => {
       await rateioService.cadastrarRateio({
         geradora: selectedGeradora,
         tipoRateio,
-        dataRateio: new Date().toISOString().split('T')[0], // Formato YYYY-MM-DD
+        dataRateio: new Date().toISOString().split('T')[0],
         assinantes: selecionados,
       });
       
       toast({
-        title: "Sucesso!",
-        description: `Rateio cadastrado com sucesso! ${selecionados.length} assinantes vinculados.`,
+        title: "🎉 Rateio cadastrado com sucesso!",
+        description: `${selecionados.length} assinantes foram vinculados à geradora.`,
       });
       
       // Limpa os valores dos assinantes mas mantém a geradora selecionada
@@ -134,68 +135,192 @@ const CadastrarRateio = () => {
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Cadastrar Novo Rateio</CardTitle>
-        <CardDescription>Vincule vários assinantes a uma geradora e defina regras de rateio.</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
-
-        {/* Seleção da Geradora e Tipo de Rateio */}
-        <div className="flex flex-col sm:flex-row items-center gap-4">
-          <Select onValueChange={setSelectedGeradoraId} disabled={isLoadingGenerators || isSubmitting} value={selectedGeradoraId}>
-            <SelectTrigger className="w-full sm:w-[300px]">
-              <SelectValue placeholder={isLoadingGenerators ? "Carregando geradoras..." : "Selecione uma geradora..."} />
-            </SelectTrigger>
-            <SelectContent>
-              {isLoadingGenerators && <div className="flex justify-center p-4"><LoadingSpinner /></div>}
-              {generators.map(g => (
-                <SelectItem key={g.id} value={g.id}>{g.apelido}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          <Select value={tipoRateio} onValueChange={v => setTipoRateio(v as "porcentagem" | "prioridade")} disabled={isSubmitting}>
-            <SelectTrigger className="w-full sm:w-[200px]">
-              <SelectValue placeholder="Tipo de Rateio" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="porcentagem">% Porcentagem</SelectItem>
-              <SelectItem value="prioridade">Prioridade</SelectItem>
-            </SelectContent>
-          </Select>
+    <div className="space-y-8">
+      {/* Header com progresso */}
+      <div className="relative">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+              Cadastrar Novo Rateio
+            </h1>
+            <p className="text-muted-foreground mt-2">
+              Configure a distribuição de créditos entre geradora e assinantes
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Badge variant={selectedGeradora ? "default" : "secondary"} className="flex items-center gap-1">
+              <Zap className="h-3 w-3" />
+              {selectedGeradora ? "Geradora Selecionada" : "Selecione Geradora"}
+            </Badge>
+            {selecionados.length > 0 && (
+              <Badge variant="outline" className="flex items-center gap-1">
+                <Users className="h-3 w-3" />
+                {selecionados.length} Assinante{selecionados.length !== 1 ? 's' : ''}
+              </Badge>
+            )}
+          </div>
         </div>
 
-        {/* Exibe info da Geradora Selecionada */}
-        {selectedGeradora && (
-          <Card className="bg-muted/40">
-            <CardHeader>
-              <CardTitle className="text-lg">{selectedGeradora.apelido}</CardTitle>
-            </CardHeader>
-            <CardContent className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
-              <div>
-                <p className="font-semibold text-muted-foreground">UC da Geradora</p>
-                <p>{selectedGeradora.uc}</p>
-              </div>
-              <div>
-                <p className="font-semibold text-muted-foreground">Geração Estimada</p>
-                <p>{selectedGeradora.geracao}</p>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+        {/* Barra de progresso visual */}
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-4">
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center ${selectedGeradoraId ? 'bg-primary text-white' : 'bg-muted text-muted-foreground'}`}>
+              1
+            </div>
+            <div className={`h-0.5 w-16 ${selectedGeradoraId ? 'bg-primary' : 'bg-muted'}`}></div>
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center ${selecionados.length > 0 ? 'bg-primary text-white' : 'bg-muted text-muted-foreground'}`}>
+              2
+            </div>
+            <div className={`h-0.5 w-16 ${validSubmit ? 'bg-primary' : 'bg-muted'}`}></div>
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center ${validSubmit ? 'bg-primary text-white' : 'bg-muted text-muted-foreground'}`}>
+              3
+            </div>
+          </div>
+        </div>
+      </div>
 
-        {/* Lista de assinantes aparece sempre que houver uma geradora selecionada */}
-        {selectedGeradora && (
-          <div className="mt-6 rounded-md border p-4 bg-muted/10">
-            <h3 className="text-lg font-semibold mb-4">Selecionar Assinantes para Vincular à Geradora</h3>
+      {/* Configuração principal */}
+      <Card className="border-0 shadow-lg bg-gradient-to-br from-card to-card/50 backdrop-blur-sm">
+        <CardHeader className="space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+              <Calculator className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <CardTitle className="text-xl">Configuração do Rateio</CardTitle>
+              <CardDescription>Selecione a geradora e defina o tipo de distribuição</CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Geradora</label>
+              <Select onValueChange={setSelectedGeradoraId} disabled={isLoadingGenerators || isSubmitting} value={selectedGeradoraId}>
+                <SelectTrigger className="h-12">
+                  <SelectValue placeholder={isLoadingGenerators ? "Carregando..." : "Selecione uma geradora"} />
+                </SelectTrigger>
+                <SelectContent>
+                  {isLoadingGenerators && <div className="flex justify-center p-4"><LoadingSpinner /></div>}
+                  {generators.map(g => (
+                    <SelectItem key={g.id} value={g.id}>
+                      <div className="flex items-center gap-2">
+                        <Zap className="h-4 w-4 text-primary" />
+                        {g.apelido}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Tipo de Rateio</label>
+              <Select value={tipoRateio} onValueChange={v => setTipoRateio(v as "porcentagem" | "prioridade")} disabled={isSubmitting}>
+                <SelectTrigger className="h-12">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="porcentagem">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                      Porcentagem
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="prioridade">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                      Prioridade
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {/* Info sobre tipo de rateio */}
+          <div className="bg-muted/50 p-4 rounded-lg border-l-4 border-primary">
+            <div className="flex items-start gap-3">
+              <Info className="h-5 w-5 text-primary mt-0.5" />
+              <div>
+                <p className="font-medium text-sm">
+                  {tipoRateio === "porcentagem" ? "Rateio por Porcentagem" : "Rateio por Prioridade"}
+                </p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  {tipoRateio === "porcentagem" 
+                    ? "Distribua a energia definindo a porcentagem exata para cada assinante. A soma deve ser 100%."
+                    : "Defina prioridades únicas (1, 2, 3...) onde 1 é a maior prioridade. A energia será distribuída sequencialmente."
+                  }
+                </p>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Detalhes da Geradora Selecionada */}
+      {selectedGeradora && (
+        <Card className="border-primary/20 shadow-lg">
+          <CardHeader className="bg-gradient-to-r from-primary/5 to-primary/10">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center">
+                  <Zap className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                  <CardTitle className="text-xl text-primary">{selectedGeradora.apelido}</CardTitle>
+                  <CardDescription>Geradora selecionada para o rateio</CardDescription>
+                </div>
+              </div>
+              <Badge className="bg-primary/10 text-primary border-primary/20">Ativa</Badge>
+            </div>
+          </CardHeader>
+          <CardContent className="pt-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-muted-foreground">UC da Geradora</p>
+                <p className="text-lg font-semibold">{selectedGeradora.uc}</p>
+              </div>
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-muted-foreground">Geração Estimada</p>
+                <p className="text-lg font-semibold text-primary">{selectedGeradora.geracao}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Lista de assinantes */}
+      {selectedGeradora && (
+        <Card className="border-0 shadow-lg">
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                <Users className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <CardTitle>Selecionar Assinantes</CardTitle>
+                <CardDescription>
+                  Escolha os assinantes e defina os valores para o rateio
+                </CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
             {isLoadingSubscribers ? (
-              <div className="text-center mt-4"><LoadingSpinner size="sm" text="Carregando assinantes..." /></div>
+              <div className="flex flex-col items-center justify-center py-12 space-y-4">
+                <LoadingSpinner size="lg" />
+                <p className="text-muted-foreground">Carregando assinantes...</p>
+              </div>
             ) : (
               <>
                 {assinantes.length === 0 ? (
-                  <div className="text-center text-muted-foreground py-6">
-                    Nenhum assinante cadastrado no sistema.
+                  <div className="text-center py-12 space-y-4">
+                    <Users className="h-12 w-12 text-muted-foreground mx-auto" />
+                    <div>
+                      <p className="text-lg font-medium text-muted-foreground">Nenhum assinante encontrado</p>
+                      <p className="text-sm text-muted-foreground">Cadastre assinantes antes de criar um rateio</p>
+                    </div>
                   </div>
                 ) : (
                   <AdicionarAssinantesRateio
@@ -207,56 +332,90 @@ const CadastrarRateio = () => {
                 )}
               </>
             )}
-          </div>
-        )}
+          </CardContent>
+        </Card>
+      )}
 
-        {/* Mensagem de validação */}
-        {selectedGeradora && selecionados.length > 0 && (
-          <div className="my-4">
+      {/* Validação e Status */}
+      {selectedGeradora && selecionados.length > 0 && (
+        <Card className={`border-l-4 ${validSubmit ? 'border-green-500 bg-green-50/50' : 'border-yellow-500 bg-yellow-50/50'}`}>
+          <CardContent className="pt-6">
             {!validSubmit && (
-              <Alert variant="destructive" className="flex items-center gap-2">
-                <AlertCircle className="h-4 w-4 opacity-70 mr-2" />
-                <AlertDescription>{statusMsg}</AlertDescription>
+              <Alert variant="destructive" className="border-0 bg-transparent">
+                <AlertCircle className="h-5 w-5" />
+                <AlertDescription className="font-medium">{statusMsg}</AlertDescription>
               </Alert>
             )}
+            
             {validSubmit && tipoRateio === "porcentagem" && (
-              <div className="flex items-center text-green-700 text-sm gap-2">
+              <div className="flex items-center gap-3 text-green-700">
                 <CheckCircle2 className="h-5 w-5" />
-                Pronto para cadastrar! Soma: <b>{somaPorcentagens}%</b>
+                <div>
+                  <p className="font-medium">Configuração válida!</p>
+                  <p className="text-sm">Soma total: {somaPorcentagens}% ✅</p>
+                </div>
               </div>
             )}
+            
             {validSubmit && tipoRateio === "prioridade" && (
-              <div className="flex items-center text-green-700 text-sm gap-2">
+              <div className="flex items-center gap-3 text-green-700">
                 <CheckCircle2 className="h-5 w-5" />
-                Prioridades configuradas corretamente!
+                <div>
+                  <p className="font-medium">Prioridades configuradas corretamente!</p>
+                  <p className="text-sm">Todas as prioridades são únicas ✅</p>
+                </div>
               </div>
             )}
+            
             {hasPriorityDuplicate && (
-              <div className="text-xs text-red-600 mt-1">
-                Prioridades devem ser únicas.
+              <div className="text-sm text-red-600 mt-2 flex items-center gap-2">
+                <AlertCircle className="h-4 w-4" />
+                Prioridades devem ser únicas
               </div>
             )}
-          </div>
-        )}
+          </CardContent>
+        </Card>
+      )}
 
-        {/* Botão de cadastrar */}
-        {selectedGeradora && selecionados.length > 0 && (
-          <div className="flex items-center justify-end gap-4 mt-6">
-            <Button onClick={handleSubmit} disabled={isSubmitting || isLoadingSubscribers || !validSubmit}>
-              {isSubmitting ? <LoadingSpinner size="sm" /> : "Cadastrar Rateio"}
-            </Button>
-          </div>
-        )}
+      {/* Botão de ação */}
+      {selectedGeradora && selecionados.length > 0 && (
+        <div className="flex justify-end">
+          <Button 
+            onClick={handleSubmit} 
+            disabled={isSubmitting || isLoadingSubscribers || !validSubmit}
+            size="lg"
+            className="h-12 px-8 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
+          >
+            {isSubmitting ? (
+              <>
+                <LoadingSpinner size="sm" className="mr-2" />
+                Cadastrando...
+              </>
+            ) : (
+              <>
+                Cadastrar Rateio
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </>
+            )}
+          </Button>
+        </div>
+      )}
 
-        {/* Orientação inicial */}
-        {!selectedGeradora && !isLoadingGenerators && (
-          <div className="text-center text-muted-foreground py-8">
-            <p>Por favor, selecione uma geradora para continuar.</p>
-          </div>
-        )}
-
-      </CardContent>
-    </Card>
+      {/* Orientação inicial */}
+      {!selectedGeradora && !isLoadingGenerators && (
+        <Card className="border-dashed border-2 border-muted">
+          <CardContent className="flex flex-col items-center justify-center py-16 space-y-4">
+            <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center">
+              <Zap className="h-8 w-8 text-muted-foreground" />
+            </div>
+            <div className="text-center space-y-2">
+              <p className="text-lg font-medium">Começar novo rateio</p>
+              <p className="text-muted-foreground">Selecione uma geradora acima para continuar</p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+    </div>
   );
 };
 
