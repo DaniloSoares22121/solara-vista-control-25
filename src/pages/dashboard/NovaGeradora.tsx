@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -268,300 +267,298 @@ const NovaGeradora = ({ onClose, editMode = false, generatorData }: NovaGeradora
   };
 
   return (
-    <DashboardLayout>
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-green-50/30 to-emerald-50/50">
-        <div className="space-y-8 p-6 max-w-7xl mx-auto">
-          
-          {/* Header Section */}
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-            <div className="space-y-3">
-              <div className="flex items-center gap-4">
-                <div className="p-3 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl shadow-lg">
-                  <Zap className="w-8 h-8 text-white" />
-                </div>
-                <div>
-                  <h1 className="text-3xl lg:text-4xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
-                    {editMode ? 'Editar Geradora' : 'Nova Geradora'}
-                  </h1>
-                  <p className="text-gray-600 text-lg">
-                    {editMode 
-                      ? 'Atualize as informações da unidade geradora' 
-                      : 'Cadastre uma nova unidade geradora'
-                    }
-                  </p>
-                </div>
-              </div>
-            </div>
-            
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-green-50/30 to-emerald-50/50">
+      <div className="space-y-8 p-6 max-w-7xl mx-auto">
+        
+        {/* Header Section */}
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+          <div className="space-y-3">
             <div className="flex items-center gap-4">
-              <Button
-                onClick={onClose}
-                variant="outline"
-                className="flex items-center space-x-2 border-green-200 text-green-700 hover:bg-green-50 shadow-md"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                <span>Voltar para Lista</span>
-              </Button>
+              <div className="p-3 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl shadow-lg">
+                <Zap className="w-8 h-8 text-white" />
+              </div>
+              <div>
+                <h1 className="text-3xl lg:text-4xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
+                  {editMode ? 'Editar Geradora' : 'Nova Geradora'}
+                </h1>
+                <p className="text-gray-600 text-lg">
+                  {editMode 
+                    ? 'Atualize as informações da unidade geradora' 
+                    : 'Cadastre uma nova unidade geradora'
+                  }
+                </p>
+              </div>
             </div>
           </div>
+          
+          <div className="flex items-center gap-4">
+            <Button
+              onClick={onClose}
+              variant="outline"
+              className="flex items-center space-x-2 border-green-200 text-green-700 hover:bg-green-50 shadow-md"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span>Voltar para Lista</span>
+            </Button>
+          </div>
+        </div>
 
-          {/* Progress Steps */}
-          <Card className="border-0 shadow-xl bg-white/90 backdrop-blur-sm overflow-hidden">
-            <CardContent className="p-8">
-              <div className="flex items-center justify-between relative">
-                {/* Linha de progresso de fundo */}
-                <div className="absolute top-6 left-0 right-0 h-1 bg-gray-200 rounded-full z-0">
-                  <div 
-                    className="h-full bg-gradient-to-r from-green-500 to-green-600 rounded-full transition-all duration-500 ease-out"
-                    style={{ width: `${((currentStep - 1) / (totalSteps - 1)) * 100}%` }}
-                  />
-                </div>
-                
-                {steps.map((step, index) => (
-                  <div key={step.number} className="flex flex-col items-center relative z-10">
-                    <div className={`
-                      w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold transition-all duration-300 shadow-lg
-                      ${currentStep >= step.number 
-                        ? 'bg-gradient-to-r from-green-500 to-green-600 text-white scale-110' 
-                        : 'bg-white text-gray-400 border-2 border-gray-200'
-                      }
-                    `}>
-                      {currentStep > step.number ? (
-                        <CheckCircle className="w-6 h-6" />
-                      ) : (
-                        <span className="text-sm">{step.icon}</span>
-                      )}
-                    </div>
-                    <div className="mt-3 text-center">
-                      <p className={`text-sm font-semibold transition-colors ${
-                        currentStep >= step.number ? 'text-green-600' : 'text-gray-500'
-                      }`}>
-                        {step.title}
-                      </p>
-                      <p className="text-xs text-gray-400 mt-1">{step.description}</p>
-                    </div>
-                  </div>
-                ))}
+        {/* Progress Steps */}
+        <Card className="border-0 shadow-xl bg-white/90 backdrop-blur-sm overflow-hidden">
+          <CardContent className="p-8">
+            <div className="flex items-center justify-between relative">
+              {/* Linha de progresso de fundo */}
+              <div className="absolute top-6 left-0 right-0 h-1 bg-gray-200 rounded-full z-0">
+                <div 
+                  className="h-full bg-gradient-to-r from-green-500 to-green-600 rounded-full transition-all duration-500 ease-out"
+                  style={{ width: `${((currentStep - 1) / (totalSteps - 1)) * 100}%` }}
+                />
               </div>
-            </CardContent>
-          </Card>
-
-          {/* Form Content */}
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
               
-              {/* Step 1: Dados Gerais e Dono da Usina */}
-              {currentStep === 1 && (
-                <Card className="border-0 shadow-2xl bg-white/70 backdrop-blur-sm">
-                  <CardHeader className="bg-gradient-to-r from-green-50 via-emerald-50 to-green-50 border-b border-green-100/50">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl flex items-center justify-center shadow-lg">
-                          <span className="text-xl">📊</span>
-                        </div>
-                        <div>
-                          <CardTitle className="text-2xl text-green-800 font-bold">
-                            Dados Gerais e Proprietário
-                          </CardTitle>
-                          <p className="text-green-600 mt-1 text-base">
-                            Configure a concessionária e as informações do proprietário da geradora
-                          </p>
-                        </div>
-                      </div>
-                      <Badge className="bg-green-100 text-green-800 border-green-200 text-sm px-4 py-2">
-                        {currentStep} de {totalSteps}
-                      </Badge>
-                    </div>
-                  </CardHeader>
-                  
-                  <CardContent className="p-10 space-y-10">
-                    <GeneratorConcessionariaForm form={form} />
-                    <GeneratorOwnerTypeForm form={form} />
-                    <GeneratorOwnerDataForm form={form} ownerType={ownerType} />
-                    {ownerType === 'juridica' && (
-                      <GeneratorAdministratorForm form={form} />
+              {steps.map((step, index) => (
+                <div key={step.number} className="flex flex-col items-center relative z-10">
+                  <div className={`
+                    w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold transition-all duration-300 shadow-lg
+                    ${currentStep >= step.number 
+                      ? 'bg-gradient-to-r from-green-500 to-green-600 text-white scale-110' 
+                      : 'bg-white text-gray-400 border-2 border-gray-200'
+                    }
+                  `}>
+                    {currentStep > step.number ? (
+                      <CheckCircle className="w-6 h-6" />
+                    ) : (
+                      <span className="text-sm">{step.icon}</span>
                     )}
-                  </CardContent>
-                </Card>
-              )}
+                  </div>
+                  <div className="mt-3 text-center">
+                    <p className={`text-sm font-semibold transition-colors ${
+                      currentStep >= step.number ? 'text-green-600' : 'text-gray-500'
+                    }`}>
+                      {step.title}
+                    </p>
+                    <p className="text-xs text-gray-400 mt-1">{step.description}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
 
-              {/* Step 2: Dados das Usinas */}
-              {currentStep === 2 && (
-                <Card className="border-0 shadow-2xl bg-white/70 backdrop-blur-sm">
-                  <CardHeader className="bg-gradient-to-r from-blue-50 via-cyan-50 to-blue-50 border-b border-blue-100/50">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center shadow-lg">
-                          <span className="text-xl">⚡</span>
-                        </div>
-                        <div>
-                          <CardTitle className="text-2xl text-blue-800 font-bold">
-                            Configuração das Usinas
-                          </CardTitle>
-                          <p className="text-blue-600 mt-1 text-base">
-                            Especificações técnicas das unidades geradoras
-                          </p>
-                        </div>
+        {/* Form Content */}
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            
+            {/* Step 1: Dados Gerais e Dono da Usina */}
+            {currentStep === 1 && (
+              <Card className="border-0 shadow-2xl bg-white/70 backdrop-blur-sm">
+                <CardHeader className="bg-gradient-to-r from-green-50 via-emerald-50 to-green-50 border-b border-green-100/50">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl flex items-center justify-center shadow-lg">
+                        <span className="text-xl">📊</span>
                       </div>
-                      <Badge className="bg-blue-100 text-blue-800 border-blue-200 text-sm px-4 py-2">
-                        {currentStep} de {totalSteps}
-                      </Badge>
-                    </div>
-                  </CardHeader>
-                  
-                  <CardContent className="p-10">
-                    <GeneratorPlantsForm form={form} />
-                  </CardContent>
-                </Card>
-              )}
-
-              {/* Step 3: Acesso */}
-              {currentStep === 3 && (
-                <Card className="border-0 shadow-2xl bg-white/70 backdrop-blur-sm">
-                  <CardHeader className="bg-gradient-to-r from-purple-50 via-violet-50 to-purple-50 border-b border-purple-100/50">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-violet-500 rounded-xl flex items-center justify-center shadow-lg">
-                          <span className="text-xl">🔐</span>
-                        </div>
-                        <div>
-                          <CardTitle className="text-2xl text-purple-800 font-bold">
-                            Acesso à Distribuidora
-                          </CardTitle>
-                          <p className="text-purple-600 mt-1 text-base">
-                            Configure as credenciais de acesso ao portal da concessionária
-                          </p>
-                        </div>
+                      <div>
+                        <CardTitle className="text-2xl text-green-800 font-bold">
+                          Dados Gerais e Proprietário
+                        </CardTitle>
+                        <p className="text-green-600 mt-1 text-base">
+                          Configure a concessionária e as informações do proprietário da geradora
+                        </p>
                       </div>
-                      <Badge className="bg-purple-100 text-purple-800 border-purple-200 text-sm px-4 py-2">
-                        {currentStep} de {totalSteps}
-                      </Badge>
                     </div>
-                  </CardHeader>
-                  
-                  <CardContent className="p-10">
-                    <GeneratorDistributorLoginForm form={form} />
-                  </CardContent>
-                </Card>
-              )}
+                    <Badge className="bg-green-100 text-green-800 border-green-200 text-sm px-4 py-2">
+                      {currentStep} de {totalSteps}
+                    </Badge>
+                  </div>
+                </CardHeader>
+                
+                <CardContent className="p-10 space-y-10">
+                  <GeneratorConcessionariaForm form={form} />
+                  <GeneratorOwnerTypeForm form={form} />
+                  <GeneratorOwnerDataForm form={form} ownerType={ownerType} />
+                  {ownerType === 'juridica' && (
+                    <GeneratorAdministratorForm form={form} />
+                  )}
+                </CardContent>
+              </Card>
+            )}
 
-              {/* Step 4: Pagamento */}
-              {currentStep === 4 && (
-                <Card className="border-0 shadow-2xl bg-white/70 backdrop-blur-sm">
-                  <CardHeader className="bg-gradient-to-r from-green-50 via-emerald-50 to-green-50 border-b border-green-100/50">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl flex items-center justify-center shadow-lg">
-                          <span className="text-xl">💳</span>
-                        </div>
-                        <div>
-                          <CardTitle className="text-2xl text-green-800 font-bold">
-                            Dados para Recebimento (Opcional)
-                          </CardTitle>
-                          <p className="text-green-600 mt-1 text-base">
-                            Configure as informações bancárias e chave PIX para pagamentos
-                          </p>
-                        </div>
+            {/* Step 2: Dados das Usinas */}
+            {currentStep === 2 && (
+              <Card className="border-0 shadow-2xl bg-white/70 backdrop-blur-sm">
+                <CardHeader className="bg-gradient-to-r from-blue-50 via-cyan-50 to-blue-50 border-b border-blue-100/50">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center shadow-lg">
+                        <span className="text-xl">⚡</span>
                       </div>
-                      <Badge className="bg-green-100 text-green-800 border-green-200 text-sm px-4 py-2">
-                        {currentStep} de {totalSteps}
-                      </Badge>
-                    </div>
-                  </CardHeader>
-                  
-                  <CardContent className="p-10">
-                    <GeneratorPaymentForm form={form} />
-                  </CardContent>
-                </Card>
-              )}
-
-              {/* Step 5: Documentos */}
-              {currentStep === 5 && (
-                <Card className="border-0 shadow-2xl bg-white/70 backdrop-blur-sm">
-                  <CardHeader className="bg-gradient-to-r from-amber-50 via-orange-50 to-amber-50 border-b border-amber-100/50">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-gradient-to-r from-amber-500 to-orange-500 rounded-xl flex items-center justify-center shadow-lg">
-                          <span className="text-xl">📄</span>
-                        </div>
-                        <div>
-                          <CardTitle className="text-2xl text-amber-800 font-bold">
-                            Documentos e Anexos
-                          </CardTitle>
-                          <p className="text-amber-600 mt-1 text-base">
-                            Faça upload dos documentos e contratos necessários
-                          </p>
-                        </div>
+                      <div>
+                        <CardTitle className="text-2xl text-blue-800 font-bold">
+                          Configuração das Usinas
+                        </CardTitle>
+                        <p className="text-blue-600 mt-1 text-base">
+                          Especificações técnicas das unidades geradoras
+                        </p>
                       </div>
-                      <Badge className="bg-amber-100 text-amber-800 border-amber-200 text-sm px-4 py-2">
-                        {currentStep} de {totalSteps}
-                      </Badge>
                     </div>
-                  </CardHeader>
-                  
-                  <CardContent className="p-10">
-                    <GeneratorAttachmentsForm form={form} />
-                  </CardContent>
-                </Card>
-              )}
+                    <Badge className="bg-blue-100 text-blue-800 border-blue-200 text-sm px-4 py-2">
+                      {currentStep} de {totalSteps}
+                    </Badge>
+                  </div>
+                </CardHeader>
+                
+                <CardContent className="p-10">
+                  <GeneratorPlantsForm form={form} />
+                </CardContent>
+              </Card>
+            )}
 
-            </form>
-          </Form>
+            {/* Step 3: Acesso */}
+            {currentStep === 3 && (
+              <Card className="border-0 shadow-2xl bg-white/70 backdrop-blur-sm">
+                <CardHeader className="bg-gradient-to-r from-purple-50 via-violet-50 to-purple-50 border-b border-purple-100/50">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-violet-500 rounded-xl flex items-center justify-center shadow-lg">
+                        <span className="text-xl">🔐</span>
+                      </div>
+                      <div>
+                        <CardTitle className="text-2xl text-purple-800 font-bold">
+                          Acesso à Distribuidora
+                        </CardTitle>
+                        <p className="text-purple-600 mt-1 text-base">
+                          Configure as credenciais de acesso ao portal da concessionária
+                        </p>
+                      </div>
+                    </div>
+                    <Badge className="bg-purple-100 text-purple-800 border-purple-200 text-sm px-4 py-2">
+                      {currentStep} de {totalSteps}
+                    </Badge>
+                  </div>
+                </CardHeader>
+                
+                <CardContent className="p-10">
+                  <GeneratorDistributorLoginForm form={form} />
+                </CardContent>
+              </Card>
+            )}
 
-          {/* Navigation Footer */}
-          <Card className="border-0 shadow-xl bg-white/90 backdrop-blur-sm overflow-hidden">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
+            {/* Step 4: Pagamento */}
+            {currentStep === 4 && (
+              <Card className="border-0 shadow-2xl bg-white/70 backdrop-blur-sm">
+                <CardHeader className="bg-gradient-to-r from-green-50 via-emerald-50 to-green-50 border-b border-green-100/50">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl flex items-center justify-center shadow-lg">
+                        <span className="text-xl">💳</span>
+                      </div>
+                      <div>
+                        <CardTitle className="text-2xl text-green-800 font-bold">
+                          Dados para Recebimento (Opcional)
+                        </CardTitle>
+                        <p className="text-green-600 mt-1 text-base">
+                          Configure as informações bancárias e chave PIX para pagamentos
+                        </p>
+                      </div>
+                    </div>
+                    <Badge className="bg-green-100 text-green-800 border-green-200 text-sm px-4 py-2">
+                      {currentStep} de {totalSteps}
+                    </Badge>
+                  </div>
+                </CardHeader>
+                
+                <CardContent className="p-10">
+                  <GeneratorPaymentForm form={form} />
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Step 5: Documentos */}
+            {currentStep === 5 && (
+              <Card className="border-0 shadow-2xl bg-white/70 backdrop-blur-sm">
+                <CardHeader className="bg-gradient-to-r from-amber-50 via-orange-50 to-amber-50 border-b border-amber-100/50">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-gradient-to-r from-amber-500 to-orange-500 rounded-xl flex items-center justify-center shadow-lg">
+                        <span className="text-xl">📄</span>
+                      </div>
+                      <div>
+                        <CardTitle className="text-2xl text-amber-800 font-bold">
+                          Documentos e Anexos
+                        </CardTitle>
+                        <p className="text-amber-600 mt-1 text-base">
+                          Faça upload dos documentos e contratos necessários
+                        </p>
+                      </div>
+                    </div>
+                    <Badge className="bg-amber-100 text-amber-800 border-amber-200 text-sm px-4 py-2">
+                      {currentStep} de {totalSteps}
+                    </Badge>
+                  </div>
+                </CardHeader>
+                
+                <CardContent className="p-10">
+                  <GeneratorAttachmentsForm form={form} />
+                </CardContent>
+              </Card>
+            )}
+
+          </form>
+        </Form>
+
+        {/* Navigation Footer */}
+        <Card className="border-0 shadow-xl bg-white/90 backdrop-blur-sm overflow-hidden">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={prevStep}
+                disabled={currentStep === 1 || saving}
+                className="flex items-center gap-3 px-8 py-3 text-base font-medium border-2 hover:bg-gray-50"
+              >
+                <ChevronLeft className="w-5 h-5" />
+                Etapa Anterior
+              </Button>
+
+              <div className="flex items-center gap-4">
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={prevStep}
-                  disabled={currentStep === 1 || saving}
-                  className="flex items-center gap-3 px-8 py-3 text-base font-medium border-2 hover:bg-gray-50"
+                  onClick={() => form.reset()}
+                  disabled={saving}
+                  className="px-8 py-3 text-base font-medium border-2"
                 >
-                  <ChevronLeft className="w-5 h-5" />
-                  Etapa Anterior
+                  Limpar Dados
                 </Button>
-
-                <div className="flex items-center gap-4">
+                
+                {currentStep === totalSteps ? (
+                  <Button
+                    type="submit"
+                    onClick={form.handleSubmit(onSubmit)}
+                    disabled={saving}
+                    className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white px-10 py-3 text-base font-medium flex items-center gap-3 shadow-lg"
+                  >
+                    <Save className="w-5 h-5" />
+                    {saving ? 'Salvando...' : editMode ? 'Atualizar Geradora' : 'Criar Geradora'}
+                  </Button>
+                ) : (
                   <Button
                     type="button"
-                    variant="outline"
-                    onClick={() => form.reset()}
+                    onClick={nextStep}
                     disabled={saving}
-                    className="px-8 py-3 text-base font-medium border-2"
+                    className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white flex items-center gap-3 px-8 py-3 text-base font-medium shadow-lg"
                   >
-                    Limpar Dados
+                    Próxima Etapa
+                    <ChevronRight className="w-5 h-5" />
                   </Button>
-                  
-                  {currentStep === totalSteps ? (
-                    <Button
-                      type="submit"
-                      onClick={form.handleSubmit(onSubmit)}
-                      disabled={saving}
-                      className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white px-10 py-3 text-base font-medium flex items-center gap-3 shadow-lg"
-                    >
-                      <Save className="w-5 h-5" />
-                      {saving ? 'Salvando...' : editMode ? 'Atualizar Geradora' : 'Criar Geradora'}
-                    </Button>
-                  ) : (
-                    <Button
-                      type="button"
-                      onClick={nextStep}
-                      disabled={saving}
-                      className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white flex items-center gap-3 px-8 py-3 text-base font-medium shadow-lg"
-                    >
-                      Próxima Etapa
-                      <ChevronRight className="w-5 h-5" />
-                    </Button>
-                  )}
-                </div>
+                )}
               </div>
-            </CardContent>
-          </Card>
-        </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
-    </DashboardLayout>
+    </div>
   );
 };
 
