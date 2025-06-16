@@ -42,12 +42,12 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen w-full flex bg-gray-50">
+      <div className="min-h-screen w-full flex bg-gray-50 overflow-hidden">
         <AppSidebar />
         
-        <div className="flex-1 flex flex-col min-w-0">
+        <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
           {/* Header moderno e compacto */}
-          <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40 h-16">
+          <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40 h-16 flex-shrink-0">
             <div className="h-full px-4 lg:px-6 flex items-center justify-between">
               <div className="flex items-center gap-4">
                 {/* Mobile Menu Button */}
@@ -93,8 +93,10 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
           </header>
 
           {/* Main Content ocupando toda a área disponível */}
-          <main className="flex-1 min-h-0 w-full bg-gray-50 overflow-auto">
-            {children}
+          <main className="flex-1 min-h-0 w-full bg-gray-50 overflow-y-auto overflow-x-hidden">
+            <div className="w-full h-full">
+              {children}
+            </div>
           </main>
         </div>
       </div>
