@@ -42,13 +42,13 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen w-full bg-gradient-to-br from-gray-50 via-green-50/30 to-white flex">
+      <div className="min-h-screen w-full flex">
         <AppSidebar />
         
         {/* Container principal - flexível para ocupar todo o espaço restante */}
-        <div className="flex-1 flex flex-col min-w-0">
-          {/* Header - agora dentro do container flexível */}
-          <header className="bg-white/95 backdrop-blur-sm shadow-sm border-b border-gray-200/50 sticky top-0 z-40">
+        <div className="flex-1 flex flex-col min-w-0 bg-gradient-to-br from-gray-50 via-green-50/30 to-white">
+          {/* Header - ocupa toda a largura disponível */}
+          <header className="bg-white/95 backdrop-blur-sm shadow-sm border-b border-gray-200/50 sticky top-0 z-40 w-full">
             <div className="flex items-center justify-between h-16 px-6">
               <div className="flex items-center space-x-3 min-w-0">
                 {/* Mobile Menu Button */}
@@ -91,9 +91,9 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
             </div>
           </header>
 
-          {/* Main Content */}
-          <main className="flex-1">
-            <div className="w-full h-full py-8 px-6">
+          {/* Main Content - ocupa todo o espaço disponível */}
+          <main className="flex-1 w-full">
+            <div className="w-full h-full py-6 px-4 sm:py-8 sm:px-6">
               {children}
             </div>
           </main>
