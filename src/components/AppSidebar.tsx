@@ -13,10 +13,7 @@ import {
   ChevronRight,
   Sun,
   Upload,
-  Spline,
-  Activity,
-  Home,
-  TrendingUp
+  Spline
 } from 'lucide-react';
 import {
   Sidebar,
@@ -31,66 +28,16 @@ import {
 } from '@/components/ui/sidebar';
 
 const menuItems = [
-  { 
-    title: 'Dashboard', 
-    url: '/dashboard', 
-    icon: LayoutDashboard,
-    description: 'Visão geral'
-  },
-  { 
-    title: 'Assinantes', 
-    url: '/dashboard/assinantes', 
-    icon: Users,
-    description: 'Gerenciar clientes'
-  },
-  { 
-    title: 'Geradoras', 
-    url: '/dashboard/geradoras', 
-    icon: Zap,
-    description: 'Usinas solares'
-  },
-  { 
-    title: 'Rateio de Créditos', 
-    url: '/dashboard/rateio', 
-    icon: Spline,
-    description: 'Distribuição de energia'
-  },
-  { 
-    title: 'Fatura Única', 
-    url: '/dashboard/fatura-unica', 
-    icon: FileText,
-    description: 'Emissão automática'
-  },
-  { 
-    title: 'Fatura Manual', 
-    url: '/dashboard/fatura-manual', 
-    icon: Upload,
-    description: 'Upload manual'
-  },
-  { 
-    title: 'Faturas em Validação', 
-    url: '/dashboard/fatura-validacao', 
-    icon: FileCheck,
-    description: 'Aguardando aprovação'
-  },
-  { 
-    title: 'Faturas Emitidas', 
-    url: '/dashboard/faturas-emitidas', 
-    icon: Receipt,
-    description: 'Histórico completo'
-  },
-  { 
-    title: 'Representantes', 
-    url: '/dashboard/representantes', 
-    icon: UserCheck,
-    description: 'Equipe comercial'
-  },
-  { 
-    title: 'WhatsApp', 
-    url: '/dashboard/whatsapp', 
-    icon: MessageCircle,
-    description: 'Comunicação'
-  },
+  { title: 'Dashboard', url: '/dashboard', icon: LayoutDashboard },
+  { title: 'Assinantes', url: '/dashboard/assinantes', icon: Users },
+  { title: 'Geradoras', url: '/dashboard/geradoras', icon: Zap },
+  { title: 'Rateio de Créditos', url: '/dashboard/rateio', icon: Spline },
+  { title: 'Fatura única', url: '/dashboard/fatura-unica', icon: FileText },
+  { title: 'Fatura Manual', url: '/dashboard/fatura-manual', icon: Upload },
+  { title: 'Faturas em Validação', url: '/dashboard/fatura-validacao', icon: FileCheck },
+  { title: 'Faturas Emitidas', url: '/dashboard/faturas-emitidas', icon: Receipt },
+  { title: 'Representantes', url: '/dashboard/representantes', icon: UserCheck },
+  { title: 'WhatsApp', url: '/dashboard/whatsapp', icon: MessageCircle },
 ];
 
 export function AppSidebar() {
@@ -98,44 +45,41 @@ export function AppSidebar() {
   const isCollapsed = state === 'collapsed';
 
   return (
-    <Sidebar className="border-r border-gray-200/60" collapsible="icon">
-      <div className="h-screen bg-white/95 backdrop-blur-sm flex flex-col shadow-xl">
-        <SidebarContent className="flex flex-col h-full">
-          {/* Enhanced Header */}
-          <div className={`flex items-center p-6 border-b border-gray-100 ${
+    <Sidebar className="bg-gradient-to-b from-green-600 via-green-700 to-green-800 border-none" collapsible="icon">
+      <div className="h-screen bg-gradient-to-b from-green-600 via-green-700 to-green-800 flex flex-col">
+        <SidebarContent className="bg-transparent flex flex-col h-full">
+          {/* Header - Mais bonito no mobile */}
+          <div className={`flex items-center p-3 sm:p-4 border-b border-green-500/20 flex-shrink-0 ${
             isCollapsed ? 'justify-center' : 'justify-between'
           }`}>
             {!isCollapsed && (
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg">
-                  <Sun className="w-6 h-6 text-white" />
+              <div className="flex items-center space-x-2">
+                <div className="w-8 h-8 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center">
+                  <Sun className="w-5 h-5 text-white" />
                 </div>
-                <div>
-                  <h2 className="text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
-                    SolarControl
-                  </h2>
-                  <p className="text-xs text-emerald-600 font-semibold">SISTEMA DE GESTÃO</p>
-                </div>
+                <h2 className="text-base sm:text-lg font-bold text-white">
+                  SolarControl
+                </h2>
               </div>
             )}
             
             <button
               onClick={toggleSidebar}
-              className="p-2.5 rounded-xl hover:bg-gray-100 text-gray-600 hover:text-emerald-600 transition-all duration-200 shadow-sm"
+              className="p-2 rounded-lg bg-green-700/40 hover:bg-green-700/60 text-white transition-all duration-200 shadow-sm flex-shrink-0 touch-manipulation"
             >
               {isCollapsed ? (
-                <ChevronRight className="w-5 h-5" />
+                <ChevronRight className="w-4 h-4" />
               ) : (
-                <ChevronLeft className="w-5 h-5" />
+                <ChevronLeft className="w-4 h-4" />
               )}
             </button>
           </div>
 
-          {/* Enhanced Menu */}
-          <div className="flex-1 p-4">
-            <SidebarGroup>
+          {/* Menu de navegação - Melhorado */}
+          <div className="flex-1 p-3 sm:p-4 overflow-y-auto">
+            <SidebarGroup className="p-0">
               {!isCollapsed && (
-                <SidebarGroupLabel className="text-gray-500 font-bold text-xs uppercase tracking-wider mb-6 px-2">
+                <SidebarGroupLabel className="text-green-100 px-2 py-2 text-xs font-medium uppercase tracking-wider mb-3 opacity-80">
                   Menu Principal
                 </SidebarGroupLabel>
               )}
@@ -153,32 +97,23 @@ export function AppSidebar() {
                           to={item.url}
                           end
                           className={({ isActive }) => 
-                            `flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all duration-200 group ${
+                            `flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 text-white group touch-manipulation ${
                               isActive 
-                                ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg shadow-emerald-500/25' 
-                                : 'text-gray-700 hover:bg-emerald-50 hover:text-emerald-700 hover:shadow-md'
+                                ? 'bg-white/20 backdrop-blur-sm text-white shadow-lg border border-white/10' 
+                                : 'hover:bg-white/10 hover:backdrop-blur-sm'
                             } ${isCollapsed ? 'justify-center' : ''}`
                           }
                         >
-                          {({ isActive }) => (
-                            <>
-                              <item.icon className={`w-5 h-5 ${
-                                isActive ? 'text-white' : 'text-gray-500 group-hover:text-emerald-600'
-                              } transition-colors duration-200`} />
-                              
-                              {!isCollapsed && (
-                                <div className="flex flex-col">
-                                  <span className="font-semibold text-sm">
-                                    {item.title}
-                                  </span>
-                                  <span className={`text-xs ${
-                                    isActive ? 'text-emerald-100' : 'text-gray-500 group-hover:text-emerald-600'
-                                  } transition-colors duration-200`}>
-                                    {item.description}
-                                  </span>
-                                </div>
-                              )}
-                            </>
+                          <item.icon className="flex-shrink-0 w-5 h-5" />
+                          {/* No mobile sempre mostra o texto quando aberto */}
+                          <span className="font-medium text-sm truncate lg:hidden">
+                            {item.title}
+                          </span>
+                          {/* Desktop: mostra/esconde baseado no estado colapsado */}
+                          {!isCollapsed && (
+                            <span className="font-medium text-sm truncate hidden lg:block">
+                              {item.title}
+                            </span>
                           )}
                         </NavLink>
                       </SidebarMenuButton>
@@ -189,26 +124,21 @@ export function AppSidebar() {
             </SidebarGroup>
           </div>
           
-          {/* Enhanced Footer */}
-          <div className="p-4 border-t border-gray-100">
+          {/* Footer - Mais elegante */}
+          <div className="flex-shrink-0 p-3 sm:p-4">
             {!isCollapsed ? (
-              <div className="bg-gradient-to-r from-emerald-50 to-green-50 rounded-xl p-4 border border-emerald-200/50">
-                <div className="flex items-center gap-3">
-                  <div className="w-3 h-3 bg-emerald-500 rounded-full animate-pulse"></div>
-                  <div className="flex-1">
-                    <p className="text-emerald-700 text-sm font-semibold">Sistema Online</p>
-                    <p className="text-emerald-600 text-xs">Todos os serviços ativos</p>
+              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3 border border-white/10">
+                <div className="flex items-center space-x-3">
+                  <div className="w-3 h-3 bg-green-300 rounded-full shadow-sm animate-pulse"></div>
+                  <div className="min-w-0">
+                    <p className="text-white text-sm font-medium">Sistema Online</p>
+                    <p className="text-green-100 text-xs opacity-80 truncate">Todos os serviços ativos</p>
                   </div>
-                  <Activity className="w-5 h-5 text-emerald-500" />
-                </div>
-                <div className="mt-3 flex items-center gap-2">
-                  <TrendingUp className="w-4 h-4 text-emerald-600" />
-                  <span className="text-xs text-emerald-700 font-medium">Performance: 99.9%</span>
                 </div>
               </div>
             ) : (
               <div className="flex justify-center">
-                <div className="w-3 h-3 bg-emerald-500 rounded-full animate-pulse"></div>
+                <div className="w-3 h-3 bg-green-300 rounded-full shadow-sm animate-pulse"></div>
               </div>
             )}
           </div>

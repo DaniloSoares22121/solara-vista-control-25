@@ -46,16 +46,12 @@
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 142 76% 36%;
 
-    /* Enhanced Solar energy theme colors */
+    /* Solar energy theme colors - Verde e Branco */
     --solar-green-primary: 142 76% 36%;
     --solar-green-light: 142 69% 58%;
     --solar-green-dark: 142 84% 26%;
     --solar-white: 0 0% 100%;
     --solar-green-soft: 142 30% 85%;
-    --emerald-50: 151 81% 96%;
-    --emerald-100: 149 80% 90%;
-    --emerald-500: 142 76% 36%;
-    --emerald-600: 142 84% 26%;
   }
 
   .dark {
@@ -96,13 +92,11 @@
 
   body {
     @apply bg-background text-foreground;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
   }
 
-  /* Enhanced responsive text */
+  /* Mobile-first responsive text */
   html {
     font-size: 14px;
-    scroll-behavior: smooth;
   }
 
   @screen sm {
@@ -113,7 +107,6 @@
 }
 
 @layer utilities {
-  /* Enhanced Solar Gradients */
   .solar-gradient {
     background: linear-gradient(135deg, hsl(var(--solar-green-primary)) 0%, hsl(var(--solar-green-light)) 35%, hsl(var(--solar-green-dark)) 100%);
   }
@@ -130,53 +123,20 @@
     background-clip: text;
   }
 
-  .emerald-gradient {
-    background: linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%);
-  }
-
-  .emerald-text-gradient {
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-
-  /* Enhanced Effects */
   .solar-glow {
-    box-shadow: 0 0 50px rgba(16, 185, 129, 0.4);
+    box-shadow: 0 0 50px rgba(34, 197, 94, 0.3);
   }
 
-  .glassmorphism {
-    background: rgba(255, 255, 255, 0.08);
-    backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-  }
-
-  .premium-shadow {
-    box-shadow: 
-      0 4px 6px -1px rgba(16, 185, 129, 0.1),
-      0 2px 4px -1px rgba(16, 185, 129, 0.06),
-      0 20px 25px -5px rgba(16, 185, 129, 0.1),
-      0 10px 10px -5px rgba(16, 185, 129, 0.04);
-  }
-
-  /* Enhanced Animations */
   .floating-animation {
     animation: floating 6s ease-in-out infinite;
   }
 
   @keyframes floating {
     0%, 100% {
-      transform: translateY(0px) rotate(0deg);
-    }
-    25% {
-      transform: translateY(-10px) rotate(1deg);
+      transform: translateY(0px);
     }
     50% {
-      transform: translateY(-20px) rotate(0deg);
-    }
-    75% {
-      transform: translateY(-10px) rotate(-1deg);
+      transform: translateY(-20px);
     }
   }
 
@@ -186,39 +146,15 @@
 
   @keyframes pulse-glow {
     0%, 100% {
-      box-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
+      box-shadow: 0 0 20px rgba(34, 197, 94, 0.4);
     }
     50% {
-      box-shadow: 0 0 40px rgba(16, 185, 129, 0.8), 0 0 60px rgba(16, 185, 129, 0.4);
+      box-shadow: 0 0 40px rgba(34, 197, 94, 0.8);
     }
   }
 
-  .shimmer {
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-    background-size: 200% 100%;
-    animation: shimmer 2s infinite;
-  }
-
-  @keyframes shimmer {
-    0% {
-      background-position: -200% 0;
-    }
-    100% {
-      background-position: 200% 0;
-    }
-  }
-
-  /* Enhanced Hover Effects */
   .hover\:scale-102:hover {
     transform: scale(1.02);
-  }
-
-  .hover\:scale-105:hover {
-    transform: scale(1.05);
-  }
-
-  .hover\:glow:hover {
-    box-shadow: 0 0 30px rgba(16, 185, 129, 0.6);
   }
 
   /* Mobile-specific utilities */
@@ -236,7 +172,7 @@
     overflow-scrolling: touch;
   }
 
-  /* Enhanced Responsive text utilities */
+  /* Responsive text utilities */
   .text-responsive-xs {
     @apply text-xs sm:text-sm;
   }
@@ -261,27 +197,16 @@
     @apply text-2xl sm:text-3xl;
   }
 
-  /* Enhanced Responsive spacing utilities */
+  /* Responsive spacing utilities */
   .p-responsive {
-    @apply p-6 sm:p-8 lg:p-10;
+    @apply p-4 sm:p-6 lg:p-8;
   }
 
   .m-responsive {
-    @apply m-6 sm:m-8 lg:m-10;
+    @apply m-4 sm:m-6 lg:m-8;
   }
 
   .gap-responsive {
-    @apply gap-6 sm:gap-8 lg:gap-10;
-  }
-
-  /* Premium Backdrop Effects */
-  .backdrop-premium {
-    backdrop-filter: blur(24px) saturate(180%);
-    background: rgba(255, 255, 255, 0.8);
-  }
-
-  .backdrop-dark-premium {
-    backdrop-filter: blur(24px) saturate(180%);
-    background: rgba(15, 23, 42, 0.8);
+    @apply gap-4 sm:gap-6 lg:gap-8;
   }
 }
