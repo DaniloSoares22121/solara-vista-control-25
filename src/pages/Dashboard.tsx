@@ -35,7 +35,7 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-full bg-gray-50">
-      <div className="container-modern py-6 space-y-8">
+      <div className="w-full px-6 py-6 space-y-8">
         {/* Welcome Header moderno */}
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div>
