@@ -194,6 +194,107 @@ export type Database = {
         }
         Relationships: []
       }
+      rateio_items: {
+        Row: {
+          assinante_id: string
+          assinante_nome: string
+          assinante_uc: string
+          consumo_numero: number | null
+          created_at: string | null
+          id: string
+          is_new: boolean | null
+          porcentagem: number | null
+          prioridade: number | null
+          rateio_id: string
+          valor_alocado: number | null
+        }
+        Insert: {
+          assinante_id: string
+          assinante_nome: string
+          assinante_uc: string
+          consumo_numero?: number | null
+          created_at?: string | null
+          id?: string
+          is_new?: boolean | null
+          porcentagem?: number | null
+          prioridade?: number | null
+          rateio_id: string
+          valor_alocado?: number | null
+        }
+        Update: {
+          assinante_id?: string
+          assinante_nome?: string
+          assinante_uc?: string
+          consumo_numero?: number | null
+          created_at?: string | null
+          id?: string
+          is_new?: boolean | null
+          porcentagem?: number | null
+          prioridade?: number | null
+          rateio_id?: string
+          valor_alocado?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rateio_items_rateio_id_fkey"
+            columns: ["rateio_id"]
+            isOneToOne: false
+            referencedRelation: "rateios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rateios: {
+        Row: {
+          created_at: string | null
+          data_rateio: string
+          energia_sobra: number | null
+          geracao_esperada: number | null
+          geradora_id: string
+          geradora_nome: string
+          geradora_uc: string
+          id: string
+          observacoes: string | null
+          status: string
+          tipo_rateio: string
+          total_distribuido: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          data_rateio?: string
+          energia_sobra?: number | null
+          geracao_esperada?: number | null
+          geradora_id: string
+          geradora_nome: string
+          geradora_uc: string
+          id?: string
+          observacoes?: string | null
+          status?: string
+          tipo_rateio: string
+          total_distribuido?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          data_rateio?: string
+          energia_sobra?: number | null
+          geracao_esperada?: number | null
+          geradora_id?: string
+          geradora_nome?: string
+          geradora_uc?: string
+          id?: string
+          observacoes?: string | null
+          status?: string
+          tipo_rateio?: string
+          total_distribuido?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       representatives: {
         Row: {
           commission_rate: number
