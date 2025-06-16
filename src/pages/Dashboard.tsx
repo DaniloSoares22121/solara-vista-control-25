@@ -54,7 +54,7 @@ const Dashboard = () => {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 px-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
@@ -133,7 +133,7 @@ const Dashboard = () => {
       </div>
 
       {/* Action Cards */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 px-6 pb-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 pb-6">
         <Card className="border border-gray-200 shadow-sm">
           <CardHeader className="pb-3">
             <CardTitle className="text-lg font-semibold text-gray-900">
