@@ -21,7 +21,7 @@ const Dashboard = () => {
 
   if (error) {
     return (
-      <div className="p-3">
+      <div className="p-6">
         <AlertTriangle className="w-6 h-6 text-red-500 inline-block mr-2" />
         Erro ao carregar os dados do painel.
       </div>
@@ -34,190 +34,197 @@ const Dashboard = () => {
     : 0;
 
   return (
-    <div className="w-full max-w-full">
-      <div className="container-responsive space-y-4 sm:space-y-6 py-3 sm:py-4 lg:py-6">
-        {/* Welcome Header otimizado */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+    <div className="min-h-full bg-gray-50">
+      <div className="container-modern py-6 space-y-8">
+        {/* Welcome Header moderno */}
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div>
-            <h1 className="text-responsive-2xl font-bold text-gray-900">
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">
               Bem-vindo(a), {userDisplayName}!
             </h1>
-            <p className="text-gray-600 mt-1 text-responsive-sm">
+            <p className="text-gray-600 text-lg">
               Visão geral do seu negócio e principais indicadores.
             </p>
           </div>
           <Button 
             onClick={() => navigate('/dashboard/geradoras/nova')} 
-            className="bg-green-600 hover:bg-green-700 text-white shadow-sm h-8 sm:h-10 px-3 sm:px-4 text-xs sm:text-sm"
+            className="btn-primary h-12 px-6 text-base"
           >
-            <Plus className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+            <Plus className="w-5 h-5 mr-2" />
             Nova Geradora
           </Button>
         </div>
 
-        {/* Stats Cards otimizados */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-          <Card className="border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-            <CardHeader className="pb-2">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-xs sm:text-sm font-medium text-gray-600">
-                  Assinantes Ativos
-                </CardTitle>
-                <div className="w-7 h-7 sm:w-9 sm:h-9 bg-blue-50 rounded-lg flex items-center justify-center">
-                  <Users className="w-3 h-3 sm:w-4 sm:h-4 text-blue-600" />
-                </div>
+        {/* Stats Cards modernos */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="stats-card">
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center">
+                <Users className="w-6 h-6 text-blue-600" />
               </div>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <div className="text-lg sm:text-2xl font-bold text-gray-900 mb-1">{stats?.totalAssinantes || 0}</div>
-              <p className="text-xs text-gray-600">
-                Total de assinantes cadastrados
-              </p>
-            </CardContent>
-          </Card>
+              <Badge variant="outline" className="bg-blue-50 text-blue-600 border-blue-200">
+                Ativo
+              </Badge>
+            </div>
+            <div>
+              <div className="text-3xl font-bold text-gray-900 mb-1">{stats?.totalAssinantes || 0}</div>
+              <div className="text-sm font-medium text-gray-600 mb-1">Assinantes Ativos</div>
+              <div className="text-xs text-gray-500">Total de assinantes cadastrados</div>
+            </div>
+          </div>
 
-          <Card className="border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-            <CardHeader className="pb-2">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-xs sm:text-sm font-medium text-gray-600">
-                  Geradoras Ativas
-                </CardTitle>
-                <div className="w-7 h-7 sm:w-9 sm:h-9 bg-green-50 rounded-lg flex items-center justify-center">
-                  <Zap className="w-3 h-3 sm:w-4 sm:h-4 text-green-600" />
-                </div>
+          <div className="stats-card">
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-12 h-12 bg-green-50 rounded-xl flex items-center justify-center">
+                <Zap className="w-6 h-6 text-green-600" />
               </div>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <div className="text-lg sm:text-2xl font-bold text-gray-900 mb-1">{stats?.totalGeradoras || 0}</div>
-              <p className="text-xs text-gray-600">
-                Geradoras cadastradas
-              </p>
-            </CardContent>
-          </Card>
+              <Badge variant="outline" className="bg-green-50 text-green-600 border-green-200">
+                Online
+              </Badge>
+            </div>
+            <div>
+              <div className="text-3xl font-bold text-gray-900 mb-1">{stats?.totalGeradoras || 0}</div>
+              <div className="text-sm font-medium text-gray-600 mb-1">Geradoras Ativas</div>
+              <div className="text-xs text-gray-500">Geradoras em operação</div>
+            </div>
+          </div>
 
-          <Card className="border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-            <CardHeader className="pb-2">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-xs sm:text-sm font-medium text-gray-600">
-                  Faturas Emitidas
-                </CardTitle>
-                <div className="w-7 h-7 sm:w-9 sm:h-9 bg-yellow-50 rounded-lg flex items-center justify-center">
-                  <FileText className="w-3 h-3 sm:w-4 sm:h-4 text-yellow-600" />
-                </div>
+          <div className="stats-card">
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-12 h-12 bg-yellow-50 rounded-xl flex items-center justify-center">
+                <FileText className="w-6 h-6 text-yellow-600" />
               </div>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <div className="text-lg sm:text-2xl font-bold text-gray-900 mb-1">{stats?.faturasEmitidas || 0}</div>
-              <p className="text-xs text-gray-600">
-                {stats?.faturasPendentes || 0} pendentes de validação
-              </p>
-            </CardContent>
-          </Card>
+              <Badge variant="outline" className="bg-yellow-50 text-yellow-600 border-yellow-200">
+                {stats?.faturasPendentes || 0} pendentes
+              </Badge>
+            </div>
+            <div>
+              <div className="text-3xl font-bold text-gray-900 mb-1">{stats?.faturasEmitidas || 0}</div>
+              <div className="text-sm font-medium text-gray-600 mb-1">Faturas Emitidas</div>
+              <div className="text-xs text-gray-500">Total de faturas processadas</div>
+            </div>
+          </div>
 
-          <Card className="border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-            <CardHeader className="pb-2">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-xs sm:text-sm font-medium text-gray-600">
-                  Taxa de Pagamento
-                </CardTitle>
-                <div className="w-7 h-7 sm:w-9 sm:h-9 bg-purple-50 rounded-lg flex items-center justify-center">
-                  <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4 text-purple-600" />
-                </div>
+          <div className="stats-card">
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-12 h-12 bg-purple-50 rounded-xl flex items-center justify-center">
+                <TrendingUp className="w-6 h-6 text-purple-600" />
               </div>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <div className="text-lg sm:text-2xl font-bold text-green-600 mb-1">{complianceRate}%</div>
-              <p className="text-xs text-gray-600">
-                Faturas pagas vs emitidas
-              </p>
-            </CardContent>
-          </Card>
+              <Badge variant="outline" className="bg-green-50 text-green-600 border-green-200">
+                {complianceRate}%
+              </Badge>
+            </div>
+            <div>
+              <div className="text-3xl font-bold text-green-600 mb-1">{complianceRate}%</div>
+              <div className="text-sm font-medium text-gray-600 mb-1">Taxa de Pagamento</div>
+              <div className="text-xs text-gray-500">Faturas pagas vs emitidas</div>
+            </div>
+          </div>
         </div>
 
-        {/* Action Cards otimizados */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
-          <Card className="border border-gray-200 shadow-sm">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-responsive-lg font-semibold text-gray-900">
-                Ações Rápidas
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
+        {/* Action Cards modernos */}
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+          <div className="card-modern p-6">
+            <div className="mb-6">
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Ações Rápidas</h3>
+              <p className="text-gray-600">Acesse rapidamente as principais funcionalidades</p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Button 
                 onClick={() => navigate('/dashboard/assinantes')} 
                 variant="outline"
-                className="h-8 sm:h-10 justify-start text-xs sm:text-sm"
+                className="btn-outline h-12 justify-start text-left"
               >
-                <Users className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                Gerenciar Assinantes
+                <Users className="w-5 h-5 mr-3" />
+                <div>
+                  <div className="font-medium">Assinantes</div>
+                  <div className="text-xs text-gray-500">Gerenciar cadastros</div>
+                </div>
               </Button>
               <Button 
                 onClick={() => navigate('/dashboard/fatura-unica')} 
                 variant="outline"
-                className="h-8 sm:h-10 justify-start text-xs sm:text-sm"
+                className="btn-outline h-12 justify-start text-left"
               >
-                <FileText className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                Emitir Fatura Unica
+                <FileText className="w-5 h-5 mr-3" />
+                <div>
+                  <div className="font-medium">Fatura Única</div>
+                  <div className="text-xs text-gray-500">Emitir nova fatura</div>
+                </div>
               </Button>
               <Button 
                 onClick={() => navigate('/dashboard/geradoras')} 
                 variant="outline"
-                className="h-8 sm:h-10 justify-start text-xs sm:text-sm"
+                className="btn-outline h-12 justify-start text-left"
               >
-                <Zap className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                Gerenciar Geradoras
+                <Zap className="w-5 h-5 mr-3" />
+                <div>
+                  <div className="font-medium">Geradoras</div>
+                  <div className="text-xs text-gray-500">Gerenciar usinas</div>
+                </div>
               </Button>
               <Button 
                 onClick={() => navigate('/dashboard/rateio')} 
                 variant="outline"
-                className="h-8 sm:h-10 justify-start text-xs sm:text-sm"
+                className="btn-outline h-12 justify-start text-left"
               >
-                <Activity className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                Realizar Rateio
+                <Activity className="w-5 h-5 mr-3" />
+                <div>
+                  <div className="font-medium">Rateio</div>
+                  <div className="text-xs text-gray-500">Distribuir créditos</div>
+                </div>
               </Button>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
-          <Card className="border border-gray-200 shadow-sm">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-responsive-lg font-semibold text-gray-900">
-                Resumo Financeiro
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2 sm:space-y-3">
-              <div className="flex items-center justify-between py-1">
+          <div className="card-modern p-6">
+            <div className="mb-6">
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Resumo Financeiro</h3>
+              <p className="text-gray-600">Visão geral dos valores e pagamentos</p>
+            </div>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
                 <div className="flex items-center">
-                  <div className="w-6 h-6 sm:w-7 sm:h-7 bg-blue-50 rounded-lg flex items-center justify-center mr-2 sm:mr-3">
-                    <FileText className="w-3 h-3 text-blue-600" />
+                  <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center mr-4">
+                    <FileText className="w-5 h-5 text-blue-600" />
                   </div>
-                  <span className="text-gray-800 font-medium text-xs sm:text-sm">Total de Faturas</span>
+                  <div>
+                    <div className="font-medium text-gray-900">Total de Faturas</div>
+                    <div className="text-sm text-gray-600">Todas as faturas do sistema</div>
+                  </div>
                 </div>
-                <span className="font-semibold text-gray-900 text-xs sm:text-sm">{stats?.totalFaturas || 0}</span>
+                <div className="text-2xl font-bold text-gray-900">{stats?.totalFaturas || 0}</div>
               </div>
               
-              <div className="flex items-center justify-between py-1">
+              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
                 <div className="flex items-center">
-                  <div className="w-6 h-6 sm:w-7 sm:h-7 bg-green-50 rounded-lg flex items-center justify-center mr-2 sm:mr-3">
-                    <TrendingUp className="w-3 h-3 text-green-600" />
+                  <div className="w-10 h-10 bg-green-50 rounded-xl flex items-center justify-center mr-4">
+                    <TrendingUp className="w-5 h-5 text-green-600" />
                   </div>
-                  <span className="text-gray-800 font-medium text-xs sm:text-sm">Valor Total</span>
+                  <div>
+                    <div className="font-medium text-gray-900">Valor Total</div>
+                    <div className="text-sm text-gray-600">Receita total gerada</div>
+                  </div>
                 </div>
-                <span className="font-semibold text-gray-900 text-xs sm:text-sm">
+                <div className="text-2xl font-bold text-green-600">
                   R$ {stats?.valorTotal?.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) || '0,00'}
-                </span>
+                </div>
               </div>
               
-              <div className="flex items-center justify-between py-1">
+              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
                 <div className="flex items-center">
-                  <div className="w-6 h-6 sm:w-7 sm:h-7 bg-green-50 rounded-lg flex items-center justify-center mr-2 sm:mr-3">
-                    <CheckCircle className="w-3 h-3 text-green-600" />
+                  <div className="w-10 h-10 bg-green-50 rounded-xl flex items-center justify-center mr-4">
+                    <CheckCircle className="w-5 h-5 text-green-600" />
                   </div>
-                  <span className="text-gray-800 font-medium text-xs sm:text-sm">Faturas Pagas</span>
+                  <div>
+                    <div className="font-medium text-gray-900">Faturas Pagas</div>
+                    <div className="text-sm text-gray-600">Pagamentos confirmados</div>
+                  </div>
                 </div>
-                <span className="font-semibold text-gray-900 text-xs sm:text-sm">{stats?.faturasPagas || 0}</span>
+                <div className="text-2xl font-bold text-green-600">{stats?.faturasPagas || 0}</div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
       </div>
     </div>
