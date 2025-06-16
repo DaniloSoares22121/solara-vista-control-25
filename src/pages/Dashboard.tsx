@@ -34,7 +34,7 @@ const Dashboard = () => {
     : 0;
 
   return (
-    <div className="space-y-8">
+    <div className="p-6 space-y-8">
       {/* Welcome Header com espaçamento consistente */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>

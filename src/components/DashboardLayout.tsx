@@ -1,4 +1,3 @@
-
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Sun, LogOut, User, Menu } from 'lucide-react';
@@ -92,11 +91,9 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
             </div>
           </header>
 
-          {/* Main Content com padding consistente */}
-          <main className="flex-1 p-6">
-            <div className="max-w-7xl mx-auto">
-              {children}
-            </div>
+          {/* Main Content sem padding para aproveitar todo o espaço */}
+          <main className="flex-1">
+            {children}
           </main>
         </div>
       </div>
