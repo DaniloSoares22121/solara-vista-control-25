@@ -18,6 +18,7 @@ import FaturasEmitidas from "./pages/dashboard/FaturasEmitidas";
 import Whatsapp from "./pages/dashboard/Whatsapp";
 import NotFound from "./pages/NotFound";
 import FaturaLayout from "./pages/FaturaLayout";
+import FaturaManual from '@/pages/dashboard/FaturaManual';
 
 const queryClient = new QueryClient();
 
@@ -77,6 +78,7 @@ const App = () => (
                 <Whatsapp />
               </ProtectedRoute>
             } />
+            <Route path="/dashboard/fatura-manual" element={<FaturaManual />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

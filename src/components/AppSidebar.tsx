@@ -12,7 +12,8 @@ import {
   MessageCircle,
   ChevronLeft,
   ChevronRight,
-  Sun
+  Sun,
+  FileUp
 } from 'lucide-react';
 import {
   Sidebar,
@@ -32,6 +33,7 @@ const menuItems = [
   { title: 'Cadastrar rateio', url: '/dashboard/rateio', icon: Calculator },
   { title: 'Geradoras', url: '/dashboard/geradoras', icon: Zap },
   { title: 'Fatura única', url: '/dashboard/fatura-unica', icon: FileText },
+  { title: 'Fatura manual', url: '/dashboard/fatura-manual', icon: FileUp },
   { title: 'Faturas em Validação', url: '/dashboard/fatura-validacao', icon: FileCheck },
   { title: 'Faturas Emitidas', url: '/dashboard/faturas-emitidas', icon: Receipt },
   { title: 'Representantes', url: '/dashboard/representantes', icon: UserCheck },
