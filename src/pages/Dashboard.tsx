@@ -34,26 +34,26 @@ const Dashboard = () => {
     : 0;
 
   return (
-    <div className="space-y-8">
+    <div className="max-w-7xl mx-auto space-y-8">
       {/* Welcome Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">
+          <h1 className="text-2xl font-bold text-gray-900">
             Bem-vindo(a), {userDisplayName}!
           </h1>
           <p className="text-gray-600 mt-1">
             Visão geral do seu negócio e principais indicadores.
           </p>
         </div>
-        <Button onClick={() => navigate('/dashboard/geradoras/nova')} className="bg-green-600 hover:bg-green-700 text-white shadow-lg">
-            <Plus className="w-4 h-4 mr-2" />
-            Nova Geradora
+        <Button onClick={() => navigate('/dashboard/geradoras/nova')} className="flex items-center gap-2">
+          <Plus className="w-4 h-4" />
+          Nova Geradora
         </Button>
       </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card className="shadow-lg border-0">
+        <Card>
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CardTitle className="text-sm font-medium text-gray-600">
@@ -63,31 +63,31 @@ const Dashboard = () => {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-gray-900">{stats?.totalAssinantes || 0}</div>
+            <div className="text-2xl font-bold text-gray-900">{stats?.totalAssinantes || 0}</div>
             <p className="text-sm text-gray-600 mt-1">
               Total de assinantes cadastrados
             </p>
           </CardContent>
         </Card>
 
-        <Card className="shadow-lg border-0">
+        <Card>
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CardTitle className="text-sm font-medium text-gray-600">
                 Geradoras Ativas
               </CardTitle>
-              <Zap className="w-5 h-5 text-green-600" />
+              <Zap className="w-5 h-5 text-emerald-600" />
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-gray-900">{stats?.totalGeradoras || 0}</div>
+            <div className="text-2xl font-bold text-gray-900">{stats?.totalGeradoras || 0}</div>
             <p className="text-sm text-gray-600 mt-1">
               Geradoras cadastradas
             </p>
           </CardContent>
         </Card>
 
-        <Card className="shadow-lg border-0">
+        <Card>
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CardTitle className="text-sm font-medium text-gray-600">
@@ -97,14 +97,14 @@ const Dashboard = () => {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-gray-900">{stats?.faturasEmitidas || 0}</div>
+            <div className="text-2xl font-bold text-gray-900">{stats?.faturasEmitidas || 0}</div>
             <p className="text-sm text-gray-600 mt-1">
               {stats?.faturasPendentes || 0} pendentes de validação
             </p>
           </CardContent>
         </Card>
 
-        <Card className="shadow-lg border-0">
+        <Card>
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CardTitle className="text-sm font-medium text-gray-600">
@@ -114,7 +114,7 @@ const Dashboard = () => {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-green-600">{complianceRate}%</div>
+            <div className="text-2xl font-bold text-emerald-600">{complianceRate}%</div>
             <p className="text-sm text-gray-600 mt-1">
               Faturas pagas vs emitidas
             </p>
@@ -123,34 +123,34 @@ const Dashboard = () => {
       </div>
 
       {/* Action Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card className="shadow-lg border-0">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
           <CardHeader>
             <CardTitle className="text-lg font-semibold">
               Ações Rápidas
             </CardTitle>
           </CardHeader>
-          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Button onClick={() => navigate('/dashboard/assinantes')} variant="outline">
+          <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <Button onClick={() => navigate('/dashboard/assinantes')} variant="outline" className="justify-start">
               <Users className="w-4 h-4 mr-2" />
               Gerenciar Assinantes
             </Button>
-            <Button onClick={() => navigate('/dashboard/fatura-unica')} variant="outline">
+            <Button onClick={() => navigate('/dashboard/fatura-unica')} variant="outline" className="justify-start">
               <FileText className="w-4 h-4 mr-2" />
-              Emitir Fatura Unica
+              Emitir Fatura Única
             </Button>
-            <Button onClick={() => navigate('/dashboard/geradoras')} variant="outline">
+            <Button onClick={() => navigate('/dashboard/geradoras')} variant="outline" className="justify-start">
               <Zap className="w-4 h-4 mr-2" />
               Gerenciar Geradoras
             </Button>
-            <Button onClick={() => navigate('/dashboard/rateio')} variant="outline">
+            <Button onClick={() => navigate('/dashboard/rateio')} variant="outline" className="justify-start">
               <Activity className="w-4 h-4 mr-2" />
               Realizar Rateio
             </Button>
           </CardContent>
         </Card>
 
-        <Card className="shadow-lg border-0">
+        <Card>
           <CardHeader>
             <CardTitle className="text-lg font-semibold">
               Resumo Financeiro
@@ -166,7 +166,7 @@ const Dashboard = () => {
             </div>
             <div className="flex items-center justify-between">
               <div className="flex items-center">
-                <TrendingUp className="w-5 h-5 text-green-500 mr-2" />
+                <TrendingUp className="w-5 h-5 text-emerald-500 mr-2" />
                 <span className="text-gray-800">Valor Total</span>
               </div>
               <span className="font-semibold text-gray-900">
@@ -175,7 +175,7 @@ const Dashboard = () => {
             </div>
             <div className="flex items-center justify-between">
               <div className="flex items-center">
-                <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
+                <CheckCircle className="w-5 h-5 text-emerald-500 mr-2" />
                 <span className="text-gray-800">Faturas Pagas</span>
               </div>
               <span className="font-semibold text-gray-900">{stats?.faturasPagas || 0}</span>
