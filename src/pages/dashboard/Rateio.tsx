@@ -9,8 +9,8 @@ import HistoricoRateios from '@/components/rateio/HistoricoRateios';
 
 const Rateio = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-blue-50/30 to-purple-50/20">
-      <div className="container mx-auto p-6 space-y-8">
+    <div className="min-h-screen w-full bg-gradient-to-br from-background via-blue-50/30 to-purple-50/20">
+      <div className="w-full px-4 sm:px-6 lg:px-8 py-6 space-y-8">
         {/* Header Principal */}
         <div className="text-center space-y-6 py-8">
           <div className="relative">

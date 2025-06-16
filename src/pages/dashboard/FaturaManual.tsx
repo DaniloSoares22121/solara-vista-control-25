@@ -49,94 +49,98 @@ const FaturaManual = () => {
   };
 
   return (
-    <div className="max-w-xl mx-auto mt-10 space-y-10 animate-fade-in">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <FileText className="w-6 h-6 text-blue-600" />
-            Fatura Manual
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {step === 1 && (
-            <div className="space-y-6">
-              <Label className="font-semibold mb-2">Selecione um assinante:</Label>
-              <select
-                className="w-full border px-4 py-2 rounded-lg"
-                value={assinanteId}
-                onChange={e => setAssinanteId(e.target.value)}
-              >
-                <option value="">Selecione o assinante...</option>
-                {subscribers.map(sub => (
-                  <option value={sub.id} key={sub.id}>{sub.nome} • UC: {sub.uc}</option>
-                ))}
-              </select>
-              <Button
-                className="w-full mt-3"
-                disabled={!assinanteId}
-                onClick={handleAssinanteSelecionado}
-              >
-                <CheckCircle2 className="w-4 h-4 mr-2" />
-                Continuar
-              </Button>
-            </div>
-          )}
+    <div className="min-h-screen w-full bg-gray-50">
+      <div className="w-full px-4 sm:px-6 lg:px-8 py-10">
+        <div className="max-w-xl mx-auto space-y-10 animate-fade-in">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <FileText className="w-6 h-6 text-blue-600" />
+                Fatura Manual
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {step === 1 && (
+                <div className="space-y-6">
+                  <Label className="font-semibold mb-2">Selecione um assinante:</Label>
+                  <select
+                    className="w-full border px-4 py-2 rounded-lg"
+                    value={assinanteId}
+                    onChange={e => setAssinanteId(e.target.value)}
+                  >
+                    <option value="">Selecione o assinante...</option>
+                    {subscribers.map(sub => (
+                      <option value={sub.id} key={sub.id}>{sub.nome} • UC: {sub.uc}</option>
+                    ))}
+                  </select>
+                  <Button
+                    className="w-full mt-3"
+                    disabled={!assinanteId}
+                    onClick={handleAssinanteSelecionado}
+                  >
+                    <CheckCircle2 className="w-4 h-4 mr-2" />
+                    Continuar
+                  </Button>
+                </div>
+              )}
 
-          {step === 2 && assinante && (
-            <div className="space-y-6">
-              <div className="flex items-center gap-3 mb-3">
-                <User className="text-green-700" />
-                <div>
-                  <div className="font-bold">{assinante.nome}</div>
-                  <div className="text-xs text-gray-500">UC: {assinante.uc} <Badge className="ml-1">{assinante.desconto}% desc.</Badge></div>
-                </div>
-              </div>
-              <Label htmlFor="faturaPdf" className="block font-semibold mb-1">Upload da Fatura PDF</Label>
-              <Input type="file" id="faturaPdf" accept="application/pdf" onChange={handleUpload} />
-              <Button type="button" variant="outline" className="mt-4" onClick={() => setStep(1)}>
-                Voltar
-              </Button>
-            </div>
-          )}
-
-          {step === 3 && assinante && faturaData && (
-            <div className="space-y-6">
-              <h3 className="text-lg font-bold text-blue-900">Dados extraídos da fatura</h3>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <span className="text-gray-700">Assinante:</span>
-                  <div className="font-semibold">{assinante.nome}</div>
-                </div>
-                <div>
-                  <span className="text-gray-700">UC:</span>
-                  <div className="font-semibold">{assinante.uc}</div>
-                </div>
-                <div>
-                  <span className="text-gray-700">Consumo:</span>
-                  <div className="font-semibold">{faturaData.consumo} kWh</div>
-                </div>
-                <div>
-                  <span className="text-gray-700">Valor (sem desconto):</span>
-                  <div className="font-semibold">R$ {faturaData.valor.toFixed(2)}</div>
-                </div>
-                <div>
-                  <span className="text-gray-700">Desconto plano:</span>
-                  <div className="font-semibold text-green-600">{assinante.desconto}%</div>
-                </div>
-                <div>
-                  <span className="text-gray-700">Valor com desconto:</span>
-                  <div className="font-semibold text-green-700">
-                    R$ {(faturaData.valor * (1 - assinante.desconto / 100)).toFixed(2)}
+              {step === 2 && assinante && (
+                <div className="space-y-6">
+                  <div className="flex items-center gap-3 mb-3">
+                    <User className="text-green-700" />
+                    <div>
+                      <div className="font-bold">{assinante.nome}</div>
+                      <div className="text-xs text-gray-500">UC: {assinante.uc} <Badge className="ml-1">{assinante.desconto}% desc.</Badge></div>
+                    </div>
                   </div>
+                  <Label htmlFor="faturaPdf" className="block font-semibold mb-1">Upload da Fatura PDF</Label>
+                  <Input type="file" id="faturaPdf" accept="application/pdf" onChange={handleUpload} />
+                  <Button type="button" variant="outline" className="mt-4" onClick={() => setStep(1)}>
+                    Voltar
+                  </Button>
                 </div>
-              </div>
-              <Button variant="outline" className="mt-3" onClick={() => setStep(2)}>
-                Voltar
-              </Button>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+              )}
+
+              {step === 3 && assinante && faturaData && (
+                <div className="space-y-6">
+                  <h3 className="text-lg font-bold text-blue-900">Dados extraídos da fatura</h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <span className="text-gray-700">Assinante:</span>
+                      <div className="font-semibold">{assinante.nome}</div>
+                    </div>
+                    <div>
+                      <span className="text-gray-700">UC:</span>
+                      <div className="font-semibold">{assinante.uc}</div>
+                    </div>
+                    <div>
+                      <span className="text-gray-700">Consumo:</span>
+                      <div className="font-semibold">{faturaData.consumo} kWh</div>
+                    </div>
+                    <div>
+                      <span className="text-gray-700">Valor (sem desconto):</span>
+                      <div className="font-semibold">R$ {faturaData.valor.toFixed(2)}</div>
+                    </div>
+                    <div>
+                      <span className="text-gray-700">Desconto plano:</span>
+                      <div className="font-semibold text-green-600">{assinante.desconto}%</div>
+                    </div>
+                    <div>
+                      <span className="text-gray-700">Valor com desconto:</span>
+                      <div className="font-semibold text-green-700">
+                        R$ {(faturaData.valor * (1 - assinante.desconto / 100)).toFixed(2)}
+                      </div>
+                    </div>
+                  </div>
+                  <Button variant="outline" className="mt-3" onClick={() => setStep(2)}>
+                    Voltar
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   );
 };

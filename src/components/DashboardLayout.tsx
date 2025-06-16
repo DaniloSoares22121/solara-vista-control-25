@@ -92,8 +92,8 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
             </div>
           </header>
 
-          {/* Main Content sem padding lateral */}
-          <main className="flex-1 overflow-auto bg-gray-50">
+          {/* Main Content ocupando toda a área disponível */}
+          <main className="flex-1 min-h-0 w-full bg-gray-50 overflow-auto">
             {children}
           </main>
         </div>
