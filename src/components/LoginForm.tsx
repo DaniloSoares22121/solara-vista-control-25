@@ -9,6 +9,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "@/components/ui/use-toast";
 import ForgotPasswordModal from "@/components/ForgotPasswordModal";
+import { useEffect } from "react";
 
 const LoginForm = () => {
   const [email, setEmail] = useState("");
@@ -22,12 +23,12 @@ const LoginForm = () => {
 
   const from = location.state?.from?.pathname || "/dashboard";
 
-  useState(() => {
+  useEffect(() => {
     if (currentUser) {
       console.log('🔐 [LOGIN] User already authenticated, redirecting to:', from);
       navigate(from, { replace: true });
     }
-  });
+  }, [currentUser, navigate, from]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,7 +67,7 @@ const LoginForm = () => {
 
   return (
     <>
-      <div className="fixed inset-0 w-full h-full bg-gradient-to-br from-green-50 via-white to-green-100 overflow-hidden">
+      <div className="min-h-screen w-screen bg-gradient-to-br from-green-50 via-white to-green-100 overflow-hidden relative">
         {/* Elementos decorativos de fundo */}
         <div className="absolute inset-0">
           <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-green-200/20 rounded-full blur-3xl animate-pulse"></div>
@@ -76,8 +77,8 @@ const LoginForm = () => {
         </div>
 
         {/* Container principal que ocupa toda a tela */}
-        <div className="relative z-10 w-full h-full flex items-center justify-center p-4">
-          <div className="w-full max-w-md">
+        <div className="relative z-10 min-h-screen w-full flex items-center justify-center p-4 sm:p-6 lg:p-8">
+          <div className="w-full max-w-md mx-auto">
             {/* Header da marca */}
             <div className="text-center mb-8">
               <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-green-500 via-green-600 to-green-700 rounded-2xl shadow-xl mb-6 relative transform hover:scale-105 transition-transform duration-300">
