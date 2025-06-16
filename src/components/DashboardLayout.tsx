@@ -48,7 +48,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         <div className="flex-1 flex flex-col min-w-0">
           {/* Header */}
           <header className="bg-white/95 backdrop-blur-sm shadow-sm border-b border-gray-200/50 sticky top-0 z-40">
-            <div className="flex items-center justify-between h-16 px-6">
+            <div className="flex items-center justify-between h-16 px-4 sm:px-6">
               <div className="flex items-center space-x-3 min-w-0">
                 {/* Mobile Menu Button */}
                 <div className="lg:hidden">
@@ -60,18 +60,18 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
                 <div className="w-10 h-10 solar-gradient rounded-xl flex items-center justify-center shadow-lg flex-shrink-0">
                   <Sun className="w-6 h-6 text-white" />
                 </div>
-                <h1 className="text-2xl font-bold text-gray-900 truncate">
+                <h1 className="text-xl sm:text-2xl font-bold text-gray-900 truncate">
                   Solar<span className="solar-text-gradient">Control</span>
                 </h1>
               </div>
               
-              <div className="flex items-center space-x-4 flex-shrink-0">
+              <div className="flex items-center space-x-2 sm:space-x-4 flex-shrink-0">
                 {/* User info */}
-                <div className="flex items-center space-x-3 bg-white/80 backdrop-blur-sm px-4 py-2 rounded-xl border border-gray-200/50 shadow-sm">
+                <div className="flex items-center space-x-2 sm:space-x-3 bg-white/80 backdrop-blur-sm px-2 sm:px-4 py-2 rounded-xl border border-gray-200/50 shadow-sm">
                   <div className="w-8 h-8 bg-gradient-to-br from-green-400 to-green-600 rounded-lg flex items-center justify-center flex-shrink-0">
                     <User className="w-4 h-4 text-white" />
                   </div>
-                  <span className="text-gray-700 font-medium text-sm truncate">
+                  <span className="text-gray-700 font-medium text-xs sm:text-sm truncate max-w-[100px] sm:max-w-none">
                     {getUserDisplayName()}
                   </span>
                 </div>
@@ -84,7 +84,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
                   className="flex items-center space-x-1 border-gray-200 hover:border-green-300 hover:bg-green-50 transition-all duration-200"
                 >
                   <LogOut className="w-4 h-4" />
-                  <span>Sair</span>
+                  <span className="hidden sm:inline">Sair</span>
                 </Button>
               </div>
             </div>
@@ -92,7 +92,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
 
           {/* Main Content */}
           <main className="flex-1 min-w-0 overflow-x-hidden">
-            <div className="w-full h-full">
+            <div className="w-full h-full px-4 sm:px-6 py-4 sm:py-6">
               {children}
             </div>
           </main>
