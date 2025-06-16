@@ -4,31 +4,31 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
-import { Sun, Mail, Lock, Eye, EyeOff, ArrowRight, Sparkles } from "lucide-react";
+import { Sun, Mail, Lock, Zap, ArrowRight } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "@/components/ui/use-toast";
 import ForgotPasswordModal from "@/components/ForgotPasswordModal";
-import { useEffect } from "react";
 
 const LoginForm = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const { login, currentUser } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
+  // Get the intended destination from location state, default to dashboard
   const from = location.state?.from?.pathname || "/dashboard";
 
-  useEffect(() => {
+  // Redirect if already logged in
+  useState(() => {
     if (currentUser) {
       console.log('🔐 [LOGIN] User already authenticated, redirecting to:', from);
       navigate(from, { replace: true });
     }
-  }, [currentUser, navigate, from]);
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,6 +51,7 @@ const LoginForm = () => {
         description: "Bem-vindo ao SolarControl.",
       });
       
+      // Navigate to the intended destination
       console.log('🔐 [LOGIN] Login successful, redirecting to:', from);
       navigate(from, { replace: true });
     } catch (error: any) {
@@ -67,166 +68,103 @@ const LoginForm = () => {
 
   return (
     <>
-      <div className="min-h-screen w-screen bg-gradient-to-br from-green-50 via-white to-green-100 overflow-hidden relative">
-        {/* Elementos decorativos de fundo */}
-        <div className="absolute inset-0">
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-green-200/20 rounded-full blur-3xl animate-pulse"></div>
-          <div className="absolute top-1/3 right-1/4 w-72 h-72 bg-green-300/15 rounded-full blur-2xl animate-pulse delay-1000"></div>
-          <div className="absolute bottom-1/4 left-1/3 w-80 h-80 bg-green-100/30 rounded-full blur-3xl animate-pulse delay-2000"></div>
-          <div className="absolute bottom-1/3 right-1/3 w-64 h-64 bg-green-200/25 rounded-full blur-2xl animate-pulse delay-500"></div>
+      <div className="w-full max-w-sm xs:max-w-md mx-auto space-y-4 xs:space-y-6 lg:space-y-8">
+        {/* Header com tamanhos otimizados */}
+        <div className="text-center space-y-2 xs:space-y-3 lg:space-y-4">
+          <div className="inline-flex items-center justify-center w-12 h-12 xs:w-16 xs:h-16 lg:w-20 lg:h-20 mb-3 xs:mb-4 lg:mb-6 solar-gradient rounded-xl xs:rounded-2xl shadow-lg">
+            <Sun className="w-6 h-6 xs:w-8 xs:h-8 lg:w-10 lg:h-10 text-white" />
+          </div>
+          <div>
+            <h1 className="text-2xl xs:text-3xl lg:text-4xl font-bold text-gray-900 mb-1 lg:mb-2">
+              Solar<span className="solar-text-gradient">Control</span>
+            </h1>
+            <p className="text-gray-600 text-sm xs:text-base lg:text-lg">
+              Acesse sua plataforma de gestão
+            </p>
+          </div>
         </div>
 
-        {/* Container principal que ocupa toda a tela */}
-        <div className="relative z-10 min-h-screen w-full flex items-center justify-center p-4 sm:p-6 lg:p-8">
-          <div className="w-full max-w-md mx-auto">
-            {/* Header da marca */}
-            <div className="text-center mb-8">
-              <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-green-500 via-green-600 to-green-700 rounded-2xl shadow-xl mb-6 relative transform hover:scale-105 transition-transform duration-300">
-                <Sun className="w-10 h-10 text-white" />
-                <div className="absolute -top-1 -right-1 w-5 h-5 bg-yellow-400 rounded-full flex items-center justify-center animate-bounce">
-                  <Sparkles className="w-2.5 h-2.5 text-yellow-600" />
-                </div>
-              </div>
-              <h1 className="text-4xl font-bold text-gray-900 mb-3">
-                Solar<span className="text-green-600">Control</span>
-              </h1>
-              <p className="text-gray-600 text-lg font-medium">
-                Energia Solar Inteligente
-              </p>
-              <p className="text-gray-500 text-sm mt-1">
-                Gerencie sua energia renovável com facilidade
-              </p>
-            </div>
-
-            {/* Card de Login */}
-            <Card className="p-8 shadow-2xl border-0 bg-white/95 backdrop-blur-xl rounded-2xl relative overflow-hidden transform hover:shadow-3xl transition-all duration-300">
-              {/* Gradiente decorativo no topo */}
-              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-green-500 via-green-400 to-green-600"></div>
-              
-              <div className="mb-6 text-center">
-                <h2 className="text-xl font-bold text-gray-900 mb-1">Bem-vindo de volta!</h2>
-                <p className="text-gray-600 text-sm">Entre na sua conta para continuar</p>
-              </div>
-
-              <form onSubmit={handleSubmit} className="space-y-6">
-                {/* Campo Email */}
-                <div className="space-y-2">
-                  <Label htmlFor="email" className="text-gray-800 font-semibold">
-                    Email
-                  </Label>
-                  <div className="relative group">
-                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-green-500 transition-colors" />
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="seu@email.com"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="pl-10 h-12 border-2 border-gray-200 focus:border-green-500 focus:ring-4 focus:ring-green-100 rounded-xl bg-gray-50 focus:bg-white transition-all duration-300 placeholder:text-gray-400"
-                      required
-                      disabled={loading}
-                    />
-                  </div>
-                </div>
-
-                {/* Campo Senha */}
-                <div className="space-y-2">
-                  <Label htmlFor="password" className="text-gray-800 font-semibold">
-                    Senha
-                  </Label>
-                  <div className="relative group">
-                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-green-500 transition-colors" />
-                    <Input
-                      id="password"
-                      type={showPassword ? "text" : "password"}
-                      placeholder="Digite sua senha"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="pl-10 pr-10 h-12 border-2 border-gray-200 focus:border-green-500 focus:ring-4 focus:ring-green-100 rounded-xl bg-gray-50 focus:bg-white transition-all duration-300 placeholder:text-gray-400"
-                      required
-                      disabled={loading}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-green-500 transition-colors"
-                    >
-                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </button>
-                  </div>
-                </div>
-
-                {/* Opções */}
-                <div className="flex items-center justify-between pt-1">
-                  <label className="flex items-center space-x-2 cursor-pointer group">
-                    <input 
-                      type="checkbox" 
-                      className="w-4 h-4 rounded border-2 border-gray-300 text-green-500 focus:ring-green-400 focus:ring-2" 
-                    />
-                    <span className="text-gray-700 text-sm font-medium group-hover:text-gray-900 transition-colors">Lembrar de mim</span>
-                  </label>
-                  <button
-                    type="button"
-                    onClick={() => setShowForgotPassword(true)}
-                    className="text-green-600 hover:text-green-700 font-semibold text-sm transition-colors relative group"
-                  >
-                    Esqueci minha senha
-                    <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-green-600 group-hover:w-full transition-all duration-300"></span>
-                  </button>
-                </div>
-
-                {/* Botão de Login */}
-                <Button
-                  type="submit"
+        {/* Login Card com responsividade aprimorada */}
+        <Card className="p-4 xs:p-6 lg:p-8 shadow-xl border-0 bg-white/80 backdrop-blur-sm">
+          <form onSubmit={handleSubmit} className="space-y-4 xs:space-y-5 lg:space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="email" className="text-gray-700 font-semibold text-sm xs:text-sm lg:text-base">
+                Email
+              </Label>
+              <div className="relative">
+                <Mail className="absolute left-3 xs:left-3 lg:left-4 top-1/2 transform -translate-y-1/2 w-4 h-4 xs:w-4 xs:h-4 lg:w-5 lg:h-5 text-gray-400" />
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="seu@email.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="pl-9 xs:pl-10 lg:pl-12 h-10 xs:h-12 lg:h-14 text-sm xs:text-base lg:text-lg border-2 border-gray-200 focus:border-green-500 transition-colors rounded-lg xs:rounded-xl"
+                  required
                   disabled={loading}
-                  className="w-full h-12 bg-gradient-to-r from-green-600 via-green-500 to-green-600 hover:from-green-700 hover:via-green-600 hover:to-green-700 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] disabled:opacity-50 disabled:transform-none"
-                >
-                  {loading ? (
-                    <div className="flex items-center space-x-2">
-                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                      <span>Entrando...</span>
-                    </div>
-                  ) : (
-                    <div className="flex items-center space-x-2 group">
-                      <span>Entrar no Sistema</span>
-                      <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                    </div>
-                  )}
-                </Button>
+                />
+              </div>
+            </div>
 
-                {/* Divisor elegante */}
-                <div className="relative py-4">
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-gray-200"></div>
-                  </div>
-                  <div className="relative flex justify-center text-sm">
-                    <span className="px-4 bg-white text-gray-500 font-medium">ou</span>
-                  </div>
-                </div>
+            <div className="space-y-2">
+              <Label htmlFor="password" className="text-gray-700 font-semibold text-sm xs:text-sm lg:text-base">
+                Senha
+              </Label>
+              <div className="relative">
+                <Lock className="absolute left-3 xs:left-3 lg:left-4 top-1/2 transform -translate-y-1/2 w-4 h-4 xs:w-4 xs:h-4 lg:w-5 lg:h-5 text-gray-400" />
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="pl-9 xs:pl-10 lg:pl-12 h-10 xs:h-12 lg:h-14 text-sm xs:text-base lg:text-lg border-2 border-gray-200 focus:border-green-500 transition-colors rounded-lg xs:rounded-xl"
+                  required
+                  disabled={loading}
+                />
+              </div>
+            </div>
 
-                {/* Link de Cadastro */}
-                <div className="text-center bg-gray-50 rounded-xl p-4">
-                  <p className="text-gray-700 text-sm mb-1">
-                    Novo no SolarControl?
-                  </p>
-                  <a 
-                    href="/register" 
-                    className="text-green-600 hover:text-green-700 font-bold transition-colors relative group inline-block"
-                  >
-                    Criar conta gratuita
-                    <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-green-600 group-hover:w-full transition-all duration-300"></span>
-                  </a>
-                </div>
-              </form>
-            </Card>
+            <div className="flex flex-col xs:flex-row xs:items-center xs:justify-between gap-2 xs:gap-3 sm:gap-0">
+              <label className="flex items-center space-x-2 cursor-pointer">
+                <input type="checkbox" className="rounded border-gray-300 text-green-500 focus:ring-green-400" />
+                <span className="text-gray-600 font-medium text-xs xs:text-sm">Lembrar-me</span>
+              </label>
+              <button
+                type="button"
+                onClick={() => setShowForgotPassword(true)}
+                className="text-green-600 hover:text-green-700 font-semibold transition-colors text-xs xs:text-sm"
+              >
+                Esqueceu a senha?
+              </button>
+            </div>
 
-            {/* Footer */}
-            <div className="text-center mt-6">
-              <p className="text-gray-500 text-xs">
-                © 2024 SolarControl - Transformando o futuro da energia solar
+            <Button
+              type="submit"
+              disabled={loading}
+              className="w-full h-10 xs:h-12 lg:h-14 solar-gradient hover:opacity-90 transition-all duration-300 text-white font-bold text-sm xs:text-base lg:text-lg rounded-lg xs:rounded-xl shadow-lg hover:shadow-xl group disabled:opacity-50"
+            >
+              <Zap className="w-4 h-4 xs:w-4 xs:h-4 lg:w-5 lg:h-5 mr-2 xs:mr-2 lg:mr-3" />
+              {loading ? "Entrando..." : "Entrar no Sistema"}
+              <ArrowRight className="w-4 h-4 xs:w-4 xs:h-4 lg:w-5 lg:h-5 ml-2 xs:ml-2 lg:ml-3 group-hover:translate-x-1 transition-transform" />
+            </Button>
+
+            <div className="text-center pt-3 xs:pt-4 lg:pt-6">
+              <p className="text-gray-600 text-xs xs:text-sm">
+                Não tem uma conta?{" "}
+                <a href="/register" className="text-green-600 hover:text-green-700 font-semibold transition-colors">
+                  Cadastre-se aqui
+                </a>
               </p>
             </div>
-          </div>
+          </form>
+        </Card>
+
+        {/* Footer */}
+        <div className="text-center">
+          <p className="text-gray-500 text-xs lg:text-sm">
+            © 2024 SolarControl - Energia Limpa para um Futuro Sustentável
+          </p>
         </div>
       </div>
 

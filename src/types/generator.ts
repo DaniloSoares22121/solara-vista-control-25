@@ -81,9 +81,9 @@ export interface PaymentData {
   pix: string;
 }
 
-// Estrutura correta para os anexos - com objeto File opcional para edição
+// Estrutura correta para os anexos - com objeto File preservado
 export interface FileUploadData {
-  file?: File; // Opcional para permitir dados vindos da edição
+  file: File;
   name: string;
   size: number;
   type: string;

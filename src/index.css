@@ -90,32 +90,16 @@
     @apply border-border;
   }
 
-  html, body {
+  body {
     @apply bg-background text-foreground;
-    overflow-x: hidden;
-    width: 100%;
-    height: 100%;
-    margin: 0;
-    padding: 0;
   }
 
-  #root {
-    width: 100%;
-    min-height: 100vh;
-  }
-
-  /* Tamanho de fonte otimizado para melhor legibilidade */
+  /* Mobile-first responsive text */
   html {
-    font-size: 16px;
+    font-size: 14px;
   }
 
   @screen sm {
-    html {
-      font-size: 16px;
-    }
-  }
-
-  @screen lg {
     html {
       font-size: 16px;
     }
@@ -173,24 +157,56 @@
     transform: scale(1.02);
   }
 
-  /* Modern layout utilities */
-  .container-modern {
-    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  /* Mobile-specific utilities */
+  .touch-manipulation {
+    touch-action: manipulation;
   }
 
-  .card-modern {
-    @apply bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200;
+  .safe-area-inset {
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
   }
 
-  .stats-card {
-    @apply bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200;
+  .mobile-scroll {
+    -webkit-overflow-scrolling: touch;
+    overflow-scrolling: touch;
   }
 
-  .btn-primary {
-    @apply bg-green-600 hover:bg-green-700 text-white font-medium px-4 py-2 rounded-lg shadow-sm hover:shadow-md transition-all duration-200;
+  /* Responsive text utilities */
+  .text-responsive-xs {
+    @apply text-xs sm:text-sm;
   }
 
-  .btn-outline {
-    @apply border border-gray-300 hover:border-gray-400 bg-white hover:bg-gray-50 text-gray-700 font-medium px-4 py-2 rounded-lg shadow-sm transition-all duration-200;
+  .text-responsive-sm {
+    @apply text-sm sm:text-base;
+  }
+
+  .text-responsive-base {
+    @apply text-base sm:text-lg;
+  }
+
+  .text-responsive-lg {
+    @apply text-lg sm:text-xl;
+  }
+
+  .text-responsive-xl {
+    @apply text-xl sm:text-2xl;
+  }
+
+  .text-responsive-2xl {
+    @apply text-2xl sm:text-3xl;
+  }
+
+  /* Responsive spacing utilities */
+  .p-responsive {
+    @apply p-4 sm:p-6 lg:p-8;
+  }
+
+  .m-responsive {
+    @apply m-4 sm:m-6 lg:m-8;
+  }
+
+  .gap-responsive {
+    @apply gap-4 sm:gap-6 lg:gap-8;
   }
 }

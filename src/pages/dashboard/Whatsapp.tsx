@@ -1,4 +1,5 @@
 
+import DashboardLayout from '@/components/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
@@ -43,7 +44,7 @@ const Whatsapp = () => {
   };
 
   return (
-    <>
+    <DashboardLayout>
       <div className="space-y-6 sm:space-y-8 p-4 sm:p-6">
         {/* Enhanced Header */}
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
@@ -289,7 +290,7 @@ const Whatsapp = () => {
         onSend={handleTestMessage}
         isSending={isSendingMessage}
       />
-    </>
+    </DashboardLayout>
   );
 };
 
