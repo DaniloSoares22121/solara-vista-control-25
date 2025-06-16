@@ -18,6 +18,7 @@ export interface RateioSubscriber {
   credito: string;
   rateio: string;
   ultimaFatura: string;
+  geradora_id?: string; // Adicionar campo para vinculação
 }
 
 export interface RateioHistoryItem {
@@ -114,6 +115,54 @@ const fetchAllSubscribers = async (): Promise<RateioSubscriber[]> => {
   });
 };
 
+// Nova função para buscar assinantes vinculados a uma geradora específica
+const fetchSubscribersForGenerator = async (generatorId: string): Promise<RateioSubscriber[]> => {
+  try {
+    // Primeiro, busca rateios da geradora para encontrar assinantes vinculados
+    const { data: rateioItems, error: rateioError } = await (supabase as any)
+      .from('rateio_items')
+      .select(`
+        assinante_id,
+        assinante_nome,
+        assinante_uc,
+        rateio_id,
+        rateios!inner(geradora_id)
+      `)
+      .eq('rateios.geradora_id', generatorId);
+
+    if (rateioError && rateioError.code !== '42P01') {
+      console.error('Error fetching rateio items:', rateioError);
+    }
+
+    // Se não há rateios, retorna array vazio
+    if (!rateioItems || rateioItems.length === 0) {
+      return [];
+    }
+
+    // Remove duplicatas por assinante_id
+    const uniqueSubscribers = rateioItems.reduce((acc, item) => {
+      if (!acc.some(sub => sub.id === item.assinante_id)) {
+        acc.push({
+          id: item.assinante_id,
+          nome: item.assinante_nome || 'Nome não informado',
+          uc: item.assinante_uc || 'N/A',
+          consumo: 'N/A',
+          credito: 'N/A',
+          rateio: 'Vinculado',
+          ultimaFatura: 'N/A',
+          geradora_id: generatorId
+        });
+      }
+      return acc;
+    }, [] as RateioSubscriber[]);
+
+    return uniqueSubscribers;
+  } catch (error) {
+    console.error('Erro ao buscar assinantes da geradora:', error);
+    return [];
+  }
+};
+
 const fetchRateioHistoryForGenerator = async (generatorId: string): Promise<RateioHistoryItem[]> => {
     console.log('Buscando histórico para geradora:', generatorId);
     
@@ -160,6 +209,17 @@ export const useRateioSubscribers = () => {
         queryFn: fetchAllSubscribers,
         retry: 2,
         staleTime: 5 * 60 * 1000, // 5 minutos
+    });
+}
+
+// Novo hook para assinantes de uma geradora específica
+export const useRateioSubscribersForGenerator = (generatorId?: string) => {
+    return useQuery({
+        queryKey: ['subscribersForGenerator', generatorId],
+        queryFn: () => fetchSubscribersForGenerator(generatorId!),
+        enabled: !!generatorId,
+        retry: 2,
+        staleTime: 2 * 60 * 1000, // 2 minutos
     });
 }
 

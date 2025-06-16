@@ -3,22 +3,20 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { TrendingUp, Users, Zap, Calendar, Activity } from 'lucide-react';
-import { useRateioSubscribers } from '@/hooks/useRateio';
 
 interface RateioStatsProps {
   totalRateios: number;
   totalDistribuido: number;
   geradorasAtivas: number;
+  assinantesVinculados?: number; // Novo prop para mostrar assinantes corretos
 }
 
 export const RateioStats: React.FC<RateioStatsProps> = ({
   totalRateios,
   totalDistribuido,
-  geradorasAtivas
+  geradorasAtivas,
+  assinantesVinculados = 0
 }) => {
-  const { data: subscribersData } = useRateioSubscribers();
-  const assinantesAtivos = subscribersData?.length || 0;
-
   const stats = [
     {
       title: 'Total de Rateios',
@@ -45,12 +43,12 @@ export const RateioStats: React.FC<RateioStatsProps> = ({
       trend: geradorasAtivas > 0 ? '+' + geradorasAtivas : '0'
     },
     {
-      title: 'Assinantes',
-      value: assinantesAtivos.toString(),
-      subtitle: 'cadastrados',
+      title: 'Assinantes Vinculados',
+      value: assinantesVinculados.toString(),
+      subtitle: 'nesta geradora',
       icon: Users,
       color: 'purple',
-      trend: assinantesAtivos > 0 ? '+' + assinantesAtivos : '0'
+      trend: assinantesVinculados > 0 ? '+' + assinantesVinculados : '0'
     }
   ];
 

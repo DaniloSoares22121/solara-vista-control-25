@@ -1,7 +1,8 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useRateioGenerators, useHistoricoRateiosData, useRateioSubscribers, RateioHistoryItem } from '@/hooks/useRateio';
+import { useRateioGenerators, useHistoricoRateiosData, useRateioSubscribersForGenerator, RateioHistoryItem } from '@/hooks/useRateio';
 import { LoadingSpinner } from '../ui/loading-spinner';
 import { AlertCircle, Calendar, TrendingUp, Clock, Eye, FileText, Search, Filter, Plus } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -23,7 +24,8 @@ const HistoricoRateios = () => {
   const { data: generatorsData, isLoading: isLoadingGenerators, error: errorGenerators } = useRateioGenerators();
   const generators = generatorsData || [];
 
-  const { data: subscribersData } = useRateioSubscribers();
+  // Buscar assinantes específicos da geradora selecionada
+  const { data: subscribersForGenerator } = useRateioSubscribersForGenerator(selectedGeradoraId);
 
   const {
     historico,
@@ -73,8 +75,8 @@ const HistoricoRateios = () => {
   const totalDistribuido = historico.reduce((acc, curr) => acc + curr.total_distribuido, 0);
   const geradorasAtivas = generators.length;
 
-  // Contar assinantes vinculados à geradora selecionada (se houver)
-  const assinantesVinculados = subscribersData?.length || 0;
+  // Contar assinantes vinculados à geradora selecionada (dados corretos)
+  const assinantesVinculados = subscribersForGenerator?.length || 0;
 
   return (
     <div className="space-y-6">
@@ -83,6 +85,7 @@ const HistoricoRateios = () => {
         totalRateios={historico.length}
         totalDistribuido={totalDistribuido}
         geradorasAtivas={geradorasAtivas}
+        assinantesVinculados={assinantesVinculados}
       />
 
       {/* Header Section */}
@@ -213,7 +216,12 @@ const HistoricoRateios = () => {
                     {isLoadingHistorico ? "Carregando histórico..." : `${historicoFiltrado.length} de ${historico.length} rateio${historico.length !== 1 ? 's' : ''} realizado${historico.length !== 1 ? 's' : ''}`}
                     {assinantesVinculados > 0 && historico.length === 0 && (
                       <span className="text-blue-600 ml-2">
-                        • {assinantesVinculados} assinante{assinantesVinculados !== 1 ? 's' : ''} cadastrado{assinantesVinculados !== 1 ? 's' : ''}
+                        • {assinantesVinculados} assinante{assinantesVinculados !== 1 ? 's' : ''} vinculado{assinantesVinculados !== 1 ? 's' : ''}
+                      </span>
+                    )}
+                    {assinantesVinculados === 0 && historico.length === 0 && (
+                      <span className="text-orange-600 ml-2">
+                        • Nenhum assinante vinculado ainda
                       </span>
                     )}
                   </CardDescription>
@@ -300,14 +308,14 @@ const HistoricoRateios = () => {
                   {searchTerm || filterStatus !== 'todos' 
                     ? 'Tente ajustar os filtros de busca.'
                     : assinantesVinculados > 0 
-                    ? `Esta geradora possui ${assinantesVinculados} assinante${assinantesVinculados !== 1 ? 's' : ''} cadastrado${assinantesVinculados !== 1 ? 's' : ''}, mas ainda não possui rateios realizados.`
-                    : 'Esta geradora ainda não possui assinantes cadastrados nem rateios realizados.'
+                    ? `Esta geradora possui ${assinantesVinculados} assinante${assinantesVinculados !== 1 ? 's' : ''} vinculado${assinantesVinculados !== 1 ? 's' : ''}, mas ainda não possui rateios realizados.`
+                    : 'Esta geradora ainda não possui assinantes vinculados nem rateios realizados.'
                   }
                 </p>
                 {(!searchTerm && filterStatus === 'todos') && (
                   <Button variant="outline" size="sm">
                     <Plus className="h-4 w-4 mr-2" />
-                    {assinantesVinculados > 0 ? 'Criar Primeiro Rateio' : 'Cadastrar Assinantes'}
+                    {assinantesVinculados > 0 ? 'Criar Primeiro Rateio' : 'Ir para Cadastrar Rateio'}
                   </Button>
                 )}
               </div>
