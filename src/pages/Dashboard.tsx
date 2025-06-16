@@ -16,14 +16,20 @@ const Dashboard = () => {
   const userDisplayName = currentUser?.user_metadata?.full_name || currentUser?.email || 'Usuário';
 
   if (isLoading) {
-    return <LoadingSpinner size="lg" text="Carregando painel..." />;
+    return (
+      <div className="flex items-center justify-center h-full">
+        <LoadingSpinner size="lg" text="Carregando painel..." />
+      </div>
+    );
   }
 
   if (error) {
     return (
-      <div className="p-6">
-        <AlertTriangle className="w-6 h-6 text-red-500 inline-block mr-2" />
-        Erro ao carregar os dados do painel.
+      <div className="flex items-center justify-center h-full">
+        <div className="text-center">
+          <AlertTriangle className="w-6 h-6 text-red-500 inline-block mr-2" />
+          Erro ao carregar os dados do painel.
+        </div>
       </div>
     );
   }
@@ -34,8 +40,8 @@ const Dashboard = () => {
     : 0;
 
   return (
-    <div className="w-full h-full min-h-full bg-gray-50">
-      <div className="w-full max-w-none px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+    <div className="w-full h-full">
+      <div className="w-full px-4 sm:px-6 lg:px-8 py-6 pb-8 space-y-6">
         {/* Welcome Header moderno */}
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div>
