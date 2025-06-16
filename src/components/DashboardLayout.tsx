@@ -1,3 +1,4 @@
+
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Sun, LogOut, User, Menu } from 'lucide-react';
@@ -91,8 +92,8 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
             </div>
           </header>
 
-          {/* Main Content sem padding para aproveitar todo o espaço */}
-          <main className="flex-1">
+          {/* Main Content SEM PADDING para ocupar toda a largura */}
+          <main className="flex-1 w-full">
             {children}
           </main>
         </div>

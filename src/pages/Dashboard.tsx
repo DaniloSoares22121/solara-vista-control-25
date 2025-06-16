@@ -33,9 +33,9 @@ const Dashboard = () => {
     : 0;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-4">
       {/* Welcome Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-6 pb-0">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
             Bem-vindo(a), {userDisplayName}!
@@ -133,7 +133,7 @@ const Dashboard = () => {
       </div>
 
       {/* Action Cards */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 pb-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <Card className="border border-gray-200 shadow-sm">
           <CardHeader className="pb-3">
             <CardTitle className="text-lg font-semibold text-gray-900">
