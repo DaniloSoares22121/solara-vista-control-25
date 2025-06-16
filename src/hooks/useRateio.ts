@@ -18,7 +18,7 @@ export interface RateioSubscriber {
   credito: string;
   rateio: string;
   ultimaFatura: string;
-  geradora_id?: string; // Adicionar campo para vinculação
+  geradora_id?: string;
 }
 
 export interface RateioHistoryItem {
@@ -115,11 +115,12 @@ const fetchAllSubscribers = async (): Promise<RateioSubscriber[]> => {
   });
 };
 
-// Nova função para buscar assinantes vinculados a uma geradora específica
 const fetchSubscribersForGenerator = async (generatorId: string): Promise<RateioSubscriber[]> => {
   try {
-    // Primeiro, busca rateios da geradora para encontrar assinantes vinculados
-    const { data: rateioItems, error: rateioError } = await (supabase as any)
+    console.log('🔍 Buscando assinantes para geradora:', generatorId);
+    
+    // Busca rateios da geradora para encontrar assinantes vinculados
+    const { data: rateioItems, error: rateioError } = await supabase
       .from('rateio_items')
       .select(`
         assinante_id,
@@ -130,12 +131,23 @@ const fetchSubscribersForGenerator = async (generatorId: string): Promise<Rateio
       `)
       .eq('rateios.geradora_id', generatorId);
 
-    if (rateioError && rateioError.code !== '42P01') {
-      console.error('Error fetching rateio items:', rateioError);
+    if (rateioError) {
+      console.error('⚠️ Erro ao buscar rateio_items:', rateioError);
+      
+      // Se for erro de tabela não existente, retorna array vazio
+      if (rateioError.code === '42P01' || rateioError.code === 'PGRST200') {
+        console.log('📋 Tabelas de rateio ainda não existem, retornando lista vazia');
+        return [];
+      }
+      
+      throw rateioError;
     }
+
+    console.log('📊 Rateio items encontrados:', rateioItems);
 
     // Se não há rateios, retorna array vazio
     if (!rateioItems || rateioItems.length === 0) {
+      console.log('📭 Nenhum assinante vinculado encontrado para esta geradora');
       return [];
     }
 
@@ -156,39 +168,45 @@ const fetchSubscribersForGenerator = async (generatorId: string): Promise<Rateio
       return acc;
     }, [] as RateioSubscriber[]);
 
+    console.log('✅ Assinantes únicos vinculados:', uniqueSubscribers);
     return uniqueSubscribers;
   } catch (error) {
-    console.error('Erro ao buscar assinantes da geradora:', error);
+    console.error('❌ Erro ao buscar assinantes da geradora:', error);
     return [];
   }
 };
 
 const fetchRateioHistoryForGenerator = async (generatorId: string): Promise<RateioHistoryItem[]> => {
-    console.log('Buscando histórico para geradora:', generatorId);
+    console.log('🔍 Buscando histórico para geradora:', generatorId);
     
     try {
-        const { data, error } = await (supabase as any)
+        const { data, error } = await supabase
             .from('rateios')
             .select('id, data_rateio, tipo_rateio, status, total_distribuido')
             .eq('geradora_id', generatorId)
             .order('data_rateio', { ascending: false });
 
         if (error) {
-            console.error('Error fetching rateio history:', error);
+            console.error('❌ Erro ao buscar histórico de rateios:', {
+              error,
+              code: error.code,
+              message: error.message,
+              details: error.details
+            });
             
             // Se a tabela não existe, retorna array vazio em vez de erro
             if (error.code === '42P01') {
-                console.warn('Tabela rateios não existe ainda. Aguardando criação...');
+                console.warn('⚠️ Tabela rateios não existe ainda. Aguardando criação...');
                 return [];
             }
             
-            throw new Error('Não foi possível buscar o histórico de rateios.');
+            throw new Error(`Não foi possível buscar o histórico de rateios: ${error.message}`);
         }
 
-        console.log('Histórico encontrado:', data);
+        console.log('✅ Histórico encontrado:', data);
         return data || [];
     } catch (error) {
-        console.error('Erro na busca do histórico:', error);
+        console.error('❌ Erro na busca do histórico:', error);
         // Retorna array vazio em caso de erro para evitar quebrar a UI
         return [];
     }
@@ -212,7 +230,6 @@ export const useRateioSubscribers = () => {
     });
 }
 
-// Novo hook para assinantes de uma geradora específica
 export const useRateioSubscribersForGenerator = (generatorId?: string) => {
     return useQuery({
         queryKey: ['subscribersForGenerator', generatorId],
@@ -224,18 +241,19 @@ export const useRateioSubscribersForGenerator = (generatorId?: string) => {
 }
 
 export const useHistoricoRateiosData = (generatorId?: string) => {
-    const { data, isLoading, error } = useQuery({
+    const { data, isLoading, error, refetch } = useQuery({
         queryKey: ['rateioHistory', generatorId],
         queryFn: () => fetchRateioHistoryForGenerator(generatorId!),
         enabled: !!generatorId,
         retry: 3,
         retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
-        staleTime: 2 * 60 * 1000, // 2 minutos
+        staleTime: 30 * 1000, // 30 segundos - menor para ver atualizações mais rapidamente
     });
 
     return {
         historico: data || [],
         isLoading,
         error,
+        refetch,
     };
 };

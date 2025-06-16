@@ -11,12 +11,15 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AdicionarAssinantesRateio } from "./AdicionarAssinantesRateio";
 import { rateioService } from "@/services/rateioService";
 import { toast } from "@/hooks/use-toast";
+import { useQueryClient } from '@tanstack/react-query';
 
 const CadastrarRateio = () => {
   const [selectedGeradoraId, setSelectedGeradoraId] = useState<string | undefined>();
   const [tipoRateio, setTipoRateio] = useState<"porcentagem" | "prioridade">("porcentagem");
   const [assinantes, setAssinantes] = useState<any[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const queryClient = useQueryClient();
 
   // Obtém geradoras
   const { data: generatorsData, isLoading: isLoadingGenerators, error: errorGenerators } = useRateioGenerators();
@@ -101,12 +104,19 @@ const CadastrarRateio = () => {
 
     setIsSubmitting(true);
     try {
+      console.log('🚀 Iniciando cadastro de rateio...');
+      
       await rateioService.cadastrarRateio({
         geradora: selectedGeradora,
         tipoRateio,
         dataRateio: new Date().toISOString().split('T')[0],
         assinantes: selecionados,
       });
+      
+      // Invalida o cache para forçar atualização
+      console.log('🔄 Invalidando cache...');
+      await queryClient.invalidateQueries({ queryKey: ['rateioHistory'] });
+      await queryClient.invalidateQueries({ queryKey: ['subscribersForGenerator'] });
       
       toast({
         title: "🎉 Rateio cadastrado com sucesso!",
@@ -116,8 +126,10 @@ const CadastrarRateio = () => {
       // Limpa os valores dos assinantes mas mantém a geradora selecionada
       setAssinantes(assinantes.map(a => ({ ...a, selecionado: false, valor: "" })));
       
+      console.log('✅ Cadastro de rateio concluído com sucesso!');
+      
     } catch (err: any) {
-      console.error('Erro ao cadastrar rateio:', err);
+      console.error('❌ Erro ao cadastrar rateio:', err);
       toast({
         title: "Erro ao cadastrar",
         description: err?.message || "Erro inesperado ao cadastrar rateio.",
