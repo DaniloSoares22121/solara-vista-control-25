@@ -91,8 +91,8 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
           </header>
 
           {/* Main Content */}
-          <main className="flex-1 p-4 sm:p-6 min-w-0 overflow-x-hidden">
-            <div className="w-full max-w-7xl mx-auto">
+          <main className="flex-1 p-2 sm:p-4 min-w-0 overflow-x-hidden">
+            <div className="w-full max-w-none mx-auto">
               {children}
             </div>
           </main>
