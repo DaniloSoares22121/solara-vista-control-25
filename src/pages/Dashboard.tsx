@@ -33,9 +33,9 @@ const Dashboard = () => {
     : 0;
 
   return (
-    <div className="p-3 space-y-6">
-      {/* Welcome Header com espaçamento reduzido */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+    <div className="space-y-6">
+      {/* Welcome Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-6 pb-0">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
             Bem-vindo(a), {userDisplayName}!
@@ -53,8 +53,8 @@ const Dashboard = () => {
         </Button>
       </div>
 
-      {/* Stats Cards com espaçamento reduzido */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 px-6">
         <Card className="border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
@@ -132,8 +132,8 @@ const Dashboard = () => {
         </Card>
       </div>
 
-      {/* Action Cards com espaçamento reduzido */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      {/* Action Cards */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 px-6 pb-6">
         <Card className="border border-gray-200 shadow-sm">
           <CardHeader className="pb-3">
             <CardTitle className="text-lg font-semibold text-gray-900">
