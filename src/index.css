@@ -94,14 +94,14 @@
     @apply bg-background text-foreground;
   }
 
-  /* Mobile-first responsive text */
+  /* Aumentando o tamanho base para criar efeito "zoom 2x" */
   html {
-    font-size: 14px;
+    font-size: 20px; /* Aumentado de 14px para 20px no mobile */
   }
 
   @screen sm {
     html {
-      font-size: 16px;
+      font-size: 24px; /* Aumentado de 16px para 24px no desktop */
     }
   }
 }
