@@ -45,10 +45,10 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
       <div className="min-h-screen flex w-full bg-gradient-to-br from-gray-50 via-green-50/30 to-white">
         <AppSidebar />
         
-        <div className="flex-1 flex flex-col min-w-0">
+        <div className="flex-1 flex flex-col min-w-0 w-full">
           {/* Header */}
           <header className="bg-white/95 backdrop-blur-sm shadow-sm border-b border-gray-200/50 sticky top-0 z-40">
-            <div className="flex items-center justify-between h-16 px-4 sm:px-6">
+            <div className="flex items-center justify-between h-16 px-4 sm:px-6 w-full">
               <div className="flex items-center space-x-3 min-w-0">
                 {/* Mobile Menu Button */}
                 <div className="lg:hidden">
@@ -91,8 +91,8 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
           </header>
 
           {/* Main Content */}
-          <main className="flex-1 min-w-0 overflow-x-hidden">
-            <div className="w-full h-full px-4 sm:px-6 py-4 sm:py-6">
+          <main className="flex-1 min-w-0 overflow-x-hidden w-full">
+            <div className="w-full h-full p-6">
               {children}
             </div>
           </main>
