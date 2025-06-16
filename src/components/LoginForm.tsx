@@ -68,38 +68,38 @@ const LoginForm = () => {
 
   return (
     <>
-      <div className="w-full max-w-sm xs:max-w-md mx-auto space-y-4 xs:space-y-6 lg:space-y-8">
-        {/* Header com tamanhos otimizados */}
-        <div className="text-center space-y-2 xs:space-y-3 lg:space-y-4">
-          <div className="inline-flex items-center justify-center w-12 h-12 xs:w-16 xs:h-16 lg:w-20 lg:h-20 mb-3 xs:mb-4 lg:mb-6 solar-gradient rounded-xl xs:rounded-2xl shadow-lg">
-            <Sun className="w-6 h-6 xs:w-8 xs:h-8 lg:w-10 lg:h-10 text-white" />
+      <div className="w-full max-w-sm mx-auto space-y-4 px-3 sm:px-0">
+        {/* Header otimizado */}
+        <div className="text-center space-y-3">
+          <div className="inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 mb-3 solar-gradient rounded-xl shadow-lg mx-auto">
+            <Sun className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
           </div>
           <div>
-            <h1 className="text-2xl xs:text-3xl lg:text-4xl font-bold text-gray-900 mb-1 lg:mb-2">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">
               Solar<span className="solar-text-gradient">Control</span>
             </h1>
-            <p className="text-gray-600 text-sm xs:text-base lg:text-lg">
+            <p className="text-gray-600 text-sm sm:text-base">
               Acesse sua plataforma de gestão
             </p>
           </div>
         </div>
 
-        {/* Login Card com responsividade aprimorada */}
-        <Card className="p-4 xs:p-6 lg:p-8 shadow-xl border-0 bg-white/80 backdrop-blur-sm">
-          <form onSubmit={handleSubmit} className="space-y-4 xs:space-y-5 lg:space-y-6">
+        {/* Login Card otimizado */}
+        <Card className="p-4 sm:p-6 shadow-xl border-0 bg-white/80 backdrop-blur-sm w-full">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-gray-700 font-semibold text-sm xs:text-sm lg:text-base">
+              <Label htmlFor="email" className="text-gray-700 font-semibold text-sm">
                 Email
               </Label>
               <div className="relative">
-                <Mail className="absolute left-3 xs:left-3 lg:left-4 top-1/2 transform -translate-y-1/2 w-4 h-4 xs:w-4 xs:h-4 lg:w-5 lg:h-5 text-gray-400" />
+                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <Input
                   id="email"
                   type="email"
                   placeholder="seu@email.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="pl-9 xs:pl-10 lg:pl-12 h-10 xs:h-12 lg:h-14 text-sm xs:text-base lg:text-lg border-2 border-gray-200 focus:border-green-500 transition-colors rounded-lg xs:rounded-xl"
+                  className="pl-10 h-10 sm:h-12 text-sm border-2 border-gray-200 focus:border-green-500 transition-colors rounded-lg"
                   required
                   disabled={loading}
                 />
@@ -107,33 +107,33 @@ const LoginForm = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-gray-700 font-semibold text-sm xs:text-sm lg:text-base">
+              <Label htmlFor="password" className="text-gray-700 font-semibold text-sm">
                 Senha
               </Label>
               <div className="relative">
-                <Lock className="absolute left-3 xs:left-3 lg:left-4 top-1/2 transform -translate-y-1/2 w-4 h-4 xs:w-4 xs:h-4 lg:w-5 lg:h-5 text-gray-400" />
+                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <Input
                   id="password"
                   type="password"
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="pl-9 xs:pl-10 lg:pl-12 h-10 xs:h-12 lg:h-14 text-sm xs:text-base lg:text-lg border-2 border-gray-200 focus:border-green-500 transition-colors rounded-lg xs:rounded-xl"
+                  className="pl-10 h-10 sm:h-12 text-sm border-2 border-gray-200 focus:border-green-500 transition-colors rounded-lg"
                   required
                   disabled={loading}
                 />
               </div>
             </div>
 
-            <div className="flex flex-col xs:flex-row xs:items-center xs:justify-between gap-2 xs:gap-3 sm:gap-0">
+            <div className="flex flex-col space-y-2">
               <label className="flex items-center space-x-2 cursor-pointer">
                 <input type="checkbox" className="rounded border-gray-300 text-green-500 focus:ring-green-400" />
-                <span className="text-gray-600 font-medium text-xs xs:text-sm">Lembrar-me</span>
+                <span className="text-gray-600 font-medium text-xs">Lembrar-me</span>
               </label>
               <button
                 type="button"
                 onClick={() => setShowForgotPassword(true)}
-                className="text-green-600 hover:text-green-700 font-semibold transition-colors text-xs xs:text-sm"
+                className="text-green-600 hover:text-green-700 font-semibold transition-colors text-xs text-left"
               >
                 Esqueceu a senha?
               </button>
@@ -142,15 +142,15 @@ const LoginForm = () => {
             <Button
               type="submit"
               disabled={loading}
-              className="w-full h-10 xs:h-12 lg:h-14 solar-gradient hover:opacity-90 transition-all duration-300 text-white font-bold text-sm xs:text-base lg:text-lg rounded-lg xs:rounded-xl shadow-lg hover:shadow-xl group disabled:opacity-50"
+              className="w-full h-10 sm:h-12 solar-gradient hover:opacity-90 transition-all duration-300 text-white font-bold text-sm rounded-lg shadow-lg hover:shadow-xl group disabled:opacity-50"
             >
-              <Zap className="w-4 h-4 xs:w-4 xs:h-4 lg:w-5 lg:h-5 mr-2 xs:mr-2 lg:mr-3" />
+              <Zap className="w-4 h-4 mr-2" />
               {loading ? "Entrando..." : "Entrar no Sistema"}
-              <ArrowRight className="w-4 h-4 xs:w-4 xs:h-4 lg:w-5 lg:h-5 ml-2 xs:ml-2 lg:ml-3 group-hover:translate-x-1 transition-transform" />
+              <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
             </Button>
 
-            <div className="text-center pt-3 xs:pt-4 lg:pt-6">
-              <p className="text-gray-600 text-xs xs:text-sm">
+            <div className="text-center pt-3">
+              <p className="text-gray-600 text-xs">
                 Não tem uma conta?{" "}
                 <a href="/register" className="text-green-600 hover:text-green-700 font-semibold transition-colors">
                   Cadastre-se aqui
@@ -162,7 +162,7 @@ const LoginForm = () => {
 
         {/* Footer */}
         <div className="text-center">
-          <p className="text-gray-500 text-xs lg:text-sm">
+          <p className="text-gray-500 text-xs">
             © 2024 SolarControl - Energia Limpa para um Futuro Sustentável
           </p>
         </div>

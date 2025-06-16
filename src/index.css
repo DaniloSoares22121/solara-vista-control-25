@@ -92,16 +92,23 @@
 
   body {
     @apply bg-background text-foreground;
+    overflow-x: hidden;
   }
 
-  /* Aumentando o tamanho base para criar efeito "zoom 2x" */
+  /* Zoom otimizado para melhor legibilidade */
   html {
-    font-size: 20px; /* Aumentado de 14px para 20px no mobile */
+    font-size: 18px; /* Reduzido para 18px no mobile para melhor fit */
   }
 
   @screen sm {
     html {
-      font-size: 24px; /* Aumentado de 16px para 24px no desktop */
+      font-size: 20px; /* Reduzido para 20px no desktop para melhor proporção */
+    }
+  }
+
+  @screen lg {
+    html {
+      font-size: 22px; /* Tamanho otimizado para telas grandes */
     }
   }
 }
@@ -172,7 +179,7 @@
     overflow-scrolling: touch;
   }
 
-  /* Responsive text utilities */
+  /* Responsive text utilities otimizadas */
   .text-responsive-xs {
     @apply text-xs sm:text-sm;
   }
@@ -182,31 +189,44 @@
   }
 
   .text-responsive-base {
-    @apply text-base sm:text-lg;
+    @apply text-sm sm:text-base lg:text-lg;
   }
 
   .text-responsive-lg {
-    @apply text-lg sm:text-xl;
+    @apply text-base sm:text-lg lg:text-xl;
   }
 
   .text-responsive-xl {
-    @apply text-xl sm:text-2xl;
+    @apply text-lg sm:text-xl lg:text-2xl;
   }
 
   .text-responsive-2xl {
-    @apply text-2xl sm:text-3xl;
+    @apply text-xl sm:text-2xl lg:text-3xl;
   }
 
-  /* Responsive spacing utilities */
+  /* Responsive spacing utilities otimizadas */
   .p-responsive {
-    @apply p-4 sm:p-6 lg:p-8;
+    @apply p-3 sm:p-4 lg:p-6;
   }
 
   .m-responsive {
-    @apply m-4 sm:m-6 lg:m-8;
+    @apply m-3 sm:m-4 lg:m-6;
   }
 
   .gap-responsive {
-    @apply gap-4 sm:gap-6 lg:gap-8;
+    @apply gap-3 sm:gap-4 lg:gap-6;
+  }
+
+  /* Layout helpers */
+  .container-responsive {
+    @apply max-w-none sm:max-w-screen-sm md:max-w-screen-md lg:max-w-screen-lg xl:max-w-screen-xl 2xl:max-w-screen-2xl mx-auto px-3 sm:px-4 lg:px-6;
+  }
+
+  .flex-center {
+    @apply flex items-center justify-center;
+  }
+
+  .grid-responsive {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4;
   }
 }
