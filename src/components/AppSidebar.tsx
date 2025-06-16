@@ -45,27 +45,33 @@ export function AppSidebar() {
   const isCollapsed = state === 'collapsed';
 
   return (
-    <Sidebar className="bg-gradient-to-b from-green-600 via-green-700 to-green-800 border-none" collapsible="icon">
-      <div className="h-screen bg-gradient-to-b from-green-600 via-green-700 to-green-800 flex flex-col">
-        <SidebarContent className="bg-transparent flex flex-col h-full">
-          {/* Header - Mais bonito no mobile */}
-          <div className={`flex items-center p-3 sm:p-4 border-b border-green-500/20 flex-shrink-0 ${
+    <Sidebar className="bg-white border-r border-gray-200 shadow-sm" collapsible="icon">
+      <div className="h-full bg-white flex flex-col">
+        <SidebarContent className="flex flex-col h-full">
+          {/* Header com altura consistente */}
+          <div className={`flex items-center h-16 px-4 border-b border-gray-200 flex-shrink-0 ${
             isCollapsed ? 'justify-center' : 'justify-between'
           }`}>
             {!isCollapsed && (
-              <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-green-600 rounded-lg flex items-center justify-center">
                   <Sun className="w-5 h-5 text-white" />
                 </div>
-                <h2 className="text-base sm:text-lg font-bold text-white">
+                <h2 className="font-bold text-gray-900">
                   SolarControl
                 </h2>
               </div>
             )}
             
+            {isCollapsed && (
+              <div className="w-8 h-8 bg-green-600 rounded-lg flex items-center justify-center">
+                <Sun className="w-5 h-5 text-white" />
+              </div>
+            )}
+            
             <button
               onClick={toggleSidebar}
-              className="p-2 rounded-lg bg-green-700/40 hover:bg-green-700/60 text-white transition-all duration-200 shadow-sm flex-shrink-0 touch-manipulation"
+              className="p-2 rounded-lg hover:bg-gray-100 text-gray-600 transition-colors"
             >
               {isCollapsed ? (
                 <ChevronRight className="w-4 h-4" />
@@ -75,17 +81,17 @@ export function AppSidebar() {
             </button>
           </div>
 
-          {/* Menu de navegação - Melhorado */}
-          <div className="flex-1 p-3 sm:p-4 overflow-y-auto">
+          {/* Menu de navegação com espaçamento consistente */}
+          <div className="flex-1 p-4 overflow-y-auto">
             <SidebarGroup className="p-0">
               {!isCollapsed && (
-                <SidebarGroupLabel className="text-green-100 px-2 py-2 text-xs font-medium uppercase tracking-wider mb-3 opacity-80">
+                <SidebarGroupLabel className="text-gray-500 px-3 py-2 text-xs font-medium uppercase tracking-wide mb-2">
                   Menu Principal
                 </SidebarGroupLabel>
               )}
               
               <SidebarGroupContent>
-                <SidebarMenu className="space-y-2">
+                <SidebarMenu className="space-y-1">
                   {menuItems.map((item) => (
                     <SidebarMenuItem key={item.title}>
                       <SidebarMenuButton 
@@ -97,21 +103,16 @@ export function AppSidebar() {
                           to={item.url}
                           end
                           className={({ isActive }) => 
-                            `flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 text-white group touch-manipulation ${
+                            `flex items-center gap-3 px-3 py-3 rounded-lg transition-all duration-200 group ${
                               isActive 
-                                ? 'bg-white/20 backdrop-blur-sm text-white shadow-lg border border-white/10' 
-                                : 'hover:bg-white/10 hover:backdrop-blur-sm'
+                                ? 'bg-green-50 text-green-700 border border-green-200' 
+                                : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
                             } ${isCollapsed ? 'justify-center' : ''}`
                           }
                         >
                           <item.icon className="flex-shrink-0 w-5 h-5" />
-                          {/* No mobile sempre mostra o texto quando aberto */}
-                          <span className="font-medium text-sm truncate lg:hidden">
-                            {item.title}
-                          </span>
-                          {/* Desktop: mostra/esconde baseado no estado colapsado */}
                           {!isCollapsed && (
-                            <span className="font-medium text-sm truncate hidden lg:block">
+                            <span className="font-medium text-sm truncate">
                               {item.title}
                             </span>
                           )}
@@ -124,21 +125,21 @@ export function AppSidebar() {
             </SidebarGroup>
           </div>
           
-          {/* Footer - Mais elegante */}
-          <div className="flex-shrink-0 p-3 sm:p-4">
+          {/* Footer com padding consistente */}
+          <div className="flex-shrink-0 p-4 border-t border-gray-200">
             {!isCollapsed ? (
-              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3 border border-white/10">
-                <div className="flex items-center space-x-3">
-                  <div className="w-3 h-3 bg-green-300 rounded-full shadow-sm animate-pulse"></div>
-                  <div className="min-w-0">
-                    <p className="text-white text-sm font-medium">Sistema Online</p>
-                    <p className="text-green-100 text-xs opacity-80 truncate">Todos os serviços ativos</p>
+              <div className="bg-green-50 rounded-lg p-3 border border-green-200">
+                <div className="flex items-center gap-3">
+                  <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                  <div>
+                    <p className="text-green-800 text-sm font-medium">Sistema Online</p>
+                    <p className="text-green-600 text-xs">Todos os serviços ativos</p>
                   </div>
                 </div>
               </div>
             ) : (
               <div className="flex justify-center">
-                <div className="w-3 h-3 bg-green-300 rounded-full shadow-sm animate-pulse"></div>
+                <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
               </div>
             )}
           </div>
