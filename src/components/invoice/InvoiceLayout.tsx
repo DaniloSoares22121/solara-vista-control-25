@@ -1,3 +1,4 @@
+
 import React, { useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
@@ -202,85 +203,86 @@ const InvoiceLayout: React.FC = () => {
             </div>
           </div>
 
-          <div className="p-6 space-y-6">
-            {/* Informações do Cliente e Dados da Fatura */}
+          <div className="p-6 space-y-5">
+            {/* Seção 1: Informações do Cliente e Dados da Fatura */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Coluna Esquerda - Dados do Cliente */}
-              <div className="space-y-2">
-                <h3 className="text-base font-bold text-gray-800 mb-3 border-b border-gray-200 pb-2">DADOS DO CLIENTE</h3>
-                <div className="space-y-1 text-xs">
-                  <p><span className="font-semibold">Cliente:</span> {data.cliente.nome}</p>
-                  <p><span className="font-semibold">CPF:</span> {data.cliente.documento}</p>
-                  <p><span className="font-semibold">Endereço:</span> {data.cliente.endereco}</p>
-                  <p>99999 Q. 18, L. 17, CASA - 02 PARQUE DAS LARANJEIRAS</p>
-                  <p>{data.cliente.cep} {data.cliente.cidade} {data.cliente.uf}</p>
-                </div>
-                <div className="mt-3 pt-3 border-t border-gray-200">
-                  <div className="grid grid-cols-2 gap-3 text-xs text-gray-600">
-                    <p><span className="font-medium">Data de emissão:</span> {data.detalhes.dataEmissao}</p>
-                    <p><span className="font-medium">Nº da Instalação:</span> 1000052091б</p>
-                    <p><span className="font-medium">Classe:</span> Residencial Trifásico</p>
+              {/* Dados do Cliente */}
+              <div className="bg-gray-50 rounded-lg p-4 border">
+                <h3 className="text-sm font-bold text-gray-800 mb-3 pb-2 border-b border-gray-300">DADOS DO CLIENTE</h3>
+                <div className="space-y-2 text-xs">
+                  <div className="grid grid-cols-1 gap-1">
+                    <p><span className="font-semibold text-gray-600">Cliente:</span> {data.cliente.nome}</p>
+                    <p><span className="font-semibold text-gray-600">CPF:</span> {data.cliente.documento}</p>
+                    <p><span className="font-semibold text-gray-600">Endereço:</span> {data.cliente.endereco}</p>
+                    <p className="text-gray-700">99999 Q. 18, L. 17, CASA - 02 PARQUE DAS LARANJEIRAS</p>
+                    <p className="text-gray-700">{data.cliente.cep} {data.cliente.cidade} {data.cliente.uf}</p>
                   </div>
+                </div>
+                <Separator className="my-3" />
+                <div className="grid grid-cols-2 gap-3 text-xs text-gray-600">
+                  <p><span className="font-medium">Data de emissão:</span> {data.detalhes.dataEmissao}</p>
+                  <p><span className="font-medium">Nº da Instalação:</span> 1000052091б</p>
+                  <p><span className="font-medium">Classe:</span> Residencial Trifásico</p>
                 </div>
               </div>
 
-              {/* Coluna Direita - Detalhes da Fatura */}
-              <div>
-                <h3 className="text-base font-bold text-gray-800 mb-3 border-b border-gray-200 pb-2">DETALHES DA FATURA</h3>
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="bg-gradient-to-br from-green-50 to-green-100 p-3 rounded-lg border-l-4 border-green-500 shadow-sm">
+              {/* Detalhes da Fatura */}
+              <div className="bg-gray-50 rounded-lg p-4 border">
+                <h3 className="text-sm font-bold text-gray-800 mb-3 pb-2 border-b border-gray-300">DETALHES DA FATURA</h3>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="bg-white p-3 rounded-lg border-l-4 border-green-500 shadow-sm">
                     <p className="text-xs font-semibold text-gray-600 mb-1">Nº DA FATURA</p>
-                    <p className="text-xl font-bold text-gray-800">{data.numero}</p>
+                    <p className="text-lg font-bold text-gray-800">{data.numero}</p>
                   </div>
-                  <div className="bg-gradient-to-br from-red-50 to-red-100 p-3 rounded-lg border-l-4 border-red-500 shadow-sm">
+                  <div className="bg-white p-3 rounded-lg border-l-4 border-red-500 shadow-sm">
                     <p className="text-xs font-semibold text-gray-600 mb-1">VENCIMENTO</p>
-                    <p className="text-xl font-bold text-gray-800">{data.vencimento}</p>
+                    <p className="text-lg font-bold text-gray-800">{data.vencimento}</p>
                   </div>
-                  <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-3 rounded-lg border-l-4 border-blue-500 shadow-sm">
+                  <div className="bg-white p-3 rounded-lg border-l-4 border-blue-500 shadow-sm">
                     <p className="text-xs font-semibold text-gray-600 mb-1">REFERÊNCIA</p>
-                    <p className="text-xl font-bold text-gray-800">{data.detalhes.referencia}</p>
+                    <p className="text-lg font-bold text-gray-800">{data.detalhes.referencia}</p>
                   </div>
-                  <div className="bg-gradient-to-br from-green-100 to-green-200 p-3 rounded-lg border-l-4 border-green-600 shadow-sm">
+                  <div className="bg-white p-3 rounded-lg border-l-4 border-green-600 shadow-sm">
                     <p className="text-xs font-semibold text-gray-600 mb-1">VALOR A PAGAR</p>
-                    <p className="text-xl font-bold text-green-700">{formatCurrency(data.valor)}</p>
+                    <p className="text-lg font-bold text-green-700">{formatCurrency(data.valor)}</p>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Seção de Economia compactada */}
-            <div className="bg-gradient-to-r from-green-50 to-green-100 p-4 rounded-xl border border-green-200">
+            {/* Seção 2: Economia com Energy Pay */}
+            <div className="bg-gradient-to-r from-green-50 to-green-100 p-5 rounded-xl border border-green-200">
               <div className="flex items-center justify-center mb-4">
                 <div className="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center mr-3 shadow-lg">
                   <span className="text-white text-2xl">🏆</span>
                 </div>
                 <div className="text-center">
-                  <h2 className="text-2xl font-bold text-gray-800">Economia com</h2>
-                  <h2 className="text-2xl font-bold text-green-600">a Energy Pay ✓</h2>
+                  <h2 className="text-xl font-bold text-gray-800">Economia com a Energy Pay ✓</h2>
                 </div>
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="bg-white p-4 rounded-lg border-l-4 border-green-500 shadow-md">
+                <div className="bg-white p-4 rounded-lg border border-green-300 shadow-md">
                   <div className="flex justify-between items-center">
                     <span className="text-sm font-bold text-gray-700">ECONOMIA NO MÊS</span>
-                    <span className="text-2xl font-bold text-green-600">{formatCurrency(data.economiaTotal)}</span>
+                    <span className="text-xl font-bold text-green-600">{formatCurrency(data.economiaTotal)}</span>
                   </div>
                 </div>
-                <div className="bg-white p-4 rounded-lg border-l-4 border-green-500 shadow-md">
+                <div className="bg-white p-4 rounded-lg border border-green-300 shadow-md">
                   <div className="flex justify-between items-center">
                     <span className="text-sm font-bold text-gray-700">ECONOMIA ACUMULADA</span>
-                    <span className="text-2xl font-bold text-green-600">R$ 7.474,01</span>
+                    <span className="text-xl font-bold text-green-600">R$ 7.474,01</span>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Layout Principal - Ajustado para reduzir espaços */}
-            <div className="space-y-6">
-              {/* Histórico de Economia */}
-              <div className="bg-gray-50 p-4 rounded-xl border shadow-sm">
-                <h3 className="text-sm font-bold text-white mb-4 text-center bg-green-600 py-2 rounded-lg">HISTÓRICO DE ECONOMIA</h3>
+            {/* Seção 3: Histórico de Economia */}
+            <div className="bg-white rounded-xl border shadow-sm">
+              <div className="bg-green-600 text-white p-3 rounded-t-xl">
+                <h3 className="text-center font-bold text-sm">HISTÓRICO DE ECONOMIA</h3>
+              </div>
+              <div className="p-4">
                 <div className="space-y-3">
                   {data.historico.slice(0, 6).map((item, index) => (
                     <div key={index} className="flex items-center">
@@ -305,119 +307,133 @@ const InvoiceLayout: React.FC = () => {
                   <span>R$</span>
                 </div>
               </div>
+            </div>
 
-              {/* Fatura Energy Pay */}
+            {/* Seção 4: Fatura Energy Pay */}
+            <div className="bg-white rounded-xl border shadow-sm">
               <div className="bg-green-600 text-white p-3 rounded-t-xl">
-                <h3 className="text-center font-bold text-base">FATURA ENERGY PAY</h3>
+                <h3 className="text-center font-bold text-sm">FATURA ENERGY PAY</h3>
+              </div>
+              <div className="p-4">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs">
+                    <thead>
+                      <tr className="border-b border-gray-300">
+                        <th className="text-left py-2 font-bold text-gray-600">DESCRIÇÃO</th>
+                        <th className="text-center py-2 font-bold text-gray-600">QUANTIDADE</th>
+                        <th className="text-center py-2 font-bold text-gray-600">VALOR A PAGAR</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr className="border-b border-gray-200">
+                        <td className="py-2">Energia elétrica compensada</td>
+                        <td className="text-center py-2 font-medium">8.458 kWh</td>
+                        <td className="text-center py-2 font-bold">{formatCurrency(data.valor)}</td>
+                      </tr>
+                      <tr className="border-b border-gray-200">
+                        <td className="py-2">Desconto ajuste de tarifas</td>
+                        <td className="text-center py-2"></td>
+                        <td className="text-center py-2 font-bold">-R$ 0,00</td>
+                      </tr>
+                      <tr className="border-t-2 border-gray-400 bg-gray-50">
+                        <td className="py-2 font-bold">Total:</td>
+                        <td className="text-center py-2"></td>
+                        <td className="text-center py-2 font-bold text-green-600 text-sm">{formatCurrency(data.valor)}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            {/* Seção 5: Demonstrativo de Economia */}
+            <div className="bg-white rounded-xl border shadow-sm">
+              <div className="bg-green-600 text-white p-3 rounded-t-xl">
+                <h3 className="text-center font-bold text-sm">DEMONSTRATIVO DE ECONOMIA</h3>
               </div>
               
-              <div className="bg-gray-50 border border-t-0 rounded-b-xl p-4 -mt-6">
-                <div className="grid grid-cols-3 gap-4 text-xs font-bold text-gray-600 mb-3 pb-2 border-b border-gray-300">
-                  <span></span>
-                  <span className="text-center">QUANTIDADE</span>
-                  <span className="text-center">VALOR A PAGAR</span>
-                </div>
-                <div className="space-y-2">
-                  <div className="grid grid-cols-3 gap-4 text-xs">
-                    <span>Energia elétrica compensada</span>
-                    <span className="text-center font-medium">8.458 kWh</span>
-                    <span className="text-center font-bold">{formatCurrency(data.valor)}</span>
-                  </div>
-                  <div className="grid grid-cols-3 gap-4 text-xs">
-                    <span>Desconto ajuste de tarifas</span>
-                    <span className="text-center"></span>
-                    <span className="text-center font-bold">-R$ 0,00</span>
-                  </div>
-                </div>
-                <div className="border-t-2 border-gray-400 pt-3 mt-3">
-                  <div className="grid grid-cols-3 gap-4 text-sm font-bold">
-                    <span>Total:</span>
-                    <span></span>
-                    <span className="text-center text-green-600">{formatCurrency(data.valor)}</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Demonstrativo de Economia - Layout Ajustado */}
-              <div className="space-y-4">
-                <div className="bg-green-600 text-white p-3 rounded-t-xl">
-                  <h3 className="text-center font-bold text-sm">DEMONSTRATIVO DE ECONOMIA</h3>
-                </div>
-
+              <div className="p-4 space-y-4">
                 {/* Valor sem Energy Pay */}
-                <div className="bg-gray-50 border border-t-0 p-4 -mt-4">
-                  <h4 className="text-sm font-bold text-green-600 mb-3">VALOR TOTAL DA ENERGIA SEM A ENERGY PAY</h4>
-                  <div className="bg-white p-3 rounded-lg border">
-                    <div className="grid grid-cols-4 gap-2 text-xs font-bold text-gray-600 mb-2 pb-2 border-b">
-                      <span></span>
-                      <span className="text-center">QUANTIDADE</span>
-                      <span className="text-center">TARIFA</span>
-                      <span className="text-center">VALOR A PAGAR</span>
-                    </div>
-                    <div className="grid grid-cols-4 gap-2 text-xs mb-2">
-                      <span>Energia elétrica</span>
-                      <span className="text-center">8.558 kWh</span>
-                      <span className="text-center">R$ 1,01262100</span>
-                      <span className="text-center font-bold">R$ 8.666,01</span>
-                    </div>
-                    <div className="border-t-2 border-gray-300 pt-2">
-                      <div className="grid grid-cols-4 gap-2 text-sm font-bold">
-                        <span>Total:</span>
-                        <span></span>
-                        <span></span>
-                        <span className="text-center">R$ 8.666,01</span>
-                      </div>
-                    </div>
+                <div className="bg-red-50 rounded-lg p-4 border border-red-200">
+                  <h4 className="text-sm font-bold text-red-700 mb-3">VALOR TOTAL DA ENERGIA SEM A ENERGY PAY</h4>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-xs">
+                      <thead>
+                        <tr className="border-b border-red-300">
+                          <th className="text-left py-2 font-bold text-gray-600">DESCRIÇÃO</th>
+                          <th className="text-center py-2 font-bold text-gray-600">QUANTIDADE</th>
+                          <th className="text-center py-2 font-bold text-gray-600">TARIFA</th>
+                          <th className="text-center py-2 font-bold text-gray-600">VALOR</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr className="border-b border-red-200">
+                          <td className="py-2">Energia elétrica</td>
+                          <td className="text-center py-2">8.558 kWh</td>
+                          <td className="text-center py-2">R$ 1,01262100</td>
+                          <td className="text-center py-2 font-bold">R$ 8.666,01</td>
+                        </tr>
+                        <tr className="border-t-2 border-red-400 bg-red-100">
+                          <td className="py-2 font-bold">Total:</td>
+                          <td className="text-center py-2"></td>
+                          <td className="text-center py-2"></td>
+                          <td className="text-center py-2 font-bold text-red-700 text-sm">R$ 8.666,01</td>
+                        </tr>
+                      </tbody>
+                    </table>
                   </div>
                 </div>
 
                 {/* Valor com Energy Pay */}
-                <div className="bg-gray-50 border border-t-0 p-4 -mt-4">
-                  <h4 className="text-sm font-bold text-green-600 mb-3">VALOR TOTAL DA ENERGIA COM A ENERGY PAY</h4>
-                  <div className="bg-white p-3 rounded-lg border">
-                    <div className="grid grid-cols-2 gap-4 text-xs font-bold text-gray-600 mb-2 pb-2 border-b">
-                      <span></span>
-                      <span className="text-center">VALOR A PAGAR</span>
-                    </div>
-                    <div className="space-y-1 text-xs">
-                      <div className="grid grid-cols-2 gap-4">
-                        <span>Energia elétrica não compensada</span>
-                        <span className="text-center">R$ 101,26</span>
-                      </div>
-                      <div className="grid grid-cols-2 gap-4">
-                        <span>Ajuste de tarifas</span>
-                        <span className="text-center">R$ 0,00</span>
-                      </div>
-                      <div className="grid grid-cols-2 gap-4">
-                        <span>Fatura ENERGY PAY</span>
-                        <span className="text-center font-bold">{formatCurrency(data.valor)}</span>
-                      </div>
-                    </div>
-                    <div className="border-t-2 border-gray-300 pt-2 mt-2">
-                      <div className="grid grid-cols-2 gap-4 text-sm font-bold">
-                        <span>Total:</span>
-                        <span className="text-center">R$ 6.385,90</span>
-                      </div>
-                    </div>
+                <div className="bg-green-50 rounded-lg p-4 border border-green-200">
+                  <h4 className="text-sm font-bold text-green-700 mb-3">VALOR TOTAL DA ENERGIA COM A ENERGY PAY</h4>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-xs">
+                      <thead>
+                        <tr className="border-b border-green-300">
+                          <th className="text-left py-2 font-bold text-gray-600">DESCRIÇÃO</th>
+                          <th className="text-center py-2 font-bold text-gray-600">VALOR</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr className="border-b border-green-200">
+                          <td className="py-2">Energia elétrica não compensada</td>
+                          <td className="text-center py-2">R$ 101,26</td>
+                        </tr>
+                        <tr className="border-b border-green-200">
+                          <td className="py-2">Ajuste de tarifas</td>
+                          <td className="text-center py-2">R$ 0,00</td>
+                        </tr>
+                        <tr className="border-b border-green-200">
+                          <td className="py-2">Fatura ENERGY PAY</td>
+                          <td className="text-center py-2 font-bold">{formatCurrency(data.valor)}</td>
+                        </tr>
+                        <tr className="border-t-2 border-green-400 bg-green-100">
+                          <td className="py-2 font-bold">Total:</td>
+                          <td className="text-center py-2 font-bold text-green-700 text-sm">R$ 6.385,90</td>
+                        </tr>
+                      </tbody>
+                    </table>
                   </div>
                 </div>
 
                 {/* Cálculo da Economia */}
-                <div className="bg-green-100 border border-t-0 rounded-b-xl p-4 border-green-300 -mt-4">
-                  <h4 className="text-sm font-bold text-green-600 mb-3 text-center">CÁLCULO DA ECONOMIA</h4>
+                <div className="bg-gradient-to-r from-green-100 to-green-200 rounded-lg p-4 border-2 border-green-400">
+                  <h4 className="text-sm font-bold text-green-700 mb-3 text-center">RESUMO DA ECONOMIA</h4>
                   <div className="space-y-2 text-sm">
-                    <div className="flex justify-between items-center">
-                      <span>Valor total da energia <strong>SEM</strong> A ENERGY PAY</span>
-                      <span className="font-bold">R$ 8.666,01</span>
+                    <div className="flex justify-between items-center py-1">
+                      <span className="text-gray-700">Valor <strong>SEM</strong> Energy Pay:</span>
+                      <span className="font-bold text-red-600">R$ 8.666,01</span>
                     </div>
-                    <div className="flex justify-between items-center">
-                      <span>Valor total da energia <strong>COM</strong> A ENERGY PAY</span>
-                      <span className="font-bold">R$ 6.385,90</span>
+                    <div className="flex justify-between items-center py-1">
+                      <span className="text-gray-700">Valor <strong>COM</strong> Energy Pay:</span>
+                      <span className="font-bold text-green-600">R$ 6.385,90</span>
                     </div>
-                    <div className="border-t-4 border-green-500 pt-3 mt-3 bg-white rounded-lg p-3">
-                      <div className="flex justify-between items-center text-lg font-bold text-green-600">
-                        <span>Total Economizado:</span>
-                        <span>{formatCurrency(data.economiaTotal)}</span>
+                    <Separator className="my-2" />
+                    <div className="bg-white rounded-lg p-3 border-2 border-green-500">
+                      <div className="flex justify-between items-center">
+                        <span className="text-lg font-bold text-green-700">Economia Total:</span>
+                        <span className="text-xl font-bold text-green-600">{formatCurrency(data.economiaTotal)}</span>
                       </div>
                     </div>
                   </div>
@@ -425,36 +441,39 @@ const InvoiceLayout: React.FC = () => {
               </div>
             </div>
 
-            {/* Seção do Rodapé compacta */}
-            <div className="mt-8 space-y-6">
-              <div className="text-center">
-                <p className="text-sm font-bold text-green-600 mb-6 bg-green-50 p-3 rounded-lg border border-green-200">
-                  RECEBEDOR: J7 EMPREENDIMENTOS E CONSULTORIA LTDA - CNPJ: 14.375.534/0001-07
-                </p>
+            {/* Seção 6: Informações de Pagamento */}
+            <div className="bg-white rounded-xl border shadow-sm">
+              <div className="p-4 text-center">
+                <div className="bg-green-50 p-3 rounded-lg border border-green-200 mb-4">
+                  <p className="text-sm font-bold text-green-700">
+                    RECEBEDOR: J7 EMPREENDIMENTOS E CONSULTORIA LTDA
+                  </p>
+                  <p className="text-xs text-green-600 mt-1">CNPJ: 14.375.534/0001-07</p>
+                </div>
                 
                 {/* Código de Barras */}
-                <div className="bg-gray-50 p-4 rounded-xl border">
-                  <div className="font-mono text-base font-bold mb-3 tracking-wider">
+                <div className="bg-gray-50 p-4 rounded-xl border mb-4">
+                  <div className="font-mono text-sm font-bold mb-3 tracking-wider text-center">
                     {data.codigoBarras}
                   </div>
-                  <div className="flex justify-center mb-4">
-                    <div className="h-16 bg-black w-full max-w-lg rounded" style={{
+                  <div className="flex justify-center mb-3">
+                    <div className="h-12 bg-black w-full max-w-md rounded" style={{
                       backgroundImage: `repeating-linear-gradient(90deg, black 0, black 2px, white 2px, white 4px)`
                     }}></div>
                   </div>
-                  <p className="text-xs text-gray-600 max-w-2xl mx-auto leading-relaxed">
-                    Você poderá pagar sua fatura via internet banking pelo app ou site do seu banco, ou imprimir e pagar em qualquer banco ou casa lotérica.
+                  <p className="text-xs text-gray-600 max-w-lg mx-auto leading-relaxed">
+                    Pague via internet banking, app do seu banco, ou imprima e pague em qualquer banco ou casa lotérica.
                   </p>
                 </div>
 
                 {/* QR Code PIX */}
-                <div className="flex justify-center mt-6">
-                  <div className="text-center bg-white p-4 rounded-xl shadow-lg border-2 border-green-200">
-                    <div className="w-32 h-32 mx-auto bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl flex items-center justify-center mb-3 border-2 border-gray-300">
-                      <QrCode className="w-24 h-24 text-gray-400" />
+                <div className="flex justify-center">
+                  <div className="bg-white p-4 rounded-xl shadow-lg border-2 border-green-200">
+                    <div className="w-24 h-24 mx-auto bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center mb-2 border-2 border-gray-300">
+                      <QrCode className="w-16 h-16 text-gray-400" />
                     </div>
-                    <p className="text-base font-bold mb-2 text-gray-800">Pague via PIX</p>
-                    <p className="text-xl font-bold text-green-600">{formatCurrency(data.valor)}</p>
+                    <p className="text-sm font-bold mb-1 text-gray-800">Pague via PIX</p>
+                    <p className="text-lg font-bold text-green-600">{formatCurrency(data.valor)}</p>
                   </div>
                 </div>
               </div>
