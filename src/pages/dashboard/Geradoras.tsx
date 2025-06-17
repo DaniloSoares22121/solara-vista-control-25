@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Users, FileText, Zap, TrendingUp, Activity, Power, ArrowLeft } from 'lucide-react';
+import { Plus, Users, FileText, Zap, TrendingUp, Activity, Power, ArrowLeft, MapPin, Calendar, Building2, Edit, Eye } from 'lucide-react';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { useGenerators } from '@/hooks/useGenerators';
 import GeneratorDetails from '@/components/GeneratorDetails';
@@ -179,7 +179,7 @@ const Geradoras = () => {
             </CardContent>
           </Card>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-8">
             {generators.map((generator) => {
               const totalCapacityGen = generator.plants?.reduce((total: number, plant: any) => {
                 return total + (plant.potenciaTotalUsina || 0);
@@ -189,58 +189,94 @@ const Geradoras = () => {
                 return total + (plant.geracaoProjetada || 0);
               }, 0) || 0;
 
+              // Extrair informações do endereço da primeira usina
+              const firstPlant = generator.plants?.[0];
+              const city = firstPlant?.endereco?.cidade || 'N/A';
+              const state = firstPlant?.endereco?.estado || '';
+
               return (
-                <Card key={generator.id} className="shadow-lg border-0 hover:shadow-xl transition-shadow">
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
-                          <Zap className="w-6 h-6 text-green-600" />
+                <Card key={generator.id} className="group shadow-lg border-0 hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 bg-white overflow-hidden">
+                  <CardHeader className="pb-4 bg-gradient-to-r from-green-50 to-emerald-50 border-b border-green-100">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center gap-4">
+                        <div className="w-14 h-14 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center shadow-lg">
+                          <Zap className="w-7 h-7 text-white" />
                         </div>
-                        <div>
-                          <CardTitle className="text-lg">{generator.owner?.name || 'Geradora'}</CardTitle>
-                          <p className="text-sm text-gray-600">{generator.concessionaria}</p>
+                        <div className="flex-1 min-w-0">
+                          <CardTitle className="text-lg font-bold text-gray-900 truncate">
+                            {generator.owner?.name || 'Geradora'}
+                          </CardTitle>
+                          <div className="flex items-center gap-1 mt-1">
+                            <Building2 className="w-4 h-4 text-gray-500" />
+                            <p className="text-sm text-gray-600 truncate">{generator.concessionaria}</p>
+                          </div>
+                          {(city !== 'N/A' || state) && (
+                            <div className="flex items-center gap-1 mt-1">
+                              <MapPin className="w-4 h-4 text-gray-500" />
+                              <p className="text-sm text-gray-600">{city}{state && `, ${state}`}</p>
+                            </div>
+                          )}
                         </div>
                       </div>
                       <Badge 
-                        className={`${
+                        className={`shrink-0 ${
                           generator.status === 'active' 
-                            ? 'bg-green-100 text-green-800' 
-                            : 'bg-gray-100 text-gray-800'
+                            ? 'bg-green-100 text-green-800 border-green-200' 
+                            : 'bg-gray-100 text-gray-800 border-gray-200'
                         }`}
+                        variant="outline"
                       >
                         {generator.status === 'active' ? 'Ativa' : 'Inativa'}
                       </Badge>
                     </div>
                   </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-2 gap-4 mb-4">
-                      <div>
-                        <p className="text-sm text-gray-600">Usinas</p>
-                        <p className="text-xl font-bold text-gray-900">{generator.plants?.length || 0}</p>
+                  
+                  <CardContent className="p-6">
+                    {/* Estatísticas principais */}
+                    <div className="grid grid-cols-2 gap-6 mb-6">
+                      <div className="text-center p-4 bg-blue-50 rounded-xl border border-blue-100">
+                        <div className="text-2xl font-bold text-blue-700 mb-1">
+                          {generator.plants?.length || 0}
+                        </div>
+                        <p className="text-sm text-blue-600 font-medium">Usinas</p>
                       </div>
-                      <div>
-                        <p className="text-sm text-gray-600">Capacidade</p>
-                        <p className="text-xl font-bold text-gray-900">{totalCapacityGen.toFixed(1)} kWp</p>
+                      <div className="text-center p-4 bg-amber-50 rounded-xl border border-amber-100">
+                        <div className="text-2xl font-bold text-amber-700 mb-1">
+                          {totalCapacityGen.toFixed(1)}
+                        </div>
+                        <p className="text-sm text-amber-600 font-medium">kWp</p>
                       </div>
                     </div>
-                    <div className="mb-4">
-                      <p className="text-sm text-gray-600">Geração Mensal</p>
-                      <p className="text-lg font-semibold text-gray-900">{totalGenerationGen.toFixed(0)} kWh</p>
+
+                    {/* Geração mensal */}
+                    <div className="bg-green-50 rounded-xl p-4 mb-6 border border-green-100">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-green-600 mb-1">Geração Mensal</p>
+                          <p className="text-xl font-bold text-green-700">{totalGenerationGen.toFixed(0)} kWh</p>
+                        </div>
+                        <Activity className="w-8 h-8 text-green-500" />
+                      </div>
                     </div>
-                    <div className="flex gap-2">
+
+                    {/* Botões de ação */}
+                    <div className="flex gap-3">
                       <Button 
                         onClick={() => handleView(generator)}
                         variant="outline" 
-                        className="flex-1"
+                        className="flex-1 group-hover:border-green-300 transition-colors"
+                        size="sm"
                       >
-                        Ver Detalhes
+                        <Eye className="w-4 h-4 mr-2" />
+                        Ver
                       </Button>
                       <Button 
                         onClick={() => handleEdit(generator)}
                         variant="outline"
-                        className="flex-1"
+                        className="flex-1 group-hover:border-blue-300 transition-colors"
+                        size="sm"
                       >
+                        <Edit className="w-4 h-4 mr-2" />
                         Editar
                       </Button>
                     </div>
