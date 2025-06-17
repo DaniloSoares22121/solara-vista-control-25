@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -57,6 +56,12 @@ interface ExtractedInvoiceData {
   
   // Código de barras
   codigoBarras: string;
+  
+  // Dados específicos para EnergyPay
+  energiaInjetada?: number;
+  valorSemEnergyPay?: number;
+  valorComEnergyPay?: number;
+  economia?: number;
 }
 
 interface InvoiceDataExtractorProps {
@@ -126,17 +131,57 @@ export function InvoiceDataExtractor({ file, onDataExtracted, onDataConfirmed }:
   };
 
   const mapApiDataToInterface = (apiData: any): ExtractedInvoiceData => {
-    // Extrair endereço - usar address_partner se disponível, senão usar address
-    const endereco = apiData.address_partner?.street || apiData.address || "Não informado";
-    const cidade = apiData.address_partner?.city || "Não informado";
-    const cep = apiData.address_partner?.zip_code || apiData.zip_code || "Não informado";
+    console.log('Mapeando dados da API:', apiData);
+    
+    // Extrair endereço completo
+    const endereco = apiData.address || "Não informado";
+    
+    // Procurar por energia injetada nos lines
+    const energiaInjetadaLine = apiData.lines?.find((line: any) => 
+      line.description?.toLowerCase().includes('energia elétrica compensada') ||
+      line.description?.toLowerCase().includes('injeção') ||
+      line.description?.toLowerCase().includes('compensada')
+    );
+    
+    // Procurar por energia não compensada
+    const energiaNaoCompensadaLine = apiData.lines?.find((line: any) => 
+      line.description?.toLowerCase().includes('energia elétrica não compensada') ||
+      line.description?.toLowerCase().includes('não compensada')
+    );
+    
+    // Procurar pelo valor total sem EnergyPay
+    const valorSemEnergyPayLine = apiData.lines?.find((line: any) => 
+      line.description?.toLowerCase().includes('valor total da energia sem') ||
+      line.description?.toLowerCase().includes('sem a energy pay')
+    );
+    
+    // Procurar pelo valor com EnergyPay  
+    const valorComEnergyPayLine = apiData.lines?.find((line: any) => 
+      line.description?.toLowerCase().includes('valor total da energia com') ||
+      line.description?.toLowerCase().includes('com a energy pay')
+    );
+    
+    // Calcular valores
+    const energiaInjetada = energiaInjetadaLine?.quantity || parseInt(apiData.invoice_consume || 0);
+    const valorSemEnergyPay = valorSemEnergyPayLine?.total_value || parseFloat(apiData.invoice_value || 0);
+    const valorComEnergyPay = valorComEnergyPayLine?.total_value || parseFloat(apiData.invoice_value || 0);
+    const economia = valorSemEnergyPay - valorComEnergyPay;
+    
+    console.log('Valores calculados:', {
+      energiaInjetada,
+      valorSemEnergyPay,
+      valorComEnergyPay,
+      economia
+    });
     
     const contribIlumPublica = apiData.lines?.find((line: any) => 
-      line.description.includes('CONTRIB') && line.description.includes('ILUM')
+      line.description?.toLowerCase().includes('contrib') && 
+      line.description?.toLowerCase().includes('ilum')
     )?.total_value || 0;
     
     const energiaEletricaValue = apiData.lines?.filter((line: any) => 
-      line.description.includes('CONSUMO') || line.description.includes('ENERGIA')
+      line.description?.toLowerCase().includes('energia elétrica') &&
+      !line.description?.toLowerCase().includes('compensada')
     )?.reduce((total: number, line: any) => total + (line.total_value || 0), 0) || 0;
     
     const historicoConsumo = apiData.historical_lines?.map((item: any) => ({
@@ -146,26 +191,32 @@ export function InvoiceDataExtractor({ file, onDataExtracted, onDataConfirmed }:
     })) || [];
     
     const bandeira = apiData.lines?.find((line: any) => 
-      line.description.includes('BANDEIRA')
+      line.description?.toLowerCase().includes('bandeira')
     );
+    
+    // Extrair cidade e UF do endereço
+    const enderecoPartes = endereco.split(' ');
+    const uf = enderecoPartes.find(parte => parte.length === 2 && parte.match(/^[A-Z]{2}$/)) || "GO";
+    const cidade = enderecoPartes.includes('GOIANIA') ? 'GOIANIA' : 
+                 enderecoPartes.includes('GOIÂNIA') ? 'GOIÂNIA' : "Não informado";
     
     return {
       nomeCliente: apiData.legal_name || "Não informado",
       cpfCnpj: apiData.cnpj_cpf || "Não informado",
       endereco: endereco,
       cidade: cidade,
-      uf: apiData.address?.includes(' GO ') ? 'GO' : "Não informado",
-      cep: cep,
+      uf: uf,
+      cep: apiData.zip_code || "Não informado",
       numeroFatura: apiData.consumer_unit || "Não informado",
       referencia: apiData.month_reference || "Não informado",
       dataEmissao: apiData.emission_date || "Não informado",
       dataVencimento: apiData.expiration_date || "Não informado",
-      valorTotal: parseFloat(apiData.invoice_value || 0),
+      valorTotal: valorComEnergyPay || parseFloat(apiData.invoice_value || 0),
       numeroInstalacao: apiData.consumer_unit || "Não informado",
       classe: apiData.classe || "Não informado",
       subgrupo: apiData.connection || "Não informado",
       modalidadeTarifaria: apiData.invoice_type || "Não informado",
-      consumoKwh: parseInt(apiData.invoice_consume || apiData.measured_energy || 0),
+      consumoKwh: energiaInjetada,
       demandaKw: apiData.demanda_contratada ? parseFloat(apiData.demanda_contratada) : undefined,
       energiaEletrica: energiaEletricaValue,
       contribuicaoIlumPublica: parseFloat(contribIlumPublica),
@@ -175,7 +226,12 @@ export function InvoiceDataExtractor({ file, onDataExtracted, onDataConfirmed }:
       historicoConsumo: historicoConsumo,
       bandeiraTarifaria: bandeira?.description || undefined,
       valorBandeira: bandeira?.total_value ? parseFloat(bandeira.total_value) : undefined,
-      codigoBarras: "Não disponível na API"
+      codigoBarras: "Não disponível na API",
+      // Dados específicos para EnergyPay
+      energiaInjetada: energiaInjetada,
+      valorSemEnergyPay: valorSemEnergyPay,
+      valorComEnergyPay: valorComEnergyPay,
+      economia: economia
     };
   };
 
@@ -191,6 +247,7 @@ export function InvoiceDataExtractor({ file, onDataExtracted, onDataConfirmed }:
   const handleConfirmData = () => {
     if (!editableData) return;
     
+    console.log('Confirmando dados extraídos:', editableData);
     onDataConfirmed?.(editableData);
     toast.success('Dados confirmados! Prosseguindo para o próximo passo.');
   };
@@ -429,18 +486,29 @@ export function InvoiceDataExtractor({ file, onDataExtracted, onDataConfirmed }:
         </CardContent>
       </Card>
 
-      {/* Consumo e Demanda */}
+      {/* Consumo e Energia Injetada */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
             <Zap className="w-5 h-5" />
-            <span>Consumo e Demanda</span>
+            <span>Consumo e Energia Injetada</span>
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <Label htmlFor="consumoKwh">Consumo (kWh)</Label>
+              <Label htmlFor="energiaInjetada">Energia Injetada (kWh)</Label>
+              <Input
+                id="energiaInjetada"
+                type="number"
+                value={editableData.energiaInjetada || editableData.consumoKwh}
+                onChange={(e) => handleInputChange('energiaInjetada', parseInt(e.target.value) || 0)}
+                className="mt-1 bg-blue-50 border-blue-200"
+              />
+              <p className="text-xs text-blue-600 mt-1">Energia compensada pela EnergyPay</p>
+            </div>
+            <div>
+              <Label htmlFor="consumoKwh">Consumo Total (kWh)</Label>
               <Input
                 id="consumoKwh"
                 type="number"
@@ -463,6 +531,55 @@ export function InvoiceDataExtractor({ file, onDataExtracted, onDataConfirmed }:
           </div>
         </CardContent>
       </Card>
+
+      {/* Valores EnergyPay */}
+      {(editableData.valorSemEnergyPay || editableData.valorComEnergyPay || editableData.economia) && (
+        <Card className="border-green-200 bg-green-50">
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2 text-green-800">
+              <DollarSign className="w-5 h-5" />
+              <span>Valores EnergyPay Extraídos</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <Label htmlFor="valorSemEnergyPay">Valor Sem EnergyPay (R$)</Label>
+                <Input
+                  id="valorSemEnergyPay"
+                  type="number"
+                  step="0.01"
+                  value={editableData.valorSemEnergyPay || ''}
+                  onChange={(e) => handleInputChange('valorSemEnergyPay', parseFloat(e.target.value) || 0)}
+                  className="mt-1 bg-red-50 border-red-200"
+                />
+              </div>
+              <div>
+                <Label htmlFor="valorComEnergyPay">Valor Com EnergyPay (R$)</Label>
+                <Input
+                  id="valorComEnergyPay"
+                  type="number"
+                  step="0.01"
+                  value={editableData.valorComEnergyPay || ''}
+                  onChange={(e) => handleInputChange('valorComEnergyPay', parseFloat(e.target.value) || 0)}
+                  className="mt-1 bg-green-50 border-green-200"
+                />
+              </div>
+              <div>
+                <Label htmlFor="economia">Economia (R$)</Label>
+                <Input
+                  id="economia"
+                  type="number"
+                  step="0.01"
+                  value={editableData.economia || ''}
+                  onChange={(e) => handleInputChange('economia', parseFloat(e.target.value) || 0)}
+                  className="mt-1 bg-blue-50 border-blue-200"
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Detalhamento de Valores */}
       <Card>
