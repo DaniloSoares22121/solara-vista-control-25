@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -21,6 +20,8 @@ export default function FaturaManual() {
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedSubscriber, setSelectedSubscriber] = useState<SubscriberRecord | null>(null);
   const [extractedData, setExtractedData] = useState<any>(null);
+  const [energyPayData, setEnergyPayData] = useState<any>(null);
+  const [processCompleted, setProcessCompleted] = useState(false);
 
   const handleSubscriberSelect = (subscriber: SubscriberRecord) => {
     setSelectedSubscriber(subscriber);
@@ -46,9 +47,15 @@ export default function FaturaManual() {
   };
 
   const handleDataConfirmed = (data: any) => {
-    setExtractedData(data);
     console.log('Dados confirmados na página principal:', data);
-    // Aqui você pode implementar a lógica para o próximo passo
+    
+    if (data.extractedData && data.energyPayData) {
+      setExtractedData(data.extractedData);
+      setEnergyPayData(data.energyPayData);
+      setProcessCompleted(true);
+    } else {
+      setExtractedData(data);
+    }
   };
 
   const getStepStatus = (stepId: number) => {
@@ -223,20 +230,71 @@ export default function FaturaManual() {
         {extractedData && (
           <Card className="border-blue-200 bg-blue-50">
             <CardHeader>
-              <CardTitle className="text-blue-800">Dados Confirmados</CardTitle>
+              <CardTitle className="text-blue-800">Dados da Fatura Extraídos</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-blue-700 mb-2">
-                Dados da fatura foram confirmados e estão prontos para o próximo passo.
+                Dados da fatura extraídos e confirmados.
               </p>
               <details>
                 <summary className="cursor-pointer font-medium text-blue-700 hover:text-blue-900">
-                  Ver dados confirmados
+                  Ver dados da fatura
                 </summary>
                 <pre className="mt-2 text-xs bg-white p-3 rounded border overflow-auto max-h-64">
                   {JSON.stringify(extractedData, null, 2)}
                 </pre>
               </details>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Debug - Dados EnergyPay */}
+        {energyPayData && (
+          <Card className="border-green-200 bg-green-50">
+            <CardHeader>
+              <CardTitle className="text-green-800">Cálculos EnergyPay</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-green-700 mb-2">
+                Cálculos da fatura EnergyPay confirmados.
+              </p>
+              <details>
+                <summary className="cursor-pointer font-medium text-green-700 hover:text-green-900">
+                  Ver cálculos EnergyPay
+                </summary>
+                <pre className="mt-2 text-xs bg-white p-3 rounded border overflow-auto max-h-64">
+                  {JSON.stringify(energyPayData, null, 2)}
+                </pre>
+              </details>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Processo Completo */}
+        {processCompleted && (
+          <Card className="border-green-200 bg-green-50">
+            <CardHeader>
+              <CardTitle className="text-green-800">Processo Concluído!</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-green-700 mb-4">
+                A fatura foi processada com sucesso. Todos os dados foram extraídos e os cálculos da EnergyPay foram realizados.
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                <div className="bg-white p-3 rounded border">
+                  <h4 className="font-medium text-gray-800 mb-2">Dados da Fatura</h4>
+                  <p>Cliente: {extractedData?.nomeCliente}</p>
+                  <p>UC: {extractedData?.numeroFatura}</p>
+                  <p>Valor Original: R$ {extractedData?.valorTotal?.toFixed(2)}</p>
+                  <p>Consumo: {extractedData?.consumoKwh} kWh</p>
+                </div>
+                <div className="bg-white p-3 rounded border">
+                  <h4 className="font-medium text-gray-800 mb-2">Cálculo EnergyPay</h4>
+                  <p>Desconto: {energyPayData?.percentualDesconto}%</p>
+                  <p>Valor com EnergyPay: R$ {energyPayData?.valorComEnergyPay?.toFixed(2)}</p>
+                  <p>Economia: R$ {energyPayData?.economiaMes?.toFixed(2)}</p>
+                </div>
+              </div>
             </CardContent>
           </Card>
         )}

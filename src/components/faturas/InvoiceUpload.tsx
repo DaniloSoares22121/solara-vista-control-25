@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,6 +9,7 @@ import { Upload, FileText, CheckCircle2, AlertCircle, ArrowRight } from 'lucide-
 import { SubscriberRecord } from '@/services/supabaseSubscriberService';
 import { InvoiceDataExtractor } from './InvoiceDataExtractor';
 import { toast } from 'sonner';
+import { EnergyPayCalculator } from './EnergyPayCalculator';
 
 interface InvoiceUploadProps {
   subscriber: SubscriberRecord;
@@ -23,6 +23,10 @@ export function InvoiceUpload({ subscriber, onDataConfirmed }: InvoiceUploadProp
   const [uploaded, setUploaded] = useState(false);
   const [showExtractedData, setShowExtractedData] = useState(false);
   const [dataConfirmed, setDataConfirmed] = useState(false);
+  
+  const [energyPayData, setEnergyPayData] = useState<any>(null);
+  const [showEnergyPayCalculator, setShowEnergyPayCalculator] = useState(false);
+  const [calculationConfirmed, setCalculationConfirmed] = useState(false);
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = event.target.files?.[0];
@@ -83,7 +87,17 @@ export function InvoiceUpload({ subscriber, onDataConfirmed }: InvoiceUploadProp
   const handleDataConfirmed = (data: any) => {
     console.log('Dados confirmados:', data);
     setDataConfirmed(true);
-    onDataConfirmed?.(data);
+    setShowEnergyPayCalculator(true);
+  };
+
+  const handleCalculationConfirmed = (data: any) => {
+    console.log('Cálculo EnergyPay confirmado:', data);
+    setEnergyPayData(data);
+    setCalculationConfirmed(true);
+    onDataConfirmed?.({ 
+      extractedData: extractedData, 
+      energyPayData: data 
+    });
   };
 
   const subscriberData = subscriber.subscriber;
@@ -218,20 +232,31 @@ export function InvoiceUpload({ subscriber, onDataConfirmed }: InvoiceUploadProp
         />
       )}
 
-      {/* Dados Confirmados */}
-      {dataConfirmed && (
+      {/* Calculadora EnergyPay */}
+      {showEnergyPayCalculator && extractedData && !calculationConfirmed && (
+        <EnergyPayCalculator
+          valorOriginal={extractedData.valorTotal}
+          percentualDesconto={subscriber.plan_contract?.discountPercentage || 0}
+          consumoKwh={extractedData.consumoKwh}
+          referencia={extractedData.referencia}
+          onCalculationConfirmed={handleCalculationConfirmed}
+        />
+      )}
+
+      {/* Processo Completo */}
+      {calculationConfirmed && energyPayData && (
         <Card className="border-green-200 bg-green-50">
           <CardContent className="pt-6">
             <div className="text-center py-8">
               <CheckCircle2 className="h-16 w-16 text-green-600 mx-auto mb-4" />
               <h3 className="text-lg font-semibold text-green-600 mb-2">
-                Dados Confirmados!
+                Processo Concluído!
               </h3>
               <p className="text-muted-foreground mb-4">
-                Os dados da fatura foram confirmados e estão prontos para o próximo passo
+                A fatura foi processada e os cálculos da EnergyPay foram confirmados
               </p>
               <div className="flex items-center justify-center space-x-2 text-blue-600">
-                <span>Aguardando próximo passo</span>
+                <span>Pronto para próximo passo</span>
                 <ArrowRight className="w-4 h-4" />
               </div>
             </div>
