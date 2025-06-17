@@ -1,3 +1,4 @@
+
 import React, { useState, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { FileInput } from '@/components/ui/file-input';
 import { EnergyPayCalculator } from './EnergyPayCalculator';
 import { formatCurrency } from '@/utils/formatters';
-import { CheckCircle2 } from 'lucide-react';
+import { CheckCircle2, Upload, FileText } from 'lucide-react';
 import { SubscriberRecord } from '@/services/supabaseSubscriberService';
 
 interface InvoiceUploadProps {
@@ -25,7 +26,9 @@ export function InvoiceUpload({ subscriber, onDataConfirmed }: InvoiceUploadProp
     setShowCalculator(false);
   };
 
-  const handleConfirmData = () => {
+  const handleExtractData = () => {
+    if (!file) return;
+    
     // Simulação de extração de dados da fatura
     const mockExtractedData = {
       nomeCliente: 'Nome do Cliente Mock',
@@ -36,6 +39,9 @@ export function InvoiceUpload({ subscriber, onDataConfirmed }: InvoiceUploadProp
     };
 
     setExtractedData(mockExtractedData);
+  };
+
+  const handleConfirmData = () => {
     setShowCalculator(true);
   };
 
@@ -49,14 +55,46 @@ export function InvoiceUpload({ subscriber, onDataConfirmed }: InvoiceUploadProp
       {/* File Upload Section */}
       <Card className="border-0 shadow-lg">
         <CardHeader>
-          <CardTitle>Upload da Fatura</CardTitle>
+          <CardTitle className="flex items-center space-x-2">
+            <Upload className="w-5 h-5 text-green-600" />
+            <span>Upload da Fatura</span>
+          </CardTitle>
         </CardHeader>
-        <CardContent>
-          <FileInput onFileChange={handleFileChange} />
+        <CardContent className="space-y-4">
+          <div>
+            <Label htmlFor="file-upload" className="text-sm font-medium text-gray-700 mb-2 block">
+              Selecione o arquivo da fatura da Equatorial
+            </Label>
+            <FileInput 
+              onFileChange={handleFileChange}
+              accept=".pdf,.jpg,.jpeg,.png"
+            />
+          </div>
+          
           {file && (
-            <div className="mt-4">
-              <Label>Arquivo selecionado:</Label>
-              <p>{file.name}</p>
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+              <div className="flex items-center space-x-3">
+                <FileText className="w-5 h-5 text-green-600" />
+                <div className="flex-1">
+                  <Label className="text-green-700 font-medium">Arquivo selecionado:</Label>
+                  <p className="text-green-800 font-semibold">{file.name}</p>
+                  <p className="text-sm text-green-600">
+                    Tamanho: {(file.size / (1024 * 1024)).toFixed(2)} MB
+                  </p>
+                </div>
+              </div>
+              
+              {!extractedData && (
+                <div className="mt-4 flex justify-end">
+                  <Button 
+                    onClick={handleExtractData}
+                    className="bg-green-600 hover:bg-green-700"
+                  >
+                    <FileText className="w-4 h-4 mr-2" />
+                    Extrair Dados da Fatura
+                  </Button>
+                </div>
+              )}
             </div>
           )}
         </CardContent>
