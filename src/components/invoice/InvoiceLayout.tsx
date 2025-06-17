@@ -307,17 +307,17 @@ const InvoiceLayout: React.FC = () => {
                   <h3 className="text-center font-bold text-xs">HISTÓRICO DE ECONOMIA</h3>
                 </div>
                 <div className="p-2">
-                  <div className="space-y-1">
+                  <div className="space-y-1.5">
                     {data.historico.slice(0, 6).map((item, index) => (
-                      <div key={index} className="flex items-center gap-1">
-                        <span className="font-bold text-gray-600 w-12 text-xs font-mono">{item.mes}</span>
-                        <div className="flex-1 bg-gray-200 rounded-full h-2 relative overflow-hidden flex items-center">
+                      <div key={index} className="grid grid-cols-[auto_1fr_auto] gap-1 items-center">
+                        <span className="font-bold text-gray-600 text-xs font-mono w-14">{item.mes}</span>
+                        <div className="bg-gray-200 rounded-full h-2 relative overflow-hidden">
                           <div 
                             className="bg-green-500 h-2 rounded-full" 
                             style={{ width: `${Math.max(25, (item.valor / 2500) * 100)}%` }}
                           ></div>
                         </div>
-                        <span className="text-xs font-bold text-green-600 w-16 text-right">{formatCurrency(item.valor)}</span>
+                        <span className="text-xs font-bold text-green-600 text-right w-16">{formatCurrency(item.valor)}</span>
                       </div>
                     ))}
                   </div>
