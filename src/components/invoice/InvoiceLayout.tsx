@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { formatCurrency, formatDate } from '@/utils/formatters';
 import { QrCode, Download } from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer } from 'recharts';
 import { generateCustomPDF } from '@/services/pdfService';
 import { useToast } from '@/hooks/use-toast';
 
@@ -45,14 +44,14 @@ const mockInvoiceData: InvoiceData = {
   valor: 6284.64,
   cliente: {
     nome: "FERNANDO HUGO MACHADO DE REZENDE",
-    documento: "000.745.35-03",
+    documento: "000.745.351-53",
     endereco: "AV FLAMBOYANT",
     cidade: "Goiânia",
     uf: "GO",
-    cep: "74000-000"
+    cep: "74855-340"
   },
   consumo: {
-    energiaConvencional: { quantidade: 8458, valorUnit: 1.073200, total: 8666.01 },
+    energiaConvencional: { quantidade: 8558, valorUnit: 1.01262100, total: 8666.01 },
     descontoTarifa: { quantidade: 100, valorUnit: 0, total: 0 },
     economiaMes: { quantidade: 1, valorUnit: -2280.11, total: -2280.11 }
   },
@@ -82,11 +81,6 @@ const InvoiceLayout: React.FC = () => {
   const location = useLocation();
 
   const isLayoutRoute = location.pathname === '/fatura-layout';
-
-  const chartData = data.historico.map(item => ({
-    mes: item.mes.split('/')[0],
-    valor: item.valor
-  }));
 
   const handleGenerateAndSavePDF = async () => {
     try {
@@ -181,260 +175,158 @@ const InvoiceLayout: React.FC = () => {
         </div>
 
         {/* Invoice content with ref */}
-        <div id="invoice-layout" ref={invoiceRef} className="bg-white">
+        <div id="invoice-layout" ref={invoiceRef} className="bg-white border border-gray-300" style={{ width: '210mm', minHeight: '297mm', fontSize: '10pt' }}>
           {/* Header */}
-          <div className="bg-gradient-to-r from-green-400 to-teal-400 p-6 rounded-t-lg relative">
-            <div className="flex justify-between items-start">
+          <div className="p-4">
+            <div className="flex justify-between items-start mb-4">
               <div>
-                <h1 className="text-white text-4xl font-bold mb-2">energy</h1>
-                <h1 className="text-white text-4xl font-bold">PAY</h1>
+                <h1 className="text-blue-600 text-xl font-bold uppercase">energy</h1>
+                <h1 className="text-blue-600 text-xl font-bold uppercase">PAY</h1>
               </div>
-              <div className="text-white text-right">
-                <p className="text-sm">📱 (62) 3140-7070</p>
-                <p className="text-sm">energypay.me</p>
-                <p className="text-xs mt-2">Av. Antônio Fidélis, 205</p>
-                <p className="text-xs">Parque Amazônia • 74545-090</p>
-                <p className="text-xs">Goiânia • GO</p>
+              <div className="text-right text-xs">
+                <p>Av. Antônio Fidelis, 205</p>
+                <p>Parque Amazônia - 74840-090</p>
+                <p>Goiânia - GO</p>
               </div>
             </div>
-          </div>
 
-          {/* Client Info */}
-          <div className="bg-gray-100 p-4 border-l-4 border-teal-400">
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div>
+            {/* Client Info */}
+            <div className="mb-4">
+              <div className="text-sm">
                 <p><strong>Cliente:</strong> {data.cliente.nome}</p>
                 <p><strong>CPF:</strong> {data.cliente.documento}</p>
                 <p><strong>Endereço:</strong> {data.cliente.endereco}</p>
-                <p className="text-xs text-gray-600">74545-090 • GOIÂNIA GO</p>
-              </div>
-              <div>
-                <p><strong>Data de emissão:</strong> {data.detalhes.dataEmissao}</p>
-                <p><strong>N° da instalação:</strong> 100005059516 <strong>Classe:</strong> Residencial Trifásico</p>
+                <p>99999 Q. 18, L. 17, CASA - 02 PARQUE DAS LARANJEIRAS</p>
+                <p>{data.cliente.cep} {data.cliente.cidade} {data.cliente.uf}</p>
               </div>
             </div>
-          </div>
 
-          {/* Invoice Details */}
-          <div className="grid grid-cols-3 gap-4 p-4 bg-white">
-            <div className="text-center border border-teal-400 p-3 rounded">
-              <p className="text-xs text-gray-600">N.° DA FATURA:</p>
-              <p className="font-bold text-lg">{data.numero}</p>
+            {/* Invoice Details Table */}
+            <div className="mb-4">
+              <table className="w-full border-collapse border border-black text-sm">
+                <tr>
+                  <td className="border border-black p-2">Data de emissão: {data.detalhes.dataEmissao}</td>
+                  <td className="border border-black p-2">Nº da Instalação: 100005059516</td>
+                  <td className="border border-black p-2">Classe: Residencial Trifásico</td>
+                  <td className="border border-black p-2"></td>
+                </tr>
+                <tr>
+                  <td className="border border-black p-2"><strong>Nº DA FATURA: {data.numero}</strong></td>
+                  <td className="border border-black p-2"><strong>VENCIMENTO: {data.vencimento}</strong></td>
+                  <td className="border border-black p-2"><strong>REF: {data.detalhes.referencia}</strong></td>
+                  <td className="border border-black p-2 text-red-600"><strong>VALOR A PAGAR: {formatCurrency(data.valor)}</strong></td>
+                </tr>
+              </table>
             </div>
-            <div className="text-center border border-teal-400 p-3 rounded">
-              <p className="text-xs text-gray-600">VENCIMENTO:</p>
-              <p className="font-bold text-lg">{data.vencimento}</p>
-            </div>
-            <div className="text-center border border-teal-400 p-3 rounded">
-              <p className="text-xs text-gray-600">REF.:</p>
-              <p className="font-bold text-lg">{data.detalhes.referencia}</p>
-            </div>
-          </div>
 
-          <div className="text-center p-2">
-            <p className="text-xs text-gray-600">VALOR A PAGAR:</p>
-            <p className="font-bold text-3xl text-black">{formatCurrency(data.valor)}</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4">
             {/* Economia Section */}
-            <div>
-              <div className="bg-white border border-gray-200 rounded-lg p-4">
-                <div className="flex items-center gap-2 mb-4">
-                  <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                    <span className="text-green-600 text-sm">💰</span>
-                  </div>
-                  <h3 className="font-bold text-lg">Economia com</h3>
-                </div>
-                <h3 className="font-bold text-lg text-green-600 mb-2">a Energy Pay ✓</h3>
-                
-                <div className="space-y-2 mb-4">
-                  <div className="flex justify-between">
-                    <span className="text-sm">ECONOMIA NO MÊS</span>
-                    <span className="font-bold">{formatCurrency(data.economiaTotal)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm">ECONOMIA ACUMULADA</span>
-                    <span className="font-bold">R$ 7.474,01</span>
-                  </div>
-                </div>
-
-                <div className="bg-gray-50 p-3 rounded">
-                  <h4 className="font-bold text-sm mb-2">HISTÓRICO DE ECONOMIA</h4>
-                  <div className="h-32">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={chartData}>
-                        <XAxis 
-                          dataKey="mes" 
-                          axisLine={false}
-                          tickLine={false}
-                          tick={{ fontSize: 10 }}
-                        />
-                        <YAxis hide />
-                        <Bar 
-                          dataKey="valor" 
-                          fill="#10b981" 
-                          radius={[2, 2, 0, 0]}
-                        />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Fatura Energy Pay Section */}
-            <div>
-              <div className="bg-green-500 text-white p-3 rounded-t text-center">
-                <h3 className="font-bold">FATURA ENERGY PAY</h3>
-              </div>
+            <div className="mb-4">
+              <h2 className="text-center font-bold uppercase text-lg mb-3">Economia com a Energy Pay</h2>
               
-              <div className="border border-green-500 border-t-0 p-4 rounded-b">
-                <div className="grid grid-cols-3 gap-2 text-xs mb-3">
-                  <div className="text-center">
-                    <p>QUANTIDADE</p>
-                  </div>
-                  <div className="text-center">
-                    <p>VALOR A PAGAR</p>
-                  </div>
-                  <div></div>
+              <div className="flex justify-between mb-4">
+                <div className="w-45% text-center border border-black p-3">
+                  <p className="font-bold">ECONOMIA NO MÊS</p>
+                  <p className="text-green-600 font-bold text-lg">{formatCurrency(data.economiaTotal)}</p>
                 </div>
-                
-                <div className="grid grid-cols-3 gap-2 text-sm mb-2">
-                  <div>
-                    <p>Energia elétrica compensada</p>
-                  </div>
-                  <div className="text-center">
-                    <p>8.458 kWh</p>
-                  </div>
-                  <div className="text-right">
-                    <p>R$ 6.284,64</p>
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-3 gap-2 text-sm mb-2">
-                  <div>
-                    <p>Desconto ajuste de tarifas</p>
-                  </div>
-                  <div></div>
-                  <div className="text-right">
-                    <p>-R$ 0,00</p>
-                  </div>
-                </div>
-                
-                <Separator className="my-2" />
-                
-                <div className="grid grid-cols-3 gap-2 text-sm font-bold">
-                  <div>
-                    <p>Total:</p>
-                  </div>
-                  <div></div>
-                  <div className="text-right">
-                    <p>R$ 6.284,64</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Demonstrativo Section */}
-              <div className="mt-4">
-                <div className="bg-green-500 text-white p-2 rounded-t text-center">
-                  <h4 className="font-bold text-sm">DEMONSTRATIVO DE ECONOMIA</h4>
-                </div>
-                
-                <div className="border border-green-500 border-t-0 p-3 rounded-b">
-                  <div className="text-center mb-2">
-                    <p className="text-xs text-green-600">VALOR TOTAL DA ENERGIA SEM A ENERGY PAY</p>
-                  </div>
-                  
-                  <div className="space-y-1 text-xs mb-3">
-                    <div className="grid grid-cols-3 gap-2">
-                      <span>Energia elétrica</span>
-                      <span className="text-center">8.558 kWh</span>
-                      <span className="text-right">R$ 8.666,01</span>
-                    </div>
-                    <div className="grid grid-cols-3 gap-2 font-bold">
-                      <span>Total:</span>
-                      <span></span>
-                      <span className="text-right">R$ 8.666,01</span>
-                    </div>
-                  </div>
-
-                  <div className="text-center mb-2">
-                    <p className="text-xs text-green-600">VALOR TOTAL DA ENERGIA COM A ENERGY PAY</p>
-                  </div>
-                  
-                  <div className="space-y-1 text-xs mb-3">
-                    <div className="grid grid-cols-3 gap-2">
-                      <span>Energia elétrica não compensada</span>
-                      <span className="text-center">100 kWh</span>
-                      <span className="text-right">R$ 385,90</span>
-                    </div>
-                    <div className="grid grid-cols-3 gap-2">
-                      <span>Ajuste de tarifas</span>
-                      <span></span>
-                      <span className="text-right">-R$ 0,00</span>
-                    </div>
-                    <div className="grid grid-cols-3 gap-2">
-                      <span>Fatura ENERGY PAY</span>
-                      <span></span>
-                      <span className="text-right">R$ 6.284,64</span>
-                    </div>
-                    <div className="grid grid-cols-3 gap-2 font-bold">
-                      <span>Total:</span>
-                      <span></span>
-                      <span className="text-right">R$ 6.385,90</span>
-                    </div>
-                  </div>
-
-                  <div className="bg-green-50 p-2 rounded">
-                    <div className="text-center">
-                      <p className="text-xs font-bold text-green-800">CÁLCULO DA ECONOMIA</p>
-                      <div className="grid grid-cols-2 gap-2 text-xs mt-1">
-                        <div>
-                          <p>Valor total da energia SEM A ENERGY PAY</p>
-                          <p>Valor total da energia COM A ENERGY PAY</p>
-                        </div>
-                        <div className="text-right">
-                          <p>R$ 8.666,01</p>
-                          <p>R$ 6.385,90</p>
-                        </div>
-                      </div>
-                      <div className="border-t border-green-200 mt-1 pt-1">
-                        <div className="flex justify-between font-bold text-green-800">
-                          <span>Total Economizado:</span>
-                          <span>{formatCurrency(data.economiaTotal)}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                <div className="w-45% text-center border border-black p-3">
+                  <p className="font-bold">ECONOMIA ACUMULADA</p>
+                  <p className="text-green-600 font-bold text-lg">R$ 7.474,01</p>
                 </div>
               </div>
             </div>
-          </div>
 
-          {/* PIX Payment Section */}
-          <div className="flex justify-center mt-6 mb-4">
-            <div className="bg-white border-2 border-gray-300 rounded-lg p-4 text-center max-w-xs">
-              <div className="w-32 h-32 mx-auto bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center mb-3">
-                <QrCode className="w-20 h-20 text-gray-400" />
+            {/* Historical Savings */}
+            <div className="mb-4">
+              <h3 className="text-center font-bold uppercase text-lg mb-3">HISTÓRICO DE ECONOMIA</h3>
+              
+              {/* Sem Energy Pay */}
+              <div className="mb-3">
+                <p className="font-bold mb-2">VALOR TOTAL DA ENERGIA SEM A ENERGY PAY</p>
+                <table className="w-full border-collapse border border-black text-sm">
+                  <tr>
+                    <td className="border border-black p-1 w-1/2">Energia elétrica</td>
+                    <td className="border border-black p-1 w-15% text-center">8.558 kWh</td>
+                    <td className="border border-black p-1 w-15% text-center">R$ 1,01262100</td>
+                    <td className="border border-black p-1 w-1/5 text-right">R$ 8.666,01</td>
+                  </tr>
+                  <tr>
+                    <td className="border border-black p-1 font-bold" colSpan={4}>Total: R$ 8.666,01</td>
+                  </tr>
+                </table>
               </div>
-              <p className="text-xs text-gray-600 mb-2">Pague via PIX</p>
-              <p className="text-lg font-bold">{formatCurrency(data.valor)}</p>
+
+              {/* Com Energy Pay */}
+              <div className="mb-3">
+                <p className="font-bold mb-2">VALOR TOTAL DA ENERGIA COM A ENERGY PAY</p>
+                <table className="w-full border-collapse border border-black text-sm">
+                  <tr>
+                    <td className="border border-black p-1 w-4/5">Energia elétrica não compensada</td>
+                    <td className="border border-black p-1 w-1/5 text-right">R$ 101,26</td>
+                  </tr>
+                  <tr>
+                    <td className="border border-black p-1">Ajuste de tarifas</td>
+                    <td className="border border-black p-1 text-right">R$ 0,00</td>
+                  </tr>
+                  <tr>
+                    <td className="border border-black p-1">Fatura ENERGY PAY</td>
+                    <td className="border border-black p-1 text-right">{formatCurrency(data.valor)}</td>
+                  </tr>
+                  <tr>
+                    <td className="border border-black p-1 font-bold" colSpan={2}>Total: R$ 6.385,90</td>
+                  </tr>
+                </table>
+              </div>
+
+              {/* Cálculo da Economia */}
+              <div className="mb-4">
+                <p className="font-bold mb-2">CÁLCULO DA ECONOMIA</p>
+                <table className="w-full border-collapse border border-black text-sm">
+                  <tr>
+                    <td className="border border-black p-1 w-4/5">Valor total da energia SEM A ENERGY PAY</td>
+                    <td className="border border-black p-1 w-1/5 text-right">R$ 8.666,01</td>
+                  </tr>
+                  <tr>
+                    <td className="border border-black p-1">Valor total da energia COM A ENERGY PAY</td>
+                    <td className="border border-black p-1 text-right">R$ 6.385,90</td>
+                  </tr>
+                  <tr>
+                    <td className="border border-black p-1 font-bold" colSpan={2}>Total Economizado: {formatCurrency(data.economiaTotal)}</td>
+                  </tr>
+                </table>
+              </div>
             </div>
-          </div>
 
-          {/* Footer */}
-          <div className="bg-gray-100 p-4 rounded-b-lg">
-            <div className="text-center text-xs">
-              <p><strong>RECEBEDOR:</strong> J7 EMPREENDIMENTOS E CONSULTORIA LTDA - CNPJ: 14.375.534/0001-07</p>
-              <div className="mt-2 font-mono text-xs">
-                {data.codigoBarras}
+            {/* PIX QR Code */}
+            <div className="flex justify-center mb-4">
+              <div className="text-center">
+                <div className="w-32 h-32 mx-auto bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center mb-2">
+                  <QrCode className="w-24 h-24 text-gray-400" />
+                </div>
+                <p className="text-xs">Pague via PIX</p>
+                <p className="font-bold">{formatCurrency(data.valor)}</p>
               </div>
-              <div className="flex justify-center mt-2">
-                <div className="h-12 bg-black bg-opacity-20 w-full max-w-md rounded" style={{
-                  backgroundImage: `repeating-linear-gradient(90deg, black 0, black 2px, transparent 2px, transparent 4px)`
-                }}></div>
+            </div>
+
+            {/* Footer */}
+            <div className="mt-4">
+              <p className="text-center text-sm mb-2">
+                <strong>RECEBEDOR:</strong> J7 EMPREENDIMENTOS E CONSULTORIA LTDA - CNPJ: 14.375.534/0001-07
+              </p>
+              
+              <div className="text-center mb-2">
+                <div className="font-mono text-xs mb-1">
+                  {data.codigoBarras}
+                </div>
+                <div className="flex justify-center">
+                  <div className="h-12 bg-black bg-opacity-20 w-full max-w-md rounded" style={{
+                    backgroundImage: `repeating-linear-gradient(90deg, black 0, black 2px, transparent 2px, transparent 4px)`
+                  }}></div>
+                </div>
               </div>
+
+              <p className="text-center text-xs">
+                Você poderá pagar sua fatura via internet banking pelo app ou site do seu banco, ou imprimir e pagar em qualquer banco ou casa lotérica.
+              </p>
             </div>
           </div>
         </div>
