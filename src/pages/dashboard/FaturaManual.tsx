@@ -20,6 +20,7 @@ const steps = [
 export default function FaturaManual() {
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedSubscriber, setSelectedSubscriber] = useState<SubscriberRecord | null>(null);
+  const [extractedData, setExtractedData] = useState<any>(null);
 
   const handleSubscriberSelect = (subscriber: SubscriberRecord) => {
     setSelectedSubscriber(subscriber);
@@ -41,6 +42,13 @@ export default function FaturaManual() {
   const handleReset = () => {
     setCurrentStep(1);
     setSelectedSubscriber(null);
+    setExtractedData(null);
+  };
+
+  const handleDataConfirmed = (data: any) => {
+    setExtractedData(data);
+    console.log('Dados confirmados na página principal:', data);
+    // Aqui você pode implementar a lógica para o próximo passo
   };
 
   const getStepStatus = (stepId: number) => {
@@ -59,7 +67,10 @@ export default function FaturaManual() {
         ) : null;
       case 3:
         return selectedSubscriber ? (
-          <InvoiceUpload subscriber={selectedSubscriber} />
+          <InvoiceUpload 
+            subscriber={selectedSubscriber} 
+            onDataConfirmed={handleDataConfirmed}
+          />
         ) : null;
       default:
         return null;
@@ -206,6 +217,28 @@ export default function FaturaManual() {
               )}
             </div>
           </div>
+        )}
+
+        {/* Debug - Dados Confirmados */}
+        {extractedData && (
+          <Card className="border-blue-200 bg-blue-50">
+            <CardHeader>
+              <CardTitle className="text-blue-800">Dados Confirmados</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-blue-700 mb-2">
+                Dados da fatura foram confirmados e estão prontos para o próximo passo.
+              </p>
+              <details>
+                <summary className="cursor-pointer font-medium text-blue-700 hover:text-blue-900">
+                  Ver dados confirmados
+                </summary>
+                <pre className="mt-2 text-xs bg-white p-3 rounded border overflow-auto max-h-64">
+                  {JSON.stringify(extractedData, null, 2)}
+                </pre>
+              </details>
+            </CardContent>
+          </Card>
         )}
       </div>
     </DashboardLayout>

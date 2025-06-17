@@ -1,8 +1,13 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
-import { Loader2, FileText, User, Zap, DollarSign, Calendar, Hash, MapPin, Phone, Building2, AlertCircle } from 'lucide-react';
+import { Loader2, FileText, User, Zap, DollarSign, Calendar, Hash, MapPin, Phone, Building2, AlertCircle, ArrowRight, Save } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/utils/formatters';
 import { toast } from 'sonner';
 
@@ -57,12 +62,15 @@ interface ExtractedInvoiceData {
 interface InvoiceDataExtractorProps {
   file: File;
   onDataExtracted: (data: ExtractedInvoiceData) => void;
+  onDataConfirmed?: (data: ExtractedInvoiceData) => void;
 }
 
-export function InvoiceDataExtractor({ file, onDataExtracted }: InvoiceDataExtractorProps) {
+export function InvoiceDataExtractor({ file, onDataExtracted, onDataConfirmed }: InvoiceDataExtractorProps) {
   const [extracting, setExtracting] = useState(false);
   const [extractedData, setExtractedData] = useState<ExtractedInvoiceData | null>(null);
+  const [editableData, setEditableData] = useState<ExtractedInvoiceData | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
     if (file) {
@@ -102,6 +110,8 @@ export function InvoiceDataExtractor({ file, onDataExtracted }: InvoiceDataExtra
       const mappedData: ExtractedInvoiceData = mapApiDataToInterface(apiData);
       
       setExtractedData(mappedData);
+      setEditableData(mappedData);
+      setIsEditing(true);
       onDataExtracted(mappedData);
       toast.success('Dados da fatura extraídos com sucesso!');
       
@@ -121,71 +131,68 @@ export function InvoiceDataExtractor({ file, onDataExtracted }: InvoiceDataExtra
     const cidade = apiData.address_partner?.city || "Não informado";
     const cep = apiData.address_partner?.zip_code || apiData.zip_code || "Não informado";
     
-    // Encontrar contribuição iluminação pública nas linhas
     const contribIlumPublica = apiData.lines?.find((line: any) => 
       line.description.includes('CONTRIB') && line.description.includes('ILUM')
     )?.total_value || 0;
     
-    // Calcular valor total da energia elétrica (somar linhas relevantes)
     const energiaEletricaValue = apiData.lines?.filter((line: any) => 
       line.description.includes('CONSUMO') || line.description.includes('ENERGIA')
     )?.reduce((total: number, line: any) => total + (line.total_value || 0), 0) || 0;
     
-    // Mapear histórico de consumo
     const historicoConsumo = apiData.historical_lines?.map((item: any) => ({
       mes: item.reference || "Não informado",
       consumo: (item.consume_ponta || 0) + (item.consume_fora_ponta || 0),
-      valor: 0 // A API não retorna valor histórico, apenas consumo
+      valor: 0
     })) || [];
     
-    // Encontrar bandeira tarifária nas linhas
     const bandeira = apiData.lines?.find((line: any) => 
       line.description.includes('BANDEIRA')
     );
     
     return {
-      // Dados do cliente
       nomeCliente: apiData.legal_name || "Não informado",
       cpfCnpj: apiData.cnpj_cpf || "Não informado",
       endereco: endereco,
       cidade: cidade,
       uf: apiData.address?.includes(' GO ') ? 'GO' : "Não informado",
       cep: cep,
-      
-      // Dados da fatura
       numeroFatura: apiData.consumer_unit || "Não informado",
       referencia: apiData.month_reference || "Não informado",
       dataEmissao: apiData.emission_date || "Não informado",
       dataVencimento: apiData.expiration_date || "Não informado",
       valorTotal: parseFloat(apiData.invoice_value || 0),
-      
-      // Dados da instalação
       numeroInstalacao: apiData.consumer_unit || "Não informado",
       classe: apiData.classe || "Não informado",
       subgrupo: apiData.connection || "Não informado",
       modalidadeTarifaria: apiData.invoice_type || "Não informado",
-      
-      // Consumo
       consumoKwh: parseInt(apiData.invoice_consume || apiData.measured_energy || 0),
       demandaKw: apiData.demanda_contratada ? parseFloat(apiData.demanda_contratada) : undefined,
-      
-      // Valores detalhados
       energiaEletrica: energiaEletricaValue,
       contribuicaoIlumPublica: parseFloat(contribIlumPublica),
       icms: parseFloat(apiData.icms || 0),
       pis: parseFloat(apiData.pis || 0),
       cofins: parseFloat(apiData.cofins || 0),
-      
-      // Histórico de consumo
       historicoConsumo: historicoConsumo,
-      
-      // Bandeira tarifária
       bandeiraTarifaria: bandeira?.description || undefined,
       valorBandeira: bandeira?.total_value ? parseFloat(bandeira.total_value) : undefined,
-      
-      // Código de barras (não disponível na API)
       codigoBarras: "Não disponível na API"
     };
+  };
+
+  const handleInputChange = (field: keyof ExtractedInvoiceData, value: string | number) => {
+    if (!editableData) return;
+    
+    setEditableData({
+      ...editableData,
+      [field]: value
+    });
+  };
+
+  const handleConfirmData = () => {
+    if (!editableData) return;
+    
+    onDataConfirmed?.(editableData);
+    toast.success('Dados confirmados! Prosseguindo para o próximo passo.');
   };
 
   if (extracting) {
@@ -221,16 +228,22 @@ export function InvoiceDataExtractor({ file, onDataExtracted }: InvoiceDataExtra
     );
   }
 
-  if (!extractedData) {
+  if (!editableData || !isEditing) {
     return null;
   }
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center space-x-2">
-        <FileText className="w-5 h-5 text-green-600" />
-        <h3 className="text-lg font-semibold">Dados Extraídos da Fatura</h3>
-        <Badge variant="secondary">Extração Concluída</Badge>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-2">
+          <FileText className="w-5 h-5 text-green-600" />
+          <h3 className="text-lg font-semibold">Confirmar Dados da Fatura</h3>
+          <Badge variant="secondary">Dados Extraídos - Editáveis</Badge>
+        </div>
+        <Button onClick={handleConfirmData} className="bg-green-600 hover:bg-green-700">
+          <ArrowRight className="w-4 h-4 mr-2" />
+          Confirmar e Prosseguir
+        </Button>
       </div>
 
       {/* Dados do Cliente */}
@@ -244,20 +257,63 @@ export function InvoiceDataExtractor({ file, onDataExtracted }: InvoiceDataExtra
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="text-sm font-medium text-muted-foreground">Nome</label>
-              <p className="font-medium">{extractedData.nomeCliente}</p>
+              <Label htmlFor="nomeCliente">Nome do Cliente</Label>
+              <Input
+                id="nomeCliente"
+                value={editableData.nomeCliente}
+                onChange={(e) => handleInputChange('nomeCliente', e.target.value)}
+                className="mt-1"
+              />
             </div>
             <div>
-              <label className="text-sm font-medium text-muted-foreground">CPF/CNPJ</label>
-              <p className="font-medium font-mono">{extractedData.cpfCnpj}</p>
+              <Label htmlFor="cpfCnpj">CPF/CNPJ</Label>
+              <Input
+                id="cpfCnpj"
+                value={editableData.cpfCnpj}
+                onChange={(e) => handleInputChange('cpfCnpj', e.target.value)}
+                className="mt-1"
+              />
             </div>
           </div>
-          <div>
-            <label className="text-sm font-medium text-muted-foreground">Endereço</label>
-            <p className="font-medium">{extractedData.endereco}</p>
-            <p className="text-sm text-muted-foreground">
-              {extractedData.cep} - {extractedData.cidade}/{extractedData.uf}
-            </p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="md:col-span-2">
+              <Label htmlFor="endereco">Endereço</Label>
+              <Input
+                id="endereco"
+                value={editableData.endereco}
+                onChange={(e) => handleInputChange('endereco', e.target.value)}
+                className="mt-1"
+              />
+            </div>
+            <div>
+              <Label htmlFor="cep">CEP</Label>
+              <Input
+                id="cep"
+                value={editableData.cep}
+                onChange={(e) => handleInputChange('cep', e.target.value)}
+                className="mt-1"
+              />
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="cidade">Cidade</Label>
+              <Input
+                id="cidade"
+                value={editableData.cidade}
+                onChange={(e) => handleInputChange('cidade', e.target.value)}
+                className="mt-1"
+              />
+            </div>
+            <div>
+              <Label htmlFor="uf">UF</Label>
+              <Input
+                id="uf"
+                value={editableData.uf}
+                onChange={(e) => handleInputChange('uf', e.target.value)}
+                className="mt-1"
+              />
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -270,29 +326,55 @@ export function InvoiceDataExtractor({ file, onDataExtracted }: InvoiceDataExtra
             <span>Informações da Fatura</span>
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-green-50 p-3 rounded-lg">
-              <label className="text-sm font-medium text-green-700">UC</label>
-              <p className="font-bold text-green-800">{extractedData.numeroFatura}</p>
+            <div>
+              <Label htmlFor="numeroFatura">UC</Label>
+              <Input
+                id="numeroFatura"
+                value={editableData.numeroFatura}
+                onChange={(e) => handleInputChange('numeroFatura', e.target.value)}
+                className="mt-1"
+              />
             </div>
-            <div className="bg-blue-50 p-3 rounded-lg">
-              <label className="text-sm font-medium text-blue-700">Referência</label>
-              <p className="font-bold text-blue-800">{extractedData.referencia}</p>
+            <div>
+              <Label htmlFor="referencia">Referência</Label>
+              <Input
+                id="referencia"
+                value={editableData.referencia}
+                onChange={(e) => handleInputChange('referencia', e.target.value)}
+                className="mt-1"
+              />
             </div>
-            <div className="bg-orange-50 p-3 rounded-lg">
-              <label className="text-sm font-medium text-orange-700">Emissão</label>
-              <p className="font-bold text-orange-800">{extractedData.dataEmissao}</p>
+            <div>
+              <Label htmlFor="dataEmissao">Data Emissão</Label>
+              <Input
+                id="dataEmissao"
+                value={editableData.dataEmissao}
+                onChange={(e) => handleInputChange('dataEmissao', e.target.value)}
+                className="mt-1"
+              />
             </div>
-            <div className="bg-red-50 p-3 rounded-lg">
-              <label className="text-sm font-medium text-red-700">Vencimento</label>
-              <p className="font-bold text-red-800">{extractedData.dataVencimento}</p>
+            <div>
+              <Label htmlFor="dataVencimento">Data Vencimento</Label>
+              <Input
+                id="dataVencimento"
+                value={editableData.dataVencimento}
+                onChange={(e) => handleInputChange('dataVencimento', e.target.value)}
+                className="mt-1"
+              />
             </div>
           </div>
-          <Separator className="my-4" />
-          <div className="bg-green-100 p-4 rounded-lg">
-            <label className="text-sm font-medium text-green-700">Valor Total</label>
-            <p className="text-2xl font-bold text-green-800">{formatCurrency(extractedData.valorTotal)}</p>
+          <div>
+            <Label htmlFor="valorTotal">Valor Total (R$)</Label>
+            <Input
+              id="valorTotal"
+              type="number"
+              step="0.01"
+              value={editableData.valorTotal}
+              onChange={(e) => handleInputChange('valorTotal', parseFloat(e.target.value) || 0)}
+              className="mt-1"
+            />
           </div>
         </CardContent>
       </Card>
@@ -305,23 +387,43 @@ export function InvoiceDataExtractor({ file, onDataExtracted }: InvoiceDataExtra
             <span>Dados da Instalação</span>
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="text-sm font-medium text-muted-foreground">Número da Instalação</label>
-              <p className="font-bold font-mono">{extractedData.numeroInstalacao}</p>
+              <Label htmlFor="numeroInstalacao">Número da Instalação</Label>
+              <Input
+                id="numeroInstalacao"
+                value={editableData.numeroInstalacao}
+                onChange={(e) => handleInputChange('numeroInstalacao', e.target.value)}
+                className="mt-1"
+              />
             </div>
             <div>
-              <label className="text-sm font-medium text-muted-foreground">Classe</label>
-              <p className="font-medium">{extractedData.classe}</p>
+              <Label htmlFor="classe">Classe</Label>
+              <Input
+                id="classe"
+                value={editableData.classe}
+                onChange={(e) => handleInputChange('classe', e.target.value)}
+                className="mt-1"
+              />
             </div>
             <div>
-              <label className="text-sm font-medium text-muted-foreground">Conexão</label>
-              <p className="font-medium">{extractedData.subgrupo}</p>
+              <Label htmlFor="subgrupo">Conexão</Label>
+              <Input
+                id="subgrupo"
+                value={editableData.subgrupo}
+                onChange={(e) => handleInputChange('subgrupo', e.target.value)}
+                className="mt-1"
+              />
             </div>
             <div>
-              <label className="text-sm font-medium text-muted-foreground">Tipo da Fatura</label>
-              <p className="font-medium">{extractedData.modalidadeTarifaria}</p>
+              <Label htmlFor="modalidadeTarifaria">Tipo da Fatura</Label>
+              <Input
+                id="modalidadeTarifaria"
+                value={editableData.modalidadeTarifaria}
+                onChange={(e) => handleInputChange('modalidadeTarifaria', e.target.value)}
+                className="mt-1"
+              />
             </div>
           </div>
         </CardContent>
@@ -335,18 +437,29 @@ export function InvoiceDataExtractor({ file, onDataExtracted }: InvoiceDataExtra
             <span>Consumo e Demanda</span>
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="bg-blue-50 p-4 rounded-lg">
-              <label className="text-sm font-medium text-blue-700">Consumo</label>
-              <p className="text-xl font-bold text-blue-800">{extractedData.consumoKwh} kWh</p>
+            <div>
+              <Label htmlFor="consumoKwh">Consumo (kWh)</Label>
+              <Input
+                id="consumoKwh"
+                type="number"
+                value={editableData.consumoKwh}
+                onChange={(e) => handleInputChange('consumoKwh', parseInt(e.target.value) || 0)}
+                className="mt-1"
+              />
             </div>
-            {extractedData.demandaKw && (
-              <div className="bg-purple-50 p-4 rounded-lg">
-                <label className="text-sm font-medium text-purple-700">Demanda</label>
-                <p className="text-xl font-bold text-purple-800">{extractedData.demandaKw} kW</p>
-              </div>
-            )}
+            <div>
+              <Label htmlFor="demandaKw">Demanda (kW)</Label>
+              <Input
+                id="demandaKw"
+                type="number"
+                step="0.01"
+                value={editableData.demandaKw || ''}
+                onChange={(e) => handleInputChange('demandaKw', parseFloat(e.target.value) || undefined)}
+                className="mt-1"
+              />
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -359,79 +472,80 @@ export function InvoiceDataExtractor({ file, onDataExtracted }: InvoiceDataExtra
             <span>Detalhamento de Valores</span>
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            <div className="flex justify-between items-center py-2 border-b">
-              <span className="font-medium">Energia Elétrica</span>
-              <span className="font-bold">{formatCurrency(extractedData.energiaEletrica)}</span>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="energiaEletrica">Energia Elétrica (R$)</Label>
+              <Input
+                id="energiaEletrica"
+                type="number"
+                step="0.01"
+                value={editableData.energiaEletrica}
+                onChange={(e) => handleInputChange('energiaEletrica', parseFloat(e.target.value) || 0)}
+                className="mt-1"
+              />
             </div>
-            <div className="flex justify-between items-center py-2 border-b">
-              <span className="font-medium">Contribuição Ilum. Pública</span>
-              <span className="font-bold">{formatCurrency(extractedData.contribuicaoIlumPublica)}</span>
+            <div>
+              <Label htmlFor="contribuicaoIlumPublica">Contrib. Ilum. Pública (R$)</Label>
+              <Input
+                id="contribuicaoIlumPublica"
+                type="number"
+                step="0.01"
+                value={editableData.contribuicaoIlumPublica}
+                onChange={(e) => handleInputChange('contribuicaoIlumPublica', parseFloat(e.target.value) || 0)}
+                className="mt-1"
+              />
             </div>
-            <div className="flex justify-between items-center py-2 border-b">
-              <span className="font-medium">ICMS</span>
-              <span className="font-bold">{formatCurrency(extractedData.icms)}</span>
+            <div>
+              <Label htmlFor="icms">ICMS (R$)</Label>
+              <Input
+                id="icms"
+                type="number"
+                step="0.01"
+                value={editableData.icms}
+                onChange={(e) => handleInputChange('icms', parseFloat(e.target.value) || 0)}
+                className="mt-1"
+              />
             </div>
-            <div className="flex justify-between items-center py-2 border-b">
-              <span className="font-medium">PIS</span>
-              <span className="font-bold">{formatCurrency(extractedData.pis)}</span>
+            <div>
+              <Label htmlFor="pis">PIS (R$)</Label>
+              <Input
+                id="pis"
+                type="number"
+                step="0.01"
+                value={editableData.pis}
+                onChange={(e) => handleInputChange('pis', parseFloat(e.target.value) || 0)}
+                className="mt-1"
+              />
             </div>
-            <div className="flex justify-between items-center py-2 border-b">
-              <span className="font-medium">COFINS</span>
-              <span className="font-bold">{formatCurrency(extractedData.cofins)}</span>
+            <div>
+              <Label htmlFor="cofins">COFINS (R$)</Label>
+              <Input
+                id="cofins"
+                type="number"
+                step="0.01"
+                value={editableData.cofins}
+                onChange={(e) => handleInputChange('cofins', parseFloat(e.target.value) || 0)}
+                className="mt-1"
+              />
             </div>
-            {extractedData.bandeiraTarifaria && (
-              <div className="flex justify-between items-center py-2 border-b">
-                <span className="font-medium">{extractedData.bandeiraTarifaria}</span>
-                <span className="font-bold">{formatCurrency(extractedData.valorBandeira || 0)}</span>
-              </div>
-            )}
           </div>
         </CardContent>
       </Card>
 
-      {/* Histórico de Consumo */}
-      {extractedData.historicoConsumo && extractedData.historicoConsumo.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <Calendar className="w-5 h-5" />
-              <span>Histórico de Consumo</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-              {extractedData.historicoConsumo.map((item, index) => (
-                <div key={index} className="bg-gray-50 p-3 rounded-lg">
-                  <div className="flex justify-between items-center">
-                    <span className="font-medium text-sm">{item.mes}</span>
-                    <Badge variant="outline">{item.consumo} kWh</Badge>
-                  </div>
-                </div>
-              ))}
+      {/* Botão de Confirmação */}
+      <Card className="border-green-200 bg-green-50">
+        <CardContent className="p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h4 className="font-medium text-green-800">Confirmar Dados</h4>
+              <p className="text-sm text-green-700">Revise os dados extraídos e clique em "Confirmar e Prosseguir" quando estiver tudo correto.</p>
             </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Debug - Dados Brutos da API */}
-      <Card className="border-blue-200 bg-blue-50">
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2 text-blue-800">
-            <FileText className="w-5 h-5" />
-            <span>Debug - Resposta da API</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <details>
-            <summary className="cursor-pointer font-medium text-blue-700 hover:text-blue-900">
-              Ver dados brutos da API
-            </summary>
-            <pre className="mt-2 text-xs bg-white p-3 rounded border overflow-auto max-h-64">
-              {JSON.stringify(extractedData, null, 2)}
-            </pre>
-          </details>
+            <Button onClick={handleConfirmData} size="lg" className="bg-green-600 hover:bg-green-700">
+              <Save className="w-4 h-4 mr-2" />
+              Confirmar e Prosseguir
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </div>

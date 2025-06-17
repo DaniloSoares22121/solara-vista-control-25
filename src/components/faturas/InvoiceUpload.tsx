@@ -13,14 +13,16 @@ import { toast } from 'sonner';
 
 interface InvoiceUploadProps {
   subscriber: SubscriberRecord;
+  onDataConfirmed?: (data: any) => void;
 }
 
-export function InvoiceUpload({ subscriber }: InvoiceUploadProps) {
+export function InvoiceUpload({ subscriber, onDataConfirmed }: InvoiceUploadProps) {
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [observations, setObservations] = useState('');
   const [uploaded, setUploaded] = useState(false);
   const [showExtractedData, setShowExtractedData] = useState(false);
+  const [dataConfirmed, setDataConfirmed] = useState(false);
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = event.target.files?.[0];
@@ -76,6 +78,12 @@ export function InvoiceUpload({ subscriber }: InvoiceUploadProps) {
   const handleDataExtracted = (data: any) => {
     console.log('Dados extraídos da fatura:', data);
     setShowExtractedData(true);
+  };
+
+  const handleDataConfirmed = (data: any) => {
+    console.log('Dados confirmados:', data);
+    setDataConfirmed(true);
+    onDataConfirmed?.(data);
   };
 
   const subscriberData = subscriber.subscriber;
@@ -202,11 +210,33 @@ export function InvoiceUpload({ subscriber }: InvoiceUploadProps) {
       )}
 
       {/* Extração de Dados */}
-      {uploaded && file && (
+      {uploaded && file && !dataConfirmed && (
         <InvoiceDataExtractor 
           file={file} 
           onDataExtracted={handleDataExtracted}
+          onDataConfirmed={handleDataConfirmed}
         />
+      )}
+
+      {/* Dados Confirmados */}
+      {dataConfirmed && (
+        <Card className="border-green-200 bg-green-50">
+          <CardContent className="pt-6">
+            <div className="text-center py-8">
+              <CheckCircle2 className="h-16 w-16 text-green-600 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-green-600 mb-2">
+                Dados Confirmados!
+              </h3>
+              <p className="text-muted-foreground mb-4">
+                Os dados da fatura foram confirmados e estão prontos para o próximo passo
+              </p>
+              <div className="flex items-center justify-center space-x-2 text-blue-600">
+                <span>Aguardando próximo passo</span>
+                <ArrowRight className="w-4 h-4" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       )}
 
       {/* Informações Importantes */}
@@ -219,9 +249,9 @@ export function InvoiceUpload({ subscriber }: InvoiceUploadProps) {
               <ul className="text-sm text-amber-700 mt-1 space-y-1">
                 <li>• Certifique-se de que a fatura está legível e completa</li>
                 <li>• O sistema extrairá automaticamente todos os dados da fatura</li>
+                <li>• Revise os dados extraídos antes de confirmar</li>
                 <li>• O desconto será aplicado automaticamente: {subscriber.plan_contract?.discountPercentage || 0}%</li>
                 <li>• A fatura processada estará disponível em "Faturas Emitidas"</li>
-                <li>• Em caso de erro, entre em contato com o suporte</li>
               </ul>
             </div>
           </div>
