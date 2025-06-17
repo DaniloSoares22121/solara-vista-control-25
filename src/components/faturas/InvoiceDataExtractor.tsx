@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Loader2, FileText, User, Zap, DollarSign, Calendar, Hash, MapPin, Phone, Building2 } from 'lucide-react';
+import { Loader2, FileText, User, Zap, DollarSign, Calendar, Hash, MapPin, Phone, Building2, AlertCircle } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/utils/formatters';
 import { toast } from 'sonner';
 
@@ -63,6 +63,7 @@ interface InvoiceDataExtractorProps {
 export function InvoiceDataExtractor({ file, onDataExtracted }: InvoiceDataExtractorProps) {
   const [extracting, setExtracting] = useState(false);
   const [extractedData, setExtractedData] = useState<ExtractedInvoiceData | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (file) {
@@ -72,80 +73,95 @@ export function InvoiceDataExtractor({ file, onDataExtracted }: InvoiceDataExtra
 
   const extractInvoiceData = async (pdfFile: File) => {
     setExtracting(true);
+    setError(null);
     
     try {
-      // Aqui você integraria com um serviço de OCR/extração de dados
-      // Por enquanto, vou simular com dados fictícios baseados na estrutura real
-      await new Promise(resolve => setTimeout(resolve, 3000));
+      console.log('Iniciando extração de dados da fatura:', pdfFile.name);
       
-      const mockData: ExtractedInvoiceData = {
-        // Dados do cliente
-        nomeCliente: "FERNANDO HUGO MACHADO DE REZENDE",
-        cpfCnpj: "000.745.351-53",
-        endereco: "AV FLAMBOYANT, 99999 Q. 18, L. 17, CASA - 02",
-        cidade: "Goiânia",
-        uf: "GO",
-        cep: "74855-340",
-        
-        // Dados da fatura
-        numeroFatura: "5/2025",
-        referencia: "MAI/2025",
-        dataEmissao: "12/06/2025",
-        dataVencimento: "20/06/2025",
-        valorTotal: 6284.64,
-        
-        // Dados da instalação
-        numeroInstalacao: "1000052091",
-        classe: "Residencial Trifásico",
-        subgrupo: "B1",
-        modalidadeTarifaria: "Convencional",
-        
-        // Consumo
-        consumoKwh: 8558,
-        demandaKw: 15.2,
-        
-        // Valores detalhados
-        energiaEletrica: 8666.01,
-        contribuicaoIlumPublica: 45.89,
-        icms: 1205.67,
-        pis: 89.45,
-        cofins: 412.33,
-        
-        // Histórico de consumo
-        historicoConsumo: [
-          { mes: "MAI/2025", consumo: 8558, valor: 6284.64 },
-          { mes: "ABR/2025", consumo: 7892, valor: 5789.32 },
-          { mes: "MAR/2025", consumo: 8123, valor: 5945.78 },
-          { mes: "FEV/2025", consumo: 7654, valor: 5612.89 },
-          { mes: "JAN/2025", consumo: 8234, valor: 6034.56 },
-          { mes: "DEZ/2024", consumo: 7998, valor: 5867.23 },
-          { mes: "NOV/2024", consumo: 8456, valor: 6201.45 },
-          { mes: "OUT/2024", consumo: 8789, valor: 6445.67 },
-          { mes: "SET/2024", consumo: 8321, valor: 6098.34 },
-          { mes: "AGO/2024", consumo: 8567, valor: 6278.90 },
-          { mes: "JUL/2024", consumo: 8234, valor: 6034.23 },
-          { mes: "JUN/2024", consumo: 7890, valor: 5782.11 },
-          { mes: "MAI/2024", consumo: 8123, valor: 5953.44 }
-        ],
-        
-        // Bandeira tarifária
-        bandeiraTarifaria: "Verde",
-        valorBandeira: 0,
-        
-        // Código de barras
-        codigoBarras: "40390.00007 14375.534014 37634.909016 8 11180000628464"
-      };
+      const formData = new FormData();
+      formData.append("file", pdfFile);
+
+      const response = await fetch("https://extrator.wattio.com.br/extrator/equatorial/montlhy/", {
+        method: "POST",
+        headers: {
+          "Accept": "application/json, text/plain, */*",
+          "Origin": "https://zip.wattio.com.br",
+          "Referer": "https://zip.wattio.com.br/",
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"
+        },
+        body: formData
+      });
+
+      if (!response.ok) {
+        throw new Error(`Erro HTTP: ${response.status}`);
+      }
+
+      const apiData = await response.json();
+      console.log('Dados recebidos da API:', apiData);
+
+      // Mapear os dados da API para nossa interface
+      const mappedData: ExtractedInvoiceData = mapApiDataToInterface(apiData);
       
-      setExtractedData(mockData);
-      onDataExtracted(mockData);
+      setExtractedData(mappedData);
+      onDataExtracted(mappedData);
       toast.success('Dados da fatura extraídos com sucesso!');
       
     } catch (error) {
       console.error('Erro ao extrair dados da fatura:', error);
-      toast.error('Erro ao extrair dados da fatura');
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+      setError(errorMessage);
+      toast.error(`Erro ao extrair dados da fatura: ${errorMessage}`);
     } finally {
       setExtracting(false);
     }
+  };
+
+  const mapApiDataToInterface = (apiData: any): ExtractedInvoiceData => {
+    // Função para mapear os dados da API para nossa interface
+    // Você pode ajustar o mapeamento conforme a estrutura real dos dados da API
+    return {
+      // Dados do cliente
+      nomeCliente: apiData.cliente?.nome || apiData.nome_cliente || "Não informado",
+      cpfCnpj: apiData.cliente?.cpf_cnpj || apiData.cpf_cnpj || "Não informado",
+      endereco: apiData.cliente?.endereco || apiData.endereco || "Não informado",
+      cidade: apiData.cliente?.cidade || apiData.cidade || "Não informado",
+      uf: apiData.cliente?.uf || apiData.uf || "Não informado",
+      cep: apiData.cliente?.cep || apiData.cep || "Não informado",
+      
+      // Dados da fatura
+      numeroFatura: apiData.fatura?.numero || apiData.numero_fatura || "Não informado",
+      referencia: apiData.fatura?.referencia || apiData.referencia || "Não informado",
+      dataEmissao: apiData.fatura?.data_emissao || apiData.data_emissao || "Não informado",
+      dataVencimento: apiData.fatura?.data_vencimento || apiData.data_vencimento || "Não informado",
+      valorTotal: parseFloat(apiData.fatura?.valor_total || apiData.valor_total || 0),
+      
+      // Dados da instalação
+      numeroInstalacao: apiData.instalacao?.numero || apiData.numero_instalacao || "Não informado",
+      classe: apiData.instalacao?.classe || apiData.classe || "Não informado",
+      subgrupo: apiData.instalacao?.subgrupo || apiData.subgrupo || "Não informado",
+      modalidadeTarifaria: apiData.instalacao?.modalidade || apiData.modalidade_tarifaria || "Não informado",
+      
+      // Consumo
+      consumoKwh: parseInt(apiData.consumo?.kwh || apiData.consumo_kwh || 0),
+      demandaKw: apiData.demanda?.kw ? parseFloat(apiData.demanda.kw) : undefined,
+      
+      // Valores detalhados
+      energiaEletrica: parseFloat(apiData.valores?.energia_eletrica || apiData.energia_eletrica || 0),
+      contribuicaoIlumPublica: parseFloat(apiData.valores?.contrib_ilum_publica || apiData.contrib_ilum_publica || 0),
+      icms: parseFloat(apiData.valores?.icms || apiData.icms || 0),
+      pis: parseFloat(apiData.valores?.pis || apiData.pis || 0),
+      cofins: parseFloat(apiData.valores?.cofins || apiData.cofins || 0),
+      
+      // Histórico de consumo
+      historicoConsumo: apiData.historico_consumo || apiData.historico || [],
+      
+      // Bandeira tarifária
+      bandeiraTarifaria: apiData.bandeira?.tipo || apiData.bandeira_tarifaria,
+      valorBandeira: apiData.bandeira?.valor ? parseFloat(apiData.bandeira.valor) : undefined,
+      
+      // Código de barras
+      codigoBarras: apiData.codigo_barras || "Não informado"
+    };
   };
 
   if (extracting) {
@@ -156,7 +172,24 @@ export function InvoiceDataExtractor({ file, onDataExtracted }: InvoiceDataExtra
             <Loader2 className="w-6 h-6 animate-spin text-green-600" />
             <div>
               <p className="font-medium">Extraindo dados da fatura...</p>
-              <p className="text-sm text-muted-foreground">Analisando PDF e extraindo informações</p>
+              <p className="text-sm text-muted-foreground">Enviando para API e processando PDF</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card className="border-red-200 bg-red-50">
+        <CardContent className="p-6">
+          <div className="flex items-center space-x-3">
+            <AlertCircle className="w-6 h-6 text-red-600" />
+            <div>
+              <p className="font-medium text-red-800">Erro na Extração</p>
+              <p className="text-sm text-red-600">{error}</p>
+              <p className="text-xs text-red-500 mt-1">Verifique se a fatura está legível e tente novamente</p>
             </div>
           </div>
         </CardContent>
@@ -335,27 +368,29 @@ export function InvoiceDataExtractor({ file, onDataExtracted }: InvoiceDataExtra
       </Card>
 
       {/* Histórico de Consumo */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <Calendar className="w-5 h-5" />
-            <span>Histórico de Consumo (13 meses)</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-            {extractedData.historicoConsumo.map((item, index) => (
-              <div key={index} className="bg-gray-50 p-3 rounded-lg">
-                <div className="flex justify-between items-center">
-                  <span className="font-medium text-sm">{item.mes}</span>
-                  <Badge variant="outline">{item.consumo} kWh</Badge>
+      {extractedData.historicoConsumo && extractedData.historicoConsumo.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <Calendar className="w-5 h-5" />
+              <span>Histórico de Consumo</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+              {extractedData.historicoConsumo.map((item, index) => (
+                <div key={index} className="bg-gray-50 p-3 rounded-lg">
+                  <div className="flex justify-between items-center">
+                    <span className="font-medium text-sm">{item.mes}</span>
+                    <Badge variant="outline">{item.consumo} kWh</Badge>
+                  </div>
+                  <p className="font-bold text-green-600">{formatCurrency(item.valor)}</p>
                 </div>
-                <p className="font-bold text-green-600">{formatCurrency(item.valor)}</p>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Código de Barras */}
       <Card>
@@ -367,10 +402,30 @@ export function InvoiceDataExtractor({ file, onDataExtracted }: InvoiceDataExtra
         </CardHeader>
         <CardContent>
           <div className="bg-gray-50 p-4 rounded-lg">
-            <p className="font-mono text-center text-lg font-bold">
+            <p className="font-mono text-center text-lg font-bold break-words">
               {extractedData.codigoBarras}
             </p>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Debug - Dados Brutos da API */}
+      <Card className="border-blue-200 bg-blue-50">
+        <CardHeader>
+          <CardTitle className="flex items-center space-x-2 text-blue-800">
+            <FileText className="w-5 h-5" />
+            <span>Debug - Resposta da API</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <details>
+            <summary className="cursor-pointer font-medium text-blue-700 hover:text-blue-900">
+              Ver dados brutos da API
+            </summary>
+            <pre className="mt-2 text-xs bg-white p-3 rounded border overflow-auto max-h-64">
+              {JSON.stringify(extractedData, null, 2)}
+            </pre>
+          </details>
         </CardContent>
       </Card>
     </div>
