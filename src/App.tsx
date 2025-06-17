@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -78,7 +79,11 @@ const App = () => (
                 <Whatsapp />
               </ProtectedRoute>
             } />
-            <Route path="/dashboard/fatura-manual" element={<FaturaManual />} />
+            <Route path="/dashboard/fatura-manual" element={
+              <ProtectedRoute>
+                <FaturaManual />
+              </ProtectedRoute>
+            } />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

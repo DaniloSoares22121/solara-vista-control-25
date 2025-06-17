@@ -3,16 +3,18 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle2, User, Upload, ArrowRight, ArrowLeft } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
+import { CheckCircle2, User, Upload, ArrowRight, ArrowLeft, Clock, Check } from 'lucide-react';
 import { SubscriberSelector } from '@/components/faturas/SubscriberSelector';
 import { SubscriberDetails } from '@/components/faturas/SubscriberDetails';
 import { InvoiceUpload } from '@/components/faturas/InvoiceUpload';
 import { SubscriberRecord } from '@/services/supabaseSubscriberService';
+import DashboardLayout from '@/components/DashboardLayout';
 
 const steps = [
-  { id: 1, title: 'Selecionar Assinante', icon: User },
-  { id: 2, title: 'Verificar Dados', icon: CheckCircle2 },
-  { id: 3, title: 'Upload da Fatura', icon: Upload },
+  { id: 1, title: 'Selecionar Assinante', description: 'Escolha o assinante para processar a fatura', icon: User },
+  { id: 2, title: 'Verificar Dados', description: 'Confirme as informações do assinante', icon: CheckCircle2 },
+  { id: 3, title: 'Upload da Fatura', description: 'Faça o upload do arquivo da fatura', icon: Upload },
 ];
 
 export default function FaturaManual() {
@@ -41,6 +43,12 @@ export default function FaturaManual() {
     setSelectedSubscriber(null);
   };
 
+  const getStepStatus = (stepId: number) => {
+    if (stepId < currentStep) return 'completed';
+    if (stepId === currentStep) return 'current';
+    return 'upcoming';
+  };
+
   const renderStepContent = () => {
     switch (currentStep) {
       case 1:
@@ -58,79 +66,148 @@ export default function FaturaManual() {
     }
   };
 
+  const progressPercentage = (currentStep / steps.length) * 100;
+
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Fatura Manual</h1>
-        <p className="text-muted-foreground">
-          Processe faturas manualmente selecionando um assinante e fazendo upload da fatura da Equatorial
-        </p>
-      </div>
-
-      {/* Steps Progress */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Progresso</CardTitle>
-          <CardDescription>Siga as etapas para processar a fatura manual</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-between">
-            {steps.map((step, index) => (
-              <div key={step.id} className="flex items-center">
-                <div className={`flex items-center justify-center w-10 h-10 rounded-full border-2 ${
-                  currentStep >= step.id 
-                    ? 'bg-primary border-primary text-primary-foreground' 
-                    : 'border-muted-foreground text-muted-foreground'
-                }`}>
-                  <step.icon className="w-5 h-5" />
-                </div>
-                <div className="ml-3">
-                  <p className={`text-sm font-medium ${
-                    currentStep >= step.id ? 'text-foreground' : 'text-muted-foreground'
-                  }`}>
-                    {step.title}
-                  </p>
-                  <Badge variant={currentStep >= step.id ? 'default' : 'secondary'}>
-                    Etapa {step.id}
-                  </Badge>
-                </div>
-                {index < steps.length - 1 && (
-                  <ArrowRight className="w-5 h-5 text-muted-foreground mx-4" />
-                )}
-              </div>
-            ))}
+    <DashboardLayout>
+      <div className="space-y-8">
+        {/* Header Section */}
+        <div className="bg-gradient-to-r from-green-50 to-green-100 border border-green-200 rounded-xl p-6">
+          <div className="flex items-center space-x-3 mb-4">
+            <div className="w-12 h-12 bg-green-600 rounded-xl flex items-center justify-center">
+              <Upload className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">Fatura Manual</h1>
+              <p className="text-green-700">
+                Processe faturas manualmente selecionando um assinante e fazendo upload da fatura da Equatorial
+              </p>
+            </div>
           </div>
-        </CardContent>
-      </Card>
-
-      {/* Step Content */}
-      <Card>
-        <CardContent className="p-6">
-          {renderStepContent()}
-        </CardContent>
-      </Card>
-
-      {/* Navigation Buttons */}
-      {currentStep > 1 && (
-        <div className="flex justify-between">
-          <Button variant="outline" onClick={handlePrevious}>
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Voltar
-          </Button>
           
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={handleReset}>
-              Recomeçar
-            </Button>
-            {currentStep === 2 && selectedSubscriber && (
-              <Button onClick={handleNext}>
-                Próximo
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
-            )}
+          {/* Progress Bar */}
+          <div className="space-y-2">
+            <div className="flex justify-between text-sm text-gray-600">
+              <span>Progresso: Etapa {currentStep} de {steps.length}</span>
+              <span>{Math.round(progressPercentage)}% concluído</span>
+            </div>
+            <Progress value={progressPercentage} className="h-2" />
           </div>
         </div>
-      )}
-    </div>
+
+        {/* Steps Navigation */}
+        <Card className="border-0 shadow-lg">
+          <CardHeader className="bg-gray-50 border-b">
+            <CardTitle className="flex items-center space-x-2">
+              <Clock className="w-5 h-5 text-green-600" />
+              <span>Progresso das Etapas</span>
+            </CardTitle>
+            <CardDescription>Siga as etapas para processar a fatura manual</CardDescription>
+          </CardHeader>
+          <CardContent className="p-6">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0 md:space-x-4">
+              {steps.map((step, index) => {
+                const status = getStepStatus(step.id);
+                
+                return (
+                  <React.Fragment key={step.id}>
+                    <div className="flex items-center space-x-3 flex-1">
+                      <div className={`flex items-center justify-center w-12 h-12 rounded-xl border-2 transition-all duration-200 ${
+                        status === 'completed' 
+                          ? 'bg-green-600 border-green-600 text-white' 
+                          : status === 'current'
+                          ? 'bg-green-100 border-green-600 text-green-600'
+                          : 'bg-gray-100 border-gray-300 text-gray-400'
+                      }`}>
+                        {status === 'completed' ? (
+                          <Check className="w-6 h-6" />
+                        ) : (
+                          <step.icon className="w-6 h-6" />
+                        )}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className={`font-medium ${
+                          status === 'current' ? 'text-green-700' : 
+                          status === 'completed' ? 'text-green-600' : 'text-gray-500'
+                        }`}>
+                          {step.title}
+                        </p>
+                        <p className="text-sm text-gray-500 hidden sm:block">
+                          {step.description}
+                        </p>
+                        <Badge 
+                          variant={status === 'completed' ? 'default' : status === 'current' ? 'secondary' : 'outline'}
+                          className="mt-1"
+                        >
+                          {status === 'completed' ? 'Concluída' : 
+                           status === 'current' ? 'Em andamento' : 'Pendente'}
+                        </Badge>
+                      </div>
+                    </div>
+                    {index < steps.length - 1 && (
+                      <div className="hidden md:block">
+                        <ArrowRight className={`w-6 h-6 ${
+                          status === 'completed' ? 'text-green-600' : 'text-gray-300'
+                        }`} />
+                      </div>
+                    )}
+                  </React.Fragment>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Step Content */}
+        <Card className="border-0 shadow-lg min-h-[400px]">
+          <CardHeader className="bg-gradient-to-r from-green-600 to-green-700 text-white">
+            <CardTitle className="flex items-center space-x-2">
+              {React.createElement(steps[currentStep - 1].icon, { className: "w-5 h-5" })}
+              <span>{steps[currentStep - 1].title}</span>
+            </CardTitle>
+            <CardDescription className="text-green-100">
+              {steps[currentStep - 1].description}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="p-6">
+            {renderStepContent()}
+          </CardContent>
+        </Card>
+
+        {/* Navigation Buttons */}
+        {currentStep > 1 && (
+          <div className="flex flex-col sm:flex-row justify-between space-y-3 sm:space-y-0 sm:space-x-3">
+            <Button 
+              variant="outline" 
+              onClick={handlePrevious}
+              className="flex items-center space-x-2 px-6 py-3"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span>Etapa Anterior</span>
+            </Button>
+            
+            <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
+              <Button 
+                variant="outline" 
+                onClick={handleReset}
+                className="px-6 py-3"
+              >
+                Recomeçar Processo
+              </Button>
+              
+              {currentStep === 2 && selectedSubscriber && (
+                <Button 
+                  onClick={handleNext}
+                  className="bg-green-600 hover:bg-green-700 flex items-center space-x-2 px-6 py-3"
+                >
+                  <span>Próxima Etapa</span>
+                  <ArrowRight className="w-4 h-4" />
+                </Button>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    </DashboardLayout>
   );
 }
