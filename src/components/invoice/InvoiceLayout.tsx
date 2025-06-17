@@ -311,7 +311,7 @@ const InvoiceLayout: React.FC = () => {
                     {data.historico.slice(0, 6).map((item, index) => (
                       <div key={index} className="flex items-center gap-1">
                         <span className="font-bold text-gray-600 w-12 text-xs font-mono">{item.mes}</span>
-                        <div className="flex-1 bg-gray-200 rounded-full h-2 relative overflow-hidden">
+                        <div className="flex-1 bg-gray-200 rounded-full h-2 relative overflow-hidden flex items-center">
                           <div 
                             className="bg-green-500 h-2 rounded-full" 
                             style={{ width: `${Math.max(25, (item.valor / 2500) * 100)}%` }}
