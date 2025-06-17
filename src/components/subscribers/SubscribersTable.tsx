@@ -77,17 +77,17 @@ const SubscribersTable = ({ subscribers, onEdit, onDelete, onView, isLoading }: 
   }
 
   return (
-    <div className="space-y-4 lg:space-y-8">
-      <Card className="border-0 shadow-xl lg:shadow-2xl bg-white overflow-hidden">
+    <div className="space-y-6">
+      <Card className="border-0 shadow-lg bg-white overflow-hidden">
         <CardHeader className="bg-gradient-to-r from-green-600 via-green-500 to-emerald-500 text-white">
           <div className="flex flex-col space-y-4 lg:space-y-0 lg:flex-row lg:items-center justify-between lg:gap-6">
             <div>
-              <CardTitle className="text-xl lg:text-2xl font-bold flex items-center space-x-2 lg:space-x-3 mb-2">
+              <CardTitle className="text-xl lg:text-2xl font-bold flex items-center space-x-3 mb-2">
                 <div className="p-2 lg:p-3 bg-white/20 backdrop-blur-sm rounded-xl">
                   <Users className="w-6 h-6 lg:w-8 lg:h-8" />
                 </div>
                 <span>Lista de Assinantes</span>
-                <Badge className="bg-white/20 backdrop-blur-sm text-white border-white/30 text-sm lg:text-lg px-2 lg:px-3 py-1">
+                <Badge className="bg-white/20 backdrop-blur-sm text-white border-white/30 text-sm lg:text-base px-2 lg:px-3 py-1">
                   {subscribers.length}
                 </Badge>
               </CardTitle>
@@ -107,8 +107,8 @@ const SubscribersTable = ({ subscribers, onEdit, onDelete, onView, isLoading }: 
         </CardHeader>
       </Card>
 
-      {/* Cards Grid - Responsividade Melhorada para cards maiores */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-3 gap-6 lg:gap-8">
+      {/* Grid otimizado para cards melhor organizados */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
         {subscribers.map((subscriber) => (
           <SubscriberCard
             key={subscriber.id}

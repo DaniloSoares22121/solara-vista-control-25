@@ -73,15 +73,15 @@ const SubscriberCard = ({ subscriber, onEdit, onDelete, onView }: SubscriberCard
     const statusConfig = {
       active: { 
         label: 'Ativo', 
-        className: 'bg-gradient-to-r from-green-500 to-green-600 text-white border-0 shadow-md' 
+        className: 'bg-green-500 text-white border-0 shadow-sm' 
       },
       inactive: { 
         label: 'Inativo', 
-        className: 'bg-gradient-to-r from-gray-400 to-gray-500 text-white border-0 shadow-md' 
+        className: 'bg-gray-400 text-white border-0 shadow-sm' 
       },
       pending: { 
         label: 'Pendente', 
-        className: 'bg-gradient-to-r from-yellow-500 to-orange-500 text-white border-0 shadow-md' 
+        className: 'bg-yellow-500 text-white border-0 shadow-sm' 
       },
     };
 
@@ -97,31 +97,33 @@ const SubscriberCard = ({ subscriber, onEdit, onDelete, onView }: SubscriberCard
   const contactInfo = getContactInfo();
 
   return (
-    <Card className="group hover:shadow-2xl transition-all duration-500 border-0 bg-white overflow-hidden hover:scale-102 hover:-translate-y-1">
-      <div className="h-3 bg-gradient-to-r from-green-400 via-emerald-400 to-green-500"></div>
-      
-      <CardHeader className="pb-6 bg-gradient-to-br from-gray-50 to-white">
-        <div className="flex items-start justify-between gap-6">
-          <div className="flex items-center space-x-6 flex-1 min-w-0">
-            <div className="relative">
-              <div className="w-20 h-20 bg-gradient-to-br from-green-400 via-emerald-400 to-green-500 rounded-3xl flex items-center justify-center shadow-xl">
+    <Card className="group hover:shadow-lg transition-all duration-300 border bg-white overflow-hidden">
+      {/* Header com informações principais */}
+      <CardHeader className="pb-4 bg-gradient-to-r from-gray-50 to-white border-b border-gray-100">
+        <div className="flex items-start justify-between gap-4">
+          {/* Avatar e info principal */}
+          <div className="flex items-center space-x-4 flex-1 min-w-0">
+            <div className="relative shrink-0">
+              <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center shadow-md">
                 {subscriber.subscriber?.cpf ? (
-                  <User className="w-10 h-10 text-white" />
+                  <User className="w-8 h-8 text-white" />
                 ) : (
-                  <Building2 className="w-10 h-10 text-white" />
+                  <Building2 className="w-8 h-8 text-white" />
                 )}
               </div>
-              <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-lg">
-                <Star className="w-4 h-4 text-yellow-500 fill-current" />
+              <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-white rounded-full flex items-center justify-center shadow-sm">
+                <Star className="w-3 h-3 text-yellow-500 fill-current" />
               </div>
             </div>
+            
+            {/* Nome e badges */}
             <div className="min-w-0 flex-1">
-              <h3 className="font-bold text-gray-900 text-2xl truncate mb-3">
+              <h3 className="font-bold text-gray-900 text-lg truncate mb-2">
                 {getSubscriberName()}
               </h3>
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2 flex-wrap">
                 {getStatusBadge(subscriber.status)}
-                <Badge variant="outline" className="text-sm font-medium bg-gradient-to-r from-green-50 to-emerald-50 text-green-700 border-green-200 px-3 py-1">
+                <Badge variant="outline" className="text-xs bg-gray-50 text-gray-600 border-gray-200">
                   {getSubscriberType()}
                 </Badge>
               </div>
@@ -130,86 +132,95 @@ const SubscriberCard = ({ subscriber, onEdit, onDelete, onView }: SubscriberCard
         </div>
       </CardHeader>
       
-      <CardContent className="pt-0 space-y-6 pb-8">
-        {/* Grid Layout para melhor organização */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <CardContent className="p-6 space-y-6">
+        {/* Informações organizadas em seções */}
+        <div className="space-y-4">
           
-          {/* Coluna Esquerda - Dados Principais */}
-          <div className="space-y-5">
-            {/* Documento formatado */}
-            <div className="flex items-center space-x-4 p-4 bg-gradient-to-r from-blue-50 to-blue-100 rounded-2xl border border-blue-100">
-              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg">
-                <FileText className="w-6 h-6 text-white" />
+          {/* Seção: Dados Identificação */}
+          <div className="space-y-3">
+            <h4 className="text-sm font-semibold text-gray-700 border-b border-gray-100 pb-1">
+              Identificação
+            </h4>
+            
+            <div className="grid grid-cols-1 gap-3">
+              <div className="flex items-center space-x-3 p-3 bg-blue-50 rounded-lg border border-blue-100">
+                <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center shrink-0">
+                  <FileText className="w-4 h-4 text-white" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs text-blue-600 font-medium">Documento</p>
+                  <p className="text-sm font-mono font-semibold text-blue-800 truncate">
+                    {getSubscriberDocument()}
+                  </p>
+                </div>
               </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-sm text-blue-600 font-semibold mb-1">Documento</p>
-                <p className="text-lg font-mono font-bold text-blue-800 truncate">{getSubscriberDocument()}</p>
-              </div>
-            </div>
 
-            {/* Unidade Consumidora */}
-            <div className="flex items-center space-x-4 p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl border border-green-100">
-              <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-500 rounded-2xl flex items-center justify-center shadow-lg">
-                <Zap className="w-6 h-6 text-white" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-sm text-green-600 font-semibold mb-1">Unidade Consumidora</p>
-                <p className="text-lg font-mono font-bold text-green-800 truncate">{getEnergyAccount()}</p>
-              </div>
-            </div>
-
-            {/* Plano Contratado */}
-            <div className="flex items-center space-x-4 p-4 bg-gradient-to-r from-purple-50 to-violet-50 rounded-2xl border border-purple-100">
-              <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-violet-500 rounded-2xl flex items-center justify-center shadow-lg">
-                <FileText className="w-6 h-6 text-white" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-sm text-purple-600 font-semibold mb-1">Plano Contratado</p>
-                <p className="text-lg font-bold text-purple-800 truncate">{getPlanInfo()}</p>
+              <div className="flex items-center space-x-3 p-3 bg-green-50 rounded-lg border border-green-100">
+                <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center shrink-0">
+                  <Zap className="w-4 h-4 text-white" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs text-green-600 font-medium">UC</p>
+                  <p className="text-sm font-mono font-semibold text-green-800 truncate">
+                    {getEnergyAccount()}
+                  </p>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Coluna Direita - Informações de Contato */}
-          <div className="space-y-5">
-            <div className="space-y-4">
-              <h4 className="text-lg font-semibold text-gray-900 mb-4">Informações de Contato</h4>
+          {/* Seção: Plano e Contato */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            
+            {/* Plano */}
+            <div className="space-y-2">
+              <h4 className="text-sm font-semibold text-gray-700">Plano</h4>
+              <div className="p-3 bg-purple-50 rounded-lg border border-purple-100">
+                <div className="flex items-center space-x-2">
+                  <FileText className="w-4 h-4 text-purple-600 shrink-0" />
+                  <p className="text-sm font-semibold text-purple-800 truncate">
+                    {getPlanInfo()}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Localização */}
+            <div className="space-y-2">
+              <h4 className="text-sm font-semibold text-gray-700">Localização</h4>
+              <div className="p-3 bg-orange-50 rounded-lg border border-orange-100">
+                <div className="flex items-center space-x-2">
+                  <MapPin className="w-4 h-4 text-orange-600 shrink-0" />
+                  <p className="text-sm font-semibold text-orange-800 truncate">
+                    {contactInfo.city}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Seção: Contato */}
+          <div className="space-y-3">
+            <h4 className="text-sm font-semibold text-gray-700 border-b border-gray-100 pb-1">
+              Contato
+            </h4>
+            
+            <div className="grid grid-cols-1 gap-2">
+              <div className="flex items-center space-x-3 p-2 bg-gray-50 rounded-lg">
+                <Phone className="w-4 h-4 text-gray-500 shrink-0" />
+                <span className="text-sm text-gray-700 truncate">{contactInfo.phone}</span>
+              </div>
               
-              <div className="flex items-center space-x-4 p-3 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl border border-gray-200">
-                <div className="w-10 h-10 bg-gradient-to-br from-green-100 to-emerald-100 rounded-xl flex items-center justify-center">
-                  <Phone className="w-5 h-5 text-green-600" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs text-gray-500 font-medium mb-1">Telefone</p>
-                  <p className="text-sm text-gray-900 font-medium truncate">{contactInfo.phone}</p>
-                </div>
-              </div>
-
-              <div className="flex items-center space-x-4 p-3 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl border border-gray-200">
-                <div className="w-10 h-10 bg-gradient-to-br from-purple-100 to-violet-100 rounded-xl flex items-center justify-center">
-                  <Mail className="w-5 h-5 text-purple-600" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs text-gray-500 font-medium mb-1">E-mail</p>
-                  <p className="text-sm text-gray-900 font-medium truncate">{contactInfo.email}</p>
-                </div>
-              </div>
-
-              <div className="flex items-center space-x-4 p-3 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl border border-gray-200">
-                <div className="w-10 h-10 bg-gradient-to-br from-orange-100 to-red-100 rounded-xl flex items-center justify-center">
-                  <MapPin className="w-5 h-5 text-orange-600" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs text-gray-500 font-medium mb-1">Cidade</p>
-                  <p className="text-sm text-gray-900 font-medium truncate">{contactInfo.city}</p>
-                </div>
+              <div className="flex items-center space-x-3 p-2 bg-gray-50 rounded-lg">
+                <Mail className="w-4 h-4 text-gray-500 shrink-0" />
+                <span className="text-sm text-gray-700 truncate">{contactInfo.email}</span>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Actions - Mais espaçadas e visíveis */}
-        <div className="flex items-center justify-end space-x-3 pt-6 border-t border-gray-200">
+        {/* Actions */}
+        <div className="flex items-center justify-end space-x-2 pt-4 border-t border-gray-100">
           <Button
             variant="ghost"
             size="sm"
@@ -217,11 +228,10 @@ const SubscriberCard = ({ subscriber, onEdit, onDelete, onView }: SubscriberCard
               e.stopPropagation();
               onView(subscriber);
             }}
-            className="h-12 px-4 hover:bg-green-100 hover:text-green-700 transition-all duration-300 rounded-xl shadow-sm hover:shadow-md border border-green-200"
-            title="Visualizar"
+            className="h-9 px-3 hover:bg-green-50 hover:text-green-700 transition-colors rounded-lg border border-green-200"
           >
-            <Eye className="h-5 w-5 mr-2" />
-            <span className="font-medium">Visualizar</span>
+            <Eye className="h-4 w-4 mr-1" />
+            <span className="text-xs font-medium">Ver</span>
           </Button>
           <Button
             variant="ghost"
@@ -230,11 +240,10 @@ const SubscriberCard = ({ subscriber, onEdit, onDelete, onView }: SubscriberCard
               e.stopPropagation();
               onEdit(subscriber);
             }}
-            className="h-12 px-4 hover:bg-green-100 hover:text-green-700 transition-all duration-300 rounded-xl shadow-sm hover:shadow-md border border-green-200"
-            title="Editar"
+            className="h-9 px-3 hover:bg-blue-50 hover:text-blue-700 transition-colors rounded-lg border border-blue-200"
           >
-            <Edit className="h-5 w-5 mr-2" />
-            <span className="font-medium">Editar</span>
+            <Edit className="h-4 w-4 mr-1" />
+            <span className="text-xs font-medium">Editar</span>
           </Button>
           <Button
             variant="ghost"
@@ -243,11 +252,10 @@ const SubscriberCard = ({ subscriber, onEdit, onDelete, onView }: SubscriberCard
               e.stopPropagation();
               onDelete(subscriber.id);
             }}
-            className="h-12 px-4 hover:bg-red-100 hover:text-red-700 transition-all duration-300 rounded-xl shadow-sm hover:shadow-md border border-red-200"
-            title="Excluir"
+            className="h-9 px-3 hover:bg-red-50 hover:text-red-700 transition-colors rounded-lg border border-red-200"
           >
-            <Trash2 className="h-5 w-5 mr-2" />
-            <span className="font-medium">Excluir</span>
+            <Trash2 className="h-4 w-4 mr-1" />
+            <span className="text-xs font-medium">Excluir</span>
           </Button>
         </div>
       </CardContent>
