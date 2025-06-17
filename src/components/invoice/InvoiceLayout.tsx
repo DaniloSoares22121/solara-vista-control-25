@@ -1,4 +1,3 @@
-
 import React, { useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
@@ -277,155 +276,148 @@ const InvoiceLayout: React.FC = () => {
               </div>
             </div>
 
-            {/* Conteúdo Principal em Grid compacto */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Coluna Esquerda - Histórico */}
-              <div>
-                <div className="bg-gray-50 p-4 rounded-xl border shadow-sm">
-                  <h3 className="text-sm font-bold text-white mb-4 text-center bg-green-600 py-2 rounded-lg">HISTÓRICO DE ECONOMIA</h3>
-                  <div className="space-y-3">
-                    {data.historico.slice(0, 6).map((item, index) => (
-                      <div key={index} className="flex items-center">
-                        <span className="text-xs font-medium text-gray-600 w-16 text-right mr-3">{item.mes}</span>
-                        <div className="flex-1 bg-gray-200 rounded-full h-6 relative overflow-hidden">
-                          <div 
-                            className="bg-gradient-to-r from-green-500 to-green-600 h-6 rounded-full flex items-center justify-end pr-2 shadow-inner" 
-                            style={{ width: `${Math.max(20, (item.valor / 2500) * 100)}%` }}
-                          >
-                            <span className="text-xs font-bold text-white">{formatCurrency(item.valor)}</span>
-                          </div>
+            {/* Layout Principal - Ajustado para reduzir espaços */}
+            <div className="space-y-6">
+              {/* Histórico de Economia */}
+              <div className="bg-gray-50 p-4 rounded-xl border shadow-sm">
+                <h3 className="text-sm font-bold text-white mb-4 text-center bg-green-600 py-2 rounded-lg">HISTÓRICO DE ECONOMIA</h3>
+                <div className="space-y-3">
+                  {data.historico.slice(0, 6).map((item, index) => (
+                    <div key={index} className="flex items-center">
+                      <span className="text-xs font-medium text-gray-600 w-16 text-right mr-3">{item.mes}</span>
+                      <div className="flex-1 bg-gray-200 rounded-full h-6 relative overflow-hidden">
+                        <div 
+                          className="bg-gradient-to-r from-green-500 to-green-600 h-6 rounded-full flex items-center justify-end pr-2 shadow-inner" 
+                          style={{ width: `${Math.max(20, (item.valor / 2500) * 100)}%` }}
+                        >
+                          <span className="text-xs font-bold text-white">{formatCurrency(item.valor)}</span>
                         </div>
                       </div>
-                    ))}
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-4 flex justify-between text-xs text-gray-500 px-16">
+                  <span>0</span>
+                  <span>500</span>
+                  <span>1000</span>
+                  <span>1500</span>
+                  <span>2000</span>
+                  <span>R$</span>
+                </div>
+              </div>
+
+              {/* Fatura Energy Pay */}
+              <div className="bg-green-600 text-white p-3 rounded-t-xl">
+                <h3 className="text-center font-bold text-base">FATURA ENERGY PAY</h3>
+              </div>
+              
+              <div className="bg-gray-50 border border-t-0 rounded-b-xl p-4 -mt-6">
+                <div className="grid grid-cols-3 gap-4 text-xs font-bold text-gray-600 mb-3 pb-2 border-b border-gray-300">
+                  <span></span>
+                  <span className="text-center">QUANTIDADE</span>
+                  <span className="text-center">VALOR A PAGAR</span>
+                </div>
+                <div className="space-y-2">
+                  <div className="grid grid-cols-3 gap-4 text-xs">
+                    <span>Energia elétrica compensada</span>
+                    <span className="text-center font-medium">8.458 kWh</span>
+                    <span className="text-center font-bold">{formatCurrency(data.valor)}</span>
                   </div>
-                  <div className="mt-4 flex justify-between text-xs text-gray-500 px-16">
-                    <span>0</span>
-                    <span>500</span>
-                    <span>1000</span>
-                    <span>1500</span>
-                    <span>2000</span>
-                    <span>R$</span>
+                  <div className="grid grid-cols-3 gap-4 text-xs">
+                    <span>Desconto ajuste de tarifas</span>
+                    <span className="text-center"></span>
+                    <span className="text-center font-bold">-R$ 0,00</span>
+                  </div>
+                </div>
+                <div className="border-t-2 border-gray-400 pt-3 mt-3">
+                  <div className="grid grid-cols-3 gap-4 text-sm font-bold">
+                    <span>Total:</span>
+                    <span></span>
+                    <span className="text-center text-green-600">{formatCurrency(data.valor)}</span>
                   </div>
                 </div>
               </div>
 
-              {/* Coluna Direita - Detalhes da Fatura */}
+              {/* Demonstrativo de Economia - Layout Ajustado */}
               <div className="space-y-4">
-                {/* Fatura Energy Pay */}
-                <div>
-                  <div className="bg-green-600 text-white p-3 rounded-t-xl">
-                    <h3 className="text-center font-bold text-base">FATURA ENERGY PAY</h3>
-                  </div>
-                  
-                  <div className="bg-gray-50 border border-t-0 rounded-b-xl p-4">
-                    <div className="grid grid-cols-3 gap-4 text-xs font-bold text-gray-600 mb-3 pb-2 border-b border-gray-300">
+                <div className="bg-green-600 text-white p-3 rounded-t-xl">
+                  <h3 className="text-center font-bold text-sm">DEMONSTRATIVO DE ECONOMIA</h3>
+                </div>
+
+                {/* Valor sem Energy Pay */}
+                <div className="bg-gray-50 border border-t-0 p-4 -mt-4">
+                  <h4 className="text-sm font-bold text-green-600 mb-3">VALOR TOTAL DA ENERGIA SEM A ENERGY PAY</h4>
+                  <div className="bg-white p-3 rounded-lg border">
+                    <div className="grid grid-cols-4 gap-2 text-xs font-bold text-gray-600 mb-2 pb-2 border-b">
                       <span></span>
                       <span className="text-center">QUANTIDADE</span>
+                      <span className="text-center">TARIFA</span>
                       <span className="text-center">VALOR A PAGAR</span>
                     </div>
-                    <div className="space-y-2">
-                      <div className="grid grid-cols-3 gap-4 text-xs">
-                        <span>Energia elétrica compensada</span>
-                        <span className="text-center font-medium">8.458 kWh</span>
-                        <span className="text-center font-bold">{formatCurrency(data.valor)}</span>
-                      </div>
-                      <div className="grid grid-cols-3 gap-4 text-xs">
-                        <span>Desconto ajuste de tarifas</span>
-                        <span className="text-center"></span>
-                        <span className="text-center font-bold">-R$ 0,00</span>
-                      </div>
+                    <div className="grid grid-cols-4 gap-2 text-xs mb-2">
+                      <span>Energia elétrica</span>
+                      <span className="text-center">8.558 kWh</span>
+                      <span className="text-center">R$ 1,01262100</span>
+                      <span className="text-center font-bold">R$ 8.666,01</span>
                     </div>
-                    <div className="border-t-2 border-gray-400 pt-3 mt-3">
-                      <div className="grid grid-cols-3 gap-4 text-sm font-bold">
+                    <div className="border-t-2 border-gray-300 pt-2">
+                      <div className="grid grid-cols-4 gap-2 text-sm font-bold">
                         <span>Total:</span>
                         <span></span>
-                        <span className="text-center text-green-600">{formatCurrency(data.valor)}</span>
+                        <span></span>
+                        <span className="text-center">R$ 8.666,01</span>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Demonstrativo de Economia */}
-                <div>
-                  <div className="bg-green-600 text-white p-3 rounded-t-xl">
-                    <h3 className="text-center font-bold text-sm">DEMONSTRATIVO DE ECONOMIA</h3>
-                  </div>
-
-                  {/* Valor sem Energy Pay */}
-                  <div className="bg-gray-50 border border-t-0 p-4">
-                    <h4 className="text-sm font-bold text-green-600 mb-3">VALOR TOTAL DA ENERGIA SEM A ENERGY PAY</h4>
-                    <div className="bg-white p-3 rounded-lg border">
-                      <div className="grid grid-cols-4 gap-2 text-xs font-bold text-gray-600 mb-2 pb-2 border-b">
-                        <span></span>
-                        <span className="text-center">QUANTIDADE</span>
-                        <span className="text-center">TARIFA</span>
-                        <span className="text-center">VALOR A PAGAR</span>
+                {/* Valor com Energy Pay */}
+                <div className="bg-gray-50 border border-t-0 p-4 -mt-4">
+                  <h4 className="text-sm font-bold text-green-600 mb-3">VALOR TOTAL DA ENERGIA COM A ENERGY PAY</h4>
+                  <div className="bg-white p-3 rounded-lg border">
+                    <div className="grid grid-cols-2 gap-4 text-xs font-bold text-gray-600 mb-2 pb-2 border-b">
+                      <span></span>
+                      <span className="text-center">VALOR A PAGAR</span>
+                    </div>
+                    <div className="space-y-1 text-xs">
+                      <div className="grid grid-cols-2 gap-4">
+                        <span>Energia elétrica não compensada</span>
+                        <span className="text-center">R$ 101,26</span>
                       </div>
-                      <div className="grid grid-cols-4 gap-2 text-xs mb-2">
-                        <span>Energia elétrica</span>
-                        <span className="text-center">8.558 kWh</span>
-                        <span className="text-center">R$ 1,01262100</span>
-                        <span className="text-center font-bold">R$ 8.666,01</span>
+                      <div className="grid grid-cols-2 gap-4">
+                        <span>Ajuste de tarifas</span>
+                        <span className="text-center">R$ 0,00</span>
                       </div>
-                      <div className="border-t-2 border-gray-300 pt-2">
-                        <div className="grid grid-cols-4 gap-2 text-sm font-bold">
-                          <span>Total:</span>
-                          <span></span>
-                          <span></span>
-                          <span className="text-center">R$ 8.666,01</span>
-                        </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <span>Fatura ENERGY PAY</span>
+                        <span className="text-center font-bold">{formatCurrency(data.valor)}</span>
+                      </div>
+                    </div>
+                    <div className="border-t-2 border-gray-300 pt-2 mt-2">
+                      <div className="grid grid-cols-2 gap-4 text-sm font-bold">
+                        <span>Total:</span>
+                        <span className="text-center">R$ 6.385,90</span>
                       </div>
                     </div>
                   </div>
+                </div>
 
-                  {/* Valor com Energy Pay */}
-                  <div className="bg-gray-50 border border-t-0 p-4">
-                    <h4 className="text-sm font-bold text-green-600 mb-3">VALOR TOTAL DA ENERGIA COM A ENERGY PAY</h4>
-                    <div className="bg-white p-3 rounded-lg border">
-                      <div className="grid grid-cols-2 gap-4 text-xs font-bold text-gray-600 mb-2 pb-2 border-b">
-                        <span></span>
-                        <span className="text-center">VALOR A PAGAR</span>
-                      </div>
-                      <div className="space-y-1 text-xs">
-                        <div className="grid grid-cols-2 gap-4">
-                          <span>Energia elétrica não compensada</span>
-                          <span className="text-center">R$ 101,26</span>
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
-                          <span>Ajuste de tarifas</span>
-                          <span className="text-center">R$ 0,00</span>
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
-                          <span>Fatura ENERGY PAY</span>
-                          <span className="text-center font-bold">{formatCurrency(data.valor)}</span>
-                        </div>
-                      </div>
-                      <div className="border-t-2 border-gray-300 pt-2 mt-2">
-                        <div className="grid grid-cols-2 gap-4 text-sm font-bold">
-                          <span>Total:</span>
-                          <span className="text-center">R$ 6.385,90</span>
-                        </div>
-                      </div>
+                {/* Cálculo da Economia */}
+                <div className="bg-green-100 border border-t-0 rounded-b-xl p-4 border-green-300 -mt-4">
+                  <h4 className="text-sm font-bold text-green-600 mb-3 text-center">CÁLCULO DA ECONOMIA</h4>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between items-center">
+                      <span>Valor total da energia <strong>SEM</strong> A ENERGY PAY</span>
+                      <span className="font-bold">R$ 8.666,01</span>
                     </div>
-                  </div>
-
-                  {/* Cálculo da Economia */}
-                  <div className="bg-green-100 border border-t-0 rounded-b-xl p-4 border-green-300">
-                    <h4 className="text-sm font-bold text-green-600 mb-3 text-center">CÁLCULO DA ECONOMIA</h4>
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between items-center">
-                        <span>Valor total da energia <strong>SEM</strong> A ENERGY PAY</span>
-                        <span className="font-bold">R$ 8.666,01</span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span>Valor total da energia <strong>COM</strong> A ENERGY PAY</span>
-                        <span className="font-bold">R$ 6.385,90</span>
-                      </div>
-                      <div className="border-t-4 border-green-500 pt-3 mt-3 bg-white rounded-lg p-3">
-                        <div className="flex justify-between items-center text-lg font-bold text-green-600">
-                          <span>Total Economizado:</span>
-                          <span>{formatCurrency(data.economiaTotal)}</span>
-                        </div>
+                    <div className="flex justify-between items-center">
+                      <span>Valor total da energia <strong>COM</strong> A ENERGY PAY</span>
+                      <span className="font-bold">R$ 6.385,90</span>
+                    </div>
+                    <div className="border-t-4 border-green-500 pt-3 mt-3 bg-white rounded-lg p-3">
+                      <div className="flex justify-between items-center text-lg font-bold text-green-600">
+                        <span>Total Economizado:</span>
+                        <span>{formatCurrency(data.economiaTotal)}</span>
                       </div>
                     </div>
                   </div>
