@@ -33,20 +33,23 @@ const ContactsSection = ({
     { value: 'outro', label: 'Outro' },
   ];
 
+  // Ensure contacts is always an array
+  const safeContacts = Array.isArray(contacts) ? contacts : [];
+
   // Watch contacts to ensure form updates
   React.useEffect(() => {
-    contacts.forEach((contact, index) => {
+    safeContacts.forEach((contact, index) => {
       if (contact.name) form.setValue(`${fieldPrefix}.contacts.${index}.name`, contact.name);
       if (contact.phone) form.setValue(`${fieldPrefix}.contacts.${index}.phone`, contact.phone);
       if (contact.role) form.setValue(`${fieldPrefix}.contacts.${index}.role`, contact.role);
     });
-  }, [contacts, form, fieldPrefix]);
+  }, [safeContacts, form, fieldPrefix]);
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h4 className="text-md font-semibold text-gray-900">Contatos Adicionais</h4>
-        {contacts.length < 5 && (
+        {safeContacts.length < 5 && (
           <Button
             type="button"
             variant="outline"
@@ -60,7 +63,7 @@ const ContactsSection = ({
         )}
       </div>
 
-      {contacts.map((contact, index) => (
+      {safeContacts.map((contact, index) => (
         <div key={contact.id} className="p-4 border-2 border-green-100 rounded-lg bg-green-50/30 space-y-3 shadow-sm">
           <div className="flex items-center justify-between">
             <h5 className="font-medium text-gray-700">Contato {index + 1}</h5>
@@ -141,14 +144,14 @@ const ContactsSection = ({
         </div>
       ))}
 
-      {contacts.length === 0 && (
+      {safeContacts.length === 0 && (
         <div className="text-center py-8 text-gray-500 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200">
           <p>Nenhum contato adicional cadastrado.</p>
           <p className="text-sm">Clique em "Adicionar Contato" para incluir um novo contato.</p>
         </div>
       )}
 
-      {contacts.length >= 5 && (
+      {safeContacts.length >= 5 && (
         <div className="text-center py-2 text-sm text-amber-600 bg-amber-50 rounded-lg border border-amber-200">
           Máximo de 5 contatos adicionais atingido.
         </div>

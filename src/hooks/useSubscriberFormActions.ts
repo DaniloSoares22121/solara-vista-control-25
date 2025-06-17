@@ -15,19 +15,24 @@ export const useSubscriberFormActions = () => {
       role: '',
     };
 
-    setFormData({
-      ...formData,
-      [type === 'personal' ? 'personalData' : 'companyData']: {
-        ...formData[type === 'personal' ? 'personalData' : 'companyData'],
-        contacts: [
-          ...(formData[type === 'personal' ? 'personalData' : 'companyData']?.contacts || []),
-          newContact
-        ].slice(0, 5) // Máximo 5 contatos
-      }
-    });
+    const dataKey = type === 'personal' ? 'personalData' : 'companyData';
+    const currentData = formData[dataKey];
+    
+    if (currentData) {
+      // Ensure contacts is always an array
+      const currentContacts = Array.isArray(currentData.contacts) ? currentData.contacts : [];
+      
+      setFormData({
+        ...formData,
+        [dataKey]: {
+          ...currentData,
+          contacts: [...currentContacts, newContact].slice(0, 5) // Máximo 5 contatos
+        }
+      });
 
-    if ((formData[type === 'personal' ? 'personalData' : 'companyData']?.contacts?.length || 0) >= 5) {
-      toast.error('Máximo de 5 contatos permitidos', { duration: 1000 });
+      if (currentContacts.length >= 5) {
+        toast.error('Máximo de 5 contatos permitidos', { duration: 1000 });
+      }
     }
   }, []);
 
@@ -36,11 +41,14 @@ export const useSubscriberFormActions = () => {
     const currentData = formData[dataKey];
     
     if (currentData) {
+      // Ensure contacts is always an array
+      const currentContacts = Array.isArray(currentData.contacts) ? currentData.contacts : [];
+      
       setFormData({
         ...formData,
         [dataKey]: {
           ...currentData,
-          contacts: currentData.contacts?.filter(c => c.id !== contactId) || []
+          contacts: currentContacts.filter(c => c.id !== contactId)
         }
       });
     }

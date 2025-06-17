@@ -49,7 +49,7 @@ export const useSubscriberForm = (existingData?: SubscriberDataFromDB) => {
           email: (subscriber.email as string) || '',
           observations: (subscriber.observations as string) || '',
           address: mapAddress(subscriber.address as Record<string, unknown>),
-          contacts: (subscriber.contacts as any[]) || [],
+          contacts: Array.isArray(subscriber.contacts) ? (subscriber.contacts as any[]) : [],
         } : initialFormData.personalData!,
         
         companyData: subscriberType === 'company' && subscriber ? {
@@ -61,7 +61,7 @@ export const useSubscriberForm = (existingData?: SubscriberDataFromDB) => {
           email: (subscriber.email as string) || '',
           observations: (subscriber.observations as string) || '',
           address: mapAddress(subscriber.address as Record<string, unknown>),
-          contacts: (subscriber.contacts as any[]) || [],
+          contacts: Array.isArray(subscriber.contacts) ? (subscriber.contacts as any[]) : [],
         } : initialFormData.companyData!,
         
         administratorData: administrator ? {
