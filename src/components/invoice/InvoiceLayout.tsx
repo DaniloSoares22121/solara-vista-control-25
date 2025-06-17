@@ -1,3 +1,4 @@
+
 import React, { useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
@@ -61,12 +62,12 @@ const mockInvoiceData: InvoiceData = {
     dataVencimento: "20/06/2025"
   },
   historico: [
-    { mes: "MAI/2025", valor: 2280.11, semEnergyPay: 8666.01, comEnergyPay: 6284.64 },
-    { mes: "ABR/2025", valor: 1932.18, semEnergyPay: 8666.01, comEnergyPay: 6284.64 },
-    { mes: "MAR/2025", valor: 1831.39, semEnergyPay: 8666.01, comEnergyPay: 6284.64 },
-    { mes: "FEV/2025", valor: 1430.33, semEnergyPay: 8666.01, comEnergyPay: 6284.64 },
-    { mes: "JAN/2025", valor: 0, semEnergyPay: 8666.01, comEnergyPay: 6284.64 },
-    { mes: "DEZ/2024", valor: 0, semEnergyPay: 8666.01, comEnergyPay: 6284.64 }
+    { mes: "MAI/2025", valor: 2280.11, semEnergyPay: 8666.01, comEnergyPay: 6385.90 },
+    { mes: "ABR/2025", valor: 1932.18, semEnergyPay: 8666.01, comEnergyPay: 6385.90 },
+    { mes: "MAR/2025", valor: 1831.39, semEnergyPay: 8666.01, comEnergyPay: 6385.90 },
+    { mes: "FEV/2025", valor: 1430.33, semEnergyPay: 8666.01, comEnergyPay: 6385.90 },
+    { mes: "JAN/2025", valor: 0, semEnergyPay: 8666.01, comEnergyPay: 6385.90 },
+    { mes: "DEZ/2024", valor: 0, semEnergyPay: 8666.01, comEnergyPay: 6385.90 }
   ],
   economiaTotal: 2280.11,
   pixCode: "00020101021126580014br.gov.bcb.pix2536pix.lovable.dev/qr/v2/cobv/9d3d2f1a-4b8e-4c7d-8f2e-1a2b3c4d5e6f5204000053039865802BR5925Energy Pay Energia Solar6009SAO PAULO62070503***6304D2A4",
@@ -301,7 +302,7 @@ const InvoiceLayout: React.FC = () => {
 
             {/* Two columns: History and Invoice table - ultra compactos */}
             <div className="grid grid-cols-2 gap-2">
-              {/* History chart - CORRIGIDO */}
+              {/* History chart */}
               <div className="bg-white border rounded overflow-hidden">
                 <div className="bg-green-800 text-white p-1">
                   <h3 className="text-center font-bold text-xs">HISTÓRICO DE ECONOMIA</h3>
