@@ -1,11 +1,10 @@
-
 import React, { useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { formatCurrency, formatDate } from '@/utils/formatters';
-import { QrCode, Download, Award, TrendingUp, Zap, Star, Sparkles, User, FileText, Building2, Phone, Globe, MapPin, Calendar, Hash, DollarSign, CreditCard, Banknote } from 'lucide-react';
+import { QrCode, Download, Award, TrendingUp, Zap, Star, Sparkles, User, FileText, Building2, Phone, Globe, MapPin, Calendar, Hash, DollarSign, CreditCard, Banknote, ExternalLink } from 'lucide-react';
 import { generateCustomPDF } from '@/services/pdfService';
 import { useToast } from '@/hooks/use-toast';
 
@@ -84,6 +83,13 @@ const InvoiceLayout: React.FC = () => {
 
   const handleGenerateAndSavePDF = async () => {
     try {
+      // Se não estiver na rota do layout, abrir o site em nova aba
+      if (!isLayoutRoute) {
+        window.open('/fatura-layout', '_blank');
+        return;
+      }
+
+      // Se estiver na rota do layout, baixar o PDF
       toast({
         title: "Gerando PDF...",
         description: "Processando fatura.",
@@ -93,62 +99,22 @@ const InvoiceLayout: React.FC = () => {
         throw new Error('Referência da fatura não encontrada');
       }
 
-      if (isLayoutRoute) {
-        const customPdfBytes = await generateCustomPDF('invoice-layout');
-        
-        const blob = new Blob([customPdfBytes], { type: 'application/pdf' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `fatura-${Date.now()}.pdf`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-        
-        toast({
-          title: "PDF baixado!",
-          description: "Fatura foi baixada com sucesso.",
-        });
-        return;
-      }
-
       const customPdfBytes = await generateCustomPDF('invoice-layout');
-      const customPdfBase64 = btoa(String.fromCharCode(...customPdfBytes));
-
-      const response = await fetch('/functions/v1/baixar-fatura', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          uc: data.numero,
-          documento: data.cliente.documento,
-          customPdfBase64: customPdfBase64
-        })
+      
+      const blob = new Blob([customPdfBytes], { type: 'application/pdf' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `fatura-${Date.now()}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      
+      toast({
+        title: "PDF baixado!",
+        description: "Fatura foi baixada com sucesso.",
       });
-
-      if (!response.ok) {
-        throw new Error('Erro ao processar fatura');
-      }
-
-      const result = await response.json();
-
-      if (result.pdf_combinado_url) {
-        window.open(result.pdf_combinado_url, '_blank');
-        
-        toast({
-          title: "PDF gerado com sucesso!",
-          description: "O PDF foi salvo e está sendo exibido.",
-        });
-      } else {
-        window.open(result.fatura_url, '_blank');
-        
-        toast({
-          title: "PDF da distribuidora",
-          description: "Exibindo PDF original da distribuidora.",
-        });
-      }
 
     } catch (error) {
       console.error('Erro ao gerar PDF:', error);
@@ -169,8 +135,17 @@ const InvoiceLayout: React.FC = () => {
             onClick={handleGenerateAndSavePDF}
             className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 text-sm font-semibold"
           >
-            <Download className="w-4 h-4 mr-1" />
-            {isLayoutRoute ? 'Baixar PDF' : 'Gerar PDF Completo'}
+            {isLayoutRoute ? (
+              <>
+                <Download className="w-4 h-4 mr-1" />
+                Baixar PDF
+              </>
+            ) : (
+              <>
+                <ExternalLink className="w-4 h-4 mr-1" />
+                Visualizar Fatura
+              </>
+            )}
           </Button>
         </div>
 
