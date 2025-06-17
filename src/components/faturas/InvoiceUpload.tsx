@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -23,6 +24,7 @@ export function InvoiceUpload({ subscriber, onDataConfirmed }: InvoiceUploadProp
   const [uploaded, setUploaded] = useState(false);
   const [showExtractedData, setShowExtractedData] = useState(false);
   const [dataConfirmed, setDataConfirmed] = useState(false);
+  const [extractedData, setExtractedData] = useState<any>(null);
   
   const [energyPayData, setEnergyPayData] = useState<any>(null);
   const [showEnergyPayCalculator, setShowEnergyPayCalculator] = useState(false);
@@ -81,11 +83,13 @@ export function InvoiceUpload({ subscriber, onDataConfirmed }: InvoiceUploadProp
 
   const handleDataExtracted = (data: any) => {
     console.log('Dados extraídos da fatura:', data);
+    setExtractedData(data);
     setShowExtractedData(true);
   };
 
   const handleDataConfirmed = (data: any) => {
     console.log('Dados confirmados:', data);
+    setExtractedData(data);
     setDataConfirmed(true);
     setShowEnergyPayCalculator(true);
   };
