@@ -1,4 +1,3 @@
-
 import React, { useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
@@ -302,7 +301,7 @@ const InvoiceLayout: React.FC = () => {
 
             {/* Two columns: History and Invoice table - ultra compactos */}
             <div className="grid grid-cols-2 gap-2">
-              {/* History chart */}
+              {/* History chart - CORRIGIDO */}
               <div className="bg-white border rounded overflow-hidden">
                 <div className="bg-green-800 text-white p-1">
                   <h3 className="text-center font-bold text-xs">HISTÓRICO DE ECONOMIA</h3>
@@ -310,24 +309,22 @@ const InvoiceLayout: React.FC = () => {
                 <div className="p-2">
                   <div className="space-y-1">
                     {data.historico.slice(0, 6).map((item, index) => (
-                      <div key={index} className="flex items-center">
-                        <span className="font-bold text-gray-600 w-10 text-right mr-1 font-mono text-xs">{item.mes}</span>
-                        <div className="flex-1 bg-gray-200 rounded-full h-3 relative overflow-hidden">
+                      <div key={index} className="flex items-center gap-1">
+                        <span className="font-bold text-gray-600 w-12 text-xs font-mono">{item.mes}</span>
+                        <div className="flex-1 bg-gray-200 rounded-full h-2 relative overflow-hidden">
                           <div 
-                            className="bg-green-500 h-3 rounded-full flex items-center justify-end pr-1" 
-                            style={{ width: `${Math.max(30, (item.valor / 2500) * 100)}%` }}
-                          >
-                            <span className="text-xs font-bold text-white">{formatCurrency(item.valor)}</span>
-                          </div>
+                            className="bg-green-500 h-2 rounded-full" 
+                            style={{ width: `${Math.max(25, (item.valor / 2500) * 100)}%` }}
+                          ></div>
                         </div>
+                        <span className="text-xs font-bold text-green-600 w-16 text-right">{formatCurrency(item.valor)}</span>
                       </div>
                     ))}
                   </div>
-                  <div className="mt-1 flex justify-between text-xs text-gray-500 px-10">
-                    <span>0</span>
-                    <span>1000</span>
-                    <span>2000</span>
-                    <span>R$</span>
+                  <div className="mt-2 flex justify-between text-xs text-gray-500">
+                    <span>R$ 0</span>
+                    <span>R$ 1.000</span>
+                    <span>R$ 2.500</span>
                   </div>
                 </div>
               </div>
@@ -513,4 +510,3 @@ const InvoiceLayout: React.FC = () => {
 };
 
 export default InvoiceLayout;
-
