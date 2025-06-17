@@ -1,291 +1,121 @@
-
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
-import { Upload, FileText, CheckCircle2, AlertCircle, ArrowRight } from 'lucide-react';
-import { SubscriberRecord } from '@/services/supabaseSubscriberService';
-import { InvoiceDataExtractor } from './InvoiceDataExtractor';
-import { toast } from 'sonner';
+import { FileInput } from '@/components/ui/file-input';
 import { EnergyPayCalculator } from './EnergyPayCalculator';
+import { formatCurrency } from '@/utils/formatters';
+import { CheckCircle2 } from 'lucide-react';
+import { SubscriberRecord } from '@/services/supabaseSubscriberService';
 
 interface InvoiceUploadProps {
   subscriber: SubscriberRecord;
-  onDataConfirmed?: (data: any) => void;
+  onDataConfirmed: (data: any) => void;
 }
 
 export function InvoiceUpload({ subscriber, onDataConfirmed }: InvoiceUploadProps) {
   const [file, setFile] = useState<File | null>(null);
-  const [uploading, setUploading] = useState(false);
-  const [observations, setObservations] = useState('');
-  const [uploaded, setUploaded] = useState(false);
-  const [showExtractedData, setShowExtractedData] = useState(false);
-  const [dataConfirmed, setDataConfirmed] = useState(false);
   const [extractedData, setExtractedData] = useState<any>(null);
-  
-  const [energyPayData, setEnergyPayData] = useState<any>(null);
-  const [showEnergyPayCalculator, setShowEnergyPayCalculator] = useState(false);
-  const [calculationConfirmed, setCalculationConfirmed] = useState(false);
+  const [showCalculator, setShowCalculator] = useState(false);
 
-  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = event.target.files?.[0];
-    if (selectedFile) {
-      // Validar tipo de arquivo
-      if (selectedFile.type !== 'application/pdf') {
-        toast.error('Apenas arquivos PDF são aceitos');
-        return;
-      }
-      
-      // Validar tamanho (máximo 10MB)
-      if (selectedFile.size > 10 * 1024 * 1024) {
-        toast.error('Arquivo muito grande. Máximo 10MB');
-        return;
-      }
-      
-      setFile(selectedFile);
-    }
+  const handleFileChange = (newFile: File | null) => {
+    setFile(newFile);
+    setExtractedData(null);
+    setShowCalculator(false);
   };
 
-  const handleUpload = async () => {
-    if (!file) {
-      toast.error('Selecione um arquivo para upload');
-      return;
-    }
+  const handleConfirmData = () => {
+    // Simulação de extração de dados da fatura
+    const mockExtractedData = {
+      nomeCliente: 'Nome do Cliente Mock',
+      numeroFatura: '123456',
+      valorTotal: 1000,
+      consumoKwh: 500,
+      referencia: '08/2024'
+    };
 
-    setUploading(true);
-    
-    try {
-      // Simular upload - aqui você integraria com o Supabase Storage
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      setUploaded(true);
-      toast.success('Fatura enviada com sucesso!');
-      
-      // Aqui você salvaria os dados no banco de dados
-      console.log('Dados para salvar:', {
-        subscriber_id: subscriber.id,
-        file_name: file.name,
-        file_size: file.size,
-        observations: observations,
-        upload_date: new Date().toISOString()
-      });
-      
-    } catch (error) {
-      console.error('Erro no upload:', error);
-      toast.error('Erro ao fazer upload da fatura');
-    } finally {
-      setUploading(false);
-    }
+    setExtractedData(mockExtractedData);
+    setShowCalculator(true);
   };
 
-  const handleDataExtracted = (data: any) => {
-    console.log('Dados extraídos da fatura:', data);
-    setExtractedData(data);
-    setShowExtractedData(true);
-  };
-
-  const handleDataConfirmed = (data: any) => {
-    console.log('Dados confirmados:', data);
-    setExtractedData(data);
-    setDataConfirmed(true);
-    setShowEnergyPayCalculator(true);
-  };
-
-  const handleCalculationConfirmed = (data: any) => {
-    console.log('Cálculo EnergyPay confirmado:', data);
-    setEnergyPayData(data);
-    setCalculationConfirmed(true);
-    onDataConfirmed?.({ 
-      extractedData: extractedData, 
-      energyPayData: data 
-    });
-  };
-
-  const subscriberData = subscriber.subscriber;
-  const energyAccount = subscriber.energy_account;
+  const handleCalculationConfirmed = useCallback((data: any) => {
+    console.log('Dados confirmados no InvoiceUpload:', data);
+    onDataConfirmed({ extractedData, energyPayData: data });
+  }, [extractedData, onDataConfirmed]);
 
   return (
     <div className="space-y-6">
-      <div>
-        <h3 className="text-lg font-semibold mb-2">Upload da Fatura</h3>
-        <p className="text-muted-foreground">
-          Faça o upload da fatura da Equatorial para o assinante selecionado
-        </p>
-      </div>
-
-      {/* Resumo do Assinante */}
-      <Card>
+      {/* File Upload Section */}
+      <Card className="border-0 shadow-lg">
         <CardHeader>
-          <CardTitle className="text-base">Resumo do Assinante</CardTitle>
+          <CardTitle>Upload da Fatura</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="font-medium">
-                {subscriberData?.fullName || subscriberData?.companyName}
-              </p>
-              <p className="text-sm text-muted-foreground">
-                UC: {energyAccount?.uc} | {subscriberData?.cpf || subscriberData?.cnpj}
-              </p>
+          <FileInput onFileChange={handleFileChange} />
+          {file && (
+            <div className="mt-4">
+              <Label>Arquivo selecionado:</Label>
+              <p>{file.name}</p>
             </div>
-            <Badge variant="outline">
-              {subscriber.plan_contract?.discountPercentage || 0}% desconto
-            </Badge>
-          </div>
+          )}
         </CardContent>
       </Card>
 
-      {/* Upload da Fatura */}
-      {!uploaded && (
-        <Card>
+      {/* Extracted Data Display */}
+      {extractedData && (
+        <Card className="border-blue-200 bg-blue-50">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Upload className="h-5 w-5" />
-              Fatura da Equatorial
-            </CardTitle>
+            <CardTitle className="text-blue-800">Dados Extraídos da Fatura</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <Label htmlFor="invoice-file">Arquivo da Fatura (PDF)</Label>
-              <Input
-                id="invoice-file"
-                type="file"
-                accept=".pdf"
-                onChange={handleFileSelect}
-                className="mt-1"
-              />
-              <p className="text-xs text-muted-foreground mt-1">
-                Apenas arquivos PDF, máximo 10MB
-              </p>
-            </div>
-
-            {file && (
-              <div className="flex items-center gap-2 p-3 bg-muted rounded-lg">
-                <FileText className="h-5 w-5 text-blue-600" />
-                <div className="flex-1">
-                  <p className="font-medium">{file.name}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {(file.size / 1024 / 1024).toFixed(2)} MB
-                  </p>
-                </div>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div>
+                <Label className="text-blue-700">Nome do Cliente</Label>
+                <p className="font-semibold text-blue-800">{extractedData.nomeCliente}</p>
               </div>
-            )}
-
-            <div>
-              <Label htmlFor="observations">Observações (Opcional)</Label>
-              <Textarea
-                id="observations"
-                placeholder="Adicione observações sobre esta fatura..."
-                value={observations}
-                onChange={(e) => setObservations(e.target.value)}
-                className="mt-1"
-              />
-            </div>
-
-            <Button 
-              onClick={handleUpload} 
-              disabled={!file || uploading}
-              className="w-full"
-            >
-              {uploading ? (
-                <>
-                  <Upload className="w-4 h-4 mr-2 animate-spin" />
-                  Enviando...
-                </>
-              ) : (
-                <>
-                  <Upload className="w-4 h-4 mr-2" />
-                  Enviar Fatura
-                </>
-              )}
-            </Button>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Sucesso do Upload */}
-      {uploaded && !showExtractedData && (
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-center py-8">
-              <CheckCircle2 className="h-16 w-16 text-green-600 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-green-600 mb-2">
-                Fatura Enviada com Sucesso!
-              </h3>
-              <p className="text-muted-foreground mb-4">
-                Agora vamos extrair os dados da fatura automaticamente
-              </p>
-              <div className="flex items-center justify-center space-x-2 text-blue-600">
-                <span>Processando extração de dados</span>
-                <ArrowRight className="w-4 h-4" />
+              <div>
+                <Label className="text-blue-700">UC</Label>
+                <p className="font-semibold text-blue-800">{extractedData.numeroFatura}</p>
               </div>
+              <div>
+                <Label className="text-blue-700">Valor Total</Label>
+                <p className="font-semibold text-blue-800">{formatCurrency(extractedData.valorTotal)}</p>
+              </div>
+              <div>
+                <Label className="text-blue-700">Consumo (kWh)</Label>
+                <p className="font-semibold text-blue-800">{extractedData.consumoKwh} kWh</p>
+              </div>
+              <div>
+                <Label className="text-blue-700">Referência</Label>
+                <p className="font-semibold text-blue-800">{extractedData.referencia}</p>
+              </div>
+            </div>
+            
+            <div className="mt-4 flex justify-end">
+              <Button 
+                onClick={handleConfirmData}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                <CheckCircle2 className="w-4 h-4 mr-2" />
+                Confirmar Dados e Calcular EnergyPay
+              </Button>
             </div>
           </CardContent>
         </Card>
       )}
 
-      {/* Extração de Dados */}
-      {uploaded && file && !dataConfirmed && (
-        <InvoiceDataExtractor 
-          file={file} 
-          onDataExtracted={handleDataExtracted}
-          onDataConfirmed={handleDataConfirmed}
-        />
-      )}
-
-      {/* Calculadora EnergyPay */}
-      {showEnergyPayCalculator && extractedData && !calculationConfirmed && (
+      {/* EnergyPay Calculator */}
+      {extractedData && showCalculator && (
         <EnergyPayCalculator
           valorOriginal={extractedData.valorTotal}
-          percentualDesconto={subscriber.plan_contract?.discountPercentage || 0}
+          percentualDesconto={20} // Valor padrão, será sobrescrito pelo cadastro do assinante
           consumoKwh={extractedData.consumoKwh}
           referencia={extractedData.referencia}
+          subscriber={subscriber} // Passando o subscriber para puxar o desconto
           onCalculationConfirmed={handleCalculationConfirmed}
         />
       )}
-
-      {/* Processo Completo */}
-      {calculationConfirmed && energyPayData && (
-        <Card className="border-green-200 bg-green-50">
-          <CardContent className="pt-6">
-            <div className="text-center py-8">
-              <CheckCircle2 className="h-16 w-16 text-green-600 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-green-600 mb-2">
-                Processo Concluído!
-              </h3>
-              <p className="text-muted-foreground mb-4">
-                A fatura foi processada e os cálculos da EnergyPay foram confirmados
-              </p>
-              <div className="flex items-center justify-center space-x-2 text-blue-600">
-                <span>Pronto para próximo passo</span>
-                <ArrowRight className="w-4 h-4" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Informações Importantes */}
-      <Card className="border-amber-200 bg-amber-50">
-        <CardContent className="pt-6">
-          <div className="flex items-start gap-2">
-            <AlertCircle className="h-5 w-5 text-amber-600 mt-0.5" />
-            <div>
-              <h4 className="font-medium text-amber-800">Informações Importantes</h4>
-              <ul className="text-sm text-amber-700 mt-1 space-y-1">
-                <li>• Certifique-se de que a fatura está legível e completa</li>
-                <li>• O sistema extrairá automaticamente todos os dados da fatura</li>
-                <li>• Revise os dados extraídos antes de confirmar</li>
-                <li>• O desconto será aplicado automaticamente: {subscriber.plan_contract?.discountPercentage || 0}%</li>
-                <li>• A fatura processada estará disponível em "Faturas Emitidas"</li>
-              </ul>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 }

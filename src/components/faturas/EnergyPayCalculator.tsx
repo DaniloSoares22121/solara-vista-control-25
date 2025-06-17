@@ -5,8 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Calculator, DollarSign, TrendingDown, ArrowRight, Save, Zap } from 'lucide-react';
+import { Calculator, DollarSign, TrendingDown, ArrowRight, Save, Zap, User } from 'lucide-react';
 import { formatCurrency } from '@/utils/formatters';
+import { SubscriberRecord } from '@/services/supabaseSubscriberService';
 import { toast } from 'sonner';
 
 interface EnergyPayData {
@@ -27,6 +28,7 @@ interface EnergyPayCalculatorProps {
   percentualDesconto: number;
   consumoKwh: number;
   referencia: string;
+  subscriber?: SubscriberRecord;
   onCalculationConfirmed?: (data: EnergyPayData) => void;
 }
 
@@ -35,6 +37,7 @@ export function EnergyPayCalculator({
   percentualDesconto, 
   consumoKwh, 
   referencia,
+  subscriber,
   onCalculationConfirmed 
 }: EnergyPayCalculatorProps) {
   const [editableData, setEditableData] = useState<EnergyPayData>({
@@ -49,6 +52,15 @@ export function EnergyPayCalculator({
     economiaAcumulada: 0,
     percentualDesconto: 0
   });
+
+  // Buscar o percentual de desconto do cadastro do assinante
+  const getSubscriberDiscount = () => {
+    if (subscriber?.plan_contract?.discountPercentage) {
+      return subscriber.plan_contract.discountPercentage;
+    }
+    // Fallback para o percentual passado como prop
+    return percentualDesconto;
+  };
 
   // Determinar o preço unitário baseado no tipo de geração e percentual de desconto
   const getPrecoUnitarioPadrao = (percentual: number) => {
@@ -67,18 +79,21 @@ export function EnergyPayCalculator({
 
   useEffect(() => {
     calculateEnergyPayValues();
-  }, [valorOriginal, percentualDesconto, consumoKwh]);
+  }, [valorOriginal, consumoKwh, subscriber]);
 
   const calculateEnergyPayValues = () => {
+    // Usar o desconto do cadastro do assinante
+    const descontoAssinante = getSubscriberDiscount();
+    
     // Usar energia injetada baseada no consumo (na prática vem da extração da fatura)
     const energiaInjetadaEstimada = consumoKwh;
-    const precoUnitarioPadrao = getPrecoUnitarioPadrao(percentualDesconto);
+    const precoUnitarioPadrao = getPrecoUnitarioPadrao(descontoAssinante);
     
     // Cálculo: Valor Bruto = Energia Injetada × Preço Unitário
     const valorBruto = energiaInjetadaEstimada * precoUnitarioPadrao;
     
     // Cálculo: Desconto = Valor Bruto × (Percentual ÷ 100)
-    const valorDesconto = valorBruto * (percentualDesconto / 100);
+    const valorDesconto = valorBruto * (descontoAssinante / 100);
     
     // Cálculo: Valor Final = Valor Bruto - Desconto
     const valorFinal = valorBruto - valorDesconto;
@@ -93,7 +108,7 @@ export function EnergyPayCalculator({
       economiaMes: valorDesconto,
       calculoEconomia: valorDesconto,
       economiaAcumulada: 0,
-      percentualDesconto: percentualDesconto
+      percentualDesconto: descontoAssinante
     };
 
     setEditableData(calculatedData);
@@ -140,19 +155,58 @@ export function EnergyPayCalculator({
     toast.success('Cálculo da fatura EnergyPay confirmado!');
   };
 
+  const getSubscriberName = () => {
+    if (!subscriber) return 'Assinante não selecionado';
+    const subscriberData = subscriber.subscriber;
+    return subscriberData?.fullName || subscriberData?.companyName || subscriberData?.razaoSocial || 'Nome não informado';
+  };
+
+  const subscriberDiscountPercentage = getSubscriberDiscount();
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
           <Calculator className="w-5 h-5 text-green-600" />
           <h3 className="text-lg font-semibold">Cálculo da Fatura EnergyPay</h3>
-          <Badge variant="secondary">Método Correto</Badge>
+          <Badge variant="secondary">Desconto do Assinante</Badge>
         </div>
         <Button onClick={handleConfirmCalculation} className="bg-green-600 hover:bg-green-700">
           <ArrowRight className="w-4 h-4 mr-2" />
           Confirmar Cálculo
         </Button>
       </div>
+
+      {/* Informações do Assinante */}
+      {subscriber && (
+        <Card className="border-blue-200 bg-blue-50">
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2 text-blue-800">
+              <User className="w-5 h-5" />
+              <span>Dados do Assinante</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label className="text-blue-700">Nome do Assinante</Label>
+                <p className="text-lg font-semibold text-blue-800">
+                  {getSubscriberName()}
+                </p>
+              </div>
+              <div>
+                <Label className="text-blue-700">Percentual de Desconto Cadastrado</Label>
+                <p className="text-lg font-semibold text-blue-800">
+                  {subscriberDiscountPercentage}%
+                </p>
+                <p className="text-xs text-blue-600">
+                  (Valor do cadastro do assinante)
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Informações da Fatura Original */}
       <Card className="border-blue-200 bg-blue-50">
@@ -194,7 +248,7 @@ export function EnergyPayCalculator({
         <CardHeader>
           <CardTitle className="flex items-center space-x-2 text-amber-800">
             <Zap className="w-5 h-5" />
-            <span>Fórmula Correta - Exemplos Reais</span>
+            <span>Fórmula Correta - Exemplo do Assinante</span>
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -203,40 +257,14 @@ export function EnergyPayCalculator({
             <p><strong>Fórmula:</strong> Valor Final = (Energia × Preço Unitário) × (1 - Desconto%)</p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="bg-white p-4 rounded border">
-              <h4 className="font-medium text-blue-800 mb-2">Autoconsumo Remoto (15%):</h4>
-              <div className="text-xs space-y-1">
-                <p>3.537 kWh × R$ 0,964401 = R$ 3.411,09</p>
-                <p>R$ 3.411,09 × (1 - 15%) = R$ 2.899,42</p>
-                <p className="font-semibold text-green-700">Resultado: R$ 2.899,42</p>
-              </div>
-            </div>
-            
-            <div className="bg-white p-4 rounded border">
-              <h4 className="font-medium text-blue-800 mb-2">Geração Compartilhada (20%):</h4>
-              <div className="text-xs space-y-1">
-                <p>3.129,09 kWh × R$ 0,964401 = R$ 3.017,70</p>
-                <p>R$ 3.017,70 × (1 - 20%) = R$ 2.414,16</p>
-                <p className="font-semibold text-green-700">Resultado: R$ 2.414,16</p>
-              </div>
-            </div>
-          </div>
-
           <div className="bg-white p-4 rounded border">
-            <h4 className="font-medium text-purple-800 mb-2">Geração Compartilhada (25%):</h4>
-            <div className="text-xs space-y-1">
-              <p>8.458 kWh × R$ 0,990723 = R$ 8.379,52</p>
-              <p>R$ 8.379,52 × (1 - 25%) = R$ 6.284,64</p>
-              <p className="font-semibold text-green-700">Resultado: R$ 6.284,64</p>
+            <h4 className="font-medium text-green-800 mb-2">Cálculo para este Assinante ({subscriberDiscountPercentage}%):</h4>
+            <div className="text-sm space-y-1 font-mono">
+              <p>{editableData.energiaInjetada.toFixed(2)} kWh × R$ {editableData.precoUnitario.toFixed(6)} = {formatCurrency(editableData.valorBruto)}</p>
+              <p>{formatCurrency(editableData.valorBruto)} × (1 - {subscriberDiscountPercentage}%) = {formatCurrency(editableData.valorComEnergyPay)}</p>
+              <p className="font-semibold text-green-700">Resultado: {formatCurrency(editableData.valorComEnergyPay)}</p>
+              <p className="font-semibold text-blue-700">Economia: {formatCurrency(editableData.economiaMes)}</p>
             </div>
-          </div>
-
-          <div className="bg-gray-100 p-3 rounded border text-xs font-mono">
-            <p><strong>Cálculo Atual:</strong></p>
-            <p>{editableData.energiaInjetada.toFixed(2)} kWh × R$ {editableData.precoUnitario.toFixed(6)} = {formatCurrency(editableData.valorBruto)}</p>
-            <p>{formatCurrency(editableData.valorBruto)} × (1 - {editableData.percentualDesconto}%) = {formatCurrency(editableData.valorComEnergyPay)}</p>
-            <p className="font-semibold text-green-700">Economia: {formatCurrency(editableData.economiaMes)}</p>
           </div>
         </CardContent>
       </Card>
@@ -279,7 +307,7 @@ export function EnergyPayCalculator({
                 placeholder="0.964401"
               />
               <p className="text-xs text-muted-foreground mt-1">
-                15%: R$ 0,964401 | 20%: R$ 0,964401 | 25%: R$ 0,990723
+                15%/20%: R$ 0,964401 | 25%: R$ 0,990723
               </p>
             </div>
             <div>
@@ -290,11 +318,11 @@ export function EnergyPayCalculator({
                 step="0.01"
                 value={editableData.percentualDesconto}
                 onChange={(e) => handleInputChange('percentualDesconto', e.target.value)}
-                className="mt-1"
+                className="mt-1 bg-green-50 border-green-200"
                 placeholder="Ex: 15, 20 ou 25"
               />
-              <p className="text-xs text-muted-foreground mt-1">
-                Autoconsumo: 15% | Compartilhada: 20% ou 25%
+              <p className="text-xs text-green-600 mt-1 font-medium">
+                ✓ Valor do cadastro do assinante: {subscriberDiscountPercentage}%
               </p>
             </div>
           </div>
@@ -322,49 +350,12 @@ export function EnergyPayCalculator({
                 type="number"
                 step="0.01"
                 value={editableData.valorComEnergyPay.toFixed(2)}
-                onChange={(e) => handleInputChange('valorComEnergyPay', e.target.value)}
-                className="mt-1"
+                className="mt-1 bg-green-50 border-green-200 font-semibold"
+                readOnly
               />
-              <p className="text-xs text-muted-foreground mt-1">
-                Valor Bruto × (1 - Desconto%)
+              <p className="text-xs text-green-600 mt-1 font-medium">
+                ✓ Valor Final = Valor Bruto × (1 - {subscriberDiscountPercentage}%)
               </p>
-            </div>
-          </div>
-
-          {/* Terceira linha: Economia */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <Label htmlFor="economiaMes">Economia do Mês (R$)</Label>
-              <Input
-                id="economiaMes"
-                type="number"
-                step="0.01"
-                value={editableData.economiaMes.toFixed(2)}
-                onChange={(e) => handleInputChange('economiaMes', e.target.value)}
-                className="mt-1"
-              />
-            </div>
-            <div>
-              <Label htmlFor="calculoEconomia">Cálculo da Economia (R$)</Label>
-              <Input
-                id="calculoEconomia"
-                type="number"
-                step="0.01"
-                value={editableData.calculoEconomia.toFixed(2)}
-                onChange={(e) => handleInputChange('calculoEconomia', e.target.value)}
-                className="mt-1"
-              />
-            </div>
-            <div>
-              <Label htmlFor="economiaAcumulada">Economia Acumulada (R$)</Label>
-              <Input
-                id="economiaAcumulada"
-                type="number"
-                step="0.01"
-                value={editableData.economiaAcumulada}
-                onChange={(e) => handleInputChange('economiaAcumulada', e.target.value)}
-                className="mt-1"
-              />
             </div>
           </div>
 
@@ -408,7 +399,7 @@ export function EnergyPayCalculator({
             <div>
               <h4 className="font-medium text-green-800">Confirmar Cálculo</h4>
               <p className="text-sm text-green-700">
-                Revise os valores calculados conforme os exemplos mostrados acima.
+                O desconto de {subscriberDiscountPercentage}% foi aplicado conforme o cadastro do assinante.
               </p>
             </div>
             <Button onClick={handleConfirmCalculation} size="lg" className="bg-green-600 hover:bg-green-700">
