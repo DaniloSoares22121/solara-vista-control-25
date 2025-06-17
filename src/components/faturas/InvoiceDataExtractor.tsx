@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -117,50 +116,75 @@ export function InvoiceDataExtractor({ file, onDataExtracted }: InvoiceDataExtra
   };
 
   const mapApiDataToInterface = (apiData: any): ExtractedInvoiceData => {
-    // Função para mapear os dados da API para nossa interface
-    // Você pode ajustar o mapeamento conforme a estrutura real dos dados da API
+    // Extrair endereço - usar address_partner se disponível, senão usar address
+    const endereco = apiData.address_partner?.street || apiData.address || "Não informado";
+    const cidade = apiData.address_partner?.city || "Não informado";
+    const cep = apiData.address_partner?.zip_code || apiData.zip_code || "Não informado";
+    
+    // Encontrar contribuição iluminação pública nas linhas
+    const contribIlumPublica = apiData.lines?.find((line: any) => 
+      line.description.includes('CONTRIB') && line.description.includes('ILUM')
+    )?.total_value || 0;
+    
+    // Calcular valor total da energia elétrica (somar linhas relevantes)
+    const energiaEletricaValue = apiData.lines?.filter((line: any) => 
+      line.description.includes('CONSUMO') || line.description.includes('ENERGIA')
+    )?.reduce((total: number, line: any) => total + (line.total_value || 0), 0) || 0;
+    
+    // Mapear histórico de consumo
+    const historicoConsumo = apiData.historical_lines?.map((item: any) => ({
+      mes: item.reference || "Não informado",
+      consumo: (item.consume_ponta || 0) + (item.consume_fora_ponta || 0),
+      valor: 0 // A API não retorna valor histórico, apenas consumo
+    })) || [];
+    
+    // Encontrar bandeira tarifária nas linhas
+    const bandeira = apiData.lines?.find((line: any) => 
+      line.description.includes('BANDEIRA')
+    );
+    
     return {
       // Dados do cliente
-      nomeCliente: apiData.cliente?.nome || apiData.nome_cliente || "Não informado",
-      cpfCnpj: apiData.cliente?.cpf_cnpj || apiData.cpf_cnpj || "Não informado",
-      endereco: apiData.cliente?.endereco || apiData.endereco || "Não informado",
-      cidade: apiData.cliente?.cidade || apiData.cidade || "Não informado",
-      uf: apiData.cliente?.uf || apiData.uf || "Não informado",
-      cep: apiData.cliente?.cep || apiData.cep || "Não informado",
+      nomeCliente: apiData.legal_name || "Não informado",
+      cpfCnpj: apiData.cnpj_cpf || "Não informado",
+      endereco: endereco,
+      cidade: cidade,
+      uf: apiData.address?.includes(' GO ') ? 'GO' : "Não informado",
+      cep: cep,
       
       // Dados da fatura
-      numeroFatura: apiData.fatura?.numero || apiData.numero_fatura || "Não informado",
-      referencia: apiData.fatura?.referencia || apiData.referencia || "Não informado",
-      dataEmissao: apiData.fatura?.data_emissao || apiData.data_emissao || "Não informado",
-      dataVencimento: apiData.fatura?.data_vencimento || apiData.data_vencimento || "Não informado",
-      valorTotal: parseFloat(apiData.fatura?.valor_total || apiData.valor_total || 0),
+      numeroFatura: apiData.consumer_unit || "Não informado",
+      referencia: apiData.month_reference || "Não informado",
+      dataEmissao: apiData.emission_date || "Não informado",
+      dataVencimento: apiData.expiration_date || "Não informado",
+      valorTotal: parseFloat(apiData.invoice_value || 0),
       
       // Dados da instalação
-      numeroInstalacao: apiData.instalacao?.numero || apiData.numero_instalacao || "Não informado",
-      classe: apiData.instalacao?.classe || apiData.classe || "Não informado",
-      subgrupo: apiData.instalacao?.subgrupo || apiData.subgrupo || "Não informado",
-      modalidadeTarifaria: apiData.instalacao?.modalidade || apiData.modalidade_tarifaria || "Não informado",
+      numeroInstalacao: apiData.consumer_unit || "Não informado",
+      classe: apiData.classe || "Não informado",
+      subgrupo: apiData.connection || "Não informado",
+      modalidadeTarifaria: apiData.invoice_type || "Não informado",
       
       // Consumo
-      consumoKwh: parseInt(apiData.consumo?.kwh || apiData.consumo_kwh || 0),
-      demandaKw: apiData.demanda?.kw ? parseFloat(apiData.demanda.kw) : undefined,
+      consumoKwh: parseInt(apiData.invoice_consume || apiData.measured_energy || 0),
+      demandaKw: apiData.demanda_contratada ? parseFloat(apiData.demanda_contratada) : undefined,
       
       // Valores detalhados
-      energiaEletrica: parseFloat(apiData.valores?.energia_eletrica || apiData.energia_eletrica || 0),
-      contribuicaoIlumPublica: parseFloat(apiData.valores?.contrib_ilum_publica || apiData.contrib_ilum_publica || 0),
-      icms: parseFloat(apiData.valores?.icms || apiData.icms || 0),
-      pis: parseFloat(apiData.valores?.pis || apiData.pis || 0),
-      cofins: parseFloat(apiData.valores?.cofins || apiData.cofins || 0),
+      energiaEletrica: energiaEletricaValue,
+      contribuicaoIlumPublica: parseFloat(contribIlumPublica),
+      icms: parseFloat(apiData.icms || 0),
+      pis: parseFloat(apiData.pis || 0),
+      cofins: parseFloat(apiData.cofins || 0),
       
       // Histórico de consumo
-      historicoConsumo: apiData.historico_consumo || apiData.historico || [],
+      historicoConsumo: historicoConsumo,
       
       // Bandeira tarifária
-      bandeiraTarifaria: apiData.bandeira?.tipo || apiData.bandeira_tarifaria,
-      valorBandeira: apiData.bandeira?.valor ? parseFloat(apiData.bandeira.valor) : undefined,
+      bandeiraTarifaria: bandeira?.description || undefined,
+      valorBandeira: bandeira?.total_value ? parseFloat(bandeira.total_value) : undefined,
       
-      // Código de barras
-      codigoBarras: apiData.codigo_barras || "Não informado"
+      // Código de barras (não disponível na API)
+      codigoBarras: "Não disponível na API"
     };
   };
 
@@ -249,7 +273,7 @@ export function InvoiceDataExtractor({ file, onDataExtracted }: InvoiceDataExtra
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="bg-green-50 p-3 rounded-lg">
-              <label className="text-sm font-medium text-green-700">Número</label>
+              <label className="text-sm font-medium text-green-700">UC</label>
               <p className="font-bold text-green-800">{extractedData.numeroFatura}</p>
             </div>
             <div className="bg-blue-50 p-3 rounded-lg">
@@ -292,11 +316,11 @@ export function InvoiceDataExtractor({ file, onDataExtracted }: InvoiceDataExtra
               <p className="font-medium">{extractedData.classe}</p>
             </div>
             <div>
-              <label className="text-sm font-medium text-muted-foreground">Subgrupo</label>
+              <label className="text-sm font-medium text-muted-foreground">Conexão</label>
               <p className="font-medium">{extractedData.subgrupo}</p>
             </div>
             <div>
-              <label className="text-sm font-medium text-muted-foreground">Modalidade Tarifária</label>
+              <label className="text-sm font-medium text-muted-foreground">Tipo da Fatura</label>
               <p className="font-medium">{extractedData.modalidadeTarifaria}</p>
             </div>
           </div>
@@ -359,7 +383,7 @@ export function InvoiceDataExtractor({ file, onDataExtracted }: InvoiceDataExtra
             </div>
             {extractedData.bandeiraTarifaria && (
               <div className="flex justify-between items-center py-2 border-b">
-                <span className="font-medium">Bandeira {extractedData.bandeiraTarifaria}</span>
+                <span className="font-medium">{extractedData.bandeiraTarifaria}</span>
                 <span className="font-bold">{formatCurrency(extractedData.valorBandeira || 0)}</span>
               </div>
             )}
@@ -384,30 +408,12 @@ export function InvoiceDataExtractor({ file, onDataExtracted }: InvoiceDataExtra
                     <span className="font-medium text-sm">{item.mes}</span>
                     <Badge variant="outline">{item.consumo} kWh</Badge>
                   </div>
-                  <p className="font-bold text-green-600">{formatCurrency(item.valor)}</p>
                 </div>
               ))}
             </div>
           </CardContent>
         </Card>
       )}
-
-      {/* Código de Barras */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <Hash className="w-5 h-5" />
-            <span>Código de Barras</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <p className="font-mono text-center text-lg font-bold break-words">
-              {extractedData.codigoBarras}
-            </p>
-          </div>
-        </CardContent>
-      </Card>
 
       {/* Debug - Dados Brutos da API */}
       <Card className="border-blue-200 bg-blue-50">
