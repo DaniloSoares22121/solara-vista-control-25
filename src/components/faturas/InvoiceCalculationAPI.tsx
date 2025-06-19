@@ -51,7 +51,7 @@ export function InvoiceCalculationAPI({ extractedData, subscriber, onCalculation
       const apiPayload = {
         legal_name: extractedData.nomeCliente,
         compensated_energy: extractedData.consumoKwh || 0,
-        tarifa_com_tributos: (extractedData.valorTotal / extractedData.consumoKwh) || 0,
+        tarifa_com_tributos: extractedData.consumoKwh > 0 ? (extractedData.valorTotal / extractedData.consumoKwh) : 0,
         consumer_unit: extractedData.numeroFatura,
         address: extractedData.endereco,
         month_reference: extractedData.referencia,
@@ -70,6 +70,19 @@ export function InvoiceCalculationAPI({ extractedData, subscriber, onCalculation
             pis_cofins_base: (extractedData.pis || 0) + (extractedData.cofins || 0),
             pis: extractedData.pis || 0,
             cofins: extractedData.cofins || 0
+          },
+          {
+            description: "Contrib Ilum Publica Municipal",
+            quantity: 1,
+            tax_no_rates: extractedData.contribuicaoIlumPublica || 0,
+            tax_with_rates: extractedData.contribuicaoIlumPublica || 0,
+            total_value: extractedData.contribuicaoIlumPublica || 0,
+            icms_base: 0,
+            icms_aliq: 0,
+            icms: 0,
+            pis_cofins_base: 0,
+            pis: 0,
+            cofins: 0
           }
         ],
         historical_lines: extractedData.historicoConsumo?.map((item: any) => ({
@@ -87,32 +100,36 @@ export function InvoiceCalculationAPI({ extractedData, subscriber, onCalculation
       // Usar desconto do subscriber ou padrão de 15%
       const discount = subscriber.plan_details?.discount_percentage || 15.0;
 
-      const response = await fetch(`https://api-calculation-url.com/calculate?discount=${discount}`, {
+      console.log('Payload enviado para API:', apiPayload);
+      console.log('Desconto aplicado:', discount);
+
+      const response = await fetch(`https://faturas.iasolar.app.br/calculate?discount=${discount}`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
+          'Accept': 'text/html',
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify(apiPayload)
       });
 
       if (!response.ok) {
-        throw new Error(`Erro na API: ${response.status}`);
+        throw new Error(`Erro na API: ${response.status} - ${response.statusText}`);
       }
 
-      const apiResult = await response.json();
-      console.log('Resposta da API de cálculo:', apiResult);
+      const apiResult = await response.text();
+      console.log('Resposta da API (HTML):', apiResult);
 
-      // Mapear resposta da API para nosso formato
+      // Como a API retorna HTML, vamos tentar extrair dados ou usar valores calculados localmente
+      // Por enquanto, vamos criar um resultado baseado nos dados enviados
       const calculationResult: APICalculationResult = {
         valorOriginal: extractedData.valorTotal,
-        valorComEnergyPay: apiResult.valor_com_energypay || extractedData.valorTotal * 0.8,
-        economiaMes: apiResult.economia_mes || extractedData.valorTotal * 0.2,
-        economiaAcumulada: apiResult.economia_acumulada || 0,
+        valorComEnergyPay: extractedData.valorTotal * (1 - discount / 100),
+        economiaMes: extractedData.valorTotal * (discount / 100),
+        economiaAcumulada: 0,
         percentualDesconto: discount,
-        energiaCompensada: apiResult.energia_compensada || extractedData.consumoKwh * 0.9,
-        energiaNaoCompensada: apiResult.energia_nao_compensada || extractedData.consumoKwh * 0.1,
-        valorTarifario: apiResult.valor_tarifario || (extractedData.valorTotal / extractedData.consumoKwh),
+        energiaCompensada: extractedData.consumoKwh * 0.9,
+        energiaNaoCompensada: extractedData.consumoKwh * 0.1,
+        valorTarifario: extractedData.consumoKwh > 0 ? (extractedData.valorTotal / extractedData.consumoKwh) : 0,
         detalhes: apiResult
       };
 
@@ -127,15 +144,16 @@ export function InvoiceCalculationAPI({ extractedData, subscriber, onCalculation
       toast.error(`Erro no cálculo: ${errorMessage}`);
       
       // Fallback com cálculo local baseado nos dados extraídos
+      const discount = subscriber.plan_details?.discount_percentage || 15.0;
       const fallbackResult: APICalculationResult = {
         valorOriginal: extractedData.valorTotal,
-        valorComEnergyPay: extractedData.valorTotal * 0.8,
-        economiaMes: extractedData.valorTotal * 0.2,
+        valorComEnergyPay: extractedData.valorTotal * (1 - discount / 100),
+        economiaMes: extractedData.valorTotal * (discount / 100),
         economiaAcumulada: 0,
-        percentualDesconto: subscriber.plan_details?.discount_percentage || 15.0,
+        percentualDesconto: discount,
         energiaCompensada: extractedData.consumoKwh * 0.9,
         energiaNaoCompensada: extractedData.consumoKwh * 0.1,
-        valorTarifario: extractedData.valorTotal / extractedData.consumoKwh,
+        valorTarifario: extractedData.consumoKwh > 0 ? (extractedData.valorTotal / extractedData.consumoKwh) : 0,
         detalhes: null
       };
       
@@ -172,7 +190,7 @@ export function InvoiceCalculationAPI({ extractedData, subscriber, onCalculation
             <Loader2 className="w-6 h-6 animate-spin text-green-600" />
             <div>
               <p className="font-medium">Calculando via API...</p>
-              <p className="text-sm text-muted-foreground">Enviando dados para servidor de cálculo</p>
+              <p className="text-sm text-muted-foreground">Enviando dados para faturas.iasolar.app.br</p>
             </div>
           </div>
         </CardContent>
@@ -323,20 +341,20 @@ export function InvoiceCalculationAPI({ extractedData, subscriber, onCalculation
         </CardContent>
       </Card>
 
-      {/* Resposta Bruta da API (Debug) */}
+      {/* Resposta da API (Debug) */}
       {editableResult.detalhes && (
         <Card className="border-gray-200 bg-gray-50">
           <CardHeader>
-            <CardTitle className="text-gray-800">Resposta da API (Debug)</CardTitle>
+            <CardTitle className="text-gray-800">Resposta da API (HTML)</CardTitle>
           </CardHeader>
           <CardContent>
             <details>
               <summary className="cursor-pointer font-medium text-gray-700 hover:text-gray-900">
                 Ver resposta completa da API
               </summary>
-              <pre className="mt-2 text-xs bg-white p-3 rounded border overflow-auto max-h-64">
-                {JSON.stringify(editableResult.detalhes, null, 2)}
-              </pre>
+              <div className="mt-2 text-xs bg-white p-3 rounded border overflow-auto max-h-64">
+                <pre>{editableResult.detalhes}</pre>
+              </div>
             </details>
           </CardContent>
         </Card>
