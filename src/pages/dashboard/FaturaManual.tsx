@@ -20,7 +20,7 @@ export default function FaturaManual() {
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedSubscriber, setSelectedSubscriber] = useState<SubscriberRecord | null>(null);
   const [extractedData, setExtractedData] = useState<any>(null);
-  const [energyPayData, setEnergyPayData] = useState<any>(null);
+  const [calculationData, setCalculationData] = useState<any>(null);
   const [processCompleted, setProcessCompleted] = useState(false);
 
   const handleSubscriberSelect = (subscriber: SubscriberRecord) => {
@@ -49,9 +49,9 @@ export default function FaturaManual() {
   const handleDataConfirmed = (data: any) => {
     console.log('Dados confirmados na página principal:', data);
     
-    if (data.extractedData && data.energyPayData) {
+    if (data.extractedData && data.calculationData) {
       setExtractedData(data.extractedData);
-      setEnergyPayData(data.energyPayData);
+      setCalculationData(data.calculationData);
       setProcessCompleted(true);
     } else {
       setExtractedData(data);
@@ -248,22 +248,22 @@ export default function FaturaManual() {
           </Card>
         )}
 
-        {/* Debug - Dados EnergyPay */}
-        {energyPayData && (
+        {/* Debug - Dados de Cálculo da API */}
+        {calculationData && (
           <Card className="border-green-200 bg-green-50">
             <CardHeader>
-              <CardTitle className="text-green-800">Cálculos EnergyPay</CardTitle>
+              <CardTitle className="text-green-800">Cálculos via API</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-green-700 mb-2">
-                Cálculos da fatura EnergyPay confirmados.
+                Cálculos realizados via API e confirmados.
               </p>
               <details>
                 <summary className="cursor-pointer font-medium text-green-700 hover:text-green-900">
-                  Ver cálculos EnergyPay
+                  Ver cálculos da API
                 </summary>
                 <pre className="mt-2 text-xs bg-white p-3 rounded border overflow-auto max-h-64">
-                  {JSON.stringify(energyPayData, null, 2)}
+                  {JSON.stringify(calculationData, null, 2)}
                 </pre>
               </details>
             </CardContent>
@@ -278,7 +278,7 @@ export default function FaturaManual() {
             </CardHeader>
             <CardContent>
               <p className="text-green-700 mb-4">
-                A fatura foi processada com sucesso. Todos os dados foram extraídos e os cálculos da EnergyPay foram realizados.
+                A fatura foi processada com sucesso. Todos os dados foram extraídos e os cálculos foram realizados via API.
               </p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                 <div className="bg-white p-3 rounded border">
@@ -289,10 +289,11 @@ export default function FaturaManual() {
                   <p>Consumo: {extractedData?.consumoKwh} kWh</p>
                 </div>
                 <div className="bg-white p-3 rounded border">
-                  <h4 className="font-medium text-gray-800 mb-2">Cálculo EnergyPay</h4>
-                  <p>Desconto: {energyPayData?.percentualDesconto}%</p>
-                  <p>Valor com EnergyPay: R$ {energyPayData?.valorComEnergyPay?.toFixed(2)}</p>
-                  <p>Economia: R$ {energyPayData?.economiaMes?.toFixed(2)}</p>
+                  <h4 className="font-medium text-gray-800 mb-2">Resultado da API</h4>
+                  <p>Desconto: {calculationData?.percentualDesconto}%</p>
+                  <p>Valor com EnergyPay: R$ {calculationData?.valorComEnergyPay?.toFixed(2)}</p>
+                  <p>Economia: R$ {calculationData?.economiaMes?.toFixed(2)}</p>
+                  <p>Economia Acumulada: R$ {calculationData?.economiaAcumulada?.toFixed(2)}</p>
                 </div>
               </div>
             </CardContent>

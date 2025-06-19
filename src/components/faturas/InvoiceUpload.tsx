@@ -2,12 +2,10 @@
 import React, { useState, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { FileInput } from '@/components/ui/file-input';
 import { InvoiceDataExtractor } from './InvoiceDataExtractor';
-import { EnergyPayCalculator } from './EnergyPayCalculator';
-import { formatCurrency } from '@/utils/formatters';
+import { InvoiceCalculationAPI } from './InvoiceCalculationAPI';
 import { CheckCircle2, Upload, FileText } from 'lucide-react';
 import { SubscriberRecord } from '@/services/supabaseSubscriberService';
 
@@ -19,13 +17,13 @@ interface InvoiceUploadProps {
 export function InvoiceUpload({ subscriber, onDataConfirmed }: InvoiceUploadProps) {
   const [file, setFile] = useState<File | null>(null);
   const [extractedData, setExtractedData] = useState<any>(null);
-  const [showCalculator, setShowCalculator] = useState(false);
+  const [showCalculation, setShowCalculation] = useState(false);
   const [showExtractor, setShowExtractor] = useState(false);
 
   const handleFileChange = (newFile: File | null) => {
     setFile(newFile);
     setExtractedData(null);
-    setShowCalculator(false);
+    setShowCalculation(false);
     setShowExtractor(false);
   };
 
@@ -42,12 +40,12 @@ export function InvoiceUpload({ subscriber, onDataConfirmed }: InvoiceUploadProp
   const handleDataConfirmed = (data: any) => {
     console.log('Dados confirmados:', data);
     setExtractedData(data);
-    setShowCalculator(true);
+    setShowCalculation(true);
   };
 
   const handleCalculationConfirmed = useCallback((data: any) => {
-    console.log('Dados confirmados no InvoiceUpload:', data);
-    onDataConfirmed({ extractedData, energyPayData: data });
+    console.log('Cálculo confirmado no InvoiceUpload:', data);
+    onDataConfirmed({ extractedData, calculationData: data });
   }, [extractedData, onDataConfirmed]);
 
   return (
@@ -107,14 +105,11 @@ export function InvoiceUpload({ subscriber, onDataConfirmed }: InvoiceUploadProp
         />
       )}
 
-      {/* EnergyPay Calculator */}
-      {extractedData && showCalculator && (
-        <EnergyPayCalculator
-          valorOriginal={extractedData.valorTotal}
-          percentualDesconto={20} // Valor padrão, será sobrescrito pelo cadastro do assinante
-          consumoKwh={extractedData.consumoKwh}
-          referencia={extractedData.referencia}
-          subscriber={subscriber} // Passando o subscriber para puxar o desconto
+      {/* API Calculation */}
+      {extractedData && showCalculation && (
+        <InvoiceCalculationAPI
+          extractedData={extractedData}
+          subscriber={subscriber}
           onCalculationConfirmed={handleCalculationConfirmed}
         />
       )}
