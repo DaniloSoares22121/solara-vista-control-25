@@ -24,17 +24,34 @@ const PlanContractForm = ({ form }: PlanContractFormProps) => {
 
   // Sincroniza o desconto selecionado com o valor do formulário
   useEffect(() => {
+    console.log('🔄 [DISCOUNT] Sincronizando desconto do formulário:', watchedValues.discountPercentage);
     if (watchedValues.discountPercentage !== undefined) {
       setSelectedDiscount(watchedValues.discountPercentage);
     }
   }, [watchedValues.discountPercentage]);
 
   const handleDiscountSelect = (percentage: number) => {
-    console.log('Selecionando desconto:', percentage);
+    console.log('📊 [DISCOUNT] Selecionando desconto da tabela:', percentage);
     setSelectedDiscount(percentage);
     form.setValue('planContract.discountPercentage', percentage);
-    // Força atualização do formulário
     form.trigger('planContract.discountPercentage');
+  };
+
+  const handleManualDiscountChange = (value: string) => {
+    const numValue = value === '' ? undefined : Number(value);
+    console.log('✏️ [DISCOUNT] Alteração manual do desconto:', numValue);
+    
+    // Define o valor no formulário
+    form.setValue('planContract.discountPercentage', numValue);
+    
+    // Atualiza o estado local
+    setSelectedDiscount(numValue);
+    
+    // Força a validação
+    form.trigger('planContract.discountPercentage');
+    
+    // Log para debug
+    console.log('✏️ [DISCOUNT] Valor após alteração manual:', form.getValues('planContract.discountPercentage'));
   };
 
   return (
@@ -199,7 +216,7 @@ const PlanContractForm = ({ form }: PlanContractFormProps) => {
             name="planContract.discountPercentage"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-gray-700 font-medium">Percentual de Desconto (%)</FormLabel>
+                <FormLabel className="text-gray-700 font-medium">Percentual de Desconto (%) *</FormLabel>
                 <FormControl>
                   <Input 
                     value={field.value || ''}
@@ -209,12 +226,7 @@ const PlanContractForm = ({ form }: PlanContractFormProps) => {
                     step="0.1"
                     placeholder="Ex: 15"
                     className="border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      const numValue = value === '' ? undefined : Number(value);
-                      field.onChange(numValue);
-                      console.log('Desconto alterado manualmente:', numValue);
-                    }}
+                    onChange={(e) => handleManualDiscountChange(e.target.value)}
                   />
                 </FormControl>
                 <FormMessage />
@@ -235,11 +247,12 @@ const PlanContractForm = ({ form }: PlanContractFormProps) => {
 
       {/* Debug info - remover em produção */}
       <div className="bg-gray-100 p-4 rounded text-sm">
-        <p><strong>Debug:</strong></p>
+        <p><strong>Debug Atualizado:</strong></p>
         <p>kWh Contratado: {watchedValues.contractedKwh}</p>
         <p>Fidelidade: {watchedValues.loyalty}</p>
-        <p>Desconto Selecionado: {selectedDiscount}%</p>
+        <p>Desconto Selecionado (Estado): {selectedDiscount}%</p>
         <p>Desconto no Form: {watchedValues.discountPercentage}%</p>
+        <p>Valor Real no Form: {JSON.stringify(form.getValues('planContract.discountPercentage'))}</p>
       </div>
     </div>
   );

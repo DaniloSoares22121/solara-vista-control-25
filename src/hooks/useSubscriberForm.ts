@@ -110,6 +110,7 @@ export const useSubscriberForm = (existingData?: SubscriberDataFromDB) => {
       
       console.log('✅ Dados carregados com sucesso:', loadedData);
       console.log('📋 Plan Contract carregado:', loadedData.planContract);
+      console.log('🎯 Discount Percentage carregado:', loadedData.planContract.discountPercentage);
       setFormData(loadedData);
       setIsEditing(true);
       setIsLoaded(true);
@@ -157,14 +158,29 @@ export const useSubscriberForm = (existingData?: SubscriberDataFromDB) => {
 
   const updateFormData = useCallback((section: keyof SubscriberFormData, data: unknown) => {
     console.log('🔄 Atualizando formData:', section, data);
+    
+    // Log específico para planContract
+    if (section === 'planContract') {
+      console.log('📋 Atualizando Plan Contract:', data);
+      console.log('🎯 Discount no update:', (data as any)?.discountPercentage);
+    }
+    
     setFormData(prev => {
       const currentSectionData = prev[section];
       
       if (typeof data === 'object' && data !== null && typeof currentSectionData === 'object' && currentSectionData !== null) {
-        return {
+        const updatedData = {
           ...prev,
           [section]: { ...currentSectionData, ...data }
         };
+        
+        // Log específico para verificar se o desconto foi salvo
+        if (section === 'planContract') {
+          console.log('📋 Plan Contract após update:', updatedData.planContract);
+          console.log('🎯 Discount após update:', (updatedData.planContract as any)?.discountPercentage);
+        }
+        
+        return updatedData;
       } else {
         return {
           ...prev,
