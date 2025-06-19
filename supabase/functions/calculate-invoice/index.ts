@@ -36,6 +36,98 @@ interface InvoicePayload {
   extra: Record<string, any>;
 }
 
+// Função para extrair dados do HTML retornado pela API
+function parseHtmlResponse(html: string) {
+  try {
+    // Extrair informações básicas usando regex
+    const clienteMatch = html.match(/<strong>Cliente:<\/strong>\s*([^<]+)/);
+    const ucMatch = html.match(/<strong>Unidade Consumidora:<\/strong>\s*([^<]+)/);
+    const referenciaMatch = html.match(/<strong>Mês de Referência:<\/strong>\s*([^<]+)/);
+    const vencimentoMatch = html.match(/<strong>Vencimento:<\/strong>\s*([^<]+)/);
+    
+    // Extrair valores financeiros
+    const totalFaturaMatch = html.match(/TOTAL DA FATURA:\s*R\$\s*([\d,]+\.\d{2})/);
+    const energiaInjetadaSemDescontoMatch = html.match(/Valor da Energia Injetada \(sem desconto\):[^R]*R\$\s*([\d,]+\.\d{2})/);
+    const energiaInjetadaComDescontoMatch = html.match(/VALOR FINAL COM DESCONTO:[^R]*R\$\s*([\d,]+\.\d{2})/);
+    const descontoMatch = html.match(/Desconto Aplicado \(([^)]+)\):[^R]*R\$\s*([\d,]+\.\d{2})/);
+    const energiaCompensadaMatch = html.match(/Energia Compensada \(Injetada\):[^0-9]*([0-9,]+\.?\d*)\s*kWh/);
+    const tarifaCheiaMatch = html.match(/Tarifa Cheia \(com tributos\):[^R]*R\$\s*([0-9,]+\.?\d*)/);
+
+    // Função auxiliar para converter string com vírgula para número
+    const parseValue = (str: string | null): number => {
+      if (!str) return 0;
+      return parseFloat(str.replace(',', ''));
+    };
+
+    // Construir objeto de resposta estruturado
+    const result = {
+      consumer_unit: ucMatch?.[1]?.trim() || '',
+      month_reference: referenciaMatch?.[1]?.trim() || '',
+      invoice_value: parseValue(totalFaturaMatch?.[1]) || 0,
+      
+      // Dados de consumo baseados no HTML
+      consumo_nao_compensado: {
+        description: "Consumo Não Compensado",
+        quantity: parseValue(energiaCompensadaMatch?.[1]) || 0,
+        tax_no_rates: parseValue(tarifaCheiaMatch?.[1]) || 0,
+        tax_with_rates: parseValue(tarifaCheiaMatch?.[1]) || 0,
+        total_value: parseValue(energiaInjetadaSemDescontoMatch?.[1]) || 0,
+        icms_base: 0,
+        icms_aliq: 0,
+        icms: 0,
+        pis_cofins_base: 0,
+        pis: 0,
+        cofins: 0
+      },
+      
+      consumo_scee: {
+        description: "Consumo SCEE",
+        quantity: parseValue(energiaCompensadaMatch?.[1]) || 0,
+        tax_no_rates: parseValue(tarifaCheiaMatch?.[1]) || 0,
+        tax_with_rates: parseValue(tarifaCheiaMatch?.[1]) || 0,
+        total_value: parseValue(energiaInjetadaSemDescontoMatch?.[1]) || 0,
+        icms_base: 0,
+        icms_aliq: 0,
+        icms: 0,
+        pis_cofins_base: 0,
+        pis: 0,
+        cofins: 0
+      },
+      
+      injecao_scee: {
+        description: "Injeção SCEE",
+        quantity: parseValue(energiaCompensadaMatch?.[1]) || 0,
+        tax_no_rates: parseValue(tarifaCheiaMatch?.[1]) || 0,
+        tax_with_rates: parseValue(tarifaCheiaMatch?.[1]) || 0,
+        total_value: parseValue(energiaInjetadaSemDescontoMatch?.[1]) || 0,
+        icms_base: 0,
+        icms_aliq: 0,
+        icms: 0,
+        pis_cofins_base: 0,
+        pis: 0,
+        cofins: 0
+      },
+      
+      // Valores financeiros principais
+      valor_energia_injetada_sem_desconto: parseValue(energiaInjetadaSemDescontoMatch?.[1]) || 0,
+      valor_energia_injetada_com_desconto: parseValue(energiaInjetadaComDescontoMatch?.[1]) || 0,
+      total_impostos: 0,
+      total_financeiro: parseValue(energiaInjetadaComDescontoMatch?.[1]) || 0,
+      valor_final_fatura: parseValue(energiaInjetadaComDescontoMatch?.[1]) || 0,
+      
+      // Histórico de consumo (vazio por enquanto, pois não está no HTML)
+      historical_consumption: []
+    };
+
+    console.log('Dados extraídos do HTML:', JSON.stringify(result, null, 2));
+    return result;
+    
+  } catch (error) {
+    console.error('Erro ao fazer parse do HTML:', error);
+    throw new Error('Falha ao processar resposta HTML da API');
+  }
+}
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -68,21 +160,17 @@ serve(async (req) => {
     let result;
     
     if (contentType.includes('application/json')) {
+      // Se for JSON, processa normalmente
       result = await response.json();
+      console.log('JSON Response:', JSON.stringify(result, null, 2));
     } else {
-      // Se a resposta for HTML/texto, tenta fazer parse como JSON
-      const textResult = await response.text();
-      console.log('Raw API Response:', textResult);
+      // Se não for JSON (provavelmente HTML), processa o HTML
+      const htmlResult = await response.text();
+      console.log('HTML Response received, parsing...');
       
-      try {
-        result = JSON.parse(textResult);
-      } catch (parseError) {
-        console.error('Failed to parse response as JSON:', parseError);
-        throw new Error(`Invalid JSON response from API: ${textResult.substring(0, 200)}...`);
-      }
+      // Extrai dados do HTML
+      result = parseHtmlResponse(htmlResult);
     }
-
-    console.log('Parsed API Response:', JSON.stringify(result, null, 2));
 
     return new Response(JSON.stringify(result), {
       headers: { 
