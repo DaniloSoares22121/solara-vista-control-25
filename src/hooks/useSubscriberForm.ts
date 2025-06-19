@@ -178,14 +178,25 @@ export const useSubscriberForm = (existingData?: SubscriberDataFromDB) => {
         if (section === 'planContract') {
           console.log('📋 Plan Contract após update:', updatedData.planContract);
           console.log('🎯 Discount após update:', (updatedData.planContract as any)?.discountPercentage);
+          
+          // Força um re-render para garantir que a mudança seja detectada
+          setTimeout(() => {
+            console.log('🕐 [DISCOUNT] Verificação tardia do valor salvo:', (updatedData.planContract as any)?.discountPercentage);
+          }, 100);
         }
         
         return updatedData;
       } else {
-        return {
+        const updatedData = {
           ...prev,
           [section]: data
         };
+        
+        if (section === 'planContract') {
+          console.log('📋 Plan Contract substituído completamente:', updatedData.planContract);
+        }
+        
+        return updatedData;
       }
     });
   }, []);

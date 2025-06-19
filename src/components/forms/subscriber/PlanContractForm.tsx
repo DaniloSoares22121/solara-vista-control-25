@@ -35,6 +35,9 @@ const PlanContractForm = ({ form }: PlanContractFormProps) => {
     setSelectedDiscount(percentage);
     form.setValue('planContract.discountPercentage', percentage);
     form.trigger('planContract.discountPercentage');
+    
+    // Força o formulário a marcar como "dirty" para trigger auto-save
+    console.log('📊 [DISCOUNT] Marcando formulário como alterado');
   };
 
   const handleManualDiscountChange = (value: string) => {
@@ -42,16 +45,22 @@ const PlanContractForm = ({ form }: PlanContractFormProps) => {
     console.log('✏️ [DISCOUNT] Alteração manual do desconto:', numValue);
     
     // Define o valor no formulário
-    form.setValue('planContract.discountPercentage', numValue);
+    form.setValue('planContract.discountPercentage', numValue, { 
+      shouldDirty: true, 
+      shouldTouch: true, 
+      shouldValidate: true 
+    });
     
     // Atualiza o estado local
     setSelectedDiscount(numValue);
     
-    // Força a validação
+    // Força a validação e marcação como alterado
     form.trigger('planContract.discountPercentage');
     
     // Log para debug
     console.log('✏️ [DISCOUNT] Valor após alteração manual:', form.getValues('planContract.discountPercentage'));
+    console.log('✏️ [DISCOUNT] Formulário isDirty:', form.formState.isDirty);
+    console.log('✏️ [DISCOUNT] Campos alterados:', form.formState.dirtyFields);
   };
 
   return (
@@ -227,6 +236,9 @@ const PlanContractForm = ({ form }: PlanContractFormProps) => {
                     placeholder="Ex: 15"
                     className="border-gray-300 focus:border-blue-500 focus:ring-blue-500"
                     onChange={(e) => handleManualDiscountChange(e.target.value)}
+                    onBlur={() => {
+                      console.log('🔥 [DISCOUNT] Campo de desconto perdeu o foco - valor atual:', form.getValues('planContract.discountPercentage'));
+                    }}
                   />
                 </FormControl>
                 <FormMessage />
@@ -247,12 +259,14 @@ const PlanContractForm = ({ form }: PlanContractFormProps) => {
 
       {/* Debug info - remover em produção */}
       <div className="bg-gray-100 p-4 rounded text-sm">
-        <p><strong>Debug Atualizado:</strong></p>
+        <p><strong>Debug Detalhado:</strong></p>
         <p>kWh Contratado: {watchedValues.contractedKwh}</p>
         <p>Fidelidade: {watchedValues.loyalty}</p>
         <p>Desconto Selecionado (Estado): {selectedDiscount}%</p>
         <p>Desconto no Form: {watchedValues.discountPercentage}%</p>
         <p>Valor Real no Form: {JSON.stringify(form.getValues('planContract.discountPercentage'))}</p>
+        <p>Form isDirty: {JSON.stringify(form.formState.isDirty)}</p>
+        <p>Campos alterados: {JSON.stringify(Object.keys(form.formState.dirtyFields))}</p>
       </div>
     </div>
   );
