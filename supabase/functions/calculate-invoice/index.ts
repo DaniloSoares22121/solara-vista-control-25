@@ -212,10 +212,34 @@ serve(async (req) => {
       );
     }
 
-    // Parse JSON response
-    let result: APIResponse;
+    // Check if response is HTML instead of JSON
     const contentType = response.headers.get('content-type') || '';
     console.log('Content-Type:', contentType);
+    
+    if (contentType.includes('text/html') || responseText.trim().startsWith('<')) {
+      console.error('=== HTML RESPONSE DETECTED ===');
+      console.error('API returned HTML instead of JSON');
+      console.error('Response preview:', responseText.substring(0, 500));
+      
+      return new Response(
+        JSON.stringify({ 
+          error: 'API returned HTML preview instead of calculation result',
+          details: 'The external API is returning a preview/demo page instead of performing actual calculations. This might indicate that the API is in demo mode or there\'s an issue with the request format.',
+          responsePreview: responseText.substring(0, 500),
+          contentType: contentType,
+          apiUrl: apiUrl,
+          isPreviewMode: true,
+          suggestion: 'Please verify the API endpoint configuration or contact the API provider.'
+        }), 
+        {
+          status: 502,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
+    }
+
+    // Parse JSON response
+    let result: APIResponse;
 
     try {
       console.log('Attempting to parse JSON...');
@@ -224,58 +248,19 @@ serve(async (req) => {
       console.log('Result type:', typeof result);
       console.log('Result keys:', Object.keys(result));
       
-      // Validate that we have the expected structure
-      if (!result.consumer_unit || !result.valor_final_fatura) {
-        console.warn('Response does not have expected API structure, might be HTML preview');
-        
-        // If it looks like HTML, return a structured error
-        if (responseText.includes('<div') || responseText.includes('<html')) {
-          return new Response(
-            JSON.stringify({ 
-              error: 'API returned HTML preview instead of calculation result',
-              details: 'The API may be returning a preview/demo response instead of actual calculations',
-              responsePreview: responseText.substring(0, 500),
-              contentType: contentType,
-              apiUrl: apiUrl,
-              isPreviewMode: true
-            }), 
-            {
-              status: 502,
-              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-            }
-          );
-        }
-      }
-      
     } catch (jsonError) {
       console.error('=== JSON PARSE ERROR ===');
       console.error('Error:', jsonError.message);
       console.error('Response text (first 500 chars):', responseText.substring(0, 500));
       console.error('Content-Type:', contentType);
       
-      // If it's HTML response, the API might be returning an error page
-      if (contentType.includes('text/html')) {
-        return new Response(
-          JSON.stringify({ 
-            error: 'External API returned HTML instead of JSON',
-            details: 'The API might be experiencing issues or the request format is incorrect',
-            responsePreview: responseText.substring(0, 500),
-            contentType: contentType,
-            apiUrl: apiUrl
-          }), 
-          {
-            status: 502,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-          }
-        );
-      }
-      
       return new Response(
         JSON.stringify({ 
           error: 'Invalid JSON response from external API',
           details: jsonError.message,
           responsePreview: responseText.substring(0, 500),
-          contentType: contentType
+          contentType: contentType,
+          apiUrl: apiUrl
         }), 
         {
           status: 502,
