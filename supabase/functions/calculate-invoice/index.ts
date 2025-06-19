@@ -36,6 +36,61 @@ interface InvoicePayload {
   extra: Record<string, any>;
 }
 
+interface APIResponse {
+  consumer_unit: string;
+  month_reference: string;
+  invoice_value: number;
+  consumo_nao_compensado: {
+    description: string;
+    quantity: number;
+    tax_no_rates: number;
+    tax_with_rates: number;
+    total_value: number;
+    icms_base: number;
+    icms_aliq: number;
+    icms: number;
+    pis_cofins_base: number;
+    pis: number;
+    cofins: number;
+  };
+  consumo_scee: {
+    description: string;
+    quantity: number;
+    tax_no_rates: number;
+    tax_with_rates: number;
+    total_value: number;
+    icms_base: number;
+    icms_aliq: number;
+    icms: number;
+    pis_cofins_base: number;
+    pis: number;
+    cofins: number;
+  };
+  injecao_scee: {
+    description: string;
+    quantity: number;
+    tax_no_rates: number;
+    tax_with_rates: number;
+    total_value: number;
+    icms_base: number;
+    icms_aliq: number;
+    icms: number;
+    pis_cofins_base: number;
+    pis: number;
+    cofins: number;
+  };
+  valor_energia_injetada_sem_desconto: number;
+  valor_energia_injetada_com_desconto: number;
+  total_impostos: number;
+  total_financeiro: number;
+  valor_final_fatura: number;
+  historical_consumption: Array<{
+    reference: string;
+    consume_ponta: number;
+    consume_fora_ponta: number;
+  }>;
+}
+
 serve(async (req) => {
   console.log('=== EDGE FUNCTION START ===');
   console.log('Request method:', req.method);
@@ -118,7 +173,7 @@ serve(async (req) => {
 
       responseText = await response.text();
       console.log('Response length:', responseText.length);
-      console.log('Response preview (first 300 chars):', responseText.substring(0, 300));
+      console.log('Response preview (first 500 chars):', responseText.substring(0, 500));
 
     } catch (fetchError) {
       console.error('Fetch error:', fetchError);
@@ -158,7 +213,7 @@ serve(async (req) => {
     }
 
     // Parse JSON response
-    let result;
+    let result: APIResponse;
     const contentType = response.headers.get('content-type') || '';
     console.log('Content-Type:', contentType);
 
@@ -168,6 +223,29 @@ serve(async (req) => {
       console.log('=== PARSED JSON SUCCESS ===');
       console.log('Result type:', typeof result);
       console.log('Result keys:', Object.keys(result));
+      
+      // Validate that we have the expected structure
+      if (!result.consumer_unit || !result.valor_final_fatura) {
+        console.warn('Response does not have expected API structure, might be HTML preview');
+        
+        // If it looks like HTML, return a structured error
+        if (responseText.includes('<div') || responseText.includes('<html')) {
+          return new Response(
+            JSON.stringify({ 
+              error: 'API returned HTML preview instead of calculation result',
+              details: 'The API may be returning a preview/demo response instead of actual calculations',
+              responsePreview: responseText.substring(0, 500),
+              contentType: contentType,
+              apiUrl: apiUrl,
+              isPreviewMode: true
+            }), 
+            {
+              status: 502,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            }
+          );
+        }
+      }
       
     } catch (jsonError) {
       console.error('=== JSON PARSE ERROR ===');
