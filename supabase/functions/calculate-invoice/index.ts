@@ -58,11 +58,31 @@ serve(async (req) => {
     });
 
     if (!response.ok) {
+      console.error('API Error:', response.status, response.statusText);
+      const errorText = await response.text();
+      console.error('Error response:', errorText);
       throw new Error(`API Error: ${response.status} - ${response.statusText}`);
     }
 
-    const result = await response.json();
-    console.log('API Response:', JSON.stringify(result, null, 2));
+    const contentType = response.headers.get('content-type') || '';
+    let result;
+    
+    if (contentType.includes('application/json')) {
+      result = await response.json();
+    } else {
+      // Se a resposta for HTML/texto, tenta fazer parse como JSON
+      const textResult = await response.text();
+      console.log('Raw API Response:', textResult);
+      
+      try {
+        result = JSON.parse(textResult);
+      } catch (parseError) {
+        console.error('Failed to parse response as JSON:', parseError);
+        throw new Error(`Invalid JSON response from API: ${textResult.substring(0, 200)}...`);
+      }
+    }
+
+    console.log('Parsed API Response:', JSON.stringify(result, null, 2));
 
     return new Response(JSON.stringify(result), {
       headers: { 

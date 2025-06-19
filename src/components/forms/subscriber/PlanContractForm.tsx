@@ -6,7 +6,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { UseFormReturn } from 'react-hook-form';
 import { SubscriberFormData } from '@/types/subscriber';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import DiscountTable from './DiscountTable';
 
 interface PlanContractFormProps {
@@ -18,12 +18,23 @@ const PlanContractForm = ({ form }: PlanContractFormProps) => {
   
   const watchedValues = {
     contractedKwh: form.watch('planContract.contractedKwh') || 0,
-    loyalty: form.watch('planContract.loyalty') || 'none'
+    loyalty: form.watch('planContract.loyalty') || 'none',
+    discountPercentage: form.watch('planContract.discountPercentage')
   };
 
+  // Sincroniza o desconto selecionado com o valor do formulário
+  useEffect(() => {
+    if (watchedValues.discountPercentage !== undefined) {
+      setSelectedDiscount(watchedValues.discountPercentage);
+    }
+  }, [watchedValues.discountPercentage]);
+
   const handleDiscountSelect = (percentage: number) => {
+    console.log('Selecionando desconto:', percentage);
     setSelectedDiscount(percentage);
     form.setValue('planContract.discountPercentage', percentage);
+    // Força atualização do formulário
+    form.trigger('planContract.discountPercentage');
   };
 
   return (
@@ -158,7 +169,7 @@ const PlanContractForm = ({ form }: PlanContractFormProps) => {
           />
         </div>
 
-        {/* Quarta linha: Fidelidade */}
+        {/* Quarta linha: Fidelidade e Desconto */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <FormField
             control={form.control}
@@ -182,6 +193,34 @@ const PlanContractForm = ({ form }: PlanContractFormProps) => {
               </FormItem>
             )}
           />
+
+          <FormField
+            control={form.control}
+            name="planContract.discountPercentage"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-gray-700 font-medium">Percentual de Desconto (%)</FormLabel>
+                <FormControl>
+                  <Input 
+                    value={field.value || ''}
+                    type="number" 
+                    min="0"
+                    max="100"
+                    step="0.1"
+                    placeholder="Ex: 15"
+                    className="border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      const numValue = value === '' ? undefined : Number(value);
+                      field.onChange(numValue);
+                      console.log('Desconto alterado manualmente:', numValue);
+                    }}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </div>
       </div>
 
@@ -193,6 +232,15 @@ const PlanContractForm = ({ form }: PlanContractFormProps) => {
         selectedDiscount={selectedDiscount}
         hideApplyButton={true}
       />
+
+      {/* Debug info - remover em produção */}
+      <div className="bg-gray-100 p-4 rounded text-sm">
+        <p><strong>Debug:</strong></p>
+        <p>kWh Contratado: {watchedValues.contractedKwh}</p>
+        <p>Fidelidade: {watchedValues.loyalty}</p>
+        <p>Desconto Selecionado: {selectedDiscount}%</p>
+        <p>Desconto no Form: {watchedValues.discountPercentage}%</p>
+      </div>
     </div>
   );
 };

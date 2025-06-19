@@ -17,6 +17,10 @@ export function SubscriberDetails({ subscriber }: SubscriberDetailsProps) {
   const planDetails = subscriber.plan_details;
   const isCompany = subscriberData?.cnpj;
 
+  // Debug: vamos ver os dados completos do plano
+  console.log('SubscriberDetails - Plan Contract:', planContract);
+  console.log('SubscriberDetails - Discount Percentage:', planContract?.discountPercentage);
+
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
@@ -36,6 +40,18 @@ export function SubscriberDetails({ subscriber }: SubscriberDetailsProps) {
           Verifique os dados e descontos do assinante selecionado
         </p>
       </div>
+
+      {/* Debug Card - remover em produção */}
+      <Card className="border-yellow-200 bg-yellow-50">
+        <CardHeader>
+          <CardTitle className="text-yellow-800">Debug - Dados do Plano</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <pre className="text-xs bg-white p-2 rounded overflow-auto">
+            {JSON.stringify(planContract, null, 2)}
+          </pre>
+        </CardContent>
+      </Card>
 
       {/* Informações Básicas */}
       <Card>
@@ -139,9 +155,14 @@ export function SubscriberDetails({ subscriber }: SubscriberDetailsProps) {
             </div>
             <div>
               <label className="text-sm font-medium text-muted-foreground">Percentual de Desconto</label>
-              <Badge variant="default" className="text-lg">
-                {planContract?.discountPercentage || 0}%
-              </Badge>
+              <div className="flex items-center gap-2">
+                <Badge variant="default" className="text-lg">
+                  {planContract?.discountPercentage || 0}%
+                </Badge>
+                <span className="text-xs text-muted-foreground">
+                  (Valor usado na API)
+                </span>
+              </div>
             </div>
             <div>
               <label className="text-sm font-medium text-muted-foreground">Fidelidade</label>

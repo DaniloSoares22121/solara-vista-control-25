@@ -17,7 +17,9 @@ export const useSubscribers = () => {
   } = useQuery({
     queryKey: ['subscribers'],
     queryFn: subscriberService.getSubscribers,
-    staleTime: 5000, // Cache por apenas 5 segundos para garantir dados frescos
+    staleTime: 1000, // Cache por apenas 1 segundo para garantir dados frescos
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
     retry: 3,
   });
 
@@ -48,6 +50,7 @@ export const useSubscribers = () => {
               
             case 'UPDATE':
               console.log('📝 [SUBSCRIBERS] Assinante atualizado:', payload.new);
+              console.log('📝 [SUBSCRIBERS] Plan contract após update:', payload.new?.plan_contract);
               toast.success('Assinante atualizado!', { duration: 1500 });
               break;
               
@@ -72,6 +75,7 @@ export const useSubscribers = () => {
     mutationFn: subscriberService.createSubscriber,
     onSuccess: (data) => {
       console.log('✅ [SUBSCRIBERS] Assinante criado com sucesso:', data);
+      console.log('✅ [SUBSCRIBERS] Plan contract criado:', data.plan_contract);
       // Força atualização imediata
       queryClient.invalidateQueries({ queryKey: ['subscribers'] });
       refetch();
@@ -89,6 +93,9 @@ export const useSubscribers = () => {
       subscriberService.updateSubscriber(id, data),
     onSuccess: (data, variables) => {
       console.log('✅ [SUBSCRIBERS] Assinante atualizado com sucesso:', data);
+      console.log('✅ [SUBSCRIBERS] Plan contract atualizado:', data.plan_contract);
+      console.log('✅ [SUBSCRIBERS] Discount percentage:', data.plan_contract?.discountPercentage);
+      
       // Força atualização imediata
       queryClient.invalidateQueries({ queryKey: ['subscribers'] });
       queryClient.setQueryData(['subscriber', variables.id], data);
