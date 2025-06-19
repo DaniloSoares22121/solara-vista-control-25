@@ -1,11 +1,10 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, Calculator, DollarSign, Save, ArrowRight, AlertCircle } from 'lucide-react';
+import { Loader2, Calculator, DollarSign, Save, ArrowRight, AlertCircle, Eye } from 'lucide-react';
 import { formatCurrency } from '@/utils/formatters';
 import { toast } from 'sonner';
 import { SubscriberRecord } from '@/services/supabaseSubscriberService';
@@ -57,6 +56,8 @@ export function InvoiceCalculationAPI({ extractedData, subscriber, onCalculation
   const [calculationResult, setCalculationResult] = useState<APICalculationResult | null>(null);
   const [editableResult, setEditableResult] = useState<APICalculationResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [apiResponse, setApiResponse] = useState<any>(null);
+  const [showApiResponse, setShowApiResponse] = useState(false);
 
   useEffect(() => {
     if (extractedData) {
@@ -138,6 +139,9 @@ export function InvoiceCalculationAPI({ extractedData, subscriber, onCalculation
       }
 
       console.log('Resposta da API via edge function:', data);
+      
+      // Salvar a resposta completa para debug
+      setApiResponse(data);
 
       setCalculationResult(data);
       setEditableResult(data);
@@ -234,11 +238,55 @@ export function InvoiceCalculationAPI({ extractedData, subscriber, onCalculation
           <h3 className="text-lg font-semibold">Resultado do Cálculo EnergyPay</h3>
           <Badge variant="secondary">Calculado via API</Badge>
         </div>
-        <Button onClick={handleConfirmCalculation} className="bg-green-600 hover:bg-green-700">
-          <ArrowRight className="w-4 h-4 mr-2" />
-          Confirmar Cálculo
-        </Button>
+        <div className="flex space-x-2">
+          <Button 
+            variant="outline"
+            onClick={() => setShowApiResponse(!showApiResponse)}
+          >
+            <Eye className="w-4 h-4 mr-2" />
+            {showApiResponse ? 'Ocultar' : 'Ver'} Resposta da API
+          </Button>
+          <Button onClick={handleConfirmCalculation} className="bg-green-600 hover:bg-green-700">
+            <ArrowRight className="w-4 h-4 mr-2" />
+            Confirmar Cálculo
+          </Button>
+        </div>
       </div>
+
+      {/* Debug - Resposta da API */}
+      {showApiResponse && apiResponse && (
+        <Card className="border-blue-200 bg-blue-50">
+          <CardHeader>
+            <CardTitle className="text-blue-800">Resposta Exata da API</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {apiResponse._debug && (
+                <div className="bg-white p-3 rounded border">
+                  <h4 className="font-medium text-gray-800 mb-2">Informações de Debug</h4>
+                  <p><strong>Content-Type:</strong> {apiResponse._debug.contentType}</p>
+                  <p><strong>Tamanho da resposta:</strong> {apiResponse._debug.responseLength} caracteres</p>
+                  <p><strong>É JSON:</strong> {apiResponse._debug.isJson ? 'Sim' : 'Não'}</p>
+                  <details className="mt-2">
+                    <summary className="cursor-pointer font-medium text-blue-700">Preview da resposta (500 chars)</summary>
+                    <pre className="mt-2 text-xs bg-gray-100 p-2 rounded overflow-auto">
+                      {apiResponse._debug.responsePreview}
+                    </pre>
+                  </details>
+                </div>
+              )}
+              <details>
+                <summary className="cursor-pointer font-medium text-blue-700 hover:text-blue-900">
+                  Ver resposta completa da API
+                </summary>
+                <pre className="mt-2 text-xs bg-white p-3 rounded border overflow-auto max-h-96">
+                  {JSON.stringify(apiResponse, null, 2)}
+                </pre>
+              </details>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Informações Básicas */}
       <Card>

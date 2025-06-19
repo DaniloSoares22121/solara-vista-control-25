@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const corsHeaders = {
@@ -211,20 +210,35 @@ serve(async (req) => {
     }
 
     const contentType = response.headers.get('content-type') || '';
+    console.log('Content-Type da resposta:', contentType);
+    
+    // Pegar a resposta como texto primeiro para ver exatamente o que está vindo
+    const responseText = await response.text();
+    console.log('RESPOSTA EXATA DA API (texto):', responseText);
+    console.log('RESPOSTA EXATA DA API (length):', responseText.length);
+    console.log('RESPOSTA EXATA DA API (primeiros 500 chars):', responseText.substring(0, 500));
+    
     let result;
     
-    if (contentType.includes('application/json')) {
-      // Se for JSON, processa normalmente
-      result = await response.json();
-      console.log('JSON Response:', JSON.stringify(result, null, 2));
-    } else {
-      // Se não for JSON (provavelmente HTML), processa o HTML
-      const htmlResult = await response.text();
-      console.log('HTML Response received, parsing...');
+    // Tentar fazer parse como JSON
+    try {
+      result = JSON.parse(responseText);
+      console.log('RESPOSTA PARSEADA COMO JSON:', JSON.stringify(result, null, 2));
+    } catch (jsonError) {
+      console.log('ERRO AO FAZER PARSE JSON:', jsonError.message);
+      console.log('A resposta não é um JSON válido, tratando como HTML...');
       
-      // Extrai dados do HTML
-      result = parseHtmlResponse(htmlResult);
+      // Se não conseguir fazer parse como JSON, tratar como HTML
+      result = parseHtmlResponse(responseText);
     }
+
+    // Adicionar informações de debug na resposta
+    result._debug = {
+      contentType: contentType,
+      responseLength: responseText.length,
+      isJson: contentType.includes('application/json'),
+      responsePreview: responseText.substring(0, 500)
+    };
 
     return new Response(JSON.stringify(result), {
       headers: { 
