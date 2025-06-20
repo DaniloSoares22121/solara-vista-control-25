@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle, AlertTriangle, Send, Eye } from 'lucide-react';
+import { CheckCircle, AlertTriangle, Send, Eye, Percent } from 'lucide-react';
 
 interface APIConfirmationModalProps {
   isOpen: boolean;
@@ -63,14 +63,33 @@ const APIConfirmationModal = ({
                   UC: {consumerUnit}
                 </Badge>
                 <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                  <Percent className="w-3 h-3 mr-1" />
                   Desconto: {discount}%
                 </Badge>
               </div>
             </div>
             <p className="text-sm text-blue-700">
-              Revise os dados abaixo antes de enviar para o cálculo. O desconto configurado 
-              para este assinante será aplicado automaticamente.
+              Revise os dados abaixo antes de enviar para o cálculo. O percentual de desconto ({discount}%) 
+              configurado para este assinante será aplicado automaticamente.
             </p>
+          </div>
+
+          {/* Destaque do Desconto */}
+          <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                <Percent className="w-4 h-4 text-green-600" />
+              </div>
+              <div>
+                <h4 className="text-sm font-medium text-green-800">
+                  Percentual de Desconto Incluído
+                </h4>
+                <p className="text-sm text-green-700">
+                  O JSON contém os campos <code>discount_percentage</code> e <code>applied_discount</code> 
+                  com o valor de <strong>{discount}%</strong> configurado para o assinante.
+                </p>
+              </div>
+            </div>
           </div>
 
           {/* JSON Preview */}
@@ -97,8 +116,8 @@ const APIConfirmationModal = ({
                   Confirme antes de enviar
                 </h4>
                 <p className="text-sm text-amber-700 mt-1">
-                  Verifique se todos os dados estão corretos. Uma vez enviado, 
-                  o cálculo será processado e poderá gerar custos.
+                  Verifique se todos os dados estão corretos, incluindo o percentual de desconto de {discount}%. 
+                  Uma vez enviado, o cálculo será processado e poderá gerar custos.
                 </p>
               </div>
             </div>
@@ -122,7 +141,7 @@ const APIConfirmationModal = ({
             ) : (
               <>
                 <Send className="w-4 h-4 mr-2" />
-                Confirmar e Enviar
+                Confirmar e Enviar ({discount}% desconto)
               </>
             )}
           </Button>

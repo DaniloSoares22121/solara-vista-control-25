@@ -7,14 +7,13 @@ export const useConsumoNaoCompensado = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [pendingMonthReference, setPendingMonthReference] = useState<string>('');
 
-  // Verificar se uma linha de consumo não compensado tem quantidade válida
+  // Verificar se uma linha de consumo não compensado tem tax_with_rates válido
   const hasValidConsumoNaoCompensado = (lines: any[]): boolean => {
     const consumoLine = lines.find(line => 
-      line.description?.toLowerCase().includes('consumo não compensado') ||
-      line.description?.toLowerCase().includes('consumo nao compensado')
+      line.description?.toLowerCase().includes('consumo não compensado')
     );
 
-    return consumoLine && consumoLine.quantity > 0;
+    return consumoLine && consumoLine.tax_with_rates > 0;
   };
 
   // Obter ou solicitar o valor de consumo não compensado
@@ -24,12 +23,11 @@ export const useConsumoNaoCompensado = () => {
   ): Promise<number> => {
     // Primeiro, verifica se já existe na fatura
     const consumoLine = lines.find(line => 
-      line.description?.toLowerCase().includes('consumo não compensado') ||
-      line.description?.toLowerCase().includes('consumo nao compensado')
+      line.description?.toLowerCase().includes('consumo não compensado')
     );
 
-    if (consumoLine && consumoLine.quantity > 0) {
-      console.log(`✅ Consumo não compensado encontrado na fatura: ${consumoLine.quantity} kWh`);
+    if (consumoLine && consumoLine.tax_with_rates > 0) {
+      console.log(`✅ Consumo não compensado encontrado na fatura: ${consumoLine.quantity} kWh (tax_with_rates: ${consumoLine.tax_with_rates})`);
       return consumoLine.quantity;
     }
 
@@ -87,8 +85,7 @@ export const useConsumoNaoCompensado = () => {
   // Atualizar linha de consumo não compensado nos dados
   const updateConsumoNaoCompensadoInLines = (lines: any[], value: number): any[] => {
     return lines.map(line => {
-      if (line.description?.toLowerCase().includes('consumo não compensado') ||
-          line.description?.toLowerCase().includes('consumo nao compensado')) {
+      if (line.description?.toLowerCase().includes('consumo não compensado')) {
         return {
           ...line,
           quantity: value

@@ -33,6 +33,9 @@ export const useInvoiceCalculation = () => {
       invoice_value: extractedData.invoice_value,
       lines: extractedData.lines,
       historical_lines: extractedData.historical_lines,
+      // INCLUINDO CLARAMENTE O PERCENTUAL DE DESCONTO
+      discount_percentage: discount,
+      subscriber_id: subscriberId,
       extra: {
         distributor: extractedData.distributor,
         invoice_type: extractedData.invoice_type,
@@ -75,7 +78,9 @@ export const useInvoiceCalculation = () => {
         produced_energy: extractedData.produced_energy,
         address_partner: extractedData.address_partner,
         address_consumer_unit: extractedData.address_consumer_unit,
-        status: extractedData.status
+        status: extractedData.status,
+        // REFORÇANDO O DESCONTO TAMBÉM NO EXTRA
+        applied_discount: discount
       }
     };
 
@@ -90,6 +95,7 @@ export const useInvoiceCalculation = () => {
   // Mostrar modal de confirmação
   const showConfirmationModal = (calculationData: CalculationData): void => {
     console.log('📋 Preparando dados para confirmação:', calculationData);
+    console.log(`💰 DESCONTO APLICADO: ${calculationData.discount}%`);
     setPendingCalculation(calculationData);
     setIsConfirmationModalOpen(true);
   };
@@ -105,7 +111,7 @@ export const useInvoiceCalculation = () => {
     try {
       console.log('🚀 Enviando dados para API de cálculo...');
       console.log('📦 Payload:', pendingCalculation.payload);
-      console.log('💰 Desconto:', pendingCalculation.discount);
+      console.log(`💰 Desconto: ${pendingCalculation.discount}%`);
       
       const { data, error } = await supabase.functions.invoke('calculate-invoice', {
         body: {
