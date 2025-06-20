@@ -6,11 +6,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
-import { Loader2, FileText, User, Zap, DollarSign, Calendar, Hash, MapPin, Phone, Building2, AlertCircle, ArrowRight, Save, Calculator } from 'lucide-react';
+import { Loader2, FileText, User, Zap, DollarSign, Calendar, Hash, MapPin, Phone, Building2, AlertCircle, ArrowRight, Save, Calculator, Wifi, WifiOff } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/utils/formatters';
 import { toast } from 'sonner';
 import { useConsumoNaoCompensado } from '@/hooks/useConsumoNaoCompensado';
 import { useInvoiceCalculation } from '@/hooks/useInvoiceCalculation';
+import { useInvoiceExtractionFallback } from '@/hooks/useInvoiceExtractionFallback';
 import ConsumoNaoCompensadoModal from './ConsumoNaoCompensadoModal';
 import APIConfirmationModal from './APIConfirmationModal';
 
@@ -77,12 +78,14 @@ export function InvoiceDataExtractor({
   subscriberId,
   subscriberDiscount = 15 
 }: InvoiceDataExtractorProps) {
-  const [extracting, setExtracting] = useState(false);
   const [extractedData, setExtractedData] = useState<ExtractedInvoiceData | null>(null);
   const [rawApiData, setRawApiData] = useState<any>(null);
   const [editableData, setEditableData] = useState<ExtractedInvoiceData | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [apiUsed, setApiUsed] = useState<'primary' | 'fallback' | null>(null);
+
+  // Hooks para extração com fallback
+  const { isExtracting, extractionError, extractWithFallback } = useInvoiceExtractionFallback();
 
   // Hooks para consumo não compensado
   const {
@@ -114,44 +117,20 @@ export function InvoiceDataExtractor({
   }, [file]);
 
   const extractInvoiceData = async (pdfFile: File) => {
-    setExtracting(true);
-    setError(null);
-    
     try {
-      console.log('Iniciando extração de dados da fatura:', pdfFile.name);
+      console.log('🚀 Iniciando extração de dados da fatura:', pdfFile.name);
       
-      const formData = new FormData();
-      formData.append("file", pdfFile);
-
-      const response = await fetch("https://extrator.wattio.com.br/extrator/equatorial/montlhy/", {
-        method: "POST",
-        headers: {
-          "Accept": "application/json, text/plain, */*",
-          "Origin": "https://zip.wattio.com.br",
-          "Referer": "https://zip.wattio.com.br/",
-          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"
-        },
-        body: formData
-      });
-
-      if (!response.ok) {
-        throw new Error(`Erro HTTP: ${response.status}`);
-      }
-
-      const apiData = await response.json();
-      console.log('🔍 Dados recebidos da API:', apiData);
-      setRawApiData(apiData);
-
+      const result = await extractWithFallback(pdfFile);
+      setRawApiData(result.data);
+      setApiUsed(result.apiUsed);
+      
       // Verificar consumo não compensado
-      await processConsumoNaoCompensado(apiData);
+      await processConsumoNaoCompensado(result.data);
       
     } catch (error) {
-      console.error('Erro ao extrair dados da fatura:', error);
+      console.error('❌ Erro ao extrair dados da fatura:', error);
       const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
-      setError(errorMessage);
       toast.error(`Erro ao extrair dados da fatura: ${errorMessage}`);
-    } finally {
-      setExtracting(false);
     }
   };
 
@@ -182,11 +161,12 @@ export function InvoiceDataExtractor({
       setEditableData(mappedData);
       setIsEditing(true);
       onDataExtracted(mappedData);
-      toast.success('Dados da fatura extraídos com sucesso!');
+      
+      const apiMessage = apiUsed === 'fallback' ? ' (usando API GD2)' : '';
+      toast.success(`Dados da fatura extraídos com sucesso${apiMessage}!`);
       
     } catch (error) {
       console.error('Erro ao processar consumo não compensado:', error);
-      setError('Erro ao processar dados da fatura');
     }
   };
 
@@ -283,7 +263,7 @@ export function InvoiceDataExtractor({
     toast.success('Dados confirmados! Prosseguindo para o próximo passo.');
   };
 
-  if (extracting) {
+  if (isExtracting) {
     return (
       <Card>
         <CardContent className="p-6">
@@ -291,7 +271,9 @@ export function InvoiceDataExtractor({
             <Loader2 className="w-6 h-6 animate-spin text-green-600" />
             <div>
               <p className="font-medium">Extraindo dados da fatura...</p>
-              <p className="text-sm text-muted-foreground">Enviando para API e processando PDF</p>
+              <p className="text-sm text-muted-foreground">
+                Tentando API primária, com fallback para GD2 se necessário
+              </p>
             </div>
           </div>
         </CardContent>
@@ -299,7 +281,7 @@ export function InvoiceDataExtractor({
     );
   }
 
-  if (error) {
+  if (extractionError) {
     return (
       <Card className="border-red-200 bg-red-50">
         <CardContent className="p-6">
@@ -307,8 +289,10 @@ export function InvoiceDataExtractor({
             <AlertCircle className="w-6 h-6 text-red-600" />
             <div>
               <p className="font-medium text-red-800">Erro na Extração</p>
-              <p className="text-sm text-red-600">{error}</p>
-              <p className="text-xs text-red-500 mt-1">Verifique se a fatura está legível e tente novamente</p>
+              <p className="text-sm text-red-600">{extractionError}</p>
+              <p className="text-xs text-red-500 mt-1">
+                Tentativa com ambas as APIs (primária e GD2) falharam
+              </p>
             </div>
           </div>
         </CardContent>
@@ -333,6 +317,21 @@ export function InvoiceDataExtractor({
                 Desconto: {subscriberDiscount}%
               </Badge>
             )}
+            {apiUsed && (
+              <Badge variant="outline" className={apiUsed === 'fallback' ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-gray-50 text-gray-700 border-gray-200'}>
+                {apiUsed === 'fallback' ? (
+                  <>
+                    <WifiOff className="w-3 h-3 mr-1" />
+                    API GD2
+                  </>
+                ) : (
+                  <>
+                    <Wifi className="w-3 h-3 mr-1" />
+                    API Primária
+                  </>
+                )}
+              </Badge>
+            )}
           </div>
           <div className="flex gap-2">
             <Button 
@@ -349,6 +348,32 @@ export function InvoiceDataExtractor({
             </Button>
           </div>
         </div>
+
+        {/* API Used Info */}
+        {apiUsed && (
+          <Card className={apiUsed === 'fallback' ? 'border-blue-200 bg-blue-50' : 'border-gray-200 bg-gray-50'}>
+            <CardContent className="p-4">
+              <div className="flex items-center space-x-3">
+                {apiUsed === 'fallback' ? (
+                  <WifiOff className="w-5 h-5 text-blue-600" />
+                ) : (
+                  <Wifi className="w-5 h-5 text-gray-600" />
+                )}
+                <div>
+                  <p className={`font-medium ${apiUsed === 'fallback' ? 'text-blue-800' : 'text-gray-800'}`}>
+                    {apiUsed === 'fallback' ? 'API Alternativa Utilizada (GD2)' : 'API Primária Utilizada'}
+                  </p>
+                  <p className={`text-sm ${apiUsed === 'fallback' ? 'text-blue-700' : 'text-gray-700'}`}>
+                    {apiUsed === 'fallback' 
+                      ? 'A API primária falhou, dados extraídos usando API para faturas GD2'
+                      : 'Dados extraídos com sucesso usando a API primária'
+                    }
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Dados do Cliente */}
         <Card>
