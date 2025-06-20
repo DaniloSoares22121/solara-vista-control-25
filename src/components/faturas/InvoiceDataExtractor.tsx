@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -7,9 +6,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
-import { Loader2, FileText, User, Zap, DollarSign, Calendar, Hash, MapPin, Phone, Building2, AlertCircle, ArrowRight, Save } from 'lucide-react';
+import { Loader2, FileText, User, Zap, DollarSign, Calendar, Hash, MapPin, Phone, Building2, AlertCircle, ArrowRight, Save, Calculator } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/utils/formatters';
 import { toast } from 'sonner';
+import { useConsumoNaoCompensado } from '@/hooks/useConsumoNaoCompensado';
+import { useInvoiceCalculation } from '@/hooks/useInvoiceCalculation';
+import ConsumoNaoCompensadoModal from './ConsumoNaoCompensadoModal';
+import APIConfirmationModal from './APIConfirmationModal';
 
 interface ExtractedInvoiceData {
   // Dados do cliente
@@ -63,14 +66,46 @@ interface InvoiceDataExtractorProps {
   file: File;
   onDataExtracted: (data: ExtractedInvoiceData) => void;
   onDataConfirmed?: (data: ExtractedInvoiceData) => void;
+  subscriberId?: string;
+  subscriberDiscount?: number;
 }
 
-export function InvoiceDataExtractor({ file, onDataExtracted, onDataConfirmed }: InvoiceDataExtractorProps) {
+export function InvoiceDataExtractor({ 
+  file, 
+  onDataExtracted, 
+  onDataConfirmed, 
+  subscriberId,
+  subscriberDiscount = 15 
+}: InvoiceDataExtractorProps) {
   const [extracting, setExtracting] = useState(false);
   const [extractedData, setExtractedData] = useState<ExtractedInvoiceData | null>(null);
+  const [rawApiData, setRawApiData] = useState<any>(null);
   const [editableData, setEditableData] = useState<ExtractedInvoiceData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
+
+  // Hooks para consumo não compensado
+  const {
+    isModalOpen,
+    pendingMonthReference,
+    hasValidConsumoNaoCompensado,
+    getConsumoNaoCompensadoValue,
+    saveConsumoValue,
+    closeModal,
+    updateConsumoNaoCompensadoInLines
+  } = useConsumoNaoCompensado();
+
+  // Hooks para cálculo da fatura
+  const {
+    isConfirmationModalOpen,
+    pendingCalculation,
+    isCalculating,
+    calculationResult,
+    prepareCalculationData,
+    showConfirmationModal,
+    sendToCalculationAPI,
+    closeConfirmationModal
+  } = useInvoiceCalculation();
 
   useEffect(() => {
     if (file) {
@@ -104,8 +139,42 @@ export function InvoiceDataExtractor({ file, onDataExtracted, onDataConfirmed }:
       }
 
       const apiData = await response.json();
-      console.log('Dados recebidos da API:', apiData);
+      console.log('🔍 Dados recebidos da API:', apiData);
+      setRawApiData(apiData);
 
+      // Verificar consumo não compensado
+      await processConsumoNaoCompensado(apiData);
+      
+    } catch (error) {
+      console.error('Erro ao extrair dados da fatura:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+      setError(errorMessage);
+      toast.error(`Erro ao extrair dados da fatura: ${errorMessage}`);
+    } finally {
+      setExtracting(false);
+    }
+  };
+
+  const processConsumoNaoCompensado = async (apiData: any) => {
+    try {
+      console.log('🔍 Verificando consumo não compensado...');
+      
+      // Verificar se tem consumo não compensado válido
+      if (!hasValidConsumoNaoCompensado(apiData.lines)) {
+        console.log('❌ Consumo não compensado não encontrado ou inválido, solicitando valor...');
+        
+        // Solicitar valor ao usuário
+        const consumoValue = await getConsumoNaoCompensadoValue(
+          apiData.lines, 
+          apiData.month_reference
+        );
+        
+        console.log(`✅ Valor obtido: ${consumoValue} kWh`);
+        
+        // Atualizar as linhas com o valor correto
+        apiData.lines = updateConsumoNaoCompensadoInLines(apiData.lines, consumoValue);
+      }
+      
       // Mapear os dados da API para nossa interface
       const mappedData: ExtractedInvoiceData = mapApiDataToInterface(apiData);
       
@@ -116,12 +185,8 @@ export function InvoiceDataExtractor({ file, onDataExtracted, onDataConfirmed }:
       toast.success('Dados da fatura extraídos com sucesso!');
       
     } catch (error) {
-      console.error('Erro ao extrair dados da fatura:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
-      setError(errorMessage);
-      toast.error(`Erro ao extrair dados da fatura: ${errorMessage}`);
-    } finally {
-      setExtracting(false);
+      console.error('Erro ao processar consumo não compensado:', error);
+      setError('Erro ao processar dados da fatura');
     }
   };
 
@@ -188,6 +253,29 @@ export function InvoiceDataExtractor({ file, onDataExtracted, onDataConfirmed }:
     });
   };
 
+  const handleCalculateInvoice = async () => {
+    if (!rawApiData) {
+      toast.error('Dados da fatura não disponíveis para cálculo');
+      return;
+    }
+
+    try {
+      // Preparar dados para o cálculo
+      const calculationData = prepareCalculationData(
+        rawApiData,
+        subscriberDiscount,
+        subscriberId
+      );
+
+      // Mostrar modal de confirmação
+      showConfirmationModal(calculationData);
+      
+    } catch (error) {
+      console.error('Erro ao preparar cálculo:', error);
+      toast.error('Erro ao preparar dados para cálculo');
+    }
+  };
+
   const handleConfirmData = () => {
     if (!editableData) return;
     
@@ -233,321 +321,367 @@ export function InvoiceDataExtractor({ file, onDataExtracted, onDataConfirmed }:
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-2">
-          <FileText className="w-5 h-5 text-green-600" />
-          <h3 className="text-lg font-semibold">Confirmar Dados da Fatura</h3>
-          <Badge variant="secondary">Dados Extraídos - Editáveis</Badge>
-        </div>
-        <Button onClick={handleConfirmData} className="bg-green-600 hover:bg-green-700">
-          <ArrowRight className="w-4 h-4 mr-2" />
-          Confirmar e Prosseguir
-        </Button>
-      </div>
-
-      {/* Dados do Cliente */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <User className="w-5 h-5" />
-            <span>Dados do Cliente</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="nomeCliente">Nome do Cliente</Label>
-              <Input
-                id="nomeCliente"
-                value={editableData.nomeCliente}
-                onChange={(e) => handleInputChange('nomeCliente', e.target.value)}
-                className="mt-1"
-              />
-            </div>
-            <div>
-              <Label htmlFor="cpfCnpj">CPF/CNPJ</Label>
-              <Input
-                id="cpfCnpj"
-                value={editableData.cpfCnpj}
-                onChange={(e) => handleInputChange('cpfCnpj', e.target.value)}
-                className="mt-1"
-              />
-            </div>
+    <>
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <FileText className="w-5 h-5 text-green-600" />
+            <h3 className="text-lg font-semibold">Confirmar Dados da Fatura</h3>
+            <Badge variant="secondary">Dados Extraídos - Editáveis</Badge>
+            {subscriberDiscount && (
+              <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                Desconto: {subscriberDiscount}%
+              </Badge>
+            )}
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="md:col-span-2">
-              <Label htmlFor="endereco">Endereço</Label>
-              <Input
-                id="endereco"
-                value={editableData.endereco}
-                onChange={(e) => handleInputChange('endereco', e.target.value)}
-                className="mt-1"
-              />
-            </div>
-            <div>
-              <Label htmlFor="cep">CEP</Label>
-              <Input
-                id="cep"
-                value={editableData.cep}
-                onChange={(e) => handleInputChange('cep', e.target.value)}
-                className="mt-1"
-              />
-            </div>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="cidade">Cidade</Label>
-              <Input
-                id="cidade"
-                value={editableData.cidade}
-                onChange={(e) => handleInputChange('cidade', e.target.value)}
-                className="mt-1"
-              />
-            </div>
-            <div>
-              <Label htmlFor="uf">UF</Label>
-              <Input
-                id="uf"
-                value={editableData.uf}
-                onChange={(e) => handleInputChange('uf', e.target.value)}
-                className="mt-1"
-              />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Dados da Fatura */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <FileText className="w-5 h-5" />
-            <span>Informações da Fatura</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div>
-              <Label htmlFor="numeroFatura">UC</Label>
-              <Input
-                id="numeroFatura"
-                value={editableData.numeroFatura}
-                onChange={(e) => handleInputChange('numeroFatura', e.target.value)}
-                className="mt-1"
-              />
-            </div>
-            <div>
-              <Label htmlFor="referencia">Referência</Label>
-              <Input
-                id="referencia"
-                value={editableData.referencia}
-                onChange={(e) => handleInputChange('referencia', e.target.value)}
-                className="mt-1"
-              />
-            </div>
-            <div>
-              <Label htmlFor="dataEmissao">Data Emissão</Label>
-              <Input
-                id="dataEmissao"
-                value={editableData.dataEmissao}
-                onChange={(e) => handleInputChange('dataEmissao', e.target.value)}
-                className="mt-1"
-              />
-            </div>
-            <div>
-              <Label htmlFor="dataVencimento">Data Vencimento</Label>
-              <Input
-                id="dataVencimento"
-                value={editableData.dataVencimento}
-                onChange={(e) => handleInputChange('dataVencimento', e.target.value)}
-                className="mt-1"
-              />
-            </div>
-          </div>
-          <div>
-            <Label htmlFor="valorTotal">Valor Total (R$)</Label>
-            <Input
-              id="valorTotal"
-              type="number"
-              step="0.01"
-              value={editableData.valorTotal}
-              onChange={(e) => handleInputChange('valorTotal', parseFloat(e.target.value) || 0)}
-              className="mt-1"
-            />
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Dados da Instalação */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <Building2 className="w-5 h-5" />
-            <span>Dados da Instalação</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="numeroInstalacao">Número da Instalação</Label>
-              <Input
-                id="numeroInstalacao"
-                value={editableData.numeroInstalacao}
-                onChange={(e) => handleInputChange('numeroInstalacao', e.target.value)}
-                className="mt-1"
-              />
-            </div>
-            <div>
-              <Label htmlFor="classe">Classe</Label>
-              <Input
-                id="classe"
-                value={editableData.classe}
-                onChange={(e) => handleInputChange('classe', e.target.value)}
-                className="mt-1"
-              />
-            </div>
-            <div>
-              <Label htmlFor="subgrupo">Conexão</Label>
-              <Input
-                id="subgrupo"
-                value={editableData.subgrupo}
-                onChange={(e) => handleInputChange('subgrupo', e.target.value)}
-                className="mt-1"
-              />
-            </div>
-            <div>
-              <Label htmlFor="modalidadeTarifaria">Tipo da Fatura</Label>
-              <Input
-                id="modalidadeTarifaria"
-                value={editableData.modalidadeTarifaria}
-                onChange={(e) => handleInputChange('modalidadeTarifaria', e.target.value)}
-                className="mt-1"
-              />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Consumo e Demanda */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <Zap className="w-5 h-5" />
-            <span>Consumo e Demanda</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="consumoKwh">Consumo (kWh)</Label>
-              <Input
-                id="consumoKwh"
-                type="number"
-                value={editableData.consumoKwh}
-                onChange={(e) => handleInputChange('consumoKwh', parseInt(e.target.value) || 0)}
-                className="mt-1"
-              />
-            </div>
-            <div>
-              <Label htmlFor="demandaKw">Demanda (kW)</Label>
-              <Input
-                id="demandaKw"
-                type="number"
-                step="0.01"
-                value={editableData.demandaKw || ''}
-                onChange={(e) => handleInputChange('demandaKw', parseFloat(e.target.value) || undefined)}
-                className="mt-1"
-              />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Detalhamento de Valores */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <DollarSign className="w-5 h-5" />
-            <span>Detalhamento de Valores</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="energiaEletrica">Energia Elétrica (R$)</Label>
-              <Input
-                id="energiaEletrica"
-                type="number"
-                step="0.01"
-                value={editableData.energiaEletrica}
-                onChange={(e) => handleInputChange('energiaEletrica', parseFloat(e.target.value) || 0)}
-                className="mt-1"
-              />
-            </div>
-            <div>
-              <Label htmlFor="contribuicaoIlumPublica">Contrib. Ilum. Pública (R$)</Label>
-              <Input
-                id="contribuicaoIlumPublica"
-                type="number"
-                step="0.01"
-                value={editableData.contribuicaoIlumPublica}
-                onChange={(e) => handleInputChange('contribuicaoIlumPublica', parseFloat(e.target.value) || 0)}
-                className="mt-1"
-              />
-            </div>
-            <div>
-              <Label htmlFor="icms">ICMS (R$)</Label>
-              <Input
-                id="icms"
-                type="number"
-                step="0.01"
-                value={editableData.icms}
-                onChange={(e) => handleInputChange('icms', parseFloat(e.target.value) || 0)}
-                className="mt-1"
-              />
-            </div>
-            <div>
-              <Label htmlFor="pis">PIS (R$)</Label>
-              <Input
-                id="pis"
-                type="number"
-                step="0.01"
-                value={editableData.pis}
-                onChange={(e) => handleInputChange('pis', parseFloat(e.target.value) || 0)}
-                className="mt-1"
-              />
-            </div>
-            <div>
-              <Label htmlFor="cofins">COFINS (R$)</Label>
-              <Input
-                id="cofins"
-                type="number"
-                step="0.01"
-                value={editableData.cofins}
-                onChange={(e) => handleInputChange('cofins', parseFloat(e.target.value) || 0)}
-                className="mt-1"
-              />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Botão de Confirmação */}
-      <Card className="border-green-200 bg-green-50">
-        <CardContent className="p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h4 className="font-medium text-green-800">Confirmar Dados</h4>
-              <p className="text-sm text-green-700">Revise os dados extraídos e clique em "Confirmar e Prosseguir" quando estiver tudo correto.</p>
-            </div>
-            <Button onClick={handleConfirmData} size="lg" className="bg-green-600 hover:bg-green-700">
-              <Save className="w-4 h-4 mr-2" />
+          <div className="flex gap-2">
+            <Button 
+              onClick={handleCalculateInvoice} 
+              className="bg-blue-600 hover:bg-blue-700"
+              disabled={isCalculating}
+            >
+              <Calculator className="w-4 h-4 mr-2" />
+              Calcular Fatura
+            </Button>
+            <Button onClick={handleConfirmData} className="bg-green-600 hover:bg-green-700">
+              <ArrowRight className="w-4 h-4 mr-2" />
               Confirmar e Prosseguir
             </Button>
           </div>
-        </CardContent>
-      </Card>
-    </div>
+        </div>
+
+        {/* Dados do Cliente */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <User className="w-5 h-5" />
+              <span>Dados do Cliente</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="nomeCliente">Nome do Cliente</Label>
+                <Input
+                  id="nomeCliente"
+                  value={editableData.nomeCliente}
+                  onChange={(e) => handleInputChange('nomeCliente', e.target.value)}
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label htmlFor="cpfCnpj">CPF/CNPJ</Label>
+                <Input
+                  id="cpfCnpj"
+                  value={editableData.cpfCnpj}
+                  onChange={(e) => handleInputChange('cpfCnpj', e.target.value)}
+                  className="mt-1"
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="md:col-span-2">
+                <Label htmlFor="endereco">Endereço</Label>
+                <Input
+                  id="endereco"
+                  value={editableData.endereco}
+                  onChange={(e) => handleInputChange('endereco', e.target.value)}
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label htmlFor="cep">CEP</Label>
+                <Input
+                  id="cep"
+                  value={editableData.cep}
+                  onChange={(e) => handleInputChange('cep', e.target.value)}
+                  className="mt-1"
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="cidade">Cidade</Label>
+                <Input
+                  id="cidade"
+                  value={editableData.cidade}
+                  onChange={(e) => handleInputChange('cidade', e.target.value)}
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label htmlFor="uf">UF</Label>
+                <Input
+                  id="uf"
+                  value={editableData.uf}
+                  onChange={(e) => handleInputChange('uf', e.target.value)}
+                  className="mt-1"
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Dados da Fatura */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <FileText className="w-5 h-5" />
+              <span>Informações da Fatura</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div>
+                <Label htmlFor="numeroFatura">UC</Label>
+                <Input
+                  id="numeroFatura"
+                  value={editableData.numeroFatura}
+                  onChange={(e) => handleInputChange('numeroFatura', e.target.value)}
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label htmlFor="referencia">Referência</Label>
+                <Input
+                  id="referencia"
+                  value={editableData.referencia}
+                  onChange={(e) => handleInputChange('referencia', e.target.value)}
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label htmlFor="dataEmissao">Data Emissão</Label>
+                <Input
+                  id="dataEmissao"
+                  value={editableData.dataEmissao}
+                  onChange={(e) => handleInputChange('dataEmissao', e.target.value)}
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label htmlFor="dataVencimento">Data Vencimento</Label>
+                <Input
+                  id="dataVencimento"
+                  value={editableData.dataVencimento}
+                  onChange={(e) => handleInputChange('dataVencimento', e.target.value)}
+                  className="mt-1"
+                />
+              </div>
+            </div>
+            <div>
+              <Label htmlFor="valorTotal">Valor Total (R$)</Label>
+              <Input
+                id="valorTotal"
+                type="number"
+                step="0.01"
+                value={editableData.valorTotal}
+                onChange={(e) => handleInputChange('valorTotal', parseFloat(e.target.value) || 0)}
+                className="mt-1"
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Dados da Instalação */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <Building2 className="w-5 h-5" />
+              <span>Dados da Instalação</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="numeroInstalacao">Número da Instalação</Label>
+                <Input
+                  id="numeroInstalacao"
+                  value={editableData.numeroInstalacao}
+                  onChange={(e) => handleInputChange('numeroInstalacao', e.target.value)}
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label htmlFor="classe">Classe</Label>
+                <Input
+                  id="classe"
+                  value={editableData.classe}
+                  onChange={(e) => handleInputChange('classe', e.target.value)}
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label htmlFor="subgrupo">Conexão</Label>
+                <Input
+                  id="subgrupo"
+                  value={editableData.subgrupo}
+                  onChange={(e) => handleInputChange('subgrupo', e.target.value)}
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label htmlFor="modalidadeTarifaria">Tipo da Fatura</Label>
+                <Input
+                  id="modalidadeTarifaria"
+                  value={editableData.modalidadeTarifaria}
+                  onChange={(e) => handleInputChange('modalidadeTarifaria', e.target.value)}
+                  className="mt-1"
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Consumo e Demanda */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <Zap className="w-5 h-5" />
+              <span>Consumo e Demanda</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="consumoKwh">Consumo (kWh)</Label>
+                <Input
+                  id="consumoKwh"
+                  type="number"
+                  value={editableData.consumoKwh}
+                  onChange={(e) => handleInputChange('consumoKwh', parseInt(e.target.value) || 0)}
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label htmlFor="demandaKw">Demanda (kW)</Label>
+                <Input
+                  id="demandaKw"
+                  type="number"
+                  step="0.01"
+                  value={editableData.demandaKw || ''}
+                  onChange={(e) => handleInputChange('demandaKw', parseFloat(e.target.value) || undefined)}
+                  className="mt-1"
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Detalhamento de Valores */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <DollarSign className="w-5 h-5" />
+              <span>Detalhamento de Valores</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="energiaEletrica">Energia Elétrica (R$)</Label>
+                <Input
+                  id="energiaEletrica"
+                  type="number"
+                  step="0.01"
+                  value={editableData.energiaEletrica}
+                  onChange={(e) => handleInputChange('energiaEletrica', parseFloat(e.target.value) || 0)}
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label htmlFor="contribuicaoIlumPublica">Contrib. Ilum. Pública (R$)</Label>
+                <Input
+                  id="contribuicaoIlumPublica"
+                  type="number"
+                  step="0.01"
+                  value={editableData.contribuicaoIlumPublica}
+                  onChange={(e) => handleInputChange('contribuicaoIlumPublica', parseFloat(e.target.value) || 0)}
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label htmlFor="icms">ICMS (R$)</Label>
+                <Input
+                  id="icms"
+                  type="number"
+                  step="0.01"
+                  value={editableData.icms}
+                  onChange={(e) => handleInputChange('icms', parseFloat(e.target.value) || 0)}
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label htmlFor="pis">PIS (R$)</Label>
+                <Input
+                  id="pis"
+                  type="number"
+                  step="0.01"
+                  value={editableData.pis}
+                  onChange={(e) => handleInputChange('pis', parseFloat(e.target.value) || 0)}
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label htmlFor="cofins">COFINS (R$)</Label>
+                <Input
+                  id="cofins"
+                  type="number"
+                  step="0.01"
+                  value={editableData.cofins}
+                  onChange={(e) => handleInputChange('cofins', parseFloat(e.target.value) || 0)}
+                  className="mt-1"
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Botão de Confirmação */}
+        <Card className="border-green-200 bg-green-50">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h4 className="font-medium text-green-800">Confirmar Dados</h4>
+                <p className="text-sm text-green-700">Revise os dados extraídos e clique em "Confirmar e Prosseguir" quando estiver tudo correto.</p>
+              </div>
+              <div className="flex gap-2">
+                <Button 
+                  onClick={handleCalculateInvoice} 
+                  size="lg" 
+                  className="bg-blue-600 hover:bg-blue-700"
+                  disabled={isCalculating}
+                >
+                  <Calculator className="w-4 h-4 mr-2" />
+                  Calcular Fatura
+                </Button>
+                <Button onClick={handleConfirmData} size="lg" className="bg-green-600 hover:bg-green-700">
+                  <Save className="w-4 h-4 mr-2" />
+                  Confirmar e Prosseguir
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Modal para Consumo Não Compensado */}
+      <ConsumoNaoCompensadoModal
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        onConfirm={saveConsumoValue}
+        monthReference={pendingMonthReference}
+      />
+
+      {/* Modal de Confirmação da API */}
+      <APIConfirmationModal
+        isOpen={isConfirmationModalOpen}
+        onClose={closeConfirmationModal}
+        onConfirm={sendToCalculationAPI}
+        jsonData={pendingCalculation?.payload}
+        discount={pendingCalculation?.discount || 0}
+        consumerUnit={pendingCalculation?.consumerUnit || ''}
+      />
+    </>
   );
 }
